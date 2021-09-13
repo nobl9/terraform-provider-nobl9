@@ -3,7 +3,7 @@ package nobl9
 import (
 	"context"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,59 +12,59 @@ import (
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"ingestURL": {
+			"ingest_url": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc(),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_URL", nil),
 				Description: "",
 			},
 
 			"organization": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc(),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_ORG", nil),
 				Description: "",
 			},
 
 			"project": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc(),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", nil),
 				Description: "",
 			},
 
-			"userAgent": {
+			"user_agent": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc(),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_AGENT", nil),
 				Description: "",
 			},
 
-			"clientID": {
+			"client_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc(),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_ID", nil),
 				Description: "",
 			},
 
-			"clientSecret": {
+			"client_secret": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc(),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_SECRET", nil),
 				Description: "",
 			},
 
-			"oktaOrgURL": {
+			"okta_org_url": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc(),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_URL", nil),
 				Description: "",
 			},
 
-			"oktaAuthServer": {
+			"okta_auth_server": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc(),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_AUTH", nil),
 				Description: "",
 			},
 		},
@@ -72,34 +72,36 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"service": ResourceService(),
+			"nobl9_service": resourceService(),
 		},
 
-		ConfigureContextFunc: configure,
+		ConfigureContextFunc: providerConfigure,
 	}
 }
 
-func configure(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+func providerConfigure(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 
-	c, _ := n9api.NewClient(
-		data.Get("ingestURL").(string),
-		data.Get("organization").(string),
-		data.Get("project").(string),
-		data.Get("userAgent").(string),
-		data.Get("clientID").(string),
-		data.Get("clientSecret").(string),
-		data.Get("oktaOrgURL").(string),
-		data.Get("oktaAuthServer").(string),
-	)
+	ingestURL := data.Get("ingest_url").(string)
+	organization := data.Get("organization").(string)
+	project := data.Get("project").(string)
+	userAgent := data.Get("user_agent").(string)
+	clientID := data.Get("client_id").(string)
+	clientSecret := data.Get("client_secret").(string)
+	oktaOrgURL := data.Get("okta_org_url").(string)
+	oktaAuthServer := data.Get("okta_auth_server").(string)
 
-	return c, nil
+	c, err := nobl9.NewClient(ingestURL, organization, project, userAgent, clientID, clientSecret, oktaOrgURL, oktaAuthServer)
+	// Warning or errors can be collected in a slice type
+	var diags diag.Diagnostics
+
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to create HashiCups client",
+			Detail:   "Unable to authenticate user for authenticated HashiCups client",
+		})
+		return nil, diags
+	}
+
+	return c, diags
 }
-
-// ingestURL: data.Get("ingestURL").(string),
-// organization: data.Get("organization").(string),
-// project: data.Get("project").(string),
-// userAgent: data.Get("userAgent").(string),
-// clientID: data.Get("clientID").(string),
-// clientSecret: data.Get("clientSecret").(string),
-// oktaOrgURL: data.Get("oktaOrgURL").(string),
-// oktaAuthServer: data.Get("oktaAuthServer").(string),

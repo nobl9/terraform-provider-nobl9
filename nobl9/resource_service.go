@@ -8,10 +8,10 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-func ResourceService() *schema.Resource {
+func resourceService() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"apiVersion": {
+			"api_version": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "API version",
@@ -23,7 +23,7 @@ func ResourceService() *schema.Resource {
 				Description: "Kind of object",
 			},
 
-			"manifestSrc": {
+			"manifest_src": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "",
@@ -35,8 +35,9 @@ func ResourceService() *schema.Resource {
 				Description: "",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"displayName": {
+						"display_name": {
 							Type:        schema.TypeString,
+							Optional:    true,
 							Description: "",
 						},
 
@@ -56,6 +57,7 @@ func ResourceService() *schema.Resource {
 
 						"project": {
 							Type:        schema.TypeString,
+							Optional:    true,
 							Description: "",
 						},
 					},
@@ -76,6 +78,7 @@ func ResourceService() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"description": {
 							Type:        schema.TypeString,
+							Optional:    true,
 							Description: "",
 						},
 					},
@@ -88,46 +91,42 @@ func ResourceService() *schema.Resource {
 				Description: "",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"sloCount": {
+						"slo_count": {
 							Type:        schema.TypeInt,
+							Optional:    true,
 							Description: "",
 						},
 					},
 				},
 			},
 		},
-		CreateContext: CreateService,
-		//UpdateContext: UpdateService,
-		//DeleteContext: DeleteService,
-		//ReadContext:   ReadService,
-		Description: "* [HTTP API](https://api-docs.app.nobl9.com/)",
+		CreateContext: resourceServiceCreate,
+		UpdateContext: resourceServiceUpdate,
+		DeleteContext: resourceServiceDelete,
+		ReadContext:   resourceServiceRead,
+		Description:   "* [HTTP API](https://api-docs.app.nobl9.com/)",
 	}
 }
 
 func marshalService(d *schema.ResourceData) *n9api.Service {
 	return &n9api.Service{
 		ObjectHeader: n9api.ObjectHeader{
-			APIVersion: d.Get("apiVersion").(string),
+			APIVersion: d.Get("api_version").(string),
 			Kind:       d.Get("kind").(string),
 			MetadataHolder: n9api.MetadataHolder{
 				Metadata: n9api.Metadata{
-					Name:        d.Get("name").(string),
-					DisplayName: d.Get("displayName").(string),
-					Project:     d.Get("proejct").(string),
+					Name: d.Get("name").(string),
 				},
 			},
-		},
-		Spec: n9api.ServiceSpec{
-			Description: d.Get("description").(string),
-		},
-		Status: n9api.ServiceStatus{
-			SloCount: d.Get("sloCount").(int),
 		},
 	}
 }
 
-func CreateService(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*n9api.Client)
+
+	// Warning or errors can be collected in a slice type
+	var diags diag.Diagnostics
 
 	service := marshalService(d)
 	var p n9api.Payload
@@ -140,6 +139,27 @@ func CreateService(ctx context.Context, d *schema.ResourceData, meta interface{}
 
 	//d.SetId(strconv.FormatInt(id, 10))
 
-	return nil
+	return diags
+}
 
+func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	//c := meta.(*n9api.Client)
+
+	//d.SetId(strconv.FormatInt(id, 10))
+
+	return nil
+}
+
+func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
+	//d.SetId(strconv.FormatInt(id, 10))
+
+	return nil
+}
+
+func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
+	//d.SetId(strconv.FormatInt(id, 10))
+
+	return nil
 }
