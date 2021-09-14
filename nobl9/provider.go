@@ -73,6 +73,7 @@ func Provider() *schema.Provider {
 
 		ResourcesMap: map[string]*schema.Resource{
 			"nobl9_service": resourceService(),
+			"nobl9_agent":   resourceAgent(),
 		},
 
 		ConfigureContextFunc: providerConfigure,
@@ -97,8 +98,8 @@ func providerConfigure(ctx context.Context, data *schema.ResourceData) (interfac
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  "Unable to create HashiCups client",
-			Detail:   "Unable to authenticate user for authenticated HashiCups client",
+			Summary:  "Unable to create Nobl9 client",
+			Detail:   "Unable to authenticate user for authenticated Nobl9 client",
 		})
 		return nil, diags
 	}
