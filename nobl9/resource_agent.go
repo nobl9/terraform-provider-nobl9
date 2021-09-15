@@ -2,7 +2,6 @@ package nobl9
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,27 +13,24 @@ func resourceAgent() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name":         schemaName(),
 			"display_name": schemaDisplayName(),
-			"labels":       schemaLabels(),
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
 
 			"source_of": {
-				Type:        schema.TypeList, // TODO should provider verify the options or the API do that? is it possible to check Sets with SetFunc
-				Required:    true,
-				Description: "Source of either Metrics or Services",
-				MinItems:    1,
-				MaxItems:    2,
+				Type:     schema.TypeList,
+				Required: true,
+				MinItems: 1,
+				MaxItems: 2,
 				Elem: &schema.Schema{
 					Type:        schema.TypeString,
-					Description: "",
+					Description: "Source of Metrics or Services",
 				},
 			},
 
 			"prometheus": {
-				// TODO I don't like that is has to be a Set... maybe there is a better way?
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "",
+				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-prometheus)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -48,18 +44,23 @@ func resourceAgent() *schema.Resource {
 				},
 			},
 			// TODO support other agent types
-			// TODO add status as computed field, do not support it in Apply, support it in Read
+			"status": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
 		},
 		CreateContext: resourceAgentApply,
 		UpdateContext: resourceAgentApply,
 		DeleteContext: resourceAgentDelete,
 		ReadContext:   resourceAgentRead,
-		//Importer:  TODO impl me; discuss how project should be selected
-		Description: "* [HTTP API](https://api-docs.app.nobl9.com/)",
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Description: "[Agent configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent)",
 	}
 }
 
-func marshalAgent(d *schema.ResourceData) *n9api.Agent {
+func marshalAgent(config ProviderConfig, d *schema.ResourceData) *n9api.Agent {
 	sourceOf := d.Get("source_of").([]interface{})
 	sourceOfStr := make([]string, len(sourceOf))
 	for i, s := range sourceOf {
@@ -68,17 +69,9 @@ func marshalAgent(d *schema.ResourceData) *n9api.Agent {
 
 	return &n9api.Agent{
 		ObjectHeader: n9api.ObjectHeader{
-			APIVersion: apiVersion,
-			Kind:       "Agent",
-			// TODO metadataHolder marshaler can be reused
-			MetadataHolder: n9api.MetadataHolder{
-				Metadata: n9api.Metadata{
-					Name:        d.Get("name").(string),
-					DisplayName: d.Get("display_name").(string),
-					Project:     d.Get("project").(string),
-					// TODO Metadata should also support labels - SDK is outdated
-				},
-			},
+			APIVersion:     apiVersion,
+			Kind:           "Agent",
+			MetadataHolder: marshalMetadata(config, d),
 		},
 		Spec: n9api.AgentSpec{
 			Description:         d.Get("description").(string),
@@ -99,115 +92,104 @@ func marshalAgent(d *schema.ResourceData) *n9api.Agent {
 }
 
 func marshalAgentPrometheus(d *schema.ResourceData) *n9api.PrometheusConfig {
-	prom := d.Get("prometheus").(*schema.Set).List()
-	if len(prom) == 0 {
+	p := d.Get("prometheus").(*schema.Set).List()
+	if len(p) == 0 {
 		return nil
 	}
+	prom := p[0].(map[string]interface{})
 
-	if len(prom) > 1 {
-		// TODO diag error
-		return nil
-	}
-
-	url := prom[0].(map[string]interface{})["url"].(string)
+	url := prom["url"].(string)
 	return &n9api.PrometheusConfig{
-		URL:              &url,
-		ServiceDiscovery: nil,
+		URL: &url,
 	}
 }
 
-func unmarshalAgentPrometheus(d *schema.ResourceData, objects []n9api.AnyJSONObj) error {
-	// TODO how to mark that object was removed?
-
+func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
 	if len(objects) != 1 {
-		return fmt.Errorf("expected one object for id=%s but got %d", d.Id(), len(objects))
+		d.SetId("")
+		return nil
 	}
 	object := objects[0]
-
-	// TODO metadata unmarshal can be reused
-	metadata := object["metadata"].(map[string]interface{})
-	err := d.Set("name", metadata["name"])
-	if err != nil {
-		return err
-	}
-	err = d.Set("display_name", metadata["displayName"])
-	if err != nil {
-		return err
-	}
-	err = d.Set("labels", metadata["labels"]) // TODO labels are not supported yet on Agent - check it on SLO
-	if err != nil {
-		return err
-	}
-	err = d.Set("project", metadata["project"])
-	if err != nil {
-		return err
-	}
-	err = d.Set("description", metadata["description"])
-	if err != nil {
-		return err
-	}
-
-	specMap := object["spec"].(map[string]interface{})
-
-	err = d.Set("source_of", specMap["sourceOf"])
-	if err != nil {
-		return err
-	}
-
-	oneElementSet := func(i interface{}) int { return 0 }
-	err = d.Set("prometheus", schema.NewSet(oneElementSet, []interface{}{specMap["prometheus"]}))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*n9api.Client)
 	var diags diag.Diagnostics
-	// TODO []diags should be probably returned from marshal method to give the user all errors
 
-	service := marshalAgent(d)
-	var p n9api.Payload
-	p.AddObject(service)
-
-	err := c.ApplyObjects(p.GetObjects())
-	if err != nil {
-		return diag.Errorf("could not add service: %s", err.Error())
+	if ds := unmarshalMetadata(object, d); len(ds) > 0 {
+		diags = append(diags, ds...)
 	}
 
-	// TODO technically it is correct but it might break ForceNew set on name field - check it
-	d.SetId(service.Metadata.Name)
+	status := object["status"].(map[string]interface{})
+	err := d.Set("status", status)
+	appendError(diags, err)
+
+	if ds := unmarshalAgentPrometheus(d, object); len(ds) > 0 {
+		diags = append(diags, ds...)
+	}
 
 	return diags
 }
 
-func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*n9api.Client)
-	// TODO if project is set in the provider, what should we do?
-	//  we will read from the project from provider but we should use project from the resource
-	//  Maybe project from provider should be only used as a default, when not set in resources and additionally in imports?
+func unmarshalAgentPrometheus(d *schema.ResourceData, object n9api.AnyJSONObj) diag.Diagnostics {
+	var diags diag.Diagnostics
+	spec := object["spec"].(map[string]interface{})
 
-	objects, err := c.GetObject(n9api.ObjectAgent, "", d.Id())
+	err := d.Set("source_of", spec["sourceOf"])
+	appendError(diags, err)
+	err = d.Set("prometheus", schema.NewSet(oneElementSet, []interface{}{spec["prometheus"]}))
+	appendError(diags, err)
+
+	return diags
+}
+
+func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	client, ds := newClient(config, d)
+	if ds != nil {
+		return ds
+	}
+
+	service := marshalAgent(config, d)
+
+	var p n9api.Payload
+	p.AddObject(service)
+
+	err := client.ApplyObjects(p.GetObjects())
+	if err != nil {
+		return diag.Errorf("could not add service: %s", err.Error())
+	}
+
+	d.SetId(service.Metadata.Name)
+
+	return resourceAgentRead(ctx, d, meta)
+}
+
+func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	client, ds := newClient(config, d)
+	if ds != nil {
+		return ds
+	}
+
+	// f, _ := os.Create("log")
+	// defer f.Close()
+	// fmt.Fprintf(f, "test\n")
+
+	objects, err := client.GetObject(n9api.ObjectAgent, "", d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := unmarshalAgentPrometheus(d, objects); err != nil {
-		// TODO []diags should be probably returned from unmarshal method to give the user all errors
-		return diag.FromErr(err)
-	}
-
-	return nil
+	return unmarshalAgent(d, objects)
 }
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*n9api.Client)
+	config := meta.(ProviderConfig)
+	client, ds := newClient(config, d)
+	if ds != nil {
+		return ds
+	}
 
-	err := c.DeleteObjectsByName(n9api.ObjectAgent, d.Id())
+	err := client.DeleteObjectsByName(n9api.ObjectAgent, d.Id())
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	return nil
