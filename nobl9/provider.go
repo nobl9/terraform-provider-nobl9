@@ -14,9 +14,10 @@ func Provider() *schema.Provider {
 		Schema: map[string]*schema.Schema{
 			"ingest_url": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_URL", nil),
 				Description: "",
+				Default:     "https://app.nobl9.com/api",
 			},
 
 			"organization": {
@@ -30,14 +31,6 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", nil),
-				Description: "",
-				Default:     "default",
-			},
-
-			"user_agent": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_AGENT", nil),
 				Description: "",
 			},
 
@@ -57,16 +50,18 @@ func Provider() *schema.Provider {
 
 			"okta_org_url": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_URL", nil),
 				Description: "",
+				Default:     "https://accounts.nobl9.com",
 			},
 
 			"okta_auth_server": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_AUTH", nil),
 				Description: "",
+				Default:     "auseg9kiegWKEtJZC416",
 			},
 		},
 
@@ -85,7 +80,6 @@ type ProviderConfig struct {
 	IngestURL      string
 	Organization   string
 	Project        string
-	UserAgent      string
 	ClientID       string
 	ClientSecret   string
 	OktaOrgURL     string
@@ -97,7 +91,6 @@ func providerConfigure(ctx context.Context, data *schema.ResourceData) (interfac
 		IngestURL:      data.Get("ingest_url").(string),
 		Organization:   data.Get("organization").(string),
 		Project:        data.Get("project").(string),
-		UserAgent:      data.Get("user_agent").(string),
 		ClientID:       data.Get("client_id").(string),
 		ClientSecret:   data.Get("client_secret").(string),
 		OktaOrgURL:     data.Get("okta_org_url").(string),
@@ -112,7 +105,7 @@ func newClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagn
 		config.IngestURL,
 		config.Organization,
 		project,
-		config.UserAgent,
+		"terraform", // TODO add version here
 		config.ClientID,
 		config.ClientSecret,
 		config.OktaOrgURL,
