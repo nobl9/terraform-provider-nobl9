@@ -39,7 +39,7 @@ func schemaLabels() *schema.Schema {
 func schemaProject() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
-		Optional:    true,
+		Required:    true,
 		ForceNew:    true,
 		Description: "",
 	}
@@ -53,15 +53,12 @@ func schemaDescription() *schema.Schema {
 	}
 }
 
-func marshalMetadata(config ProviderConfig, d *schema.ResourceData) n9api.MetadataHolder {
-	project := getProject(config, d)
-	d.Set("project", project)
-
+func marshalMetadata(d *schema.ResourceData) n9api.MetadataHolder {
 	return n9api.MetadataHolder{
 		Metadata: n9api.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: d.Get("display_name").(string),
-			Project:     project,
+			Project:     d.Get("project").(string),
 			// TODO Metadata should also support labels - SDK is outdated
 		},
 	}

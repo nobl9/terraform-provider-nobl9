@@ -31,6 +31,7 @@ func Provider() *schema.Provider {
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", nil),
 				Description: "",
+				Default:     "default",
 			},
 
 			"user_agent": {
@@ -106,11 +107,11 @@ func providerConfigure(ctx context.Context, data *schema.ResourceData) (interfac
 	return config, nil
 }
 
-func newClient(config ProviderConfig, d *schema.ResourceData) (*nobl9.Client, diag.Diagnostics) {
+func newClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
 	c, err := nobl9.NewClient(
 		config.IngestURL,
 		config.Organization,
-		getProject(config, d),
+		project,
 		config.UserAgent,
 		config.ClientID,
 		config.ClientSecret,
@@ -129,13 +130,4 @@ func newClient(config ProviderConfig, d *schema.ResourceData) (*nobl9.Client, di
 	}
 
 	return c, nil
-}
-
-func getProject(config ProviderConfig, d *schema.ResourceData) string {
-	project := config.Project
-	if resourceProject := d.Get("project").(string); resourceProject != "" {
-		return resourceProject
-	}
-
-	return project
 }

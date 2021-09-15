@@ -60,7 +60,7 @@ func resourceAgent() *schema.Resource {
 	}
 }
 
-func marshalAgent(config ProviderConfig, d *schema.ResourceData) *n9api.Agent {
+func marshalAgent(d *schema.ResourceData) *n9api.Agent {
 	sourceOf := d.Get("source_of").([]interface{})
 	sourceOfStr := make([]string, len(sourceOf))
 	for i, s := range sourceOf {
@@ -71,7 +71,7 @@ func marshalAgent(config ProviderConfig, d *schema.ResourceData) *n9api.Agent {
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     apiVersion,
 			Kind:           "Agent",
-			MetadataHolder: marshalMetadata(config, d),
+			MetadataHolder: marshalMetadata(d),
 		},
 		Spec: n9api.AgentSpec{
 			Description:         d.Get("description").(string),
@@ -141,12 +141,12 @@ func unmarshalAgentPrometheus(d *schema.ResourceData, object n9api.AnyJSONObj) d
 
 func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, d)
+	client, ds := newClient(config, d.Get("project").(string))
 	if ds != nil {
 		return ds
 	}
 
-	service := marshalAgent(config, d)
+	service := marshalAgent(d)
 
 	var p n9api.Payload
 	p.AddObject(service)
@@ -163,14 +163,15 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 
 func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, d)
+	project := d.Get("project").(string)
+	if project == "" {
+		// project is empty when importing
+		project = config.Project
+	}
+	client, ds := newClient(config, project)
 	if ds != nil {
 		return ds
 	}
-
-	// f, _ := os.Create("log")
-	// defer f.Close()
-	// fmt.Fprintf(f, "test\n")
 
 	objects, err := client.GetObject(n9api.ObjectAgent, "", d.Id())
 	if err != nil {
@@ -182,7 +183,7 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, d)
+	client, ds := newClient(config, d.Get("project").(string))
 	if ds != nil {
 		return ds
 	}
