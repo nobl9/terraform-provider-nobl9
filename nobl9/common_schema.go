@@ -15,7 +15,7 @@ func schemaName() *schema.Schema {
 		Type:        schema.TypeString,
 		Required:    true,
 		ForceNew:    true,
-		Description: "",
+		Description: "Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
 	}
 }
 
@@ -23,7 +23,7 @@ func schemaDisplayName() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "",
+		Description: "Display name of the resource.",
 	}
 }
 
@@ -31,7 +31,7 @@ func schemaLabels() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: "",
+		Description: "Additional labels for the resource",
 		Elem:        &schema.Schema{Type: schema.TypeString},
 	}
 }
@@ -41,15 +41,14 @@ func schemaProject() *schema.Schema {
 		Type:        schema.TypeString,
 		Required:    true,
 		ForceNew:    true,
-		Description: "",
-	}
+		Description: "Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names)."}
 }
 
 func schemaDescription() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "",
+		Description: "Optional description of the resource.",
 	}
 }
 
