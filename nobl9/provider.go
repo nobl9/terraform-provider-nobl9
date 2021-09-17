@@ -86,7 +86,7 @@ type ProviderConfig struct {
 	OktaAuthServer string
 }
 
-func providerConfigure(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	config := ProviderConfig{
 		IngestURL:      data.Get("ingest_url").(string),
 		Organization:   data.Get("organization").(string),
@@ -102,14 +102,22 @@ func providerConfigure(ctx context.Context, data *schema.ResourceData) (interfac
 
 func newClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
 	c, err := nobl9.NewClient(
-		config.IngestURL,
-		config.Organization,
-		project,
-		"terraform", // TODO add version here
-		config.ClientID,
-		config.ClientSecret,
-		config.OktaOrgURL,
-		config.OktaAuthServer,
+		"http://localhost/api",
+		"nobl9-dev",
+		"terraform",
+		"terraform",
+		"0oa4hmtaf0kUH7oSm4x7",
+		"HkzOHwk9aJYsRBA5HZ3UDDJZ0vGWiEP1iemYWFk0",
+		"https://accounts.nobl9.dev",
+		"ausdh5avfxFaHRKHN4x6",
+		//config.IngestURL,
+		//config.Organization,
+		//project,
+		//"terraform", // TODO add version here
+		//config.ClientID,
+		//config.ClientSecret,
+		//config.OktaOrgURL,
+		//config.OktaAuthServer,
 	)
 
 	if err != nil {
@@ -117,7 +125,7 @@ func newClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagn
 			diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  "Unable to create Nobl9 client",
-				Detail:   "Unable to authenticate user for authenticated Nobl9 client",
+				Detail:   err.Error(),
 			},
 		}
 	}

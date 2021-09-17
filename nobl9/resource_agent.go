@@ -341,6 +341,7 @@ func marshalAgentSplunkObservability(d *schema.ResourceData) *n9api.SplunkObserv
 	}
 	splunk := p[0].(map[string]interface{})
 
+	// TODO SplunkObs now supports `realm` not `url`
 	return &n9api.SplunkObservabilityAgentConfig{
 		URL: splunk["url"].(string),
 	}
@@ -396,7 +397,7 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 	object := objects[0]
 	var diags diag.Diagnostics
 
-	if ds := unmarshalMetadata(object, d); len(ds) > 0 {
+	if ds := unmarshalMetadata(object, d); ds.HasError() {
 		diags = append(diags, ds...)
 	}
 
@@ -422,24 +423,31 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 	}
 
 	for _, name := range supportedAgents {
-		if ds := unmarshalAgentConfig(d, object, name.hclName, name.jsonName); len(ds) > 0 {
+		ok, ds := unmarshalAgentConfig(d, object, name.hclName, name.jsonName)
+		if ds.HasError() {
 			diags = append(diags, ds...)
+		}
+		if ok {
+			break
 		}
 	}
 
 	return diags
 }
 
-func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hctName, jsonName string) diag.Diagnostics {
+func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclName, jsonName string) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	spec := object["spec"].(map[string]interface{})
+	if spec[jsonName] == nil {
+		return false, nil
+	}
 
 	err := d.Set("source_of", spec["sourceOf"])
 	appendError(diags, err)
-	err = d.Set(hctName, schema.NewSet(oneElementSet, []interface{}{spec[jsonName]}))
+	err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{spec[jsonName]}))
 	appendError(diags, err)
 
-	return diags
+	return true, diags
 }
 
 func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -472,7 +480,7 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 		project = config.Project
 	}
 	client, ds := newClient(config, project)
-	if ds != nil {
+	if ds.HasError() {
 		return ds
 	}
 
@@ -487,7 +495,7 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := newClient(config, d.Get("project").(string))
-	if ds != nil {
+	if ds.HasError() {
 		return ds
 	}
 
