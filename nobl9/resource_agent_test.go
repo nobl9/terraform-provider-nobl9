@@ -24,6 +24,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 		{"test-thousandeyes", testThousandEyesConfig},
 		{"test-graphite", testGraphiteConfig},
 		{"test-bigquery", testBigQueryConfig},
+		{"test-opentsdb", testOpenTSDBConfig},
 	}
 
 	for _, tc := range cases {
@@ -178,7 +179,21 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  bigquery {}
+  bigquery {
+  }
+}
+`, name, name, testProject)
+}
+
+func testOpenTSDBConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  opentsdb {
+    url = "http://web.net"
+  }
 }
 `, name, name, testProject)
 }

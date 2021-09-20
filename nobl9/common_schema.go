@@ -6,10 +6,6 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-const (
-	apiVersion = "n9/v1alpha"
-)
-
 func schemaName() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,

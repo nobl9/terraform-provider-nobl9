@@ -144,10 +144,10 @@ func resourceAgent() *schema.Resource {
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"url": {
+						"realm": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "SplunkObservability Realm endpoint.",
+							Description: "SplunkObservability Realm.",
 						},
 					},
 				},
@@ -209,6 +209,23 @@ func resourceAgent() *schema.Resource {
 				},
 			},
 
+			"opentsdb": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-opentsdb)",
+				MinItems:    1,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "OpenTSDB cluster URL.",
+						},
+					},
+				},
+			},
+
 			"status": {
 				Type:        schema.TypeMap,
 				Computed:    true,
@@ -235,7 +252,7 @@ func marshalAgent(d *schema.ResourceData) *n9api.Agent {
 
 	return &n9api.Agent{
 		ObjectHeader: n9api.ObjectHeader{
-			APIVersion:     apiVersion,
+			APIVersion:     n9api.APIVersion,
 			Kind:           "Agent",
 			MetadataHolder: marshalMetadata(d),
 		},
@@ -253,7 +270,7 @@ func marshalAgent(d *schema.ResourceData) *n9api.Agent {
 			ThousandEyes:        marshalAgentThousandEyes(d),
 			Graphite:            marshalAgentGraphite(d),
 			BigQuery:            marshalAgentBigQuery(d),
-			// TODO refresh the SDK - this is not complete list of agents
+			OpenTSDB:            marshalAgentOpenTSDB(d),
 		},
 	}
 }
@@ -343,7 +360,7 @@ func marshalAgentSplunkObservability(d *schema.ResourceData) *n9api.SplunkObserv
 
 	// TODO SplunkObs now supports `realm` not `url`
 	return &n9api.SplunkObservabilityAgentConfig{
-		URL: splunk["url"].(string),
+		Realm: splunk["realm"].(string),
 	}
 }
 
@@ -376,6 +393,18 @@ func marshalAgentGraphite(d *schema.ResourceData) *n9api.GraphiteAgentConfig {
 	graphite := p[0].(map[string]interface{})
 
 	return &n9api.GraphiteAgentConfig{
+		URL: graphite["url"].(string),
+	}
+}
+
+func marshalAgentOpenTSDB(d *schema.ResourceData) *n9api.OpenTSDBAgentConfig {
+	p := d.Get("opentsdb").(*schema.Set).List()
+	if len(p) == 0 {
+		return nil
+	}
+	graphite := p[0].(map[string]interface{})
+
+	return &n9api.OpenTSDBAgentConfig{
 		URL: graphite["url"].(string),
 	}
 }
@@ -420,6 +449,7 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 		{"thousandeyes", "thousandEyes"},
 		{"graphite", "graphite"},
 		{"bigquery", "bigQuery"},
+		{"opentsdb", "opentsdb"},
 	}
 
 	for _, name := range supportedAgents {
