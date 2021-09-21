@@ -14,9 +14,12 @@ import (
 var testProvider *schema.Provider
 var testProject string
 
+func init() {
+	testProject = os.Getenv("NOBL9_PROJECT")
+}
+
 func ProviderFactory() map[string]func() (*schema.Provider, error) {
 	testProvider = Provider()
-	testProject = os.Getenv("NOBL9_PROJECT")
 	return map[string]func() (*schema.Provider, error){
 		"nobl9": func() (*schema.Provider, error) {
 			return testProvider, nil

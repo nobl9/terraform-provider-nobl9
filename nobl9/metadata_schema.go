@@ -79,7 +79,7 @@ func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Dia
 
 // oneElementSet implements schema.SchemaSetFunc and created only one element set.
 // Never use it for sets with more elements as new elements will override the old ones.
-func oneElementSet(i interface{}) int {
+func oneElementSet(_ interface{}) int {
 	return 0
 }
 

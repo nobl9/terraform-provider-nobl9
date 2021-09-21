@@ -259,7 +259,7 @@ func marshalAgent(d *schema.ResourceData) *n9api.Agent {
 	return &n9api.Agent{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
-			Kind:           "Agent",
+			Kind:           n9api.KindAgent,
 			MetadataHolder: marshalMetadata(d),
 		},
 		Spec: n9api.AgentSpec{
@@ -535,7 +535,7 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 
 	err := client.ApplyObjects(p.GetObjects())
 	if err != nil {
-		return diag.Errorf("could not add service: %s", err.Error())
+		return diag.Errorf("could not add agent: %s", err.Error())
 	}
 
 	d.SetId(service.Metadata.Name)

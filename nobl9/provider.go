@@ -43,6 +43,7 @@ func Provider() *schema.Provider {
 			"client_secret": {
 				Type:        schema.TypeString,
 				Required:    true,
+				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_SECRET", nil),
 				Description: "Authentication parameter ClientSecret.",
 			},
@@ -65,8 +66,9 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"nobl9_service": resourceService(),
-			"nobl9_agent":   resourceAgent(),
+			"nobl9_service":      resourceService(),
+			"nobl9_agent":        resourceAgent(),
+			"nobl9_alert_policy": resourceAlertPolicy(),
 		},
 
 		ConfigureContextFunc: providerConfigure,
