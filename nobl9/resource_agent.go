@@ -29,7 +29,13 @@ func resourceAgent() *schema.Resource {
 				},
 			},
 
-			"prometheus": {
+			"agent_type": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Type of an agent. [Supported agent types](https://nobl9.github.io/techdocs_YAML_Guide/#agent)",
+			},
+
+			"prometheus_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-prometheus)",
@@ -46,7 +52,7 @@ func resourceAgent() *schema.Resource {
 				},
 			},
 
-			"datadog": {
+			"datadog_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-datadog)",
@@ -63,7 +69,7 @@ func resourceAgent() *schema.Resource {
 				},
 			},
 
-			"newrelic": {
+			"newrelic_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-new-relic)",
@@ -80,7 +86,7 @@ func resourceAgent() *schema.Resource {
 				},
 			},
 
-			"appdynamics": {
+			"appdynamics_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-appdynamics)",
@@ -97,7 +103,7 @@ func resourceAgent() *schema.Resource {
 				},
 			},
 
-			"splunk": {
+			"splunk_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-splunk)",
@@ -114,7 +120,7 @@ func resourceAgent() *schema.Resource {
 				},
 			},
 
-			"lightstep": {
+			"lightstep_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-lightstep)",
@@ -136,7 +142,7 @@ func resourceAgent() *schema.Resource {
 				},
 			},
 
-			"splunk_observability": {
+			"splunk_observability_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-splunk-observability)",
@@ -144,16 +150,16 @@ func resourceAgent() *schema.Resource {
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"url": {
+						"realm": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "SplunkObservability Realm endpoint.",
+							Description: "SplunkObservability Realm.",
 						},
 					},
 				},
 			},
 
-			"dynatrace": {
+			"dynatrace_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-dynatrace)",
@@ -170,7 +176,7 @@ func resourceAgent() *schema.Resource {
 				},
 			},
 
-			"thousandeyes": {
+			"thousandeyes_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-thousandeyes)",
@@ -181,7 +187,7 @@ func resourceAgent() *schema.Resource {
 				},
 			},
 
-			"graphite": {
+			"graphite_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-graphite)",
@@ -198,7 +204,7 @@ func resourceAgent() *schema.Resource {
 				},
 			},
 
-			"bigquery": {
+			"bigquery_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-bigquery)",
@@ -206,6 +212,23 @@ func resourceAgent() *schema.Resource {
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Description: "Agent configuration is not required.",
+				},
+			},
+
+			"opentsdb_config": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-opentsdb)",
+				MinItems:    1,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "OpenTSDB cluster URL.",
+						},
+					},
 				},
 			},
 
@@ -235,7 +258,7 @@ func marshalAgent(d *schema.ResourceData) *n9api.Agent {
 
 	return &n9api.Agent{
 		ObjectHeader: n9api.ObjectHeader{
-			APIVersion:     apiVersion,
+			APIVersion:     n9api.APIVersion,
 			Kind:           "Agent",
 			MetadataHolder: marshalMetadata(d),
 		},
@@ -253,13 +276,17 @@ func marshalAgent(d *schema.ResourceData) *n9api.Agent {
 			ThousandEyes:        marshalAgentThousandEyes(d),
 			Graphite:            marshalAgentGraphite(d),
 			BigQuery:            marshalAgentBigQuery(d),
-			// TODO refresh the SDK - this is not complete list of agents
+			OpenTSDB:            marshalAgentOpenTSDB(d),
 		},
 	}
 }
 
 func marshalAgentPrometheus(d *schema.ResourceData) *n9api.PrometheusConfig {
-	p := d.Get("prometheus").(*schema.Set).List()
+	agentType := d.Get("agent_type").(string)
+	if agentType != "prometheus" {
+		return nil
+	}
+	p := d.Get("prometheus_config").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -272,7 +299,11 @@ func marshalAgentPrometheus(d *schema.ResourceData) *n9api.PrometheusConfig {
 }
 
 func marshalAgentDatadog(d *schema.ResourceData) *n9api.DatadogAgentConfig {
-	p := d.Get("datadog").(*schema.Set).List()
+	agentType := d.Get("agent_type").(string)
+	if agentType != "datadog" {
+		return nil
+	}
+	p := d.Get("datadog_config").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -284,7 +315,11 @@ func marshalAgentDatadog(d *schema.ResourceData) *n9api.DatadogAgentConfig {
 }
 
 func marshalAgentNewRelic(d *schema.ResourceData) *n9api.NewRelicAgentConfig {
-	p := d.Get("newrelic").(*schema.Set).List()
+	agentType := d.Get("agent_type").(string)
+	if agentType != "newrelic" {
+		return nil
+	}
+	p := d.Get("newrelic_config").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -297,7 +332,11 @@ func marshalAgentNewRelic(d *schema.ResourceData) *n9api.NewRelicAgentConfig {
 }
 
 func marshalAgentAppDynamics(d *schema.ResourceData) *n9api.AppDynamicsAgentConfig {
-	p := d.Get("appdynamics").(*schema.Set).List()
+	agentType := d.Get("agent_type").(string)
+	if agentType != "appdynamics" {
+		return nil
+	}
+	p := d.Get("appdynamics_config").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -310,7 +349,11 @@ func marshalAgentAppDynamics(d *schema.ResourceData) *n9api.AppDynamicsAgentConf
 }
 
 func marshalAgentSplunk(d *schema.ResourceData) *n9api.SplunkAgentConfig {
-	p := d.Get("splunk").(*schema.Set).List()
+	agentType := d.Get("agent_type").(string)
+	if agentType != "splunk" {
+		return nil
+	}
+	p := d.Get("splunk_config").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -322,7 +365,11 @@ func marshalAgentSplunk(d *schema.ResourceData) *n9api.SplunkAgentConfig {
 }
 
 func marshalAgentLightstep(d *schema.ResourceData) *n9api.LightstepAgentConfig {
-	p := d.Get("lightstep").(*schema.Set).List()
+	agentType := d.Get("agent_type").(string)
+	if agentType != "lightstep" {
+		return nil
+	}
+	p := d.Get("lightstep_config").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -335,19 +382,27 @@ func marshalAgentLightstep(d *schema.ResourceData) *n9api.LightstepAgentConfig {
 }
 
 func marshalAgentSplunkObservability(d *schema.ResourceData) *n9api.SplunkObservabilityAgentConfig {
-	p := d.Get("splunk_observability").(*schema.Set).List()
+	agentType := d.Get("agent_type").(string)
+	if agentType != "splunk_observability" {
+		return nil
+	}
+	p := d.Get("splunk_observability_config").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
 	splunk := p[0].(map[string]interface{})
 
 	return &n9api.SplunkObservabilityAgentConfig{
-		URL: splunk["url"].(string),
+		Realm: splunk["realm"].(string),
 	}
 }
 
 func marshalDynatrace(d *schema.ResourceData) *n9api.DynatraceAgentConfig {
-	p := d.Get("dynatrace").(*schema.Set).List()
+	agentType := d.Get("agent_type").(string)
+	if agentType != "dynatrace" {
+		return nil
+	}
+	p := d.Get("dynatrace_config").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -359,8 +414,8 @@ func marshalDynatrace(d *schema.ResourceData) *n9api.DynatraceAgentConfig {
 }
 
 func marshalAgentThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesAgentConfig {
-	p := d.Get("thousandeyes").(*schema.Set).List()
-	if len(p) == 0 {
+	agentType := d.Get("agent_type").(string)
+	if agentType != "thousandeyes" {
 		return nil
 	}
 
@@ -368,7 +423,11 @@ func marshalAgentThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesAgentCo
 }
 
 func marshalAgentGraphite(d *schema.ResourceData) *n9api.GraphiteAgentConfig {
-	p := d.Get("graphite").(*schema.Set).List()
+	agentType := d.Get("agent_type").(string)
+	if agentType != "graphite" {
+		return nil
+	}
+	p := d.Get("graphite_config").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -380,12 +439,24 @@ func marshalAgentGraphite(d *schema.ResourceData) *n9api.GraphiteAgentConfig {
 }
 
 func marshalAgentBigQuery(d *schema.ResourceData) *n9api.BigQueryAgentConfig {
-	p := d.Get("bigquery").(*schema.Set).List()
-	if len(p) == 0 {
+	agentType := d.Get("agent_type").(string)
+	if agentType != "bigquery" {
 		return nil
 	}
 
 	return &n9api.BigQueryAgentConfig{}
+}
+
+func marshalAgentOpenTSDB(d *schema.ResourceData) *n9api.OpenTSDBAgentConfig {
+	p := d.Get("opentsdb_config").(*schema.Set).List()
+	if len(p) == 0 {
+		return nil
+	}
+	graphite := p[0].(map[string]interface{})
+
+	return &n9api.OpenTSDBAgentConfig{
+		URL: graphite["url"].(string),
+	}
 }
 
 func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
@@ -396,7 +467,7 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 	object := objects[0]
 	var diags diag.Diagnostics
 
-	if ds := unmarshalMetadata(object, d); len(ds) > 0 {
+	if ds := unmarshalMetadata(object, d); ds.HasError() {
 		diags = append(diags, ds...)
 	}
 
@@ -408,38 +479,46 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 		hclName  string
 		jsonName string
 	}{
-		{"prometheus", "prometheus"},
-		{"datadog", "datadog"},
-		{"newrelic", "newrelic"},
-		{"appdynamics", "appDynamics"},
-		{"splunk", "splunk"},
-		{"lightstep", "lightstep"},
-		{"splunk_observability", "splunkObservability"},
-		{"dynatrace", "dynatrace"},
-		{"thousandeyes", "thousandEyes"},
-		{"graphite", "graphite"},
-		{"bigquery", "bigQuery"},
+		{"prometheus_config", "prometheus"},
+		{"datadog_config", "datadog"},
+		{"newrelic_config", "newrelic"},
+		{"appdynamics_config", "appDynamics"},
+		{"splunk_config", "splunk"},
+		{"lightstep_config", "lightstep"},
+		{"splunk_observability_config", "splunkObservability"},
+		{"dynatrace_config", "dynatrace"},
+		{"thousandeyes_config", "thousandEyes"},
+		{"graphite_config", "graphite"},
+		{"bigquery_config", "bigQuery"},
+		{"opentsdb_config", "opentsdb"},
 	}
 
 	for _, name := range supportedAgents {
-		if ds := unmarshalAgentConfig(d, object, name.hclName, name.jsonName); len(ds) > 0 {
+		ok, ds := unmarshalAgentConfig(d, object, name.hclName, name.jsonName)
+		if ds.HasError() {
 			diags = append(diags, ds...)
+		}
+		if ok {
+			break
 		}
 	}
 
 	return diags
 }
 
-func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hctName, jsonName string) diag.Diagnostics {
+func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclName, jsonName string) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	spec := object["spec"].(map[string]interface{})
+	if spec[jsonName] == nil {
+		return false, nil
+	}
 
 	err := d.Set("source_of", spec["sourceOf"])
 	appendError(diags, err)
-	err = d.Set(hctName, schema.NewSet(oneElementSet, []interface{}{spec[jsonName]}))
+	err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{spec[jsonName]}))
 	appendError(diags, err)
 
-	return diags
+	return true, diags
 }
 
 func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -464,7 +543,7 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	return resourceAgentRead(ctx, d, meta)
 }
 
-func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAgentRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	project := d.Get("project").(string)
 	if project == "" {
@@ -472,7 +551,7 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 		project = config.Project
 	}
 	client, ds := newClient(config, project)
-	if ds != nil {
+	if ds.HasError() {
 		return ds
 	}
 
@@ -484,10 +563,10 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	return unmarshalAgent(d, objects)
 }
 
-func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAgentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := newClient(config, d.Get("project").(string))
-	if ds != nil {
+	if ds.HasError() {
 		return ds
 	}
 

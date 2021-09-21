@@ -4,5 +4,5 @@ go 1.16
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.7.0
-	github.com/nobl9/nobl9-go v0.0.0-20210819083418-6a42fb11a2f6
+	github.com/nobl9/nobl9-go v0.0.0-20210920112054-f55671644c65
 )
