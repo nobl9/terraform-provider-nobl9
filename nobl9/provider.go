@@ -102,22 +102,14 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 
 func newClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
 	c, err := nobl9.NewClient(
-		"http://localhost/api",
-		"nobl9-dev",
-		"terraform",
-		"terraform",
-		"0oa4hmtaf0kUH7oSm4x7",
-		"HkzOHwk9aJYsRBA5HZ3UDDJZ0vGWiEP1iemYWFk0",
-		"https://accounts.nobl9.dev",
-		"ausdh5avfxFaHRKHN4x6",
-		//config.IngestURL,
-		//config.Organization,
-		//project,
-		//"terraform", // TODO add version here
-		//config.ClientID,
-		//config.ClientSecret,
-		//config.OktaOrgURL,
-		//config.OktaAuthServer,
+		config.IngestURL,
+		config.Organization,
+		project,
+		"terraform", // TODO add version here
+		config.ClientID,
+		config.ClientSecret,
+		config.OktaOrgURL,
+		config.OktaAuthServer,
 	)
 
 	if err != nil {

@@ -50,7 +50,8 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  prometheus {
+  agent_type = "prometheus"
+  prometheus_config {
 	url = "http://web.net"
 	}
 }
@@ -63,7 +64,8 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  datadog {
+  agent_type = "datadog"
+  datadog_config {
     site = "eu"
   }
 }
@@ -76,7 +78,8 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  newrelic {
+  agent_type = "newrelic"
+  newrelic_config {
     account_id = 1234
   }
 }
@@ -89,7 +92,8 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  appdynamics {
+  agent_type = "appdynamics"
+  appdynamics_config {
 	url = "http://web.net"
   }
 }
@@ -102,7 +106,8 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  splunk {
+  agent_type = "splunk"
+  splunk_config {
     url = "http://web.net"
   }
 }
@@ -115,7 +120,8 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  lightstep {
+  agent_type = "lightstep"
+  lightstep_config {
     organization = "acme"
 	project		 = "project1"
   }
@@ -129,7 +135,8 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  splunk_observability {
+  agent_type = "splunk_observability"
+  splunk_observability_config {
     realm = "eu"
   }
 }
@@ -142,7 +149,8 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  dynatrace {
+  agent_type = "dynatrace"
+  dynatrace_config {
     url = "http://web.net"
   }
 }
@@ -155,7 +163,7 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  thousandeyes {}
+  agent_type = "thousandeyes"
 }
 `, name, name, testProject)
 }
@@ -166,7 +174,8 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  graphite {
+  agent_type = "graphite"
+  graphite_config {
     url = "http://web.net"
   }
 }
@@ -179,8 +188,7 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  bigquery {
-  }
+  agent_type = "bigquery"
 }
 `, name, name, testProject)
 }
@@ -191,7 +199,8 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  opentsdb {
+  agent_type = "opentsdb"
+  opentsdb_config {
     url = "http://web.net"
   }
 }
