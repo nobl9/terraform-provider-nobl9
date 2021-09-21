@@ -392,7 +392,6 @@ func marshalAgentSplunkObservability(d *schema.ResourceData) *n9api.SplunkObserv
 	}
 	splunk := p[0].(map[string]interface{})
 
-	// TODO SplunkObs now supports `realm` not `url`
 	return &n9api.SplunkObservabilityAgentConfig{
 		Realm: splunk["realm"].(string),
 	}
@@ -544,7 +543,7 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	return resourceAgentRead(ctx, d, meta)
 }
 
-func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAgentRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	project := d.Get("project").(string)
 	if project == "" {
@@ -564,7 +563,7 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	return unmarshalAgent(d, objects)
 }
 
-func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAgentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := newClient(config, d.Get("project").(string))
 	if ds.HasError() {
