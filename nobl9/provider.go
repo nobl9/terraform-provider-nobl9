@@ -15,53 +15,50 @@ func Provider() *schema.Provider {
 			"ingest_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_URL", nil),
-				Description: "",
-				Default:     "https://app.nobl9.com/api",
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_URL", "https://app.nobl9.com/api"),
+				Description: "Nobl9 API URL.",
 			},
 
 			"organization": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_ORG", nil),
-				Description: "",
+				Description: "Nobl9 Organization that contain resources managed by this provider.",
 			},
 
 			"project": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", nil),
-				Description: "",
+				Description: "Nobl9 project used when importing resources.",
 			},
 
 			"client_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_ID", nil),
-				Description: "",
+				Description: "Authentication parameter ClientID",
 			},
 
 			"client_secret": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_SECRET", nil),
-				Description: "",
+				Description: "Authentication parameter ClientSecret.",
 			},
 
 			"okta_org_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_URL", nil),
-				Description: "",
-				Default:     "https://accounts.nobl9.com",
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_URL", "https://accounts.nobl9.com"),
+				Description: "Authorization service URL.",
 			},
 
 			"okta_auth_server": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_AUTH", nil),
-				Description: "",
-				Default:     "auseg9kiegWKEtJZC416",
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_AUTH", "auseg9kiegWKEtJZC416"),
+				Description: "Authorization service configuration.",
 			},
 		},
 
@@ -105,7 +102,7 @@ func newClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagn
 		config.IngestURL,
 		config.Organization,
 		project,
-		"terraform", // TODO add version here
+		"terraform", // TODO add version here (use build flags)
 		config.ClientID,
 		config.ClientSecret,
 		config.OktaOrgURL,
