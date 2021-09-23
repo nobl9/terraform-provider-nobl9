@@ -14,6 +14,7 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 		configFunc func(string) string
 	}{
 		{"test-webhhok", testWebhookTemplateConfig},
+		{"test-webhhok2", testWebhookTemplateFieldsConfig},
 	}
 
 	for _, tc := range cases {
@@ -21,11 +22,11 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      DestroyFunc("nobl9_integration", n9api.ObjectIntegration),
+				CheckDestroy:      DestroyFunc("nobl9_integration_webhook", n9api.ObjectIntegration),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
-						Check:  CheckObjectCreated("nobl9_integration." + tc.name),
+						Check:  CheckObjectCreated("nobl9_integration_webhook." + tc.name),
 					},
 				},
 			})
@@ -35,14 +36,24 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 
 func testWebhookTemplateConfig(name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_integration" "%s" {
-  name             = "%s"
-  project          = "%s"
-  integration_type = "webhook"
-  webhook_config {
-    url      = "http://web.net"
-    template = "SLO needs attention $slo_name"
-	}
+resource "nobl9_integration_webhook" "%s" {
+  name        = "%s"
+  project     = "%s"
+  description = "wehbook"
+  url         = "http://web.net"
+  template    = "SLO needs attention $slo_name"
+}
+`, name, name, testProject)
+}
+
+func testWebhookTemplateFieldsConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_integration_webhook" "%s" {
+  name            = "%s"
+  project         = "%s"
+  description	  = "wehbook"
+  url             = "http://web.net"
+  template_fields = [ "slo_name", "slo_details_link" ]
 }
 `, name, name, testProject)
 }

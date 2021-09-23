@@ -66,10 +66,10 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"nobl9_service":      resourceService(),
-			"nobl9_agent":        resourceAgent(),
-			"nobl9_alert_policy": resourceAlertPolicy(),
-			"nobl9_integration":  resourceIntegration(),
+			"nobl9_service":             resourceService(),
+			"nobl9_agent":               resourceAgent(),
+			"nobl9_alert_policy":        resourceAlertPolicy(),
+			"nobl9_integration_webhook": resourceIntegrationFactory(integrationWebhook{}),
 		},
 
 		ConfigureContextFunc: providerConfigure,
