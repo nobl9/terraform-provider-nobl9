@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-func resourceAgent() *schema.Resource {
+func resourceSlo() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name":         schemaName(),
@@ -32,7 +33,7 @@ func resourceAgent() *schema.Resource {
 								Description: "Alert Policy",
 							},
 						},
-						"attachments" {
+						"attachments": {
 							Type:        schema.TypeSet,
 							Optional:    true,
 							Description: "",
@@ -50,7 +51,6 @@ func resourceAgent() *schema.Resource {
 									},
 								},
 							},
-
 						},
 						"budgetingMethod": {
 							Type:        schema.TypeString,
@@ -92,44 +92,121 @@ func resourceAgent() *schema.Resource {
 											},
 										},
 									},
-									"metricSpec": {
-										Type:        schema.TypeSet,
-										Optional:    true,
-										Description: "Configuration for metric source",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"appDynamics": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "Name of the metric source",
-												},
-												"project": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Name of the metric souce project",
-												},
-											},
-										},
+									"metricSpec": schemaMetricSpec(),
 									},
 								},
 							},
 						},
 						"objectives": {
-							Type:        schema.TypeString,
+							Type:        schema.TypeSet,
 							Required:    true,
-							Description: " ",
-
+							Description: " ([Objectives documentation] https://nobl9.github.io/techdocs_YAML_Guide/#objectives)",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"countMetrics": {
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Description: "Alert Policies attached to SLO",
+										Elem: &schema.Schema{
+											"good": schemaMetricSpec(),
+											"incemental": {
+												Type:        schema.TypeBool,
+							        			Required:    true,
+												Description: "Should the metrics be incrementing or not",
+											},
+											"metricSpec": schemaMetricSpec(),
+										},
+									},
+									"displayname": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Name to be displayed",
+									},
+									"op": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Type of logical operation",
+									},
+									"target": {
+										Type:        schema.TypeFloat,
+										Required:    true,
+										Description: "Desiganted value",
+									},
+									"timeSliceTarget": {
+										Type:        schema.TypeFloat,
+										Optional:    true,
+										Description: "Designated value for slice",
+									},
+									"value": {
+										Type:        schema.TypeFloat,
+										Optional:    true,
+										Description: "Value",
+									},
+								},
+							},
 						},
 						"service": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: " ",
+							Description: "Name of the service",
 						},
 						"timeWindows": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: " ",
-
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"calendar": {
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Description: "Alert Policies attached to SLO",
+										Elem: &schema.Schema{
+											"startTime": {
+												Type:        schema.TypeString,
+							        			Required:    true,
+												Description: "Date of the start",
+											},
+											"timeZone": {
+												Type:        schema.TypeString,
+							        			Required:    true,
+												Description: "Timezone name in IANA Time Zone Database",
+											},
+										},
+									},
+									"count": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Count of the time unit",
+									},
+									"isRolling": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Is the window moving or not",
+									},
+									"period": {
+										Type:        schema.TypeFloat,
+										Optional:    true,
+										Description: "Specific time frame",
+										Elem: &schema.Schema{
+											"begin": {
+												Type:        schema.TypeString,
+							        			Optional:    true,
+												Description: "Beginning of the period",
+											},
+											"end": {
+												Type:        schema.TypeString,
+							        			Optional:    true,
+												Description: "End of the period",
+											},
+										},
+									},
+									"unit": {
+										Type:        schema.TypeFloat,
+										Required:    true,
+										Description: "Unit of time",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -145,3 +222,13 @@ func resourceAgent() *schema.Resource {
 		Description: "[SLO configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#Slo)",
 	}
 }
+
+func marshalSlo() {}
+
+func unmarshalSlo() {}
+
+func resourceSloApply() {}
+
+func resourceSloRead() {}
+
+func resourceSloDelete() {}
