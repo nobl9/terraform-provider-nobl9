@@ -14,21 +14,10 @@ func resourceService() *schema.Resource {
 			"name":         schemaName(),
 			"display_name": schemaDisplayName(),
 			"project":      schemaProject(),
-			"description":  schemaDescription(),
-
-			"service_spec": {
-				Type:        schema.TypeSet,
+			"description": {
+				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Specifications of the service",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"description": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Description of the service",
-						},
-					},
-				},
+				Description: "Description of the service",
 			},
 
 			"status": {

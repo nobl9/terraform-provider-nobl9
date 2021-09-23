@@ -27,9 +27,7 @@ func testService(name string) string {
 resource "nobl9_service" "%s" {
   name      = "%s"
   project   = "%s"
-  service_spec {
-	description = "Test of service"
-	}
+  description = "Test of service"
 }
 `, name, name, testProject)
 }
