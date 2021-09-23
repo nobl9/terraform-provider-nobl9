@@ -105,7 +105,7 @@ func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta inte
 
 	d.SetId(service.Metadata.Name)
 
-	return resourceAgentRead(ctx, d, meta)
+	return resourceServiceRead(ctx, d, meta)
 }
 
 func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

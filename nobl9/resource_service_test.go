@@ -9,28 +9,17 @@ import (
 )
 
 func TestAcc_Nobl9Service(t *testing.T) {
-	cases := []struct {
-		name       string
-		configFunc func(string) string
-	}{
-		{"test-service", testService},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			resource.Test(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
-				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      DestroyFunc("nobl9_service", n9api.ObjectService),
-				Steps: []resource.TestStep{
-					{
-						Config: tc.configFunc(tc.name),
-						Check:  CheckObjectCreated("nobl9_service." + tc.name),
-					},
-				},
-			})
-		})
-	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: ProviderFactory(),
+		CheckDestroy:      DestroyFunc("nobl9_service", n9api.ObjectService),
+		Steps: []resource.TestStep{
+			{
+				Config: testService("test-service"),
+				Check:  CheckObjectCreated("nobl9_service.test-service"),
+			},
+		},
+	})
 }
 
 func testService(name string) string {
