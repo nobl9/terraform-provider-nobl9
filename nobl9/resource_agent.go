@@ -513,6 +513,7 @@ func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclNa
 		return false, nil
 	}
 
+	//err := d.Set("agent_type", spec[""]) TODO
 	err := d.Set("source_of", spec["sourceOf"])
 	appendError(diags, err)
 	err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{spec[jsonName]}))

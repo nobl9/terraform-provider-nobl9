@@ -69,6 +69,7 @@ func Provider() *schema.Provider {
 			"nobl9_service":      resourceService(),
 			"nobl9_agent":        resourceAgent(),
 			"nobl9_alert_policy": resourceAlertPolicy(),
+			"nobl9_integration":  resourceIntegration(),
 		},
 
 		ConfigureContextFunc: providerConfigure,
