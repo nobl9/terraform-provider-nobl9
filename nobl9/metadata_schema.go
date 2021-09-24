@@ -71,8 +71,6 @@ func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Dia
 	appendError(diags, err)
 	err = d.Set("project", metadata["project"])
 	appendError(diags, err)
-	err = d.Set("description", metadata["description"])
-	appendError(diags, err)
 
 	return diags
 }

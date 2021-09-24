@@ -265,8 +265,8 @@ github.com/mitchellh/reflectwalk v1.0.0/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx
 github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zxSIeXaQ=
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
-github.com/nobl9/nobl9-go v0.0.0-20210924113132-d126cd9bbea3 h1:GAXfeWK7xmuXa6CJmV4He8cigShQgpdyMtHa/+/4+gY=
-github.com/nobl9/nobl9-go v0.0.0-20210924113132-d126cd9bbea3/go.mod h1:fAIMRlFaB2swdynEh6BfpnIfOP8gzQQLqyXpT4ao5c0=
+github.com/nobl9/nobl9-go v0.0.0-20210924152437-14c0118340aa h1:kr2vO/Kfn/FOxv1dV5OdGfoochXOYa9tW9Zpgji5SL8=
+github.com/nobl9/nobl9-go v0.0.0-20210924152437-14c0118340aa/go.mod h1:fAIMRlFaB2swdynEh6BfpnIfOP8gzQQLqyXpT4ao5c0=
 github.com/nsf/jsondiff v0.0.0-20200515183724-f29ed568f4ce h1:RPclfga2SEJmgMmz2k+Mg7cowZ8yv4Trqw9UsJby758=
 github.com/nsf/jsondiff v0.0.0-20200515183724-f29ed568f4ce/go.mod h1:uFMI8w+ref4v2r9jz+c9i1IfIttS/OkmLfrk1jne5hs=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
