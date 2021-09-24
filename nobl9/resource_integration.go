@@ -252,3 +252,31 @@ func (i integrationSlack) UnmarshalSpec(d *schema.ResourceData, spec map[string]
 	// slack has only one, secret field
 	return nil
 }
+
+type integrationDiscord struct{}
+
+func (i integrationDiscord) GetSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"url": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "",
+			Sensitive:   true,
+			Computed:    true,
+		},
+	}
+}
+
+func (i integrationDiscord) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
+	return n9api.IntegrationSpec{
+		Description: d.Get("description").(string),
+		Discord: &n9api.DiscordIntegration{
+			URL: d.Get("url").(string),
+		},
+	}
+}
+
+func (i integrationDiscord) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+	// discord has only one, secret field
+	return nil
+}

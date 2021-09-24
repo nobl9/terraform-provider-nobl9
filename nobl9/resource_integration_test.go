@@ -18,6 +18,7 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 		{"test-webhhok-fields", "webhook", testWebhookTemplateFieldsConfig},
 		{"test-pagerduty", "pagerduty", testPagerDutyConfig},
 		{"test-slack", "slack", testSlackConfig},
+		{"test-discord", "discord", testDiscordConfig},
 	}
 
 	for _, tc := range cases {
@@ -75,10 +76,21 @@ resource "nobl9_integration_pagerduty" "%s" {
 func testSlackConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_integration_slack" "%s" {
-  name            = "%s"
-  project         = "%s"
-  description     = "slack"
+  name        = "%s"
+  project     = "%s"
+  description = "slack"
   url         = "https://slack.com"
+}
+`, name, name, testProject)
+}
+
+func testDiscordConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_integration_discord" "%s" {
+  name        = "%s"
+  project     = "%s"
+  description = "discord"
+  url         = "https://discord.com"
 }
 `, name, name, testProject)
 }
