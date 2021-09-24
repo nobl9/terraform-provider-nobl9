@@ -13,18 +13,18 @@ func schemaMetricSpec() *schema.Schema {
 		Description: "Configuration for metric source",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"appDynamics": {
+				"appdynamics_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-appdynamics)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
-							"applicationName": {
+							"application_name": {
 								Type:        schema.TypeString,
 								Required:    true,
 								Description: "Name of the added application",
 							},
-							"metricPath": {
+							"metric_path": {
 								Type:        schema.TypeString,
 								Required:    true,
 								Description: "Path to the metrics",
@@ -32,7 +32,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
-				"bigQuery": {
+				"bigquery_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-bigquery)",
@@ -43,7 +43,7 @@ func schemaMetricSpec() *schema.Schema {
 								Required:    true,
 								Description: "Location of you BigQuery",
 							},
-							"projectID": {
+							"project_id": {
 								Type:        schema.TypeString,
 								Required:    true,
 								Description: "Project ID",
@@ -56,7 +56,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
-				"datadog": {
+				"datadog_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-datadog)",
@@ -70,13 +70,13 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
-				"dynatrace": {
+				"dynatrace_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-dynatrace)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
-							"metricSelector": {
+							"metric_selector": {
 								Type:        schema.TypeString,
 								Required:    true,
 								Description: "Selector for the metrics",
@@ -84,7 +84,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
-				"elasticsearch": {
+				"elasticsearch_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-elasticsearch)",
@@ -103,13 +103,13 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
-				"graphite": {
+				"graphite_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-graphite)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
-							"metricPath": {
+							"metric_path": {
 								Type:        schema.TypeString,
 								Required:    true,
 								Description: "Path to the metrics",
@@ -117,7 +117,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
-				"lightstep": {
+				"lightstep_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-lightstep)",
@@ -128,12 +128,12 @@ func schemaMetricSpec() *schema.Schema {
 								Optional:    true,
 								Description: "Optional value to filter by percentiles",
 							},
-							"streamId": {
+							"stream_id": {
 								Type:        schema.TypeString,
 								Required:    true,
 								Description: "ID of the metrics stream",
 							},
-							"typeOfData": {
+							"type_of_data": {
 								Type:        schema.TypeString,
 								Required:    true,
 								Description: "Type of data to filter by",
@@ -141,7 +141,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
-				"newRelic": {
+				"newRelic_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-newrelic)",
@@ -155,7 +155,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
-				"opentsdb": {
+				"opentsdb_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-opentsdb)",
@@ -169,7 +169,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
-				"prometheus": {
+				"prometheus_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-prometheus)",
@@ -183,7 +183,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
-				"splunk": {
+				"splunk_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk)",
@@ -194,9 +194,14 @@ func schemaMetricSpec() *schema.Schema {
 								Required:    true,
 								Description: "Query for the metrics",
 							},
+							"field_name": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "Name for metrics",
+							},
 					},
 				},
-				"splunkObservability": {
+				"splunk_observability_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk-observability)",
@@ -210,13 +215,13 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
-				"thousandEyes": {
+				"thousandeyes_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-thousandeyes)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
-							"testID": {
+							"test_id": {
 								Type:        schema.TypeInteger,
 								Required:    true,
 								Description: "ID of the test",
