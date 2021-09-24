@@ -65,12 +65,12 @@ func unmarshalService(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.D
 
 	status := object["status"].(map[string]interface{})
 	err := d.Set("status", status)
-	appendError(diags, err)
+	diags = appendError(diags, err)
 
 	spec := object["spec"].(map[string]interface{})
 
 	err = d.Set("description", spec["description"])
-	appendError(diags, err)
+	diags = appendError(diags, err)
 
 	return diags
 }
