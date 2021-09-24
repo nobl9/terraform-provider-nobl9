@@ -10,6 +10,7 @@ import (
 
 type integrationProvider interface {
 	GetSchema() map[string]*schema.Schema
+	GetDescription() string
 	MarshalSpec(data *schema.ResourceData) n9api.IntegrationSpec
 	UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics
 }
@@ -30,7 +31,7 @@ func resourceIntegrationFactory(provider integrationProvider) *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[Integration configuration documentation]()", // TODO get description
+		Description: provider.GetDescription(),
 	}
 
 	for k, v := range provider.GetSchema() {
@@ -136,25 +137,29 @@ func resourceIntegrationDelete(_ context.Context, d *schema.ResourceData, meta i
 
 type integrationWebhook struct{}
 
+func (i integrationWebhook) GetDescription() string {
+	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#webhook-alert-method)"
+}
+
 func (i integrationWebhook) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "",
+			Description: "URL of the webhook endpoint.",
 			Sensitive:   true,
 			Computed:    true,
 		},
 		"template": {
 			Type:          schema.TypeString,
 			Optional:      true,
-			Description:   "",
+			Description:   "Webhook message template. See documentation for template format and samples.",
 			ConflictsWith: []string{"template_fields"},
 		},
 		"template_fields": {
 			Type:          schema.TypeList,
 			Optional:      true,
-			Description:   "",
+			Description:   "Webhook meesage fields. The message will contain json payload with specified fields. See documentation for allowed fields.",
 			ConflictsWith: []string{"template"},
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
@@ -199,12 +204,16 @@ func (i integrationWebhook) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 
 type integrationPagerDuty struct{}
 
+func (i integrationPagerDuty) GetDescription() string {
+	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#alert-method)"
+}
+
 func (i integrationPagerDuty) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"integration_key": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "",
+			Description: "PagerDuty Integration Key, found on Integrations tab.",
 			Sensitive:   true,
 			Computed:    true,
 		},
@@ -227,12 +236,16 @@ func (i integrationPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec map[str
 
 type integrationSlack struct{}
 
+func (i integrationSlack) GetDescription() string {
+	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#alert-method)"
+}
+
 func (i integrationSlack) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "",
+			Description: "Slack webhook endpoint URL.",
 			Sensitive:   true,
 			Computed:    true,
 		},
@@ -255,12 +268,16 @@ func (i integrationSlack) UnmarshalSpec(d *schema.ResourceData, spec map[string]
 
 type integrationDiscord struct{}
 
+func (i integrationDiscord) GetDescription() string {
+	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#alert-method)"
+}
+
 func (i integrationDiscord) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "",
+			Description: "Discord webhook endpoint URL.",
 			Sensitive:   true,
 			Computed:    true,
 		},
@@ -283,19 +300,23 @@ func (i integrationDiscord) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 
 type integrationOpsgenie struct{}
 
+func (i integrationOpsgenie) GetDescription() string {
+	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#opsgenie-alert-method)"
+}
+
 func (i integrationOpsgenie) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"auth": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "",
+			Description: "Opsgenie authentication credentials. See documentation for supported formats.",
 			Sensitive:   true,
 			Computed:    true,
 		},
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "",
+			Description: "Opsgenie API URL.",
 		},
 	}
 }
@@ -322,24 +343,28 @@ func (i integrationOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec map[stri
 
 type integrationServiceNow struct{}
 
+func (i integrationServiceNow) GetDescription() string {
+	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#servicenow-alert-method)"
+}
+
 func (i integrationServiceNow) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"username": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "",
+			Description: "ServiceNow username.",
 		},
 		"password": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "",
+			Description: "ServiceNow password.",
 			Sensitive:   true,
 			Computed:    true,
 		},
 		"instanceid": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "",
+			Description: "ServiceNow InstanceID. For details see documentation.",
 		},
 	}
 }
@@ -369,29 +394,33 @@ func (i integrationServiceNow) UnmarshalSpec(d *schema.ResourceData, spec map[st
 
 type integrationJira struct{}
 
+func (i integrationJira) GetDescription() string {
+	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#jira-alert-method)"
+}
+
 func (i integrationJira) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "",
+			Description: "Jira instance URL.",
 		},
 		"username": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "",
+			Description: "Jira username for the owner of the API Token.",
 		},
 		"apitoken": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "",
+			Description: "API Token with access rights to the project.",
 			Sensitive:   true,
 			Computed:    true,
 		},
-		"projectid": {
+		"projectid": { // TODO this field will soon be changed to ProjectKey
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "",
+			Description: "The code of the project.",
 		},
 	}
 }
