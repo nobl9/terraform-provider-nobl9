@@ -14,7 +14,7 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 		configFunc func(string) string
 	}{
 		{"test-webhhok", testWebhookTemplateConfig},
-		{"test-webhhok2", testWebhookTemplateFieldsConfig},
+		{"test-webhhok-fields", testWebhookTemplateFieldsConfig},
 	}
 
 	for _, tc := range cases {

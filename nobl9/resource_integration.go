@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,7 +12,7 @@ import (
 type integrationProvider interface {
 	GetSchema() map[string]*schema.Schema
 	MarshalSpec(data *schema.ResourceData) n9api.IntegrationSpec
-	UnmarshalSpec(d *schema.ResourceData, object n9api.AnyJSONObj) diag.Diagnostics
+	UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics
 }
 
 func resourceIntegrationFactory(provider integrationProvider) *schema.Resource {
@@ -71,7 +72,7 @@ func (i integration) unmarshalIntegration(d *schema.ResourceData, objects []n9ap
 	err := d.Set("description", spec["description"])
 	diags = appendError(diags, err)
 
-	errs := i.UnmarshalSpec(d, object)
+	errs := i.UnmarshalSpec(d, spec)
 	diags = append(diags, errs...)
 
 	return diags
@@ -185,16 +186,17 @@ func (i integrationWebhook) MarshalSpec(d *schema.ResourceData) n9api.Integratio
 	}
 }
 
-func (i integrationWebhook) UnmarshalSpec(d *schema.ResourceData, object n9api.AnyJSONObj) diag.Diagnostics {
-	spec := object["spec"].(map[string]interface{})
+func (i integrationWebhook) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+	config := spec["webhook"].(map[string]interface{})
 	var diags diag.Diagnostics
 
-	err := d.Set("description", spec["description"])
+	err := d.Set("template", config["template"])
 	diags = appendError(diags, err)
-	err = d.Set("template", spec["template"])
+	err = d.Set("template_fields", config["templateFields"])
 	diags = appendError(diags, err)
-	err = d.Set("template_fields", spec["template_fields"])
-	diags = appendError(diags, err)
+
+	fmt.Println(d.HasChange("template"))
+	fmt.Println(d.GetChange("template"))
 
 	return diags
 }
