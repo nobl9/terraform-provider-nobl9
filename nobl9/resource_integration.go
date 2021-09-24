@@ -2,7 +2,6 @@ package nobl9
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -195,8 +194,33 @@ func (i integrationWebhook) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 	err = d.Set("template_fields", config["templateFields"])
 	diags = appendError(diags, err)
 
-	fmt.Println(d.HasChange("template"))
-	fmt.Println(d.GetChange("template"))
-
 	return diags
+}
+
+type integrationPagerDuty struct{}
+
+func (i integrationPagerDuty) GetSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"integration_key": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "",
+			Sensitive:   true,
+			Computed:    true,
+		},
+	}
+}
+
+func (i integrationPagerDuty) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
+	return n9api.IntegrationSpec{
+		Description: d.Get("description").(string),
+		PagerDuty: &n9api.PagerDutyIntegration{
+			IntegrationKey: d.Get("integration_key").(string),
+		},
+	}
+}
+
+func (i integrationPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+	// pager duty has only one, secret field
+	return nil
 }
