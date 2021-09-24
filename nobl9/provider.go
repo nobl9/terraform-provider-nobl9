@@ -66,9 +66,18 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"nobl9_service":      resourceService(),
-			"nobl9_agent":        resourceAgent(),
-			"nobl9_alert_policy": resourceAlertPolicy(),
+			"nobl9_service":                resourceService(),
+			"nobl9_agent":                  resourceAgent(),
+			"nobl9_alert_policy":           resourceAlertPolicy(),
+			"nobl9_integration_webhook":    resourceIntegrationFactory(integrationWebhook{}),
+			"nobl9_integration_pagerduty":  resourceIntegrationFactory(integrationPagerDuty{}),
+			"nobl9_integration_slack":      resourceIntegrationFactory(integrationSlack{}),
+			"nobl9_integration_discord":    resourceIntegrationFactory(integrationDiscord{}),
+			"nobl9_integration_opsgenie":   resourceIntegrationFactory(integrationOpsgenie{}),
+			"nobl9_integration_servicenow": resourceIntegrationFactory(integrationServiceNow{}),
+			"nobl9_integration_jira":       resourceIntegrationFactory(integrationJira{}),
+			"nobl9_integration_msteams":    resourceIntegrationFactory(integrationTeams{}),
+			"nobl9_integration_email":      resourceIntegrationFactory(integrationEmail{}),
 		},
 
 		ConfigureContextFunc: providerConfigure,
