@@ -352,7 +352,6 @@ func (i integrationServiceNow) MarshalSpec(d *schema.ResourceData) n9api.Integra
 			Password:   d.Get("password").(string),
 			InstanceID: d.Get("instanceid").(string),
 		},
-		Jira: nil,
 	}
 }
 
@@ -363,6 +362,61 @@ func (i integrationServiceNow) UnmarshalSpec(d *schema.ResourceData, spec map[st
 	err := d.Set("username", config["username"])
 	diags = appendError(diags, err)
 	err = d.Set("instanceid", config["instanceid"])
+	diags = appendError(diags, err)
+
+	return diags
+}
+
+type integrationJira struct{}
+
+func (i integrationJira) GetSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"url": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "",
+		},
+		"username": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "",
+		},
+		"apitoken": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "",
+			Sensitive:   true,
+			Computed:    true,
+		},
+		"projectid": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "",
+		},
+	}
+}
+
+func (i integrationJira) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
+	return n9api.IntegrationSpec{
+		Description: d.Get("description").(string),
+		Jira: &n9api.JiraIntegration{
+			URL:       d.Get("url").(string),
+			Username:  d.Get("username").(string),
+			APIToken:  d.Get("apitoken").(string),
+			ProjectID: d.Get("projectid").(string),
+		},
+	}
+}
+
+func (i integrationJira) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+	config := spec["jira"].(map[string]interface{})
+	var diags diag.Diagnostics
+
+	err := d.Set("username", config["username"])
+	diags = appendError(diags, err)
+	err = d.Set("url", config["url"])
+	diags = appendError(diags, err)
+	err = d.Set("projectid", config["projectId"])
 	diags = appendError(diags, err)
 
 	return diags

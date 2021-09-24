@@ -21,6 +21,7 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 		{"test-discord", "discord", testDiscordConfig},
 		{"test-opsgenie", "opsgenie", testOpsgenieConfig},
 		{"test-servicenow", "servicenow", testServiceNowConfig},
+		{"test-jira", "jira", testJiraConfig},
 	}
 
 	for _, tc := range cases {
@@ -108,6 +109,7 @@ resource "nobl9_integration_opsgenie" "%s" {
 }
 `, name, name, testProject)
 }
+
 func testServiceNowConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_integration_servicenow" "%s" {
@@ -117,6 +119,20 @@ resource "nobl9_integration_servicenow" "%s" {
   username    = "nobleUser"
   password    = "very sercret"
   instanceid  = "1"
+}
+`, name, name, testProject)
+}
+
+func testJiraConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_integration_jira" "%s" {
+  name        = "%s"
+  project     = "%s"
+  description = "jira"
+  url		  = "https://jira.com"
+  username    = "nobleUser"
+  apitoken    = "very sercret"
+  projectid   = "1"
 }
 `, name, name, testProject)
 }
