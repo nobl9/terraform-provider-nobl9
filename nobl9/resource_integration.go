@@ -482,3 +482,87 @@ func (i integrationTeams) UnmarshalSpec(d *schema.ResourceData, spec map[string]
 	// teams has only one, secret field
 	return nil
 }
+
+type integrationEmail struct{}
+
+func (i integrationEmail) GetDescription() string {
+	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#alert-method)"
+}
+
+func (i integrationEmail) GetSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"to": {
+			Type:        schema.TypeList,
+			Required:    true,
+			Description: "Recipients.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"cc": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Carbon copy recipients.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"bcc": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Blind carbon copy recipients.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"subject": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Subject of the email.",
+		},
+		"body": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Body of the email. For format and samples see documentation and nobl9 application.",
+		},
+	}
+}
+
+func (i integrationEmail) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
+	toStringSlice := func(in []interface{}) []string {
+		ret := make([]string, len(in))
+		for i, v := range in {
+			ret[i] = v.(string)
+		}
+		return ret
+	}
+
+	return n9api.IntegrationSpec{
+		Description: d.Get("description").(string),
+		Email: &n9api.EmailIntegration{
+			To:      toStringSlice(d.Get("to").([]interface{})),
+			Cc:      toStringSlice(d.Get("cc").([]interface{})),
+			Bcc:     toStringSlice(d.Get("bcc").([]interface{})),
+			Subject: d.Get("subject").(string),
+			Body:    d.Get("body").(string),
+		},
+	}
+}
+
+func (i integrationEmail) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+	config := spec["email"].(map[string]interface{})
+	var diags diag.Diagnostics
+
+	err := d.Set("to", config["to"])
+	diags = appendError(diags, err)
+	err = d.Set("cc", config["cc"])
+	diags = appendError(diags, err)
+	err = d.Set("bcc", config["bcc"])
+	diags = appendError(diags, err)
+	err = d.Set("subject", config["subject"])
+	diags = appendError(diags, err)
+	err = d.Set("body", config["body"])
+	diags = appendError(diags, err)
+
+	return diags
+}

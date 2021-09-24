@@ -14,8 +14,8 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 		resourceSuffix string
 		configFunc     func(string) string
 	}{
-		{"test-webhhok", "webhook", testWebhookTemplateConfig},
-		{"test-webhhok-fields", "webhook", testWebhookTemplateFieldsConfig},
+		{"test-webhook", "webhook", testWebhookTemplateConfig},
+		{"test-webhook-fields", "webhook", testWebhookTemplateFieldsConfig},
 		{"test-pagerduty", "pagerduty", testPagerDutyConfig},
 		{"test-slack", "slack", testSlackConfig},
 		{"test-discord", "discord", testDiscordConfig},
@@ -23,6 +23,7 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 		{"test-servicenow", "servicenow", testServiceNowConfig},
 		{"test-jira", "jira", testJiraConfig},
 		{"test-teams", "msteams", testTeamsConfig},
+		{"test-email", "email", testEmailConfig},
 	}
 
 	for _, tc := range cases {
@@ -145,6 +146,21 @@ resource "nobl9_integration_msteams" "%s" {
   project     = "%s"
   description = "teams"
   url		  = "https://teams.com"
+}
+`, name, name, testProject)
+}
+
+func testEmailConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_integration_email" "%s" {
+  name        = "%s"
+  project     = "%s"
+  description = "teams"
+  to		  = [ "testUser@nobl9.com" ]
+  cc		  = [ "testUser@nobl9.com" ]
+  bcc		  = [ "testUser@nobl9.com" ]
+  subject     = "Test email please ignore"
+  body        = "This is just a test email"
 }
 `, name, name, testProject)
 }

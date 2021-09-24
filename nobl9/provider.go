@@ -77,6 +77,7 @@ func Provider() *schema.Provider {
 			"nobl9_integration_servicenow": resourceIntegrationFactory(integrationServiceNow{}),
 			"nobl9_integration_jira":       resourceIntegrationFactory(integrationJira{}),
 			"nobl9_integration_msteams":    resourceIntegrationFactory(integrationTeams{}),
+			"nobl9_integration_email":      resourceIntegrationFactory(integrationEmail{}),
 		},
 
 		ConfigureContextFunc: providerConfigure,
