@@ -280,3 +280,42 @@ func (i integrationDiscord) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 	// discord has only one, secret field
 	return nil
 }
+
+type integrationOpsgenie struct{}
+
+func (i integrationOpsgenie) GetSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"auth": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "",
+			Sensitive:   true,
+			Computed:    true,
+		},
+		"url": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "",
+		},
+	}
+}
+
+func (i integrationOpsgenie) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
+	return n9api.IntegrationSpec{
+		Description: d.Get("description").(string),
+		Opsgenie: &n9api.OpsgenieIntegration{
+			Auth: d.Get("auth").(string),
+			URL:  d.Get("url").(string),
+		},
+	}
+}
+
+func (i integrationOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+	config := spec["opsgenie"].(map[string]interface{})
+	var diags diag.Diagnostics
+
+	err := d.Set("url", config["url"])
+	diags = appendError(diags, err)
+
+	return diags
+}

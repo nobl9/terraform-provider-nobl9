@@ -19,6 +19,7 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 		{"test-pagerduty", "pagerduty", testPagerDutyConfig},
 		{"test-slack", "slack", testSlackConfig},
 		{"test-discord", "discord", testDiscordConfig},
+		{"test-opsgenie", "opsgenie", testOpsgenieConfig},
 	}
 
 	for _, tc := range cases {
@@ -91,6 +92,18 @@ resource "nobl9_integration_discord" "%s" {
   project     = "%s"
   description = "discord"
   url         = "https://discord.com"
+}
+`, name, name, testProject)
+}
+
+func testOpsgenieConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_integration_opsgenie" "%s" {
+  name        = "%s"
+  project     = "%s"
+  description = "opsgenie"
+  url         = "https://discord.com"
+  auth		  = "GenieKey 12345"
 }
 `, name, name, testProject)
 }
