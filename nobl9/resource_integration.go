@@ -319,3 +319,51 @@ func (i integrationOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec map[stri
 
 	return diags
 }
+
+type integrationServiceNow struct{}
+
+func (i integrationServiceNow) GetSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"username": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "",
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "",
+			Sensitive:   true,
+			Computed:    true,
+		},
+		"instanceid": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "",
+		},
+	}
+}
+
+func (i integrationServiceNow) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
+	return n9api.IntegrationSpec{
+		Description: d.Get("description").(string),
+		ServiceNow: &n9api.ServiceNowIntegration{
+			Username:   d.Get("username").(string),
+			Password:   d.Get("password").(string),
+			InstanceID: d.Get("instanceid").(string),
+		},
+		Jira: nil,
+	}
+}
+
+func (i integrationServiceNow) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+	config := spec["servicenow"].(map[string]interface{})
+	var diags diag.Diagnostics
+
+	err := d.Set("username", config["username"])
+	diags = appendError(diags, err)
+	err = d.Set("instanceid", config["instanceid"])
+	diags = appendError(diags, err)
+
+	return diags
+}

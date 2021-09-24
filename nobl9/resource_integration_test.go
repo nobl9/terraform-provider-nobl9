@@ -20,6 +20,7 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 		{"test-slack", "slack", testSlackConfig},
 		{"test-discord", "discord", testDiscordConfig},
 		{"test-opsgenie", "opsgenie", testOpsgenieConfig},
+		{"test-servicenow", "servicenow", testServiceNowConfig},
 	}
 
 	for _, tc := range cases {
@@ -104,6 +105,18 @@ resource "nobl9_integration_opsgenie" "%s" {
   description = "opsgenie"
   url         = "https://discord.com"
   auth		  = "GenieKey 12345"
+}
+`, name, name, testProject)
+}
+func testServiceNowConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_integration_servicenow" "%s" {
+  name        = "%s"
+  project     = "%s"
+  description = "servicenow"
+  username    = "nobleUser"
+  password    = "very sercret"
+  instanceid  = "1"
 }
 `, name, name, testProject)
 }
