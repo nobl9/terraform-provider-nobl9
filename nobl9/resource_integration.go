@@ -205,7 +205,7 @@ func (i integrationWebhook) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 type integrationPagerDuty struct{}
 
 func (i integrationPagerDuty) GetDescription() string {
-	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#alert-method)"
+	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#pagerduty-alert-method)"
 }
 
 func (i integrationPagerDuty) GetSchema() map[string]*schema.Schema {
@@ -237,7 +237,7 @@ func (i integrationPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec map[str
 type integrationSlack struct{}
 
 func (i integrationSlack) GetDescription() string {
-	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#alert-method)"
+	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slack-alert-method)"
 }
 
 func (i integrationSlack) GetSchema() map[string]*schema.Schema {
@@ -269,7 +269,7 @@ func (i integrationSlack) UnmarshalSpec(d *schema.ResourceData, spec map[string]
 type integrationDiscord struct{}
 
 func (i integrationDiscord) GetDescription() string {
-	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#alert-method)"
+	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#discord-alert-method)"
 }
 
 func (i integrationDiscord) GetSchema() map[string]*schema.Schema {
@@ -449,4 +449,36 @@ func (i integrationJira) UnmarshalSpec(d *schema.ResourceData, spec map[string]i
 	diags = appendError(diags, err)
 
 	return diags
+}
+
+type integrationTeams struct{}
+
+func (i integrationTeams) GetDescription() string {
+	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#ms-teams-alert-method)"
+}
+
+func (i integrationTeams) GetSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"url": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "MSTeams webhook endpoint URL.",
+			Sensitive:   true,
+			Computed:    true,
+		},
+	}
+}
+
+func (i integrationTeams) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
+	return n9api.IntegrationSpec{
+		Description: d.Get("description").(string),
+		Teams: &n9api.TeamsIntegration{
+			URL: d.Get("url").(string),
+		},
+	}
+}
+
+func (i integrationTeams) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+	// teams has only one, secret field
+	return nil
 }

@@ -22,6 +22,7 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 		{"test-opsgenie", "opsgenie", testOpsgenieConfig},
 		{"test-servicenow", "servicenow", testServiceNowConfig},
 		{"test-jira", "jira", testJiraConfig},
+		{"test-teams", "msteams", testTeamsConfig},
 	}
 
 	for _, tc := range cases {
@@ -133,6 +134,17 @@ resource "nobl9_integration_jira" "%s" {
   username    = "nobleUser"
   apitoken    = "very sercret"
   projectid   = "1"
+}
+`, name, name, testProject)
+}
+
+func testTeamsConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_integration_msteams" "%s" {
+  name        = "%s"
+  project     = "%s"
+  description = "teams"
+  url		  = "https://teams.com"
 }
 `, name, name, testProject)
 }
