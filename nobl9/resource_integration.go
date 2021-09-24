@@ -224,3 +224,31 @@ func (i integrationPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec map[str
 	// pager duty has only one, secret field
 	return nil
 }
+
+type integrationSlack struct{}
+
+func (i integrationSlack) GetSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"url": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "",
+			Sensitive:   true,
+			Computed:    true,
+		},
+	}
+}
+
+func (i integrationSlack) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
+	return n9api.IntegrationSpec{
+		Description: d.Get("description").(string),
+		Slack: &n9api.SlackIntegration{
+			URL: d.Get("url").(string),
+		},
+	}
+}
+
+func (i integrationSlack) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+	// slack has only one, secret field
+	return nil
+}

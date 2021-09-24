@@ -71,6 +71,7 @@ func Provider() *schema.Provider {
 			"nobl9_alert_policy":          resourceAlertPolicy(),
 			"nobl9_integration_webhook":   resourceIntegrationFactory(integrationWebhook{}),
 			"nobl9_integration_pagerduty": resourceIntegrationFactory(integrationPagerDuty{}),
+			"nobl9_integration_slack":     resourceIntegrationFactory(integrationSlack{}),
 		},
 
 		ConfigureContextFunc: providerConfigure,
