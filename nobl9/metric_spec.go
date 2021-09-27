@@ -14,7 +14,7 @@ func schemaMetricSpec() *schema.Schema {
 				"appdynamics_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-appdynamics)",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-appdynamics)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"application_name": {
@@ -34,7 +34,7 @@ func schemaMetricSpec() *schema.Schema {
 				"bigquery_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-bigquery)",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-bigquery)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"location": {
@@ -59,7 +59,7 @@ func schemaMetricSpec() *schema.Schema {
 				"datadog_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-datadog)",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-datadog)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"query": {
@@ -74,7 +74,7 @@ func schemaMetricSpec() *schema.Schema {
 				"dynatrace_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-dynatrace)",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-dynatrace)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"metric_selector": {
@@ -89,7 +89,7 @@ func schemaMetricSpec() *schema.Schema {
 				"elasticsearch_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-elasticsearch)",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-elasticsearch)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"index": {
@@ -109,7 +109,7 @@ func schemaMetricSpec() *schema.Schema {
 				"graphite_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-graphite)",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-graphite)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"metric_path": {
@@ -124,7 +124,7 @@ func schemaMetricSpec() *schema.Schema {
 				"lightstep_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-lightstep)",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-lightstep)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"percentile": {
@@ -149,7 +149,7 @@ func schemaMetricSpec() *schema.Schema {
 				"newrelic_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-newrelic)",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-newrelic)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"nrql": {
@@ -179,7 +179,7 @@ func schemaMetricSpec() *schema.Schema {
 				"prometheus_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-prometheus)",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-prometheus)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"promql": {
@@ -194,7 +194,7 @@ func schemaMetricSpec() *schema.Schema {
 				"splunk_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk)",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"query": {
@@ -214,7 +214,7 @@ func schemaMetricSpec() *schema.Schema {
 				"splunk_observability_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk-observability)",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk-observability)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"program": {
@@ -229,7 +229,7 @@ func schemaMetricSpec() *schema.Schema {
 				"thousandeyes_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-thousandeyes)",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-thousandeyes)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"test_id": {
@@ -244,7 +244,7 @@ func schemaMetricSpec() *schema.Schema {
 				"grafana_loki_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-loki",
+					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-loki",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"logql": {
