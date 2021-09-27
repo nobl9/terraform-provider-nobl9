@@ -165,9 +165,11 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 	err = d.Set("condition", unmarshalAlertPolicyConditions(conditions))
 	diags = appendError(diags, err)
 
-	integrations := spec["integrations"].([]interface{})
-	err = d.Set("integration", integrations)
-	diags = appendError(diags, err)
+	if i, ok := spec["integrations"]; ok {
+		integrations := i.([]interface{})
+		err = d.Set("integration", integrations)
+		diags = appendError(diags, err)
+	}
 
 	return diags
 }
