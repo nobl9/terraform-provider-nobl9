@@ -6,3 +6,5 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.7.0
 	github.com/nobl9/nobl9-go v0.0.0-20210924152437-14c0118340aa
 )
+
+replace github.com/nobl9/nobl9-go v0.0.0-20210924152437-14c0118340aa => ../nobl9-go
