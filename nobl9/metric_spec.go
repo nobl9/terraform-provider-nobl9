@@ -1,9 +1,7 @@
 package nobl9
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	n9api "github.com/nobl9/nobl9-go"
 )
 
 func schemaMetricSpec() *schema.Schema {
@@ -32,6 +30,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
+
 				"bigquery_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
@@ -56,6 +55,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
+
 				"datadog_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
@@ -70,6 +70,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
+
 				"dynatrace_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
@@ -84,6 +85,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
+
 				"elasticsearch_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
@@ -103,6 +105,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
+
 				"graphite_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
@@ -117,6 +120,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
+
 				"lightstep_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
@@ -141,6 +145,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
+
 				"newrelic_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
@@ -155,6 +160,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
+
 				"opentsdb_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
@@ -169,6 +175,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
+
 				"prometheus_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
@@ -183,6 +190,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
+
 				"splunk_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
@@ -199,8 +207,10 @@ func schemaMetricSpec() *schema.Schema {
 								Required:    true,
 								Description: "Name for metrics",
 							},
+						},
 					},
 				},
+
 				"splunk_observability_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
@@ -215,6 +225,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
+
 				"thousandeyes_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
@@ -222,13 +233,14 @@ func schemaMetricSpec() *schema.Schema {
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"test_id": {
-								Type:        schema.TypeInteger,
+								Type:        schema.TypeInt,
 								Required:    true,
 								Description: "ID of the test",
 							},
 						},
 					},
 				},
+
 				"grafana_loki_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
