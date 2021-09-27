@@ -15,6 +15,7 @@ func TestAcc_Nobl9RoleBinding(t *testing.T) {
 	}{
 		{"project-role-binding", testProjectRoleBindingConfig},
 		{"org-role-binding", testOrganizationRoleBindingConfig},
+		{"role-binding-without-name", testRoleBindingWithoutName},
 	}
 
 	for _, tc := range cases {
@@ -38,7 +39,7 @@ func testProjectRoleBindingConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
   name        = "%s"
-  user        = "terraform@nobl9.com"
+  user        = "00u3lognksvI7G1r54x7xx"
   role_ref    = "project-owner"
   project_ref = "%s"
 }
@@ -49,8 +50,18 @@ func testOrganizationRoleBindingConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
   name        = "%s"
-  user        = "terraform@nobl9.com"
+  user        = "00u3lognksvI7G1r54x7xx"
   role_ref    = "organization-admin"
 }
 `, name, name)
+}
+
+func testRoleBindingWithoutName(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_role_binding" "%s" {
+  user        = "00u3lognksvI7G1r54x7xx"
+  role_ref    = "project-owner"
+  project_ref = "%s"
+}
+`, name, testProject)
 }

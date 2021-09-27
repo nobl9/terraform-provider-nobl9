@@ -2,31 +2,41 @@ package nobl9
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
 )
 
+const wildcardProject = "*"
+
 func resourceRoleBinding() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"name":         schemaName(),
+			"name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "Automatically generated, unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
+			},
 			"display_name": schemaDisplayName(),
 			"user": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "",
+				Description: "ID of the user.",
 			},
 			"role_ref": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "",
+				Description: "Role name.",
 			},
 			"project_ref": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "",
+				Description: "Project name. When empty, `role_ref` has to be Organization Role.",
 			},
 		},
 		CreateContext: resourceRoleBindingApply,
@@ -36,16 +46,21 @@ func resourceRoleBinding() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[RoleBinding configuration documentation]()",
+		Description: "[RoleBinding configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/)",
 	}
 }
 
 func marshalRoleBinding(d *schema.ResourceData) *n9api.RoleBinding {
+	name := d.Get("name").(string)
+	if name == "" {
+		id, _ := uuid.NewUUID() // NewUUID returns always nil error
+		name = id.String()
+	}
 	return &n9api.RoleBinding{
 		APIVersion: n9api.APIVersion,
 		Kind:       n9api.KindRoleBinding,
 		Metadata: n9api.RoleBindingMetadata{
-			Name: d.Get("name").(string),
+			Name: name,
 		},
 		Spec: n9api.RoleBindingSpec{
 			User:       d.Get("user").(string),
@@ -70,9 +85,9 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 	spec := object["spec"].(map[string]interface{})
 	err = d.Set("user", spec["user"])
 	appendError(diags, err)
-	err = d.Set("role_ref", spec["roleref"])
+	err = d.Set("role_ref", spec["roleRef"])
 	appendError(diags, err)
-	err = d.Set("project_ref", spec["projectref"])
+	err = d.Set("project_ref", spec["projectRef"])
 	appendError(diags, err)
 
 	return diags
@@ -80,7 +95,7 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, "")
+	client, ds := newClient(config, wildcardProject)
 	if ds != nil {
 		return ds
 	}
@@ -102,7 +117,7 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 
 func resourceRoleBindingRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, "")
+	client, ds := newClient(config, wildcardProject)
 	if ds.HasError() {
 		return ds
 	}
@@ -117,7 +132,7 @@ func resourceRoleBindingRead(_ context.Context, d *schema.ResourceData, meta int
 
 func resourceRoleBindingDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, "")
+	client, ds := newClient(config, wildcardProject)
 	if ds.HasError() {
 		return ds
 	}
@@ -127,5 +142,6 @@ func resourceRoleBindingDelete(_ context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
+	fmt.Println(client)
 	return nil
 }
