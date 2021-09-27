@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/mitchellh/mapstructure"
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -256,6 +257,8 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 					Graphite:            marshalSLOGraphite(d),
 					BigQuery:            marshalSLOBigQuery(d),
 					OpenTSDB:            marshalSLOOpenTSDB(d),
+					GrafanaLoki:         marshalSLOGrafanaLoki(d),
+					Elasticsearch:       marshalSLOElasticsearch(d),
 				},
 			BudgetingMethod: d.Get("budgeting_method").(string),
 			Thresholds: n9api.Threshold{
@@ -277,6 +280,8 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 						Graphite:            marshalSLOGraphite(d),
 						BigQuery:            marshalSLOBigQuery(d),
 						OpenTSDB:            marshalSLOOpenTSDB(d),	
+						GrafanaLoki:         marshalSLOGrafanaLoki(d),
+						Elasticsearch:       marshalSLOElasticsearch(d),
 					},
 					TotalMetric: &n9api.MetricSpec{
 						Prometheus:          marshalSLOPrometheus(d),
@@ -291,6 +296,8 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 						Graphite:            marshalSLOGraphite(d),
 						BigQuery:            marshalSLOBigQuery(d),
 						OpenTSDB:            marshalSLOOpenTSDB(d),
+						GrafanaLoki:         marshalSLOGrafanaLoki(d),
+						Elasticsearch:       marshalSLOElasticsearch(d),
 					},
 				},
 				Operator: d.Get("op").(string),
@@ -450,23 +457,190 @@ func marshalSLOBigQuery(d *schema.ResourceData) *n9api.BigQueryMetric {
 		Location: bigquery["location"].(string),
 	}
 }
-func marshalSLOOpenTSDB(d *schema.ResourceData) *n9api. {
-	p := d.Get("_metric").(*schema.Set).List()
+func marshalSLOOpenTSDB(d *schema.ResourceData) *n9api.OpenTSDBMetric {
+	p := d.Get("opentsdb_metric").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
-	 := p[0].(map[string]interface{})
+	opentsdb := p[0].(map[string]interface{})
 
-	return &n9api.Metric{
-		: [""].(string),
-
+	return &n9api.OpenTSDBMetric{
+		Query: opentsdb["query"].(string),
 	}
 }
 
-func unmarshalSLO() {}
+func marshalSLOGrafanaLoki(d *schema.ResourceData) *n9api.GrafanaLokiMetric {
+	p := d.Get("grafana_loki_metric").(*schema.Set).List()
+	if len(p) == 0 {
+		return nil
+	}
+	grafanaloki := p[0].(map[string]interface{})
 
-func resourceSLOApply() {}
+	return &n9api.GrafanaLokiMetric{
+		Logql: grafanaloki["logql"].(string),
+	}
+}
 
-func resourceSLORead() {}
+func marshalSLOElasticsearch(d *schema.ResourceData) *n9api. {
+	p := d.Get("elasticsearch_metric").(*schema.Set).List()
+	if len(p) == 0 {
+		return nil
+	}
+	elasticsearch := p[0].(map[string]interface{})
 
-func resourceSLODelete() {}
+	return &n9api.ElasticsearchMetric{
+		Index: elasticsearch["index"].(string),
+		Query: opentsdb["query"].(string),
+	}
+}
+
+func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+	if len(objects) != 1 {
+		d.SetId("")
+		return nil
+	}
+	object := objects[0]
+	var diags diag.Diagnostics
+
+	if ds := unmarshalMetadata(object, d); ds.HasError() {
+		diags = append(diags, ds...)
+	}
+
+	alertPolicies := object["alertPolicies"].(map[string]interface{})
+	err := d.Set("alert_policies", alertPolicies)
+	diags = appendError(diags, err)
+
+	attachments := object["attachments"].(map[string]interface{})
+	err := d.Set("attachments", attachments)
+	diags = appendError(diags, err)
+
+	budgetingMethod := object["budgetingMethod"].(map[string]interface{})
+	err := d.Set("budgeting_method", budgetingMethod)
+	diags = appendError(diags, err)
+
+	createdAt := object["createdAt"].(map[string]interface{})
+	err := d.Set("created_at", createdAt)
+	diags = appendError(diags, err)
+
+	description := object["description"].(map[string]interface{})
+	err := d.Set("description", description)
+	diags = appendError(diags, err)
+
+	supportedMetrics := []struct {
+		hclName  string
+		jsonName string
+	}{
+		{"prometheus_metric", "prometheus"},
+		{"datadog_metric", "datadog"},
+		{"newrelic_metric", "newRelic"},
+		{"appdynamics_metric", "appDynamics"},
+		{"splunk_metric", "splunk"},
+		{"lightstep_metric", "lightstep"},
+		{"splunk_observability_metric", "splunkObservability"},
+		{"dynatrace_metric", "dynatrace"},
+		{"thousandeyes_metric", "thousandEyes"},
+		{"graphite_metric", "graphite"},
+		{"bigquery_metric", "bigQuery"},
+		{"opentsdb_metric", "opentsdb"},
+		{"elasticsearch_metric", "elasticsearch"},
+		{"grafana_loki_metric", "grafanaLoki"},
+	}
+
+	for _, name := range supportedMetrics {
+		ok, ds := unmarshalSLOMetric(d, object, name.hclName, name.jsonName)
+		if ds.HasError() {
+			diags = append(diags, ds...)
+		}
+		if ok {
+			break
+		}
+	}
+
+	objectives := object["objectives"].(map[string]interface{})
+	err := d.Set("objectives", objectives)
+	diags = appendError(diags, err)
+
+	service := object["service"].(map[string]interface{})
+	err := d.Set("service", service)
+	diags = appendError(diags, err)
+
+	timeWindows := object["timeWindows"].(map[string]interface{})
+	err := d.Set("timeWindows", timeWindows)
+	diags = appendError(diags, err)
+
+	return diags
+}
+
+func unmarshalSLOMetric(d *schema.ResourceData, object n9api.AnyJSONObj, hclName, jsonName string) (bool, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	spec := object["spec"].(map[string]interface{})
+	indicator := spec["indicator"].(map[string]interface{})
+    rawmetric := indicator["rawmetric"].(mapstructure[string]interface)
+	if rawmetric[jsonName] == nil {
+		return false, nil
+	}
+
+	err := d.Set("alert_policies", spec["alertPolicies"])
+	appendError(diags, err)
+	err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{rawmetric[jsonName]}))
+	appendError(diags, err)
+
+	return true, diags
+}
+
+func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	client, ds := newClient(config, d.Get("project").(string))
+	if ds != nil {
+		return ds
+	}
+
+	slo := marshalSLO(d)
+
+	var p n9api.Payload
+	p.AddObject(slo)
+
+	err := client.ApplyObjects(p.GetObjects())
+	if err != nil {
+		return diag.Errorf("could not add SLO: %s", err.Error())
+	}
+
+	d.SetId(slo.Metadata.Name)
+
+	return resourceSLORead(ctx, d, meta)
+}
+
+func resourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	project := d.Get("project").(string)
+	if project == "" {
+		// project is empty when importing
+		project = config.Project
+	}
+	client, ds := newClient(config, project)
+	if ds.HasError() {
+		return ds
+	}
+
+	objects, err := client.GetObject(n9api.ObjectSLO, "", d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return unmarshalSLO(d, objects)
+}
+
+func resourceSLODelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	client, ds := newClient(config, d.Get("project").(string))
+	if ds.HasError() {
+		return ds
+	}
+
+	err := client.DeleteObjectsByName(n9api.ObjectSLO, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}

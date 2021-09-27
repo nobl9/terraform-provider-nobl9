@@ -141,7 +141,7 @@ func schemaMetricSpec() *schema.Schema {
 						},
 					},
 				},
-				"newRelic_metric": {
+				"newrelic_metric": {
 					Type:        schema.TypeSet,
 					Required:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-newrelic)",
@@ -225,6 +225,20 @@ func schemaMetricSpec() *schema.Schema {
 								Type:        schema.TypeInteger,
 								Required:    true,
 								Description: "ID of the test",
+							},
+						},
+					},
+				},
+				"grafana_loki_metric": {
+					Type:        schema.TypeSet,
+					Required:    true,
+					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-loki",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"logql": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "Query for the logs",
 							},
 						},
 					},
