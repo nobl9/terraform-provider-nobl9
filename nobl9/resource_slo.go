@@ -29,7 +29,7 @@ func resourceSLO() *schema.Resource {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "Alert Policies attached to SLO",
-							Elem: &schema.Schema{
+							schema.Resource{
 								Type:        schema.TypeString,
 								Description: "Alert Policy",
 							},
@@ -74,24 +74,15 @@ func resourceSLO() *schema.Resource {
 							Description: " ",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"metric_source_spec": {
-										Type:        schema.TypeSet,
+									"name": {
+										Type:        schema.TypeString,
 										Required:    true,
-										Description: "",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"name": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "Name of the metric source",
-												},
-												"project": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Name of the metric souce project",
-												},
-											},
-										},
+										Description: "Name of the metric source",
+									},
+									"project": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Name of the metric souce project",
 									},
 									"metric_spec": schemaMetricSpec(),
 									},
@@ -108,7 +99,7 @@ func resourceSLO() *schema.Resource {
 										Type:        schema.TypeSet,
 										Optional:    true,
 										Description: "Alert Policies attached to SLO",
-										Elem: &schema.Schema{
+										Elem: &schema.Resource{
 											"good": schemaMetricSpec(),
 											"incemental": {
 												Type:        schema.TypeBool,
@@ -161,7 +152,7 @@ func resourceSLO() *schema.Resource {
 										Type:        schema.TypeSet,
 										Optional:    true,
 										Description: "Alert Policies attached to SLO",
-										Elem: &schema.Schema{
+										Elem: &schema.Resource{
 											"start_time": {
 												Type:        schema.TypeString,
 							        			Required:    true,
@@ -188,7 +179,7 @@ func resourceSLO() *schema.Resource {
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Description: "Specific time frame",
-										Elem: &schema.Schema{
+										Elem: &schema.Resource{
 											"begin": {
 												Type:        schema.TypeString,
 							        			Optional:    true,
