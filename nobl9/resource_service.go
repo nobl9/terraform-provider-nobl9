@@ -11,155 +11,115 @@ import (
 func resourceService() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"api_version": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "API version",
-			},
-
-			"kind": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Kind of object",
-			},
-
-			"manifest_src": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "",
-			},
-
-			"metadata": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"display_name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "",
-						},
-
-						"labels": {
-							Type:        schema.TypeSet,
-							Optional:    true,
-							Description: "",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-
-						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "",
-						},
-
-						"project": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "",
-						},
-					},
-				},
-			},
-
-			"organization": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "",
-			},
-
-			"spec": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"description": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "",
-						},
-					},
-				},
-			},
+			"name":         schemaName(),
+			"display_name": schemaDisplayName(),
+			"description":  schemaDescription(),
+			"project":      schemaProject(),
+			//"label":        schemaLabels(), // TODO enable when PC-3250 is done
 
 			"status": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"slo_count": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "",
-						},
-					},
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "Status of created service.",
+				Elem: &schema.Schema{
+					Type: schema.TypeFloat,
 				},
 			},
 		},
-		CreateContext: resourceServiceCreate,
-		UpdateContext: resourceServiceUpdate,
+		CreateContext: resourceServiceApply,
+		UpdateContext: resourceServiceApply,
 		DeleteContext: resourceServiceDelete,
 		ReadContext:   resourceServiceRead,
-		Description:   "* [HTTP API](https://api-docs.app.nobl9.com/)",
+		Description:   "[Service configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#service)",
 	}
 }
 
 func marshalService(d *schema.ResourceData) *n9api.Service {
 	return &n9api.Service{
 		ObjectHeader: n9api.ObjectHeader{
-			APIVersion: d.Get("api_version").(string),
-			Kind:       d.Get("kind").(string),
-			MetadataHolder: n9api.MetadataHolder{
-				Metadata: n9api.Metadata{
-					Name: d.Get("name").(string),
-				},
-			},
+			APIVersion:     n9api.APIVersion,
+			Kind:           n9api.KindService,
+			MetadataHolder: marshalMetadataWithLabels(d),
+		},
+		Spec: n9api.ServiceSpec{
+			Description: d.Get("description").(string),
 		},
 	}
 }
 
-func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*n9api.Client)
-
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
-	service := marshalService(d)
-	var p n9api.Payload
-	p.AddObject(service)
-
-	err := c.ApplyObjects(p.GetObjects())
-	if err != nil {
-		return diag.Errorf("could not add service: %v", err)
+func unmarshalService(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+	if len(objects) != 1 {
+		d.SetId("")
+		return nil
 	}
+	object := objects[0]
 
-	//d.SetId(strconv.FormatInt(id, 10))
+	diags := unmarshalMetadataWithLabels(object, d)
+
+	err := d.Set("status", object["status"])
+	diags = appendError(diags, err)
 
 	return diags
 }
 
-func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	//c := meta.(*n9api.Client)
+func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	project := d.Get("project").(string)
+	if project == "" {
+		// project is empty when importing
+		project = config.Project
+	}
+	client, ds := newClient(config, project)
+	if ds != nil {
+		return ds
+	}
 
-	//d.SetId(strconv.FormatInt(id, 10))
+	ap := marshalService(d)
 
-	return nil
+	var p n9api.Payload
+	p.AddObject(ap)
+
+	err := client.ApplyObjects(p.GetObjects())
+	if err != nil {
+		return diag.Errorf("could not add project: %s", err.Error())
+	}
+
+	d.SetId(ap.Metadata.Name)
+
+	return resourceServiceRead(ctx, d, meta)
 }
 
-func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceServiceRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	project := d.Get("project").(string)
+	if project == "" {
+		// project is empty when importing
+		project = config.Project
+	}
+	client, ds := newClient(config, project)
+	if ds.HasError() {
+		return ds
+	}
 
-	//d.SetId(strconv.FormatInt(id, 10))
+	objects, err := client.GetObject(n9api.ObjectService, "", d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	return nil
+	return unmarshalService(d, objects)
 }
 
-func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceServiceDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	client, ds := newClient(config, "")
+	if ds.HasError() {
+		return ds
+	}
 
-	//d.SetId(strconv.FormatInt(id, 10))
+	err := client.DeleteObjectsByName(n9api.ObjectService, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

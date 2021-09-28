@@ -75,7 +75,7 @@ func DestroyFunc(rsType string, objectType n9api.Object) func(s *terraform.State
 		config := testProvider.Meta().(ProviderConfig)
 		client, ds := newClient(config, testProject)
 		if ds.HasError() {
-			return fmt.Errorf("TODO") // TODO
+			return fmt.Errorf("unable create client when deleting objects")
 		}
 
 		for _, rs := range s.RootModule().Resources {

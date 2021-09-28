@@ -50,13 +50,13 @@ func unmarshalProject(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.D
 
 	metadata := object["metadata"].(map[string]interface{})
 	err := d.Set("name", metadata["name"])
-	appendError(diags, err)
+	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata["displayName"])
-	appendError(diags, err)
+	diags = appendError(diags, err)
 
 	spec := object["spec"].(map[string]interface{})
 	err = d.Set("description", spec["description"])
-	appendError(diags, err)
+	diags = appendError(diags, err)
 
 	return diags
 }
