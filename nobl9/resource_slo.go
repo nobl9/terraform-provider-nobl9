@@ -18,187 +18,177 @@ func resourceSLO() *schema.Resource {
 			"display_name": schemaDisplayName(),
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
-
-			"slo_spec": {
+			"alert_policies": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Alert Policies attached to SLO",
+				schema.Resource{
+					Type:        schema.TypeString,
+					Description: "Alert Policy",
+				},
+			},
+			"attachments": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[SLO documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo)",
+				Description: "",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"alert_policies": {
-							Type:        schema.TypeList,
+						"display_name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Name which is dispalyed for the attachment",
+						},
+						"url": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Url to the attachment",
+						},
+					},
+				},
+			},
+			"budgeting_method": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Method which will be use to calculate budget",
+			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Time of creation",
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Description of the SLO",
+			},
+			"indicator": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: " ",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Name of the metric source",
+						},
+						"project": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Name of the metric souce project",
+						},
+						"metric_spec": schemaMetricSpec(),
+						},
+					},
+				},
+			},
+			"objectives": {
+				Type:        schema.TypeSet,
+				Required:    true,
+				Description: " ([Objectives documentation] https://nobl9.github.io/techdocs_YAML_Guide/#objectives)",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"count_metrics": {
+							Type:        schema.TypeSet,
 							Optional:    true,
 							Description: "Alert Policies attached to SLO",
-							schema.Resource{
-								Type:        schema.TypeString,
-								Description: "Alert Policy",
+							Elem: &schema.Resource{
+								"good": schemaMetricSpec(),
+								"incemental": {
+									Type:        schema.TypeBool,
+				        			Required:    true,
+									Description: "Should the metrics be incrementing or not",
+								},
+								"metric_spec": schemaMetricSpec(),
 							},
 						},
-						"attachments": {
+						"display_name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Name to be displayed",
+						},
+						"op": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type of logical operation",
+						},
+						"target": {
+							Type:        schema.TypeFloat,
+							Required:    true,
+							Description: "Desiganted value",
+						},
+						"time_slice_target": {
+							Type:        schema.TypeFloat,
+							Optional:    true,
+							Description: "Designated value for slice",
+						},
+						"value": {
+							Type:        schema.TypeFloat,
+							Optional:    true,
+							Description: "Value",
+						},
+					},
+				},
+			},
+			"service": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the service",
+			},
+			"time_windows": {
+				Type:        schema.TypeSet,
+				Required:    true,
+				Description: " ",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"calendar": {
 							Type:        schema.TypeSet,
 							Optional:    true,
-							Description: "",
+							Description: "Alert Policies attached to SLO",
 							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"display_name": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Name which is dispalyed for the attachment",
-									},
-									"url": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Url to the attachment",
-									},
+								"start_time": {
+									Type:        schema.TypeString,
+				        			Required:    true,
+									Description: "Date of the start",
+								},
+								"time_zone": {
+									Type:        schema.TypeString,
+				        			Required:    true,
+									Description: "Timezone name in IANA Time Zone Database",
 								},
 							},
 						},
-						"budgeting_method": {
-							Type:        schema.TypeString,
+						"count": {
+							Type:        schema.TypeInt,
 							Required:    true,
-							Description: "Method which will be use to calculate budget",
+							Description: "Count of the time unit",
 						},
-						"created_at": {
-							Type:        schema.TypeString,
+						"is_rolling": {
+							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "Time of creation",
+							Description: "Is the window moving or not",
 						},
-						"description": {
-							Type:        schema.TypeString,
+						"period": {
+							Type:        schema.TypeFloat,
 							Optional:    true,
-							Description: "Description of the SLO",
-						},
-						"indicator": {
-							Type:        schema.TypeSet,
-							Optional:    true,
-							Description: " ",
+							Description: "Specific time frame",
 							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Name of the metric source",
-									},
-									"project": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Name of the metric souce project",
-									},
-									"metric_spec": schemaMetricSpec(),
-									},
+								"begin": {
+									Type:        schema.TypeString,
+				        			Optional:    true,
+									Description: "Beginning of the period",
+								},
+								"end": {
+									Type:        schema.TypeString,
+				        			Optional:    true,
+									Description: "End of the period",
 								},
 							},
 						},
-						"objectives": {
-							Type:        schema.TypeSet,
+						"unit": {
+							Type:        schema.TypeFloat,
 							Required:    true,
-							Description: " ([Objectives documentation] https://nobl9.github.io/techdocs_YAML_Guide/#objectives)",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"count_metrics": {
-										Type:        schema.TypeSet,
-										Optional:    true,
-										Description: "Alert Policies attached to SLO",
-										Elem: &schema.Resource{
-											"good": schemaMetricSpec(),
-											"incemental": {
-												Type:        schema.TypeBool,
-							        			Required:    true,
-												Description: "Should the metrics be incrementing or not",
-											},
-											"metric_spec": schemaMetricSpec(),
-										},
-									},
-									"display_name": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Name to be displayed",
-									},
-									"op": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Type of logical operation",
-									},
-									"target": {
-										Type:        schema.TypeFloat,
-										Required:    true,
-										Description: "Desiganted value",
-									},
-									"time_slice_target": {
-										Type:        schema.TypeFloat,
-										Optional:    true,
-										Description: "Designated value for slice",
-									},
-									"value": {
-										Type:        schema.TypeFloat,
-										Optional:    true,
-										Description: "Value",
-									},
-								},
-							},
-						},
-						"service": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Name of the service",
-						},
-						"time_windows": {
-							Type:        schema.TypeSet,
-							Required:    true,
-							Description: " ",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"calendar": {
-										Type:        schema.TypeSet,
-										Optional:    true,
-										Description: "Alert Policies attached to SLO",
-										Elem: &schema.Resource{
-											"start_time": {
-												Type:        schema.TypeString,
-							        			Required:    true,
-												Description: "Date of the start",
-											},
-											"time_zone": {
-												Type:        schema.TypeString,
-							        			Required:    true,
-												Description: "Timezone name in IANA Time Zone Database",
-											},
-										},
-									},
-									"count": {
-										Type:        schema.TypeInt,
-										Required:    true,
-										Description: "Count of the time unit",
-									},
-									"is_rolling": {
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "Is the window moving or not",
-									},
-									"period": {
-										Type:        schema.TypeFloat,
-										Optional:    true,
-										Description: "Specific time frame",
-										Elem: &schema.Resource{
-											"begin": {
-												Type:        schema.TypeString,
-							        			Optional:    true,
-												Description: "Beginning of the period",
-											},
-											"end": {
-												Type:        schema.TypeString,
-							        			Optional:    true,
-												Description: "End of the period",
-											},
-										},
-									},
-									"unit": {
-										Type:        schema.TypeFloat,
-										Required:    true,
-										Description: "Unit of time",
-									},
-								},
-							},
+							Description: "Unit of time",
 						},
 					},
 				},
@@ -237,19 +227,19 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 				},
 				RawMetric: &n9api.MetricSpec{
 					Prometheus:          marshalSLOPrometheus(d),
-					Datadog:             marshalSLODatadog(d),
-					NewRelic:            marshalSLONewRelic(d),
-					AppDynamics:         marshalSLOAppDynamics(d),
-					Splunk:              marshalSLOSplunk(d),
-					Lightstep:           marshalSLOLightstep(d),
-					SplunkObservability: marshalSLOSplunkObservability(d),
-					Dynatrace:           marshalDynatrace(d),
-					ThousandEyes:        marshalSLOThousandEyes(d),
-					Graphite:            marshalSLOGraphite(d),
-					BigQuery:            marshalSLOBigQuery(d),
-					OpenTSDB:            marshalSLOOpenTSDB(d),
-					GrafanaLoki:         marshalSLOGrafanaLoki(d),
-					Elasticsearch:       marshalSLOElasticsearch(d),
+				//	Datadog:             marshalSLODatadog(d),
+				//	NewRelic:            marshalSLONewRelic(d),
+				//	AppDynamics:         marshalSLOAppDynamics(d),
+				//	Splunk:              marshalSLOSplunk(d),
+				//	Lightstep:           marshalSLOLightstep(d),
+				//	SplunkObservability: marshalSLOSplunkObservability(d),
+				//	Dynatrace:           marshalDynatrace(d),
+				//	ThousandEyes:        marshalSLOThousandEyes(d),
+				//	Graphite:            marshalSLOGraphite(d),
+				//	BigQuery:            marshalSLOBigQuery(d),
+				//	OpenTSDB:            marshalSLOOpenTSDB(d),
+				//	GrafanaLoki:         marshalSLOGrafanaLoki(d),
+				//	Elasticsearch:       marshalSLOElasticsearch(d),
 				},
 			BudgetingMethod: d.Get("budgeting_method").(string),
 			Thresholds: n9api.Threshold{
@@ -260,35 +250,35 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 					Incremental: d.Get("incremental").(bool),
 					GoodMetric: &n9api.MetricSpec{
 						Prometheus:          marshalSLOPrometheus(d),
-						Datadog:             marshalSLODatadog(d),
-						NewRelic:            marshalSLONewRelic(d),
-						AppDynamics:         marshalSLOAppDynamics(d),
-						Splunk:              marshalSLOSplunk(d),
-						Lightstep:           marshalSLOLightstep(d),
-						SplunkObservability: marshalSLOSplunkObservability(d),
-						Dynatrace:           marshalDynatrace(d),
-						ThousandEyes:        marshalSLOThousandEyes(d),
-						Graphite:            marshalSLOGraphite(d),
-						BigQuery:            marshalSLOBigQuery(d),
-						OpenTSDB:            marshalSLOOpenTSDB(d),	
-						GrafanaLoki:         marshalSLOGrafanaLoki(d),
-						Elasticsearch:       marshalSLOElasticsearch(d),
+					//	Datadog:             marshalSLODatadog(d),
+					//	NewRelic:            marshalSLONewRelic(d),
+					//	AppDynamics:         marshalSLOAppDynamics(d),
+					//	Splunk:              marshalSLOSplunk(d),
+					//	Lightstep:           marshalSLOLightstep(d),
+					//	SplunkObservability: marshalSLOSplunkObservability(d),
+					//	Dynatrace:           marshalDynatrace(d),
+					//	ThousandEyes:        marshalSLOThousandEyes(d),
+					//	Graphite:            marshalSLOGraphite(d),
+					//	BigQuery:            marshalSLOBigQuery(d),
+					//	OpenTSDB:            marshalSLOOpenTSDB(d),	
+					//	GrafanaLoki:         marshalSLOGrafanaLoki(d),
+					//	Elasticsearch:       marshalSLOElasticsearch(d),
 					},
 					TotalMetric: &n9api.MetricSpec{
 						Prometheus:          marshalSLOPrometheus(d),
-						Datadog:             marshalSLODatadog(d),
-						NewRelic:            marshalSLONewRelic(d),
-						AppDynamics:         marshalSLOAppDynamics(d),
-						Splunk:              marshalSLOSplunk(d),
-						Lightstep:           marshalSLOLightstep(d),
-						SplunkObservability: marshalSLOSplunkObservability(d),
-						Dynatrace:           marshalDynatrace(d),
-						ThousandEyes:        marshalSLOThousandEyes(d),
-						Graphite:            marshalSLOGraphite(d),
-						BigQuery:            marshalSLOBigQuery(d),
-						OpenTSDB:            marshalSLOOpenTSDB(d),
-						GrafanaLoki:         marshalSLOGrafanaLoki(d),
-						Elasticsearch:       marshalSLOElasticsearch(d),
+					//	Datadog:             marshalSLODatadog(d),
+					//	NewRelic:            marshalSLONewRelic(d),
+					//	AppDynamics:         marshalSLOAppDynamics(d),
+					//	Splunk:              marshalSLOSplunk(d),
+					//	Lightstep:           marshalSLOLightstep(d),
+					//	SplunkObservability: marshalSLOSplunkObservability(d),
+					//	Dynatrace:           marshalDynatrace(d),
+					//	ThousandEyes:        marshalSLOThousandEyes(d),
+					//	Graphite:            marshalSLOGraphite(d),
+					//	BigQuery:            marshalSLOBigQuery(d),
+					//	OpenTSDB:            marshalSLOOpenTSDB(d),
+					//	GrafanaLoki:         marshalSLOGrafanaLoki(d),
+					//	Elasticsearch:       marshalSLOElasticsearch(d),
 					},
 				},
 				Operator: d.Get("op").(string),
