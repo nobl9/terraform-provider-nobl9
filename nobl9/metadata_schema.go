@@ -64,13 +64,13 @@ func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Dia
 
 	metadata := object["metadata"].(map[string]interface{})
 	err := d.Set("name", metadata["name"])
-	appendError(diags, err)
+	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata["displayName"])
-	appendError(diags, err)
+	diags = appendError(diags, err)
 	// err = d.Set("labels", metadata["labels"]) // TODO labels are not supported yet
-	appendError(diags, err)
+	diags = appendError(diags, err)
 	err = d.Set("project", metadata["project"])
-	appendError(diags, err)
+	diags = appendError(diags, err)
 
 	return diags
 }
