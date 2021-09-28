@@ -75,7 +75,6 @@ func resourceSLO() *schema.Resource {
 							Description: "Name of the metric souce project",
 						},
 						"raw_metrics": schemaMetricSpec(),
-						},
 					},
 				},
 			},
@@ -191,6 +190,7 @@ func resourceSLO() *schema.Resource {
 				},
 			},
 		},
+
 		CreateContext: resourceSLOApply,
 		UpdateContext: resourceSLOApply,
 		DeleteContext: resourceSLODelete,
@@ -297,7 +297,7 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 			AlertPolicies: alertPoliciesStr,
 			Attachemnts: n9api.Attachment{
 				DisplayName: d.Get("display_name").(string),
-				Url: d.Get("url").(string)
+				Url: d.Get("url").(string),
 			},
 			BudgetingMethod: d.Get("budgeting_method").(string),
 			Thresholds:      marshalThresholds(d),
@@ -322,7 +322,7 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 			//},
 			CreatedAt: d.Get("created_at").(string),
 		},
-	}
+	},
 }
 
 func marshalThresholds(d *schema.ResourceData) []n9api.Threshold {
