@@ -2,12 +2,9 @@ package nobl9
 
 import (
 	"context"
-	"encoding/json"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/mitchellh/mapstructure"
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -206,11 +203,11 @@ func resourceSLO() *schema.Resource {
 }
 
 func marshalSLO(d *schema.ResourceData) *n9api.SLO {
-	alertPolicies := d.Get("alert_policies").([]interface{})
-	alertPoliciesStr := make([]string, len(sourceOf))
-	for i, s := range alertPolicies {
-		alertPoliciesStr[i] = s.(string)
-	}
+	//alertPolicies := d.Get("alert_policies").([]interface{})
+	//alertPoliciesStr := make([]string, len(sourceOf))
+	//for i, s := range alertPolicies {
+	//	alertPoliciesStr[i] = s.(string)
+	//}
 
 	return &n9api.SLO{
 		ObjectHeader: n9api.ObjectHeader{
@@ -223,7 +220,7 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 			Indicator: n9api.Indicator{
 				MetricSource: &n9api.MetricSourceSpec{
 					Project: d.Get("project").(string),
-					Name: d.Get("name").(string),
+					Name:    d.Get("name").(string),
 				},
 				RawMetric: &n9api.MetricSpec{
 					Prometheus:          marshalSLOPrometheus(d),
@@ -302,9 +299,75 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 				DisplayName: d.Get("display_name").(string),
 				Url: d.Get("url").(string)
 			},
+			BudgetingMethod: d.Get("budgeting_method").(string),
+			Thresholds:      marshalThresholds(d),
+			Service:         d.Get("service").(string),
+			//TimeWindows: n9api.TimeWindow{ TODO
+			//	Unit:      d.Get("unit").(string),
+			//	Count:     d.Get(),
+			//	IsRolling: d.Get().(bool),
+			//	Calendar: &n9api.Calendar{
+			//		StartTime: d.Get("start_time").(string),
+			//		TimeZone:  d.Get("time_zone").(string),
+			//	},
+			//	Period: &n9api.Period{
+			//		Begin: d.Get("begin").(string),
+			//		End:   d.Get("end").(string),
+			//	},
+			//},
+			//AlertPolicies: alertPoliciesStr, TODO
+			//Attachments: n9api.Attachment{ TODO
+			//	DisplayName: d.Get("display_name").(string),
+			//	Url:         d.Get("url").(string),
+			//},
 			CreatedAt: d.Get("created_at").(string),
-		},	
+		},
 	}
+}
+
+func marshalThresholds(d *schema.ResourceData) []n9api.Threshold {
+	return nil
+	//n9api.Threshold{
+	//	ThresholdBase:   d.Get("value").(float64),
+	//	BudgetTarget:    d.Get("target").(float64),
+	//	TimeSliceTarget: d.Get("time_slice_target").(float64),
+	//	CountMetrics: &n9api.CountMetricsSpec{
+	//		Incremental: d.Get("incremental").(bool),
+	//		GoodMetric: &n9api.MetricSpec{
+	//			Prometheus:          marshalSLOPrometheus(d),
+	//			Datadog:             marshalSLODatadog(d),
+	//			NewRelic:            marshalSLONewRelic(d),
+	//			AppDynamics:         marshalSLOAppDynamics(d),
+	//			Splunk:              marshalSLOSplunk(d),
+	//			Lightstep:           marshalSLOLightstep(d),
+	//			SplunkObservability: marshalSLOSplunkObservability(d),
+	//			Dynatrace:           marshalSLODynatrace(d),
+	//			ThousandEyes:        marshalSLOThousandEyes(d),
+	//			Graphite:            marshalSLOGraphite(d),
+	//			BigQuery:            marshalSLOBigQuery(d),
+	//			OpenTSDB:            marshalSLOOpenTSDB(d),
+	//			GrafanaLoki:         marshalSLOGrafanaLoki(d),
+	//			Elasticsearch:       marshalSLOElasticsearch(d),
+	//		},
+	//		TotalMetric: &n9api.MetricSpec{
+	//			Prometheus:          marshalSLOPrometheus(d),
+	//			Datadog:             marshalSLODatadog(d),
+	//			NewRelic:            marshalSLONewRelic(d),
+	//			AppDynamics:         marshalSLOAppDynamics(d),
+	//			Splunk:              marshalSLOSplunk(d),
+	//			Lightstep:           marshalSLOLightstep(d),
+	//			SplunkObservability: marshalSLOSplunkObservability(d),
+	//			Dynatrace:           marshalSLODynatrace(d),
+	//			ThousandEyes:        marshalSLOThousandEyes(d),
+	//			Graphite:            marshalSLOGraphite(d),
+	//			BigQuery:            marshalSLOBigQuery(d),
+	//			OpenTSDB:            marshalSLOOpenTSDB(d),
+	//			GrafanaLoki:         marshalSLOGrafanaLoki(d),
+	//			Elasticsearch:       marshalSLOElasticsearch(d),
+	//		},
+	//	},
+	//	Operator: d.Get("op").(string),
+	//}
 }
 
 func marshalSLOPrometheus(d *schema.ResourceData) *n9api.PrometheusMetric {
@@ -327,8 +390,9 @@ func marshalSLODatadog(d *schema.ResourceData) *n9api.DatadogMetric {
 	}
 	ddog := p[0].(map[string]interface{})
 
+	query := ddog["query"].(string)
 	return &n9api.DatadogMetric{
-		Query: ddog["query"].(string),
+		Query: &query,
 	}
 }
 
@@ -339,8 +403,9 @@ func marshalSLONewRelic(d *schema.ResourceData) *n9api.NewRelicMetric {
 	}
 	newrelic := p[0].(map[string]interface{})
 
+	nrql := newrelic["nrql"].(string)
 	return &n9api.NewRelicMetric{
-		NRQL: ddog["nrql"].(string),
+		NRQL: &nrql,
 	}
 }
 
@@ -351,9 +416,11 @@ func marshalSLOAppDynamics(d *schema.ResourceData) *n9api.AppDynamicsMetric {
 	}
 	appdynamics := p[0].(map[string]interface{})
 
+	applicationName := appdynamics["application_name"].(string)
+	metricPath := appdynamics["metric_path"].(string)
 	return &n9api.AppDynamicsMetric{
-		ApplicationName: appdynamics["application_name"].(string),
-		MetricPath: appdynamics["metric_path"].(string),
+		ApplicationName: &applicationName,
+		MetricPath:      &metricPath,
 	}
 }
 func marshalSLOSplunk(d *schema.ResourceData) *n9api.SplunkMetric {
@@ -363,9 +430,11 @@ func marshalSLOSplunk(d *schema.ResourceData) *n9api.SplunkMetric {
 	}
 	splunk := p[0].(map[string]interface{})
 
+	query := splunk["query"].(string)
+	fieldName := splunk["field_name"].(string)
 	return &n9api.SplunkMetric{
-		Query: appdynamics["query"].(string),
-		FieldName: appdynamics["field_name"].(string),
+		Query:     &query,
+		FieldName: &fieldName,
 	}
 }
 func marshalSLOLightstep(d *schema.ResourceData) *n9api.LightstepMetric {
@@ -375,10 +444,13 @@ func marshalSLOLightstep(d *schema.ResourceData) *n9api.LightstepMetric {
 	}
 	lightstep := p[0].(map[string]interface{})
 
+	streamID := lightstep["stream_id"].(string)
+	typeOfData := lightstep["type_of_data"].(string)
+	percentile := lightstep["percentile"].(float64)
 	return &n9api.LightstepMetric{
-		StreamID: lightstep["stream_id"].(string),
-		TypeOfData: lightstep["type_of_data"].(string),
-		Percentile: lightstep["percentile"].(string),
+		StreamID:   &streamID,
+		TypeOfData: &typeOfData,
+		Percentile: &percentile,
 	}
 }
 func marshalSLOSplunkObservability(d *schema.ResourceData) *n9api.SplunkObservabilityMetric {
@@ -388,8 +460,9 @@ func marshalSLOSplunkObservability(d *schema.ResourceData) *n9api.SplunkObservab
 	}
 	splunkObservability := p[0].(map[string]interface{})
 
+	program := splunkObservability["program"].(string)
 	return &n9api.SplunkObservabilityMetric{
-		Query: splunkObservability["query"].(string),
+		Program: &program,
 	}
 }
 func marshalSLODynatrace(d *schema.ResourceData) *n9api.DynatraceMetric {
@@ -399,8 +472,9 @@ func marshalSLODynatrace(d *schema.ResourceData) *n9api.DynatraceMetric {
 	}
 	dynatrace := p[0].(map[string]interface{})
 
+	selector := dynatrace["metric_selector"].(string)
 	return &n9api.DynatraceMetric{
-		MetricSelector: dynatrace["metric_selector"].(string),
+		MetricSelector: &selector,
 	}
 }
 func marshalSLOThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesMetric {
@@ -410,8 +484,9 @@ func marshalSLOThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesMetric {
 	}
 	thousandeyes := p[0].(map[string]interface{})
 
+	testID := thousandeyes["test_id"].(int64)
 	return &n9api.ThousandEyesMetric{
-		TestID: thousandeyes["test_id"].(string),
+		TestID: &testID,
 	}
 }
 func marshalSLOGraphite(d *schema.ResourceData) *n9api.GraphiteMetric {
@@ -421,8 +496,9 @@ func marshalSLOGraphite(d *schema.ResourceData) *n9api.GraphiteMetric {
 	}
 	graphite := p[0].(map[string]interface{})
 
+	metricPath := graphite["metric_path"].(string)
 	return &n9api.GraphiteMetric{
-		MetricPath: graphite["metric_path"].(string),
+		MetricPath: &metricPath,
 	}
 }
 func marshalSLOBigQuery(d *schema.ResourceData) *n9api.BigQueryMetric {
@@ -433,9 +509,9 @@ func marshalSLOBigQuery(d *schema.ResourceData) *n9api.BigQueryMetric {
 	bigquery := p[0].(map[string]interface{})
 
 	return &n9api.BigQueryMetric{
-		Query: bigquery["query"].(string),
+		Query:     bigquery["query"].(string),
 		ProjectID: bigquery["project_id"].(string),
-		Location: bigquery["location"].(string),
+		Location:  bigquery["location"].(string),
 	}
 }
 func marshalSLOOpenTSDB(d *schema.ResourceData) *n9api.OpenTSDBMetric {
@@ -445,8 +521,9 @@ func marshalSLOOpenTSDB(d *schema.ResourceData) *n9api.OpenTSDBMetric {
 	}
 	opentsdb := p[0].(map[string]interface{})
 
+	query := opentsdb["query"].(string)
 	return &n9api.OpenTSDBMetric{
-		Query: opentsdb["query"].(string),
+		Query: &query,
 	}
 }
 
@@ -457,21 +534,24 @@ func marshalSLOGrafanaLoki(d *schema.ResourceData) *n9api.GrafanaLokiMetric {
 	}
 	grafanaloki := p[0].(map[string]interface{})
 
+	logql := grafanaloki["logql"].(string)
 	return &n9api.GrafanaLokiMetric{
-		Logql: grafanaloki["logql"].(string),
+		Logql: &logql,
 	}
 }
 
-func marshalSLOElasticsearch(d *schema.ResourceData) *n9api. {
+func marshalSLOElasticsearch(d *schema.ResourceData) *n9api.ElasticsearchMetric {
 	p := d.Get("elasticsearch_metric").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
 	elasticsearch := p[0].(map[string]interface{})
 
+	index := elasticsearch["index"].(string)
+	query := elasticsearch["query"].(string)
 	return &n9api.ElasticsearchMetric{
-		Index: elasticsearch["index"].(string),
-		Query: opentsdb["query"].(string),
+		Index: &index,
+		Query: &query,
 	}
 }
 
@@ -492,19 +572,19 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	diags = appendError(diags, err)
 
 	attachments := object["attachments"].(map[string]interface{})
-	err := d.Set("attachments", attachments)
+	err = d.Set("attachments", attachments)
 	diags = appendError(diags, err)
 
 	budgetingMethod := object["budgetingMethod"].(map[string]interface{})
-	err := d.Set("budgeting_method", budgetingMethod)
+	err = d.Set("budgeting_method", budgetingMethod)
 	diags = appendError(diags, err)
 
 	createdAt := object["createdAt"].(map[string]interface{})
-	err := d.Set("created_at", createdAt)
+	err = d.Set("created_at", createdAt)
 	diags = appendError(diags, err)
 
 	description := object["description"].(map[string]interface{})
-	err := d.Set("description", description)
+	err = d.Set("description", description)
 	diags = appendError(diags, err)
 
 	supportedMetrics := []struct {
@@ -538,15 +618,15 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	}
 
 	objectives := object["objectives"].(map[string]interface{})
-	err := d.Set("objectives", objectives)
+	err = d.Set("objectives", objectives)
 	diags = appendError(diags, err)
 
 	service := object["service"].(map[string]interface{})
-	err := d.Set("service", service)
+	err = d.Set("service", service)
 	diags = appendError(diags, err)
 
 	timeWindows := object["timeWindows"].(map[string]interface{})
-	err := d.Set("timeWindows", timeWindows)
+	err = d.Set("timeWindows", timeWindows)
 	diags = appendError(diags, err)
 
 	return diags
@@ -556,7 +636,7 @@ func unmarshalSLOMetric(d *schema.ResourceData, object n9api.AnyJSONObj, hclName
 	var diags diag.Diagnostics
 	spec := object["spec"].(map[string]interface{})
 	indicator := spec["indicator"].(map[string]interface{})
-    rawmetric := indicator["rawmetric"].(mapstructure[string]interface)
+	rawmetric := indicator["rawmetric"].(map[string]interface{})
 	if rawmetric[jsonName] == nil {
 		return false, nil
 	}
