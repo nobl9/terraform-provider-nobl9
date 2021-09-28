@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+var Version string
+
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -115,13 +117,12 @@ func newClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagn
 		config.IngestURL,
 		config.Organization,
 		project,
-		"terraform", // TODO add version here (use build flags)
+		"terraform-"+Version,
 		config.ClientID,
 		config.ClientSecret,
 		config.OktaOrgURL,
 		config.OktaAuthServer,
 	)
-
 	if err != nil {
 		return nil, diag.Diagnostics{
 			diag.Diagnostic{
