@@ -74,7 +74,7 @@ func resourceSLO() *schema.Resource {
 							Optional:    true,
 							Description: "Name of the metric souce project",
 						},
-						"metric_spec": schemaMetricSpec(),
+						"raw_metrics": schemaMetricSpec(),
 						},
 					},
 				},

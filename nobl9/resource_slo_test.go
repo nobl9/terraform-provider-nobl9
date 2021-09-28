@@ -13,7 +13,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		name       string
 		configFunc func(string) string
 	}{
-		{"test-prometheus", testPrometheusConfig},
+		{"test-prometheus", testPrometheusSLO},
 	}
 
 	for _, tc := range cases {
@@ -33,15 +33,24 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 	}
 }
 
-func testPrometheusMetric(name string) string {
+func testPrometheusSLO(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_slo" "%s" {
   name      = "%s"
   project   = "%s"
-
-  prometheus_slo {
-	url = "http://web.net"
+  budgeting_method = ""
+  
+  indicator {
+	name = "%s"
+	raw_metrics {
+		promql = "test-query"
 	}
+	service = "%s"
+	time_windows {
+		count = 
+		unit = 
+	}
+  }
 }
 `, name, name, testProject)
 }
