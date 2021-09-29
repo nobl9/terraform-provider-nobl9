@@ -25,9 +25,10 @@ func TestAcc_Nobl9Service(t *testing.T) {
 func testService(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_service" "%s" {
-  name      = "%s"
-  project   = "%s"
-  description = "Test of service"
+  name              = "%s"
+  display_name = "%s"
+  project             = "%s"
+  description       = "Test of service"
 }
-`, name, name, testProject)
+`, name, name, name, testProject)
 }
