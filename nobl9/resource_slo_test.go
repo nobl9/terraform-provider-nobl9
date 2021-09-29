@@ -1,7 +1,7 @@
 package nobl9
 
 import (
-	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -34,23 +34,31 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 }
 
 func testPrometheusSLO(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_slo" "%s" {
-  name      = "%s"
-  project   = "%s"
-  budgeting_method = ""
+	config := `
+resource "nobl9_service" ":name-service" {
+	name = ":name-service"
+	project = ":project"
+}
+
+resource "nobl9_slo" ":name" {
+  name      = ":name"
+  project   = ":testProject"
+  service = "%s-service"
   
   indicator {
-	name = "%s"
+	name = "ind1"
 	raw_metrics {
 		promql = "test-query"
 	}
-	service = "%s"
-	time_windows {
-		count = 
-		unit = 
-	}
+	// time_windows {
+	// 	count = 
+	// 	unit = 
+	// }
   }
 }
-`, name, name, testProject)
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
 }
