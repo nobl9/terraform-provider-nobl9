@@ -42,7 +42,7 @@ func marshalService(d *schema.ResourceData) *n9api.Service {
 	return &n9api.Service{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
-			Kind:           "Service",
+			Kind:           n9api.KindService,
 			MetadataHolder: marshalMetadata(d),
 		},
 		Spec: n9api.ServiceSpec{
