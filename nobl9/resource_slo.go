@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -68,13 +69,13 @@ func resourceSLO() *schema.Resource {
 							Description: "Alert Policies attached to SLO",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"good": schemaMetricSpec(),
+									"good":  schemaMetricSpec(),
+									"total": schemaMetricSpec(),
 									"incremental": {
 										Type:        schema.TypeBool,
 										Required:    true,
 										Description: "Should the metrics be incrementing or not",
 									},
-									"metric_spec": schemaMetricSpec(),
 								},
 							},
 						},
@@ -281,6 +282,12 @@ func marshalThresholds(d *schema.ResourceData, isRawMetric bool) []n9api.Thresho
 		objective := o.(map[string]interface{})
 		target := objective["target"].(float64)
 		operator := objective["op"].(string)
+		var countMetrics *n9api.CountMetricsSpec
+		if !isRawMetric {
+			cm := objective["count_metrics"].(*schema.Set).List()[0].(map[string]interface{})
+			countMetrics = marshalCountMetrics(cm)
+		}
+
 		thresholds[i] = n9api.Threshold{
 			ThresholdBase: n9api.ThresholdBase{
 				DisplayName: objective["display_name"].(string),
@@ -288,11 +295,22 @@ func marshalThresholds(d *schema.ResourceData, isRawMetric bool) []n9api.Thresho
 			},
 			BudgetTarget: &target,
 			Operator:     &operator,
+			CountMetrics: countMetrics,
 		}
-		// TODO support count_metrics
 	}
 
 	return thresholds
+}
+
+func marshalCountMetrics(countMetrics map[string]interface{}) *n9api.CountMetricsSpec {
+	incremental := countMetrics["incremental"].(bool)
+	good := countMetrics["good"].(*schema.Set).List()[0].(map[string]interface{})
+	total := countMetrics["total"].(*schema.Set).List()[0].(map[string]interface{})
+	return &n9api.CountMetricsSpec{
+		Incremental: &incremental,
+		GoodMetric:  marshalMetric(good),
+		TotalMetric: marshalMetric(total),
+	}
 }
 
 func marshalSLOPrometheus(s *schema.Set) *n9api.PrometheusMetric {
@@ -521,8 +539,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	isRawMetric, err := unmarshalIndicator(d, spec, diags, err)
 	diags = appendError(diags, err)
 
-	fmt.Println(isRawMetric)
-	err = unmarshalObjectives(d, spec)
+	err = unmarshalObjectives(d, spec, isRawMetric)
 	diags = appendError(diags, err)
 
 	err = d.Set("alert_policies", spec["alertPolicies"])
@@ -563,18 +580,38 @@ func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}, er
 	return err
 }
 
-func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) error {
+func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}, isRawMetric bool) error {
 	objectives := spec["objectives"].([]interface{})
 	// TODO support multiple objectives
 	objective := objectives[0].(map[string]interface{})
-	objectivesTF := make(map[string]interface{})
-	objectivesTF["display_name"] = objective["displayName"]
-	objectivesTF["op"] = objective["op"]
-	objectivesTF["value"] = objective["value"]
-	objectivesTF["target"] = objective["target"]
-	// TODO support count_metrics
-	err := d.Set("objective", schema.NewSet(oneElementSet, []interface{}{objectivesTF}))
-	return err
+	objectiveTF := make(map[string]interface{})
+	objectiveTF["display_name"] = objective["displayName"]
+	objectiveTF["op"] = objective["op"]
+	objectiveTF["value"] = objective["value"]
+	objectiveTF["target"] = objective["target"]
+	countMetrics, ok := objective["countMetrics"]
+	if isRawMetric && ok {
+		return errors.New("cannot be rawMetric and countMetric at the same time")
+	}
+	if !isRawMetric {
+		cm := countMetrics.(map[string]interface{})
+		countMetricsTF := make(map[string]interface{})
+		countMetricsTF["incremental"] = cm["incremental"]
+		good, err := unmarshalSLOMetric(cm["good"].(map[string]interface{}))
+		if err != nil {
+			return err
+		}
+		countMetricsTF["good"] = schema.NewSet(oneElementSet, []interface{}{good}) // TODO enable
+		total, err := unmarshalSLOMetric(cm["total"].(map[string]interface{}))
+		if err != nil {
+			return err
+		}
+		countMetricsTF["total"] = schema.NewSet(oneElementSet, []interface{}{total}) // TODO enable
+		fmt.Println(good, total)
+		objectiveTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
+	}
+
+	return d.Set("objective", schema.NewSet(oneElementSet, []interface{}{objectiveTF}))
 }
 
 func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
