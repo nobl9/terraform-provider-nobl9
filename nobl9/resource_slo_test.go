@@ -64,7 +64,7 @@ resource "nobl9_slo" ":name" {
     project = ":project"
 	kind    = "Agent"
     raw_metric {
-      prometheus_metric {
+      prometheus {
         promql = "1.0"
       }
     }
@@ -107,7 +107,7 @@ resource "nobl9_slo" ":name" {
     project = ":project"
 	kind    = "Agent"
     raw_metric {
-      prometheus_metric {
+      prometheus {
         promql = "1.0"
       }
     }
@@ -141,12 +141,12 @@ resource "nobl9_slo" ":name" {
 	count_metrics {
 	  incremental = true
 	  good {
-		prometheus_metric {
+		prometheus {
 		  promql = "1.0"
 		}
 	  }
 	  total {
-		prometheus_metric {
+		prometheus {
 		  promql = "1.0"
 		}
 	  }

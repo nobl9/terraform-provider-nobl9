@@ -11,7 +11,7 @@ func schemaMetricSpec() *schema.Schema {
 		Description: "Configuration for metric source",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"appdynamics_metric": {
+				"appdynamics": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-appdynamics)",
@@ -31,7 +31,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"bigquery_metric": {
+				"bigquery": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-bigquery)",
@@ -56,7 +56,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"datadog_metric": {
+				"datadog": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-datadog)",
@@ -71,7 +71,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"dynatrace_metric": {
+				"dynatrace": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-dynatrace)",
@@ -86,7 +86,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"elasticsearch_metric": {
+				"elasticsearch": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-elasticsearch)",
@@ -106,7 +106,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"graphite_metric": {
+				"graphite": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-graphite)",
@@ -121,7 +121,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"lightstep_metric": {
+				"lightstep": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-lightstep)",
@@ -146,7 +146,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"newrelic_metric": {
+				"newrelic": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-newrelic)",
@@ -161,7 +161,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"opentsdb_metric": {
+				"opentsdb": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-opentsdb)",
@@ -176,7 +176,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"prometheus_metric": {
+				"prometheus": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-prometheus)",
@@ -191,7 +191,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"splunk_metric": {
+				"splunk": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk)",
@@ -211,7 +211,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"splunk_observability_metric": {
+				"splunk_observability": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk-observability)",
@@ -226,7 +226,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"thousandeyes_metric": {
+				"thousandeyes": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-thousandeyes)",
@@ -241,7 +241,7 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 
-				"grafana_loki_metric": {
+				"grafana_loki": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-loki",

@@ -258,7 +258,7 @@ func marshalIndicator(d *schema.ResourceData) n9api.Indicator {
 
 func marshalMetric(metric map[string]interface{}) *n9api.MetricSpec {
 	return &n9api.MetricSpec{
-		Prometheus:          marshalSLOPrometheus(metric["prometheus_metric"].(*schema.Set)),
+		Prometheus:          marshalSLOPrometheus(metric["prometheus"].(*schema.Set)),
 		Datadog:             nil,
 		NewRelic:            nil,
 		AppDynamics:         nil,
@@ -325,21 +325,21 @@ func marshalSLOPrometheus(s *schema.Set) *n9api.PrometheusMetric {
 	}
 }
 
-func marshalSLODatadog(d *schema.ResourceData) *n9api.DatadogMetric {
-	p := d.Get("datadog_metric").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLODatadog(s *schema.Set) *n9api.DatadogMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	ddog := p[0].(map[string]interface{})
 
-	query := ddog["query"].(string)
+	metric := s.List()[0].(map[string]interface{})
+
+	query := metric["query"].(string)
 	return &n9api.DatadogMetric{
 		Query: &query,
 	}
 }
 
 func marshalSLONewRelic(d *schema.ResourceData) *n9api.NewRelicMetric {
-	p := d.Get("newrelic_metric").(*schema.Set).List()
+	p := d.Get("newrelic").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -352,7 +352,7 @@ func marshalSLONewRelic(d *schema.ResourceData) *n9api.NewRelicMetric {
 }
 
 func marshalSLOAppDynamics(d *schema.ResourceData) *n9api.AppDynamicsMetric {
-	p := d.Get("appdynamics_metric").(*schema.Set).List()
+	p := d.Get("appdynamics").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -366,7 +366,7 @@ func marshalSLOAppDynamics(d *schema.ResourceData) *n9api.AppDynamicsMetric {
 	}
 }
 func marshalSLOSplunk(d *schema.ResourceData) *n9api.SplunkMetric {
-	p := d.Get("splunk_metric").(*schema.Set).List()
+	p := d.Get("splunk").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -380,7 +380,7 @@ func marshalSLOSplunk(d *schema.ResourceData) *n9api.SplunkMetric {
 	}
 }
 func marshalSLOLightstep(d *schema.ResourceData) *n9api.LightstepMetric {
-	p := d.Get("lightstep_metric").(*schema.Set).List()
+	p := d.Get("lightstep").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -396,7 +396,7 @@ func marshalSLOLightstep(d *schema.ResourceData) *n9api.LightstepMetric {
 	}
 }
 func marshalSLOSplunkObservability(d *schema.ResourceData) *n9api.SplunkObservabilityMetric {
-	p := d.Get("splunk_observability_metric").(*schema.Set).List()
+	p := d.Get("splunk_observability").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -408,7 +408,7 @@ func marshalSLOSplunkObservability(d *schema.ResourceData) *n9api.SplunkObservab
 	}
 }
 func marshalSLODynatrace(d *schema.ResourceData) *n9api.DynatraceMetric {
-	p := d.Get("dynatrace_metric").(*schema.Set).List()
+	p := d.Get("dynatrace").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -420,7 +420,7 @@ func marshalSLODynatrace(d *schema.ResourceData) *n9api.DynatraceMetric {
 	}
 }
 func marshalSLOThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesMetric {
-	p := d.Get("thousandeyes_metric").(*schema.Set).List()
+	p := d.Get("thousandeyes").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -432,7 +432,7 @@ func marshalSLOThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesMetric {
 	}
 }
 func marshalSLOGraphite(d *schema.ResourceData) *n9api.GraphiteMetric {
-	p := d.Get("graphite_metric").(*schema.Set).List()
+	p := d.Get("graphite").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -444,7 +444,7 @@ func marshalSLOGraphite(d *schema.ResourceData) *n9api.GraphiteMetric {
 	}
 }
 func marshalSLOBigQuery(d *schema.ResourceData) *n9api.BigQueryMetric {
-	p := d.Get("bigquery_metric").(*schema.Set).List()
+	p := d.Get("bigquery").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -457,7 +457,7 @@ func marshalSLOBigQuery(d *schema.ResourceData) *n9api.BigQueryMetric {
 	}
 }
 func marshalSLOOpenTSDB(d *schema.ResourceData) *n9api.OpenTSDBMetric {
-	p := d.Get("opentsdb_metric").(*schema.Set).List()
+	p := d.Get("opentsdb").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -470,7 +470,7 @@ func marshalSLOOpenTSDB(d *schema.ResourceData) *n9api.OpenTSDBMetric {
 }
 
 func marshalSLOGrafanaLoki(d *schema.ResourceData) *n9api.GrafanaLokiMetric {
-	p := d.Get("grafana_loki_metric").(*schema.Set).List()
+	p := d.Get("grafana_loki").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -483,7 +483,7 @@ func marshalSLOGrafanaLoki(d *schema.ResourceData) *n9api.GrafanaLokiMetric {
 }
 
 func marshalSLOElasticsearch(d *schema.ResourceData) *n9api.ElasticsearchMetric {
-	p := d.Get("elasticsearch_metric").(*schema.Set).List()
+	p := d.Get("elasticsearch").(*schema.Set).List()
 	if len(p) == 0 {
 		return nil
 	}
@@ -620,7 +620,7 @@ func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
 		jsonName      string
 		unmarshalFunc func(map[string]interface{}) map[string]interface{}
 	}{
-		{"prometheus_metric", "prometheus", unmarshalPrometheusMetric},
+		{"prometheus", "prometheus", unmarshalPrometheusMetric},
 		//{"datadog_metric", "datadog"},
 		//{"newrelic_metric", "newRelic"},
 		//{"appdynamics_metric", "appDynamics"},

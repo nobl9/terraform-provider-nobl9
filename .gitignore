@@ -1,6 +1,6 @@
 terraform-provider-nobl9
 bin
-
+.env
 # Example for now
 /example/*
 
