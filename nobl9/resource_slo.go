@@ -261,19 +261,19 @@ func marshalIndicator(d *schema.ResourceData) n9api.Indicator {
 func marshalMetric(metric map[string]interface{}) *n9api.MetricSpec {
 	return &n9api.MetricSpec{
 		Prometheus:          marshalSLOPrometheus(metric["prometheus"].(*schema.Set)),
-		Datadog:             nil,
-		NewRelic:            nil,
-		AppDynamics:         nil,
-		Splunk:              nil,
-		Lightstep:           nil,
-		SplunkObservability: nil,
-		Dynatrace:           nil,
-		Elasticsearch:       nil,
-		ThousandEyes:        nil,
-		Graphite:            nil,
-		BigQuery:            nil,
-		OpenTSDB:            nil,
-		GrafanaLoki:         nil,
+		Datadog:             marshalSLODatadog(metric["datadog"].(*schema.Set)),
+		NewRelic:            marshalSLONewRelic(metric["newrelic"].(*schema.Set)),
+		AppDynamics:         marshalSLOAppDynamics(metric["appdynamics"].(*schema.Set)),
+		Splunk:              marshalSLOSplunk(metric["splunk"].(*schema.Set)),
+		Lightstep:           marshalSLOLightstep(metric["lightstep"].(*schema.Set)),
+		SplunkObservability: marshalSLOSplunkObservability(metric["splunk_observability"].(*schema.Set)),
+		Dynatrace:           marshalSLODynatrace(metric["dynatrace"].(*schema.Set)),
+		Elasticsearch:       marshalSLOElasticsearch(metric["elasticsearch"].(*schema.Set)),
+		ThousandEyes:        marshalSLOThousandEyes(metric["thousandeyes"].(*schema.Set)),
+		Graphite:            marshalSLOGraphite(metric["graphite"].(*schema.Set)),
+		BigQuery:            marshalSLOBigQuery(metric["bigquery"].(*schema.Set)),
+		OpenTSDB:            marshalSLOOpenTSDB(metric["opentsdb"].(*schema.Set)),
+		GrafanaLoki:         marshalSLOGrafanaLoki(metric["grafana_loki"].(*schema.Set)),
 	}
 }
 
@@ -333,166 +333,165 @@ func marshalSLODatadog(s *schema.Set) *n9api.DatadogMetric {
 	}
 
 	metric := s.List()[0].(map[string]interface{})
-
 	query := metric["query"].(string)
 	return &n9api.DatadogMetric{
 		Query: &query,
 	}
 }
 
-func marshalSLONewRelic(d *schema.ResourceData) *n9api.NewRelicMetric {
-	p := d.Get("newrelic").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLONewRelic(s *schema.Set) *n9api.NewRelicMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	newrelic := p[0].(map[string]interface{})
 
-	nrql := newrelic["nrql"].(string)
+	metric := s.List()[0].(map[string]interface{})
+
+	nrql := metric["nrql"].(string)
 	return &n9api.NewRelicMetric{
 		NRQL: &nrql,
 	}
 }
 
-func marshalSLOAppDynamics(d *schema.ResourceData) *n9api.AppDynamicsMetric {
-	p := d.Get("appdynamics").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLOAppDynamics(s *schema.Set) *n9api.AppDynamicsMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	appdynamics := p[0].(map[string]interface{})
 
-	applicationName := appdynamics["application_name"].(string)
-	metricPath := appdynamics["metric_path"].(string)
+	metric := s.List()[0].(map[string]interface{})
+
+	applicationName := metric["application_name"].(string)
+	metricPath := metric["metric_path"].(string)
 	return &n9api.AppDynamicsMetric{
 		ApplicationName: &applicationName,
 		MetricPath:      &metricPath,
 	}
 }
-func marshalSLOSplunk(d *schema.ResourceData) *n9api.SplunkMetric {
-	p := d.Get("splunk").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLOSplunk(s *schema.Set) *n9api.SplunkMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	splunk := p[0].(map[string]interface{})
 
-	query := splunk["query"].(string)
-	fieldName := splunk["field_name"].(string)
+	metric := s.List()[0].(map[string]interface{})
+
+	query := metric["query"].(string)
+	fieldName := metric["field_name"].(string)
 	return &n9api.SplunkMetric{
 		Query:     &query,
 		FieldName: &fieldName,
 	}
 }
-func marshalSLOLightstep(d *schema.ResourceData) *n9api.LightstepMetric {
-	p := d.Get("lightstep").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLOLightstep(s *schema.Set) *n9api.LightstepMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	lightstep := p[0].(map[string]interface{})
 
-	streamID := lightstep["stream_id"].(string)
-	typeOfData := lightstep["type_of_data"].(string)
-	percentile := lightstep["percentile"].(float64)
+	metric := s.List()[0].(map[string]interface{})
+
+	streamID := metric["stream_id"].(string)
+	typeOfData := metric["type_of_data"].(string)
+	percentile := metric["percentile"].(float64)
 	return &n9api.LightstepMetric{
 		StreamID:   &streamID,
 		TypeOfData: &typeOfData,
 		Percentile: &percentile,
 	}
 }
-func marshalSLOSplunkObservability(d *schema.ResourceData) *n9api.SplunkObservabilityMetric {
-	p := d.Get("splunk_observability").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLOSplunkObservability(s *schema.Set) *n9api.SplunkObservabilityMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	splunkObservability := p[0].(map[string]interface{})
 
-	program := splunkObservability["program"].(string)
+	metric := s.List()[0].(map[string]interface{})
+
+	program := metric["program"].(string)
 	return &n9api.SplunkObservabilityMetric{
 		Program: &program,
 	}
 }
-func marshalSLODynatrace(d *schema.ResourceData) *n9api.DynatraceMetric {
-	p := d.Get("dynatrace").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLODynatrace(s *schema.Set) *n9api.DynatraceMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	dynatrace := p[0].(map[string]interface{})
 
-	selector := dynatrace["metric_selector"].(string)
+	metric := s.List()[0].(map[string]interface{})
+
+	selector := metric["metric_selector"].(string)
 	return &n9api.DynatraceMetric{
 		MetricSelector: &selector,
 	}
 }
-func marshalSLOThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesMetric {
-	p := d.Get("thousandeyes").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLOThousandEyes(s *schema.Set) *n9api.ThousandEyesMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	thousandeyes := p[0].(map[string]interface{})
 
-	testID := thousandeyes["test_id"].(int64)
+	metric := s.List()[0].(map[string]interface{})
+
+	testID := metric["test_id"].(int64)
 	return &n9api.ThousandEyesMetric{
 		TestID: &testID,
 	}
 }
-func marshalSLOGraphite(d *schema.ResourceData) *n9api.GraphiteMetric {
-	p := d.Get("graphite").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLOGraphite(s *schema.Set) *n9api.GraphiteMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	graphite := p[0].(map[string]interface{})
 
-	metricPath := graphite["metric_path"].(string)
+	metric := s.List()[0].(map[string]interface{})
+
+	metricPath := metric["metric_path"].(string)
 	return &n9api.GraphiteMetric{
 		MetricPath: &metricPath,
 	}
 }
-func marshalSLOBigQuery(d *schema.ResourceData) *n9api.BigQueryMetric {
-	p := d.Get("bigquery").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLOBigQuery(s *schema.Set) *n9api.BigQueryMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	bigquery := p[0].(map[string]interface{})
+
+	metric := s.List()[0].(map[string]interface{})
 
 	return &n9api.BigQueryMetric{
-		Query:     bigquery["query"].(string),
-		ProjectID: bigquery["project_id"].(string),
-		Location:  bigquery["location"].(string),
+		Query:     metric["query"].(string),
+		ProjectID: metric["project_id"].(string),
+		Location:  metric["location"].(string),
 	}
 }
-func marshalSLOOpenTSDB(d *schema.ResourceData) *n9api.OpenTSDBMetric {
-	p := d.Get("opentsdb").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLOOpenTSDB(s *schema.Set) *n9api.OpenTSDBMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	opentsdb := p[0].(map[string]interface{})
 
-	query := opentsdb["query"].(string)
+	metric := s.List()[0].(map[string]interface{})
+
+	query := metric["query"].(string)
 	return &n9api.OpenTSDBMetric{
 		Query: &query,
 	}
 }
 
-func marshalSLOGrafanaLoki(d *schema.ResourceData) *n9api.GrafanaLokiMetric {
-	p := d.Get("grafana_loki").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLOGrafanaLoki(s *schema.Set) *n9api.GrafanaLokiMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	grafanaloki := p[0].(map[string]interface{})
 
-	logql := grafanaloki["logql"].(string)
+	metric := s.List()[0].(map[string]interface{})
+
+	logql := metric["logql"].(string)
 	return &n9api.GrafanaLokiMetric{
 		Logql: &logql,
 	}
 }
 
-func marshalSLOElasticsearch(d *schema.ResourceData) *n9api.ElasticsearchMetric {
-	p := d.Get("elasticsearch").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLOElasticsearch(s *schema.Set) *n9api.ElasticsearchMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	elasticsearch := p[0].(map[string]interface{})
 
-	index := elasticsearch["index"].(string)
-	query := elasticsearch["query"].(string)
+	metric := s.List()[0].(map[string]interface{})
+
+	index := metric["index"].(string)
+	query := metric["query"].(string)
 	return &n9api.ElasticsearchMetric{
 		Index: &index,
 		Query: &query,
@@ -637,19 +636,19 @@ func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
 		unmarshalFunc func(map[string]interface{}) map[string]interface{}
 	}{
 		{"prometheus", "prometheus", unmarshalPrometheusMetric},
-		//{"datadog_metric", "datadog"},
-		//{"newrelic_metric", "newRelic"},
-		//{"appdynamics_metric", "appDynamics"},
-		//{"splunk_metric", "splunk"},
-		//{"lightstep_metric", "lightstep"},
-		//{"splunk_observability_metric", "splunkObservability"},
-		//{"dynatrace_metric", "dynatrace"},
-		//{"thousandeyes_metric", "thousandEyes"},
-		//{"graphite_metric", "graphite"},
-		//{"bigquery_metric", "bigQuery"},
-		//{"opentsdb_metric", "opentsdb"},
-		//{"elasticsearch_metric", "elasticsearch"},
-		//{"grafana_loki_metric", "grafanaLoki"},
+		{"datadog", "datadog", unmarshalDatadogMetric},
+		{"newrelic", "newRelic", unmarshalNewRelicMetric},
+		{"appdynamics", "appDynamics", unmarshalAppdynamicsMetric},
+		{"splunk", "splunk", unmarshalSplunkMetric},
+		{"lightstep", "lightstep", unmarshalLightstepMetric},
+		{"splunk_observability", "splunkObservability", unmarshalSplunkObservabilityMetric},
+		{"dynatrace", "dynatrace", unmarshalDynatraceMetric},
+		{"thousandeyes", "thousandEyes", unmarshalThousandeyesMetric},
+		{"graphite", "graphite", unmarshalGraphiteMetric},
+		{"bigquery", "bigQuery", unmarshalBigqueryMetric},
+		{"opentsdb", "opentsdb", unmarshalOpentsdbMetric},
+		{"elasticsearch", "elasticsearch", unmarshalElasticsearchMetric},
+		{"grafana_loki", "grafanaLoki", unmarshalGrafanaLokiMetric},
 	}
 
 	res := make(map[string]interface{})
@@ -667,6 +666,104 @@ func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
 func unmarshalPrometheusMetric(metric map[string]interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	res["promql"] = metric["promql"]
+
+	return res
+}
+
+func unmarshalDatadogMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["query"] = metric["query"]
+
+	return res
+}
+
+func unmarshalNewRelicMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["nrql"] = metric["nrql"]
+
+	return res
+}
+
+func unmarshalAppdynamicsMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["application_name"] = metric["application_name"]
+	res["metric_path"] = metric["metric_path"]
+
+	return res
+}
+
+func unmarshalSplunkMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["query"] = metric["query"]
+	res["field_name"] = metric["field_name"]
+
+	return res
+}
+
+func unmarshalLightstepMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["percentile"] = metric["percentile"]
+	res["stream_id"] = metric["stream_id"]
+	res["type_of_data"] = metric["type_of_data"]
+
+	return res
+}
+
+func unmarshalSplunkObservabilityMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["program"] = metric["program"]
+
+	return res
+}
+
+func unmarshalDynatraceMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["metric_selector"] = metric["metric_selector"]
+
+	return res
+}
+
+func unmarshalThousandeyesMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["test_id"] = metric["test_id"]
+
+	return res
+}
+
+func unmarshalGraphiteMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["metric_path"] = metric["metric_path"]
+
+	return res
+}
+
+func unmarshalBigqueryMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["location"] = metric["location"]
+	res["project_id"] = metric["project_id"]
+	res["query"] = metric["query"]
+
+	return res
+}
+
+func unmarshalOpentsdbMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["query"] = metric["query"]
+
+	return res
+}
+
+func unmarshalElasticsearchMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["index"] = metric["index"]
+	res["query"] = metric["query"]
+
+	return res
+}
+
+func unmarshalGrafanaLokiMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["logql"] = metric["logql"]
 
 	return res
 }
