@@ -14,6 +14,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		configFunc func(string) string
 	}{
 		{"test-prometheus", testPrometheusSLO},
+		{"test-prom-with-ap", testPrometheusSLOWithAlerPolicy},
 	}
 
 	for _, tc := range cases {
@@ -35,9 +36,8 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 
 func testPrometheusSLO(name string) string {
 	config := testService(name+"-service") +
-		"\n\n" +
 		testPrometheusConfig(name+"-agent") + `
-resource "nobl9_slo" "test-prometheus" {
+resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
   project      = "terraform"
@@ -68,6 +68,51 @@ resource "nobl9_slo" "test-prometheus" {
       }
     }
   }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testPrometheusSLOWithAlerPolicy(name string) string {
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") +
+		testAlertPolicyWithoutIntegration(name+"-ap") + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = "terraform"
+  service      = nobl9_service.:name-service.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:name-agent.name
+    project = ":project"
+	kind    = "Agent"
+    raw_metric {
+      prometheus_metric {
+        promql = "1.0"
+      }
+    }
+  }
+
+  alert_policies = [ nobl9_alert_policy.:name-ap.name ]
 }
 `
 	config = strings.ReplaceAll(config, ":name", name)

@@ -219,7 +219,7 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 			Indicator:       indicator,
 			Thresholds:      marshalThresholds(d, isRawMetric),
 			TimeWindows:     marshalTimeWindows(d),
-			//AlertPolicies: alertPoliciesStr, TODO
+			AlertPolicies:   alertPoliciesStr,
 			//Attachments: n9api.Attachment{ TODO
 			//	DisplayName: d.Get("display_name").(string),
 			//	Url:         d.Get("url").(string),
@@ -522,8 +522,10 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	diags = appendError(diags, err)
 
 	fmt.Println(isRawMetric)
-
 	err = unmarshalObjectives(d, spec)
+	diags = appendError(diags, err)
+
+	err = d.Set("alert_policies", spec["alertPolicies"])
 	diags = appendError(diags, err)
 
 	return diags
@@ -577,9 +579,9 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) er
 
 func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
 	supportedMetrics := []struct {
-		hclName  string
-		jsonName string
-		f        func(map[string]interface{}) map[string]interface{}
+		hclName       string
+		jsonName      string
+		unmarshalFunc func(map[string]interface{}) map[string]interface{}
 	}{
 		{"prometheus_metric", "prometheus", unmarshalPrometheusMetric},
 		//{"datadog_metric", "datadog"},
@@ -600,7 +602,7 @@ func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
 	res := make(map[string]interface{})
 	for _, name := range supportedMetrics {
 		if metric, ok := spec[name.jsonName]; ok {
-			tfMetric := name.f(metric.(map[string]interface{}))
+			tfMetric := name.unmarshalFunc(metric.(map[string]interface{}))
 			res[name.hclName] = schema.NewSet(oneElementSet, []interface{}{tfMetric})
 			break
 		}
