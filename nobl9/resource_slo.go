@@ -3,7 +3,6 @@ package nobl9
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -86,7 +85,7 @@ func resourceSLO() *schema.Resource {
 						},
 						"op": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 							Description: "Type of logical operation",
 						},
 						"target": {
@@ -94,11 +93,12 @@ func resourceSLO() *schema.Resource {
 							Required:    true,
 							Description: "Designated value",
 						},
-						"time_slice_target": {
-							Type:        schema.TypeFloat,
-							Optional:    true,
-							Description: "Designated value for slice",
-						},
+						// TODO enable time_slices back
+						//"time_slice_target": {
+						//	Type:        schema.TypeFloat,
+						//	Optional:    true,
+						//	Description: "Designated value for slice",
+						//},
 						"value": {
 							Type:        schema.TypeFloat,
 							Required:    true,
@@ -601,13 +601,12 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}, is
 		if err != nil {
 			return err
 		}
-		countMetricsTF["good"] = schema.NewSet(oneElementSet, []interface{}{good}) // TODO enable
+		countMetricsTF["good"] = good
 		total, err := unmarshalSLOMetric(cm["total"].(map[string]interface{}))
 		if err != nil {
 			return err
 		}
-		countMetricsTF["total"] = schema.NewSet(oneElementSet, []interface{}{total}) // TODO enable
-		fmt.Println(good, total)
+		countMetricsTF["total"] = total
 		objectiveTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
 	}
 

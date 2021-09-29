@@ -137,7 +137,6 @@ resource "nobl9_slo" ":name" {
     display_name = "obj1"
     target       = 0.7
     value        = 1
-    op           = "lt"
 	count_metrics {
 	  incremental = true
 	  good {
