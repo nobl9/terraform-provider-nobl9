@@ -82,6 +82,7 @@ func DestroyFunc(rsType string, objectType n9api.Object) func(s *terraform.State
 			if rs.Type != rsType {
 				continue
 			}
+			// TODO change it to GetObjectByName
 			if err := client.DeleteObjectsByName(objectType, rs.Primary.ID); err != nil {
 				return err
 			}
