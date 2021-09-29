@@ -14,12 +14,7 @@ func resourceService() *schema.Resource {
 			"name":         schemaName(),
 			"display_name": schemaDisplayName(),
 			"project":      schemaProject(),
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Description of the service",
-			},
-
+			"description":  schemaDescription(),
 			"status": {
 				Type:        schema.TypeMap,
 				Computed:    true,
@@ -27,7 +22,6 @@ func resourceService() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeFloat,
 				},
-
 			},
 		},
 		CreateContext: resourceServiceApply,
