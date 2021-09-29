@@ -38,9 +38,10 @@ func testPrometheusSLO(name string) string {
 		"\n\n" +
 		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" "test-prometheus" {
-  name    = "test-prometheus"
-  project = "terraform"
-  service = nobl9_service.:name-service.name
+  name         = ":name"
+  display_name = ":name"
+  project      = "terraform"
+  service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
 

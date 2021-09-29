@@ -503,22 +503,30 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	err = d.Set("description", description)
 	diags = appendError(diags, err)
 
-	objectives := spec["objectives"].([]interface{})
-	objectivesTF := make(map[string]interface{})
-	objectivesTF["display_name"] = objectives[0].(map[string]interface{})["displayName"]
-	objectivesTF["op"] = objectives[0].(map[string]interface{})["op"]
-	objectivesTF["value"] = objectives[0].(map[string]interface{})["value"]
-	objectivesTF["target"] = objectives[0].(map[string]interface{})["target"]
-	err = d.Set("objective", schema.NewSet(oneElementSet, []interface{}{objectivesTF}))
-	diags = appendError(diags, err)
-
 	service := spec["service"].(string)
 	err = d.Set("service", service)
 	diags = appendError(diags, err)
 
-	//timeWindows := spec["timeWindows"].([]interface{})
-	//err = d.Set("timeWindow", schema.NewSet(oneElementSet, timeWindows))
-	//diags = appendError(diags, err)
+	objectives := spec["objectives"].([]interface{})
+	objective := objectives[0].(map[string]interface{})
+	objectivesTF := make(map[string]interface{})
+	objectivesTF["display_name"] = objective["displayName"]
+	objectivesTF["op"] = objective["op"]
+	objectivesTF["value"] = objective["value"]
+	objectivesTF["target"] = objective["target"]
+	err = d.Set("objective", schema.NewSet(oneElementSet, []interface{}{objectivesTF}))
+	diags = appendError(diags, err)
+
+	timeWindows := spec["timeWindows"].([]interface{})
+	timeWindow := timeWindows[0].(map[string]interface{})
+	timeWindowsTF := make(map[string]interface{})
+	timeWindowsTF["count"] = timeWindow["count"]
+	timeWindowsTF["is_rolling"] = timeWindow["isRolling"]
+	timeWindowsTF["unit"] = timeWindow["unit"]
+	timeWindowsTF["period"] = timeWindow["period"]
+	// TODO handle calendar
+	err = d.Set("time_window", schema.NewSet(oneElementSet, []interface{}{timeWindowsTF}))
+	diags = appendError(diags, err)
 
 	supportedMetrics := []struct {
 		hclName  string
