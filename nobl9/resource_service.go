@@ -24,6 +24,10 @@ func resourceService() *schema.Resource {
 				Type:        schema.TypeMap,
 				Computed:    true,
 				Description: "Status of created service.",
+				Elem: &schema.Schema{
+					Type: schema.TypeFloat,
+				},
+
 			},
 		},
 		CreateContext: resourceServiceApply,
