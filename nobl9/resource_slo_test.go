@@ -16,6 +16,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-prometheus", testPrometheusSLO},
 		{"test-prom-with-ap", testPrometheusSLOWithAlerPolicy},
 		{"test-prom-with-countmetrics", testPrometheusSLOWithCountMetrics},
+		{"test-prom-with-multiple-objectives", testPrometheusSLOWithMultipleObjectives},
 	}
 
 	for _, tc := range cases {
@@ -162,6 +163,54 @@ resource "nobl9_slo" ":name" {
     name    = nobl9_agent.:name-agent.name
     project = ":project"
 	kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+func testPrometheusSLOWithMultipleObjectives(name string) string {
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = "terraform"
+  service      = nobl9_service.:name-service.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+  }
+
+  objective {
+    display_name = "obj2"
+    target       = 0.5
+    value        = 10
+    op           = "lt"
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:name-agent.name
+    project = ":project"
+	kind    = "Agent"
+    raw_metric {
+      prometheus_metric {
+        promql = "1.0"
+      }
+    }
   }
 }
 `
