@@ -473,7 +473,7 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 
 	status := object["status"].(map[string]interface{})
 	err := d.Set("status", status)
-	appendError(diags, err)
+	diags = appendError(diags, err)
 
 	supportedAgents := []struct {
 		hclName  string
@@ -513,10 +513,11 @@ func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclNa
 		return false, nil
 	}
 
+	//err := d.Set("agent_type", spec[""]) TODO
 	err := d.Set("source_of", spec["sourceOf"])
-	appendError(diags, err)
+	diags = appendError(diags, err)
 	err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{spec[jsonName]}))
-	appendError(diags, err)
+	diags = appendError(diags, err)
 
 	return true, diags
 }
