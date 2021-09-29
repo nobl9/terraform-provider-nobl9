@@ -55,7 +55,7 @@ func resourceSLO() *schema.Resource {
 			},
 			"indicator": {
 				Type:        schema.TypeSet,
-				Optional:    true,
+				Required:    true,
 				Description: " ",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -69,11 +69,11 @@ func resourceSLO() *schema.Resource {
 							Optional:    true,
 							Description: "Name of the metric souce project",
 						},
-						"raw_metrics": schemaMetricSpec(),
+						"raw_metric": schemaMetricSpec(),
 					},
 				},
 			},
-			"objectives": {
+			"objective": {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Description: " ([Objectives documentation] https://nobl9.github.io/techdocs_YAML_Guide/#objectives)",
@@ -128,7 +128,7 @@ func resourceSLO() *schema.Resource {
 				Required:    true,
 				Description: "Name of the service",
 			},
-			"time_windows": {
+			"time_window": {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Description: " ",
@@ -183,7 +183,7 @@ func resourceSLO() *schema.Resource {
 							},
 						},
 						"unit": {
-							Type:        schema.TypeFloat,
+							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Unit of time",
 						},
@@ -217,29 +217,8 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 			MetadataHolder: marshalMetadata(d),
 		},
 		Spec: n9api.SLOSpec{
-			Description: d.Get("description").(string),
-			Indicator: n9api.Indicator{
-				MetricSource: &n9api.MetricSourceSpec{
-					Project: d.Get("project").(string),
-					Name:    d.Get("name").(string),
-				},
-				RawMetric: &n9api.MetricSpec{
-					Prometheus: marshalSLOPrometheus(d),
-					//	Datadog:             marshalSLODatadog(d),
-					//	NewRelic:            marshalSLONewRelic(d),
-					//	AppDynamics:         marshalSLOAppDynamics(d),
-					//	Splunk:              marshalSLOSplunk(d),
-					//	Lightstep:           marshalSLOLightstep(d),
-					//	SplunkObservability: marshalSLOSplunkObservability(d),
-					//	Dynatrace:           marshalDynatrace(d),
-					//	ThousandEyes:        marshalSLOThousandEyes(d),
-					//	Graphite:            marshalSLOGraphite(d),
-					//	BigQuery:            marshalSLOBigQuery(d),
-					//	OpenTSDB:            marshalSLOOpenTSDB(d),
-					//	GrafanaLoki:         marshalSLOGrafanaLoki(d),
-					//	Elasticsearch:       marshalSLOElasticsearch(d),
-				},
-			},
+			Description:     d.Get("description").(string),
+			Indicator:       marshalIndicator(d),
 			BudgetingMethod: d.Get("budgeting_method").(string),
 			// Thresholds: []n9api.Threshold{{
 			// 	ThresholdBase:   d.Get("value").(float64),
@@ -325,6 +304,41 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 	}
 }
 
+func marshalIndicator(d *schema.ResourceData) n9api.Indicator {
+	indicator := d.Get("indicator").(*schema.Set).List()[0].(map[string]interface{})
+	var rawMetric *n9api.MetricSpec
+	if raw := indicator["raw_metric"].(*schema.Set); raw.Len() > 0 {
+		rawMetric = marshalMetric(raw.List()[0].(map[string]interface{}))
+	}
+	return n9api.Indicator{
+		MetricSource: &n9api.MetricSourceSpec{
+			Project: indicator["project"].(string),
+			Name:    indicator["name"].(string),
+			Kind:    "Agent", // TODO check if direct can be here?
+		},
+		RawMetric: rawMetric,
+	}
+}
+
+func marshalMetric(metric map[string]interface{}) *n9api.MetricSpec {
+	return &n9api.MetricSpec{
+		Prometheus:          marshalSLOPrometheus(metric["prometheus_metric"].(*schema.Set)),
+		Datadog:             nil,
+		NewRelic:            nil,
+		AppDynamics:         nil,
+		Splunk:              nil,
+		Lightstep:           nil,
+		SplunkObservability: nil,
+		Dynatrace:           nil,
+		Elasticsearch:       nil,
+		ThousandEyes:        nil,
+		Graphite:            nil,
+		BigQuery:            nil,
+		OpenTSDB:            nil,
+		GrafanaLoki:         nil,
+	}
+}
+
 func marshalThresholds(d *schema.ResourceData) []n9api.Threshold {
 	return nil
 	//n9api.Threshold{
@@ -370,14 +384,13 @@ func marshalThresholds(d *schema.ResourceData) []n9api.Threshold {
 	//}
 }
 
-func marshalSLOPrometheus(d *schema.ResourceData) *n9api.PrometheusMetric {
-	p := d.Get("prometheus_metric").(*schema.Set).List()
-	if len(p) == 0 {
+func marshalSLOPrometheus(s *schema.Set) *n9api.PrometheusMetric {
+	if s.Len() == 0 {
 		return nil
 	}
-	prom := p[0].(map[string]interface{})
 
-	query := prom["promql"].(string)
+	metric := s.List()[0].(map[string]interface{})
+	query := metric["promql"].(string)
 	return &n9api.PrometheusMetric{
 		PromQL: &query,
 	}

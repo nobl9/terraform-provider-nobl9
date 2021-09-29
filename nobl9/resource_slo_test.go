@@ -42,14 +42,36 @@ resource "nobl9_service" ":name-service" {
 
 resource "nobl9_slo" ":name" {
   name      = ":name"
-  project   = ":testProject"
+  project   = ":project"
   service = "%s-service"
-  
+
+  budgeting_method = "budgeting_method"
+
+  objective {
+	target = 0.7
+	value = 1
+	op = "lt"
+  }
+
+  time_window {
+	  count = 10
+	  is_rolling = true
+	  period {
+		begin = "2021-09-29T10:18:39Z"
+		end = "2021-09-29T10:28:39Z"
+	  }
+	  unit = "Minute"
+  }
+
   indicator {
 	name = "ind1"
-	raw_metrics {
-		promql = "test-query"
+	project = ":project"
+    raw_metric {
+	  prometheus_metric {
+	    promql = "1.0"
+ 	  }
 	}
+
 	// time_windows {
 	// 	count = 
 	// 	unit = 
