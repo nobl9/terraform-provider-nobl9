@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hash/fnv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -86,7 +87,7 @@ func resourceSLO() *schema.Resource {
 						},
 						"op": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 							Description: "Type of logical operation",
 						},
 						"target": {
@@ -94,11 +95,12 @@ func resourceSLO() *schema.Resource {
 							Required:    true,
 							Description: "Designated value",
 						},
-						"time_slice_target": {
-							Type:        schema.TypeFloat,
-							Optional:    true,
-							Description: "Designated value for slice",
-						},
+						// TODO enable time_slices back
+						//"time_slice_target": {
+						//	Type:        schema.TypeFloat,
+						//	Optional:    true,
+						//	Description: "Designated value for slice",
+						//},
 						"value": {
 							Type:        schema.TypeFloat,
 							Required:    true,
@@ -582,36 +584,50 @@ func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}, er
 
 func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}, isRawMetric bool) error {
 	objectives := spec["objectives"].([]interface{})
-	// TODO support multiple objectives
-	objective := objectives[0].(map[string]interface{})
-	objectiveTF := make(map[string]interface{})
-	objectiveTF["display_name"] = objective["displayName"]
-	objectiveTF["op"] = objective["op"]
-	objectiveTF["value"] = objective["value"]
-	objectiveTF["target"] = objective["target"]
-	countMetrics, ok := objective["countMetrics"]
-	if isRawMetric && ok {
-		return errors.New("cannot be rawMetric and countMetric at the same time")
-	}
-	if !isRawMetric {
-		cm := countMetrics.(map[string]interface{})
-		countMetricsTF := make(map[string]interface{})
-		countMetricsTF["incremental"] = cm["incremental"]
-		good, err := unmarshalSLOMetric(cm["good"].(map[string]interface{}))
-		if err != nil {
-			return err
-		}
-		countMetricsTF["good"] = schema.NewSet(oneElementSet, []interface{}{good}) // TODO enable
-		total, err := unmarshalSLOMetric(cm["total"].(map[string]interface{}))
-		if err != nil {
-			return err
-		}
-		countMetricsTF["total"] = schema.NewSet(oneElementSet, []interface{}{total}) // TODO enable
-		fmt.Println(good, total)
-		objectiveTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
-	}
+	objectivesTF := make([]interface{}, len(objectives))
 
-	return d.Set("objective", schema.NewSet(oneElementSet, []interface{}{objectiveTF}))
+	for i, o := range objectives {
+		objective := o.(map[string]interface{})
+		objectiveTF := make(map[string]interface{})
+		objectiveTF["display_name"] = objective["displayName"]
+		objectiveTF["op"] = objective["op"]
+		objectiveTF["value"] = objective["value"]
+		objectiveTF["target"] = objective["target"]
+
+		countMetrics, ok := objective["countMetrics"]
+		if isRawMetric && ok {
+			return errors.New("cannot be rawMetric and countMetric at the same time")
+		}
+		if !isRawMetric {
+			cm := countMetrics.(map[string]interface{})
+			countMetricsTF := make(map[string]interface{})
+			countMetricsTF["incremental"] = cm["incremental"]
+			good, err := unmarshalSLOMetric(cm["good"].(map[string]interface{}))
+			if err != nil {
+				return err
+			}
+			countMetricsTF["good"] = good
+			total, err := unmarshalSLOMetric(cm["total"].(map[string]interface{}))
+			if err != nil {
+				return err
+			}
+			countMetricsTF["total"] = total
+			objectiveTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
+		}
+		objectivesTF[i] = objectiveTF
+	}
+	return d.Set("objective", schema.NewSet(objectiveHash, objectivesTF))
+}
+
+func objectiveHash(objective interface{}) int {
+	o := objective.(map[string]interface{})
+	hash := fnv.New32()
+	indicator := fmt.Sprintf("%s_%s_%f_%f", o["display_name"], o["op"], o["target"], o["value"])
+	_, err := hash.Write([]byte(indicator))
+	if err != nil {
+		panic(err)
+	}
+	return int(hash.Sum32())
 }
 
 func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
