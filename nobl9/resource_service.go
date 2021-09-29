@@ -51,7 +51,7 @@ func marshalService(d *schema.ResourceData) *n9api.Service {
 	}
 }
 
-func unmarshalService(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostic {
+func unmarshalService(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
