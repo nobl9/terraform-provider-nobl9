@@ -36,12 +36,21 @@ func resourceSLO() *schema.Resource {
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Name of the metric source",
+							ForceNew:    true,
+							Description: "Name of the metric source (agent).",
 						},
 						"project": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Name of the metric source project",
+							ForceNew:    true,
+							Description: "Name of the metric source project.",
+						},
+						"kind": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Default:     "Agent",
+							Description: "Kind of the metric source. One of {Agent, Direct}.",
 						},
 						"raw_metric": schemaMetricSpec(),
 					},
@@ -240,7 +249,7 @@ func marshalIndicator(d *schema.ResourceData) n9api.Indicator {
 		MetricSource: &n9api.MetricSourceSpec{
 			Project: indicator["project"].(string),
 			Name:    indicator["name"].(string),
-			Kind:    "Agent", // TODO check if direct can be here?
+			Kind:    indicator["kind"].(string),
 		},
 		RawMetric: rawMetric,
 	}
@@ -507,16 +516,39 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	err = d.Set("service", service)
 	diags = appendError(diags, err)
 
-	objectives := spec["objectives"].([]interface{})
-	objective := objectives[0].(map[string]interface{})
-	objectivesTF := make(map[string]interface{})
-	objectivesTF["display_name"] = objective["displayName"]
-	objectivesTF["op"] = objective["op"]
-	objectivesTF["value"] = objective["value"]
-	objectivesTF["target"] = objective["target"]
-	err = d.Set("objective", schema.NewSet(oneElementSet, []interface{}{objectivesTF}))
+	err = unmarshalTimeWindow(d, spec, err)
+	diags = appendError(diags, err)
+	isRawMetric, err := unmarshalIndicator(d, spec, diags, err)
 	diags = appendError(diags, err)
 
+	fmt.Println(isRawMetric)
+
+	err = unmarshalObjectives(d, spec)
+	diags = appendError(diags, err)
+
+	return diags
+}
+
+func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}, diags diag.Diagnostics, err error) (bool, error) {
+	indicator := spec["indicator"].(map[string]interface{})
+	res := make(map[string]interface{})
+	metricSource := indicator["metricSource"].(map[string]interface{})
+	res["name"] = metricSource["name"]
+	res["project"] = metricSource["project"]
+	res["kind"] = metricSource["kind"]
+	isRawMetric := false
+	if rawMetric, ok := indicator["rawMetric"]; ok {
+		isRawMetric = true
+		tfMetric, err := unmarshalSLOMetric(rawMetric.(map[string]interface{}))
+		if err != nil {
+			return false, err
+		}
+		res["raw_metric"] = tfMetric
+	}
+	return isRawMetric, d.Set("indicator", schema.NewSet(oneElementSet, []interface{}{res}))
+}
+
+func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}, err error) error {
 	timeWindows := spec["timeWindows"].([]interface{})
 	timeWindow := timeWindows[0].(map[string]interface{})
 	timeWindowsTF := make(map[string]interface{})
@@ -526,13 +558,30 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	timeWindowsTF["period"] = timeWindow["period"]
 	// TODO handle calendar
 	err = d.Set("time_window", schema.NewSet(oneElementSet, []interface{}{timeWindowsTF}))
-	diags = appendError(diags, err)
+	return err
+}
 
+func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) error {
+	objectives := spec["objectives"].([]interface{})
+	// TODO support multiple objectives
+	objective := objectives[0].(map[string]interface{})
+	objectivesTF := make(map[string]interface{})
+	objectivesTF["display_name"] = objective["displayName"]
+	objectivesTF["op"] = objective["op"]
+	objectivesTF["value"] = objective["value"]
+	objectivesTF["target"] = objective["target"]
+	// TODO support count_metrics
+	err := d.Set("objective", schema.NewSet(oneElementSet, []interface{}{objectivesTF}))
+	return err
+}
+
+func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
 	supportedMetrics := []struct {
 		hclName  string
 		jsonName string
+		f        func(map[string]interface{}) map[string]interface{}
 	}{
-		{"prometheus_metric", "prometheus"},
+		{"prometheus_metric", "prometheus", unmarshalPrometheusMetric},
 		//{"datadog_metric", "datadog"},
 		//{"newrelic_metric", "newRelic"},
 		//{"appdynamics_metric", "appDynamics"},
@@ -548,35 +597,23 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 		//{"grafana_loki_metric", "grafanaLoki"},
 	}
 
+	res := make(map[string]interface{})
 	for _, name := range supportedMetrics {
-		//ok, ds := unmarshalSLOMetric(d, object, name.hclName, name.jsonName)
-		//if ds.HasError() {
-		//	diags = append(diags, ds...)
-		//}
-		//if ok {
-		//	break
-		//}
-		fmt.Println(name)
+		if metric, ok := spec[name.jsonName]; ok {
+			tfMetric := name.f(metric.(map[string]interface{}))
+			res[name.hclName] = schema.NewSet(oneElementSet, []interface{}{tfMetric})
+			break
+		}
 	}
 
-	return diags
+	return schema.NewSet(oneElementSet, []interface{}{res}), nil
 }
 
-func unmarshalSLOMetric(d *schema.ResourceData, object n9api.AnyJSONObj, hclName, jsonName string) (bool, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	spec := object["spec"].(map[string]interface{})
-	indicator := spec["indicator"].(map[string]interface{})
-	rawmetric := indicator["rawmetric"].(map[string]interface{})
-	if rawmetric[jsonName] == nil {
-		return false, nil
-	}
+func unmarshalPrometheusMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["promql"] = metric["promql"]
 
-	err := d.Set("alert_policies", spec["alertPolicies"])
-	appendError(diags, err)
-	err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{rawmetric[jsonName]}))
-	appendError(diags, err)
-
-	return true, diags
+	return res
 }
 
 func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

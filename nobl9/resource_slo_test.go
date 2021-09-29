@@ -61,6 +61,7 @@ resource "nobl9_slo" "test-prometheus" {
   indicator {
     name    = nobl9_agent.:name-agent.name
     project = ":project"
+	kind    = "Agent"
     raw_metric {
       prometheus_metric {
         promql = "1.0"
