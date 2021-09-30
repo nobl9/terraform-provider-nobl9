@@ -17,6 +17,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-prom-with-ap", testPrometheusSLOWithAlerPolicy},
 		{"test-prom-with-countmetrics", testPrometheusSLOWithCountMetrics},
 		{"test-prom-with-multiple-objectives", testPrometheusSLOWithMultipleObjectives},
+		{"test-prom-full", testPrometheusSLOFULL},
 		{"test-newrelic", testNewRelicSLO},
 		{"test-appdynamics", testAppdynamicsSLO},
 		{"test-splunk", testSplunkSLO},
@@ -230,6 +231,65 @@ resource "nobl9_slo" ":name" {
 	config = strings.ReplaceAll(config, ":project", testProject)
 
 	return config
+}
+
+func testPrometheusSLOFULL(name string) string {
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = "terraform"
+  service      = nobl9_service.:name-service.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+  }
+
+  objective {
+    display_name = "obj2"
+    target       = 0.5
+    value        = 10
+	time_slice_target = 0.5
+    op           = "lt"
+  }
+
+  attachments {
+    display_name = "Hope this works"
+	url = "https://nobl9.com"
+  }
+
+  time_window {
+	calendar {
+		start_time = 2020-03-09 00:00:00
+		time_zone = Europe/Warsaw
+	}
+    count      = 7
+    unit       = "Day"
+  }
+
+  indicator {
+    name    = nobl9_agent.:name-agent.name
+    project = ":project"
+	kind    = "Agent"
+    raw_metric {
+      prometheus {
+        promql = "1.0"
+      }
+    }
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+
 }
 
 func testDatadogSLO(name string) string {

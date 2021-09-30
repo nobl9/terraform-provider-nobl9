@@ -95,12 +95,11 @@ func resourceSLO() *schema.Resource {
 							Required:    true,
 							Description: "Designated value",
 						},
-						// TODO enable time_slices back
-						//"time_slice_target": {
-						//	Type:        schema.TypeFloat,
-						//	Optional:    true,
-						//	Description: "Designated value for slice",
-						//},
+						"time_slice_target": {
+							Type:        schema.TypeFloat,
+							Optional:    true,
+							Description: "Designated value for slice",
+						},
 						"value": {
 							Type:        schema.TypeFloat,
 							Required:    true,
@@ -148,7 +147,7 @@ func resourceSLO() *schema.Resource {
 						"period": {
 							Type:        schema.TypeMap,
 							Computed:    true,
-							Description: "", // TODO docs
+							Description: "Period between start time and added count",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"unit": {
@@ -169,7 +168,7 @@ func resourceSLO() *schema.Resource {
 				},
 			},
 			"attachments": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "",
 				Elem: &schema.Resource{
@@ -223,10 +222,7 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 			Thresholds:      marshalThresholds(d, isRawMetric),
 			TimeWindows:     marshalTimeWindows(d),
 			AlertPolicies:   alertPoliciesStr,
-			//Attachments: n9api.Attachment{ TODO
-			//	DisplayName: d.Get("display_name").(string),
-			//	Url:         d.Get("url").(string),
-			//},
+			Attachments:     marshalAttachments(d),
 		},
 	}
 }
@@ -238,8 +234,37 @@ func marshalTimeWindows(d *schema.ResourceData) []n9api.TimeWindow {
 		Unit:      timeWindows["unit"].(string),
 		Count:     timeWindows["count"].(int),
 		IsRolling: timeWindows["is_rolling"].(bool),
-		Calendar:  nil, // TODO impl me
+		Calendar:  marshalCalendar(d),
 	}}
+}
+
+func marshalAttachments(d *schema.ResourceData) []n9api.Attachment {
+	attachments := d.Get("attachments").([]interface{})
+	resultConditions := make([]n9api.Attachment, len(attachments))
+	for i, c := range attachments {
+		attachments := c.(map[string]interface{})
+		displayName := attachments["display_name"].(string)
+
+		resultConditions[i] = n9api.Attachment{
+			DisplayName: &displayName,
+			URL:         attachments["url"].(string),
+		}
+	}
+
+	return resultConditions
+}
+
+func marshalCalendar(d *schema.ResourceData) *n9api.Calendar {
+	if d.Get("calendar").(*schema.Set).Len() != 1 {
+		return nil
+	}
+
+	calendar := d.Get("calendar").(*schema.Set).List()[0].(map[string]interface{})
+
+	return &n9api.Calendar{
+		StartTime: calendar["start_time"].(string),
+		TimeZone:  calendar["time_zone"].(string),
+	}
 }
 
 func marshalIndicator(d *schema.ResourceData) n9api.Indicator {
@@ -516,11 +541,6 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 		diags = appendError(diags, err)
 	}
 
-	if attachments, ok := object["attachments"]; ok {
-		err = d.Set("attachments", attachments.([]interface{}))
-		diags = appendError(diags, err)
-	}
-
 	spec := object["spec"].(map[string]interface{})
 
 	budgetingMethod := spec["budgetingMethod"].(string)
@@ -542,6 +562,12 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 
 	err = unmarshalObjectives(d, spec, isRawMetric)
 	diags = appendError(diags, err)
+
+	if i, ok := spec["attachemnts"]; ok {
+		attachments := i.([]interface{})
+		err = d.Set("attachemnts", attachments)
+		diags = appendError(diags, err)
+	}
 
 	err = d.Set("alert_policies", spec["alertPolicies"])
 	diags = appendError(diags, err)
@@ -576,7 +602,7 @@ func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}, er
 	timeWindowsTF["is_rolling"] = timeWindow["isRolling"]
 	timeWindowsTF["unit"] = timeWindow["unit"]
 	timeWindowsTF["period"] = timeWindow["period"]
-	// TODO handle calendar
+	timeWindowsTF["calendar"] = timeWindow["calendar"]
 	err = d.Set("time_window", schema.NewSet(oneElementSet, []interface{}{timeWindowsTF}))
 	return err
 }
