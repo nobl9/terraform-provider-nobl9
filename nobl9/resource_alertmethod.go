@@ -8,15 +8,15 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-type integrationProvider interface {
+type alertMethodProvider interface {
 	GetSchema() map[string]*schema.Schema
 	GetDescription() string
-	MarshalSpec(data *schema.ResourceData) n9api.IntegrationSpec
+	MarshalSpec(data *schema.ResourceData) n9api.AlertMethodSpec
 	UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics
 }
 
-func resourceIntegrationFactory(provider integrationProvider) *schema.Resource {
-	i := integration{integrationProvider: provider}
+func resourceAlertMethodFactory(provider alertMethodProvider) *schema.Resource {
+	i := alertMethod{alertMethodProvider: provider}
 	resource := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name":         schemaName(),
@@ -24,10 +24,10 @@ func resourceIntegrationFactory(provider integrationProvider) *schema.Resource {
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
 		},
-		CreateContext: i.resourceIntegrationApply,
-		UpdateContext: i.resourceIntegrationApply,
-		DeleteContext: resourceIntegrationDelete,
-		ReadContext:   i.resourceIntegrationRead,
+		CreateContext: i.resourceAlertMethodApply,
+		UpdateContext: i.resourceAlertMethodApply,
+		DeleteContext: resourceAlertMethodDelete,
+		ReadContext:   i.resourceAlertMethodRead,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -41,22 +41,22 @@ func resourceIntegrationFactory(provider integrationProvider) *schema.Resource {
 	return resource
 }
 
-type integration struct {
-	integrationProvider
+type alertMethod struct {
+	alertMethodProvider
 }
 
-func (i integration) marshalIntegration(d *schema.ResourceData) *n9api.Integration {
-	return &n9api.Integration{
+func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) *n9api.AlertMethod {
+	return &n9api.AlertMethod{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
-			Kind:           n9api.KindIntegration,
+			Kind:           n9api.KindAlertMethod,
 			MetadataHolder: marshalMetadata(d),
 		},
-		Spec: i.MarshalSpec(d),
+		Spec: a.MarshalSpec(d),
 	}
 }
 
-func (i integration) unmarshalIntegration(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -72,20 +72,20 @@ func (i integration) unmarshalIntegration(d *schema.ResourceData, objects []n9ap
 	err := d.Set("description", spec["description"])
 	diags = appendError(diags, err)
 
-	errs := i.UnmarshalSpec(d, spec)
+	errs := a.UnmarshalSpec(d, spec)
 	diags = append(diags, errs...)
 
 	return diags
 }
 
-func (i integration) resourceIntegrationApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := newClient(config, d.Get("project").(string))
 	if ds != nil {
 		return ds
 	}
 
-	service := i.marshalIntegration(d)
+	service := a.marshalAlertMethod(d)
 
 	var p n9api.Payload
 	p.AddObject(service)
@@ -97,10 +97,10 @@ func (i integration) resourceIntegrationApply(ctx context.Context, d *schema.Res
 
 	d.SetId(service.Metadata.Name)
 
-	return i.resourceIntegrationRead(ctx, d, meta)
+	return a.resourceAlertMethodRead(ctx, d, meta)
 }
 
-func (i integration) resourceIntegrationRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (a alertMethod) resourceAlertMethodRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	project := d.Get("project").(string)
 	if project == "" {
@@ -112,22 +112,22 @@ func (i integration) resourceIntegrationRead(_ context.Context, d *schema.Resour
 		return ds
 	}
 
-	objects, err := client.GetObject(n9api.ObjectIntegration, "", d.Id())
+	objects, err := client.GetObject(n9api.ObjectAlertMethod, "", d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return i.unmarshalIntegration(d, objects)
+	return a.unmarshalAlertMethod(d, objects)
 }
 
-func resourceIntegrationDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAlertMethodDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := newClient(config, d.Get("project").(string))
 	if ds.HasError() {
 		return ds
 	}
 
-	err := client.DeleteObjectsByName(n9api.ObjectIntegration, d.Id())
+	err := client.DeleteObjectsByName(n9api.ObjectAlertMethod, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,13 +135,13 @@ func resourceIntegrationDelete(_ context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-type integrationWebhook struct{}
+type alertMethodWebhook struct{}
 
-func (i integrationWebhook) GetDescription() string {
+func (i alertMethodWebhook) GetDescription() string {
 	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#webhook-alert-method)"
 }
 
-func (i integrationWebhook) GetSchema() map[string]*schema.Schema {
+func (i alertMethodWebhook) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
@@ -168,7 +168,7 @@ func (i integrationWebhook) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i integrationWebhook) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
+func (i alertMethodWebhook) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
 	fields := d.Get("template_fields").([]interface{})
 	templateFields := make([]string, len(fields))
 	for i, field := range fields {
@@ -180,7 +180,7 @@ func (i integrationWebhook) MarshalSpec(d *schema.ResourceData) n9api.Integratio
 		templateFields = nil
 	}
 
-	return n9api.IntegrationSpec{
+	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
 		Webhook: &n9api.WebhookIntegration{
 			URL:            d.Get("url").(string),
@@ -190,7 +190,7 @@ func (i integrationWebhook) MarshalSpec(d *schema.ResourceData) n9api.Integratio
 	}
 }
 
-func (i integrationWebhook) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodWebhook) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
 	config := spec["webhook"].(map[string]interface{})
 	var diags diag.Diagnostics
 
@@ -202,13 +202,13 @@ func (i integrationWebhook) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 	return diags
 }
 
-type integrationPagerDuty struct{}
+type alertMethodPagerDuty struct{}
 
-func (i integrationPagerDuty) GetDescription() string {
+func (i alertMethodPagerDuty) GetDescription() string {
 	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#pagerduty-alert-method)"
 }
 
-func (i integrationPagerDuty) GetSchema() map[string]*schema.Schema {
+func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"integration_key": {
 			Type:        schema.TypeString,
@@ -220,8 +220,8 @@ func (i integrationPagerDuty) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i integrationPagerDuty) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
-	return n9api.IntegrationSpec{
+func (i alertMethodPagerDuty) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
+	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
 		PagerDuty: &n9api.PagerDutyIntegration{
 			IntegrationKey: d.Get("integration_key").(string),
@@ -229,18 +229,18 @@ func (i integrationPagerDuty) MarshalSpec(d *schema.ResourceData) n9api.Integrat
 	}
 }
 
-func (i integrationPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
 	// pager duty has only one, secret field
 	return nil
 }
 
-type integrationSlack struct{}
+type alertMethodSlack struct{}
 
-func (i integrationSlack) GetDescription() string {
+func (i alertMethodSlack) GetDescription() string {
 	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slack-alert-method)"
 }
 
-func (i integrationSlack) GetSchema() map[string]*schema.Schema {
+func (i alertMethodSlack) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
@@ -252,8 +252,8 @@ func (i integrationSlack) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i integrationSlack) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
-	return n9api.IntegrationSpec{
+func (i alertMethodSlack) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
+	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
 		Slack: &n9api.SlackIntegration{
 			URL: d.Get("url").(string),
@@ -261,18 +261,18 @@ func (i integrationSlack) MarshalSpec(d *schema.ResourceData) n9api.IntegrationS
 	}
 }
 
-func (i integrationSlack) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodSlack) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
 	// slack has only one, secret field
 	return nil
 }
 
-type integrationDiscord struct{}
+type alertMethodDiscord struct{}
 
-func (i integrationDiscord) GetDescription() string {
+func (i alertMethodDiscord) GetDescription() string {
 	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#discord-alert-method)"
 }
 
-func (i integrationDiscord) GetSchema() map[string]*schema.Schema {
+func (i alertMethodDiscord) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
@@ -284,8 +284,8 @@ func (i integrationDiscord) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i integrationDiscord) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
-	return n9api.IntegrationSpec{
+func (i alertMethodDiscord) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
+	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
 		Discord: &n9api.DiscordIntegration{
 			URL: d.Get("url").(string),
@@ -293,18 +293,18 @@ func (i integrationDiscord) MarshalSpec(d *schema.ResourceData) n9api.Integratio
 	}
 }
 
-func (i integrationDiscord) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodDiscord) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
 	// discord has only one, secret field
 	return nil
 }
 
-type integrationOpsgenie struct{}
+type alertMethodOpsgenie struct{}
 
-func (i integrationOpsgenie) GetDescription() string {
+func (i alertMethodOpsgenie) GetDescription() string {
 	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#opsgenie-alert-method)"
 }
 
-func (i integrationOpsgenie) GetSchema() map[string]*schema.Schema {
+func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"auth": {
 			Type:        schema.TypeString,
@@ -321,8 +321,8 @@ func (i integrationOpsgenie) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i integrationOpsgenie) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
-	return n9api.IntegrationSpec{
+func (i alertMethodOpsgenie) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
+	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
 		Opsgenie: &n9api.OpsgenieIntegration{
 			Auth: d.Get("auth").(string),
@@ -331,7 +331,7 @@ func (i integrationOpsgenie) MarshalSpec(d *schema.ResourceData) n9api.Integrati
 	}
 }
 
-func (i integrationOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
 	config := spec["opsgenie"].(map[string]interface{})
 	var diags diag.Diagnostics
 
@@ -341,13 +341,13 @@ func (i integrationOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec map[stri
 	return diags
 }
 
-type integrationServiceNow struct{}
+type alertMethodServiceNow struct{}
 
-func (i integrationServiceNow) GetDescription() string {
+func (i alertMethodServiceNow) GetDescription() string {
 	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#servicenow-alert-method)"
 }
 
-func (i integrationServiceNow) GetSchema() map[string]*schema.Schema {
+func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"username": {
 			Type:        schema.TypeString,
@@ -369,8 +369,8 @@ func (i integrationServiceNow) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i integrationServiceNow) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
-	return n9api.IntegrationSpec{
+func (i alertMethodServiceNow) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
+	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
 		ServiceNow: &n9api.ServiceNowIntegration{
 			Username:   d.Get("username").(string),
@@ -380,7 +380,7 @@ func (i integrationServiceNow) MarshalSpec(d *schema.ResourceData) n9api.Integra
 	}
 }
 
-func (i integrationServiceNow) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodServiceNow) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
 	config := spec["servicenow"].(map[string]interface{})
 	var diags diag.Diagnostics
 
@@ -392,13 +392,13 @@ func (i integrationServiceNow) UnmarshalSpec(d *schema.ResourceData, spec map[st
 	return diags
 }
 
-type integrationJira struct{}
+type alertMethodJira struct{}
 
-func (i integrationJira) GetDescription() string {
+func (i alertMethodJira) GetDescription() string {
 	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#jira-alert-method)"
 }
 
-func (i integrationJira) GetSchema() map[string]*schema.Schema {
+func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
@@ -417,7 +417,7 @@ func (i integrationJira) GetSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 			Computed:    true,
 		},
-		"projectid": { // TODO this field will soon be changed to ProjectKey
+		"project_key": {
 			Type:        schema.TypeString,
 			Required:    true,
 			Description: "The code of the project.",
@@ -425,19 +425,19 @@ func (i integrationJira) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i integrationJira) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
-	return n9api.IntegrationSpec{
+func (i alertMethodJira) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
+	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
 		Jira: &n9api.JiraIntegration{
-			URL:       d.Get("url").(string),
-			Username:  d.Get("username").(string),
-			APIToken:  d.Get("apitoken").(string),
-			ProjectID: d.Get("projectid").(string),
+			URL:        d.Get("url").(string),
+			Username:   d.Get("username").(string),
+			APIToken:   d.Get("apitoken").(string),
+			ProjectKey: d.Get("project_key").(string),
 		},
 	}
 }
 
-func (i integrationJira) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodJira) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
 	config := spec["jira"].(map[string]interface{})
 	var diags diag.Diagnostics
 
@@ -445,19 +445,19 @@ func (i integrationJira) UnmarshalSpec(d *schema.ResourceData, spec map[string]i
 	diags = appendError(diags, err)
 	err = d.Set("url", config["url"])
 	diags = appendError(diags, err)
-	err = d.Set("projectid", config["projectId"])
+	err = d.Set("project_key", config["projectKey"])
 	diags = appendError(diags, err)
 
 	return diags
 }
 
-type integrationTeams struct{}
+type alertMethodTeams struct{}
 
-func (i integrationTeams) GetDescription() string {
+func (i alertMethodTeams) GetDescription() string {
 	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#ms-teams-alert-method)"
 }
 
-func (i integrationTeams) GetSchema() map[string]*schema.Schema {
+func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
@@ -469,8 +469,8 @@ func (i integrationTeams) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i integrationTeams) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
-	return n9api.IntegrationSpec{
+func (i alertMethodTeams) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
+	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
 		Teams: &n9api.TeamsIntegration{
 			URL: d.Get("url").(string),
@@ -478,18 +478,18 @@ func (i integrationTeams) MarshalSpec(d *schema.ResourceData) n9api.IntegrationS
 	}
 }
 
-func (i integrationTeams) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodTeams) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
 	// teams has only one, secret field
 	return nil
 }
 
-type integrationEmail struct{}
+type alertMethodEmail struct{}
 
-func (i integrationEmail) GetDescription() string {
+func (i alertMethodEmail) GetDescription() string {
 	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#alert-method)"
 }
 
-func (i integrationEmail) GetSchema() map[string]*schema.Schema {
+func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"to": {
 			Type:        schema.TypeList,
@@ -528,7 +528,7 @@ func (i integrationEmail) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i integrationEmail) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
+func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
 	toStringSlice := func(in []interface{}) []string {
 		ret := make([]string, len(in))
 		for i, v := range in {
@@ -537,7 +537,7 @@ func (i integrationEmail) MarshalSpec(d *schema.ResourceData) n9api.IntegrationS
 		return ret
 	}
 
-	return n9api.IntegrationSpec{
+	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
 		Email: &n9api.EmailIntegration{
 			To:      toStringSlice(d.Get("to").([]interface{})),
@@ -549,7 +549,7 @@ func (i integrationEmail) MarshalSpec(d *schema.ResourceData) n9api.IntegrationS
 	}
 }
 
-func (i integrationEmail) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodEmail) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
 	config := spec["email"].(map[string]interface{})
 	var diags diag.Diagnostics
 
