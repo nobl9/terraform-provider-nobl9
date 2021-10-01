@@ -452,7 +452,7 @@ func marshalSLOThousandEyes(s *schema.Set) *n9api.ThousandEyesMetric {
 
 	metric := s.List()[0].(map[string]interface{})
 
-	testID := metric["test_id"].(int64)
+	testID := int64(metric["test_id"].(int))
 	return &n9api.ThousandEyesMetric{
 		TestID: &testID,
 	}
@@ -766,7 +766,7 @@ func unmarshalGraphiteMetric(metric map[string]interface{}) map[string]interface
 func unmarshalBigqueryMetric(metric map[string]interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	res["location"] = metric["location"]
-	res["project_id"] = metric["project_id"]
+	res["project_id"] = metric["projectId"]
 	res["query"] = metric["query"]
 
 	return res

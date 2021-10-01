@@ -492,8 +492,7 @@ resource "nobl9_slo" ":name" {
 	kind    = "Agent"
     raw_metric {
       splunk {
-        query = "TODO"
-		field_name = "TODO"
+        query = "search something"
       }
     }
   }
@@ -535,7 +534,7 @@ resource "nobl9_slo" ":name" {
 	kind    = "Agent"
     raw_metric {
       lightstep {
-        stream_id = DzpxcSRh
+        stream_id = "DzpxcSRh"
 		type_of_data = latency
 		percentile = 95
       }
@@ -663,7 +662,7 @@ resource "nobl9_slo" ":name" {
 	kind    = "Agent"
     raw_metric {
       thousandeyes {
-        test_id = "TODO"
+        test_id = 11
       }
     }
   }
@@ -747,9 +746,9 @@ resource "nobl9_slo" ":name" {
 	kind    = "Agent"
     raw_metric {
       bigquery {
-        projectId = "bdwtest-256112"
+        project_id = "bdwtest-256112"
         location = "EU"
-        query = "SELECT response_time AS n9value, created AS n9date"
+        query = "SELECT response_time AS n9value, created AS n9date FROM 'bdwtest-256112.metrics.http_response' WHERE date_col BETWEEN DATETIME(@n9date_from) AND DATETIME(@n9date_to) "
       }
     }
   }
