@@ -399,10 +399,8 @@ func marshalSLOSplunk(s *schema.Set) *n9api.SplunkMetric {
 	metric := s.List()[0].(map[string]interface{})
 
 	query := metric["query"].(string)
-	fieldName := metric["field_name"].(string)
 	return &n9api.SplunkMetric{
-		Query:     &query,
-		FieldName: &fieldName,
+		Query: &query,
 	}
 }
 func marshalSLOLightstep(s *schema.Set) *n9api.LightstepMetric {
@@ -727,7 +725,6 @@ func unmarshalAppdynamicsMetric(metric map[string]interface{}) map[string]interf
 func unmarshalSplunkMetric(metric map[string]interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	res["query"] = metric["query"]
-	res["field_name"] = metric["field_name"]
 
 	return res
 }
@@ -735,8 +732,8 @@ func unmarshalSplunkMetric(metric map[string]interface{}) map[string]interface{}
 func unmarshalLightstepMetric(metric map[string]interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	res["percentile"] = metric["percentile"]
-	res["stream_id"] = metric["stream_id"]
-	res["type_of_data"] = metric["type_of_data"]
+	res["stream_id"] = metric["streamID"]
+	res["type_of_data"] = metric["typeOfData"]
 
 	return res
 }

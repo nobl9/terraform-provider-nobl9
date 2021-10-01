@@ -202,11 +202,6 @@ func schemaMetricSpec() *schema.Schema {
 								Required:    true,
 								Description: "Query for the metrics",
 							},
-							"field_name": {
-								Type:        schema.TypeString,
-								Required:    true,
-								Description: "Name for metrics",
-							},
 						},
 					},
 				},

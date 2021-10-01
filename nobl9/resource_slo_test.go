@@ -491,7 +491,7 @@ resource "nobl9_slo" ":name" {
 	kind    = "Agent"
     raw_metric {
       splunk {
-        query = "search something"
+        query = "search index=polakpotrafi-events source=udp:5072 sourcetype=syslog status<400 | bucket _time span=1m | stats avg(response_time) as n9value by _time | rename _time as n9time | fields n9time n9value"
       }
     }
   }
@@ -534,7 +534,7 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       lightstep {
         stream_id = "DzpxcSRh"
-		type_of_data = latency
+		type_of_data = "latency"
 		percentile = 95
       }
     }
