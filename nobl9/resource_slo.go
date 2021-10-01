@@ -732,7 +732,7 @@ func unmarshalSplunkMetric(metric map[string]interface{}) map[string]interface{}
 func unmarshalLightstepMetric(metric map[string]interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	res["percentile"] = metric["percentile"]
-	res["stream_id"] = metric["streamID"]
+	res["stream_id"] = metric["streamId"]
 	res["type_of_data"] = metric["typeOfData"]
 
 	return res
