@@ -18,6 +18,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-prom-with-countmetrics", testPrometheusSLOWithCountMetrics},
 		{"test-prom-with-multiple-objectives", testPrometheusSLOWithMultipleObjectives},
 		{"test-prom-full", testPrometheusSLOFULL},
+		{"test-prom-with-time-slices", testPrometheusSLOWithTimeSlices},
 		{"test-newrelic", testNewRelicSLO},
 		{"test-appdynamics", testAppdynamicsSLO},
 		{"test-splunk", testSplunkSLO},
@@ -289,7 +290,49 @@ resource "nobl9_slo" ":name" {
 	config = strings.ReplaceAll(config, ":project", testProject)
 
 	return config
+}
 
+func testPrometheusSLOWithTimeSlices(name string) string {
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = "terraform"
+  service      = nobl9_service.:name-service.name
+
+  budgeting_method = "Timeslices"
+
+  objective {
+    display_name      = "obj2"
+    target            = 0.5
+    value             = 10
+	time_slice_target = 0.5
+    op                = "lt"
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:name-agent.name
+    project = ":project"
+	kind    = "Agent"
+    raw_metric {
+      prometheus {
+        promql = "1.0"
+      }
+    }
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
 }
 
 func testDatadogSLO(name string) string {
