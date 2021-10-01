@@ -31,7 +31,7 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      DestroyFunc("nobl9_alert_method_"+tc.resourceSuffix, n9api.ObjectAlertMethod),
+				CheckDestroy:      CheckDestory("nobl9_alert_method_"+tc.resourceSuffix, n9api.ObjectAlertMethod),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),

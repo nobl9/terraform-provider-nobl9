@@ -70,7 +70,7 @@ func CheckObjectCreated(name string) resource.TestCheckFunc {
 	}
 }
 
-func DestroyFunc(rsType string, objectType n9api.Object) func(s *terraform.State) error {
+func CheckDestory(rsType string, objectType n9api.Object) func(s *terraform.State) error {
 	return func(s *terraform.State) error {
 		config := testProvider.Meta().(ProviderConfig)
 		client, ds := newClient(config, testProject)
@@ -82,8 +82,7 @@ func DestroyFunc(rsType string, objectType n9api.Object) func(s *terraform.State
 			if rs.Type != rsType {
 				continue
 			}
-			// TODO change it to GetObjectByName
-			if err := client.DeleteObjectsByName(objectType, rs.Primary.ID); err != nil {
+			if _, err := client.GetObject(objectType, "", rs.Primary.ID); err != nil {
 				return err
 			}
 		}

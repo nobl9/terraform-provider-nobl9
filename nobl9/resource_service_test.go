@@ -12,7 +12,7 @@ func TestAcc_Nobl9Service(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: ProviderFactory(),
-		CheckDestroy:      DestroyFunc("nobl9_service", n9api.ObjectService),
+		CheckDestroy:      CheckDestory("nobl9_service", n9api.ObjectService),
 		Steps: []resource.TestStep{
 			{
 				Config: testService("test-service"),

@@ -2,7 +2,6 @@ package nobl9
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -132,7 +131,11 @@ func resourceRoleBindingRead(_ context.Context, d *schema.ResourceData, meta int
 
 func resourceRoleBindingDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, wildcardProject)
+	project := d.Get("project_ref").(string)
+	if project == "" {
+		project = wildcardProject
+	}
+	client, ds := newClient(config, project)
 	if ds.HasError() {
 		return ds
 	}
@@ -142,6 +145,5 @@ func resourceRoleBindingDelete(_ context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	fmt.Println(client)
 	return nil
 }

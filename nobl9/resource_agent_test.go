@@ -32,7 +32,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      DestroyFunc("nobl9_agent", n9api.ObjectAgent),
+				CheckDestroy:      CheckDestory("nobl9_agent", n9api.ObjectAgent),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),

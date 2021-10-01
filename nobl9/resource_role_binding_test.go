@@ -14,7 +14,8 @@ func TestAcc_Nobl9RoleBinding(t *testing.T) {
 		configFunc func(string) string
 	}{
 		{"project-role-binding", testProjectRoleBindingConfig},
-		{"org-role-binding", testOrganizationRoleBindingConfig},
+		// this test is skipped for now because: deleting organizational role bindings is not allowed
+		//{"org-role-binding", testOrganizationRoleBindingConfig},
 		{"role-binding-without-name", testRoleBindingWithoutName},
 	}
 
@@ -23,7 +24,7 @@ func TestAcc_Nobl9RoleBinding(t *testing.T) {
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      DestroyFunc("nobl9_role_binding", n9api.ObjectRoleBinding),
+				CheckDestroy:      CheckDestory("nobl9_role_binding", n9api.ObjectRoleBinding),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
@@ -36,7 +37,8 @@ func TestAcc_Nobl9RoleBinding(t *testing.T) {
 }
 
 func testProjectRoleBindingConfig(name string) string {
-	return fmt.Sprintf(`
+	return testProjectConfig(testProject) +
+		fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
   name        = "%s"
   user        = "00u3lognksvI7G1r54x7xx"
@@ -47,7 +49,8 @@ resource "nobl9_role_binding" "%s" {
 }
 
 func testOrganizationRoleBindingConfig(name string) string {
-	return fmt.Sprintf(`
+	return testProjectConfig(testProject) +
+		fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
   name        = "%s"
   user        = "00u3lognksvI7G1r54x7xx"
@@ -57,7 +60,8 @@ resource "nobl9_role_binding" "%s" {
 }
 
 func testRoleBindingWithoutName(name string) string {
-	return fmt.Sprintf(`
+	return testProjectConfig(testProject) +
+		fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
   user        = "00u3lognksvI7G1r54x7xx"
   role_ref    = "project-owner"

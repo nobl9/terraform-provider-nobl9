@@ -44,7 +44,7 @@ func destroyMultiple(rsTypes []string, objectTypes []n9api.Object) resource.Test
 			return fmt.Errorf("resource_types (%v) must match objectTypes (%v)", rsTypes, objectTypes)
 		}
 		for i := 0; i < len(rsTypes); i++ {
-			DestroyFunc(rsTypes[i], objectTypes[i])
+			CheckDestory(rsTypes[i], objectTypes[i])
 		}
 		return nil
 	}
