@@ -8,7 +8,7 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-func TestAcc_Nobl9Integration(t *testing.T) {
+func TestAcc_Nobl9AlertMethod(t *testing.T) {
 	cases := []struct {
 		name           string
 		resourceSuffix string
@@ -31,11 +31,11 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      DestroyFunc("nobl9_integration_"+tc.resourceSuffix, n9api.ObjectIntegration),
+				CheckDestroy:      DestroyFunc("nobl9_alert_method_"+tc.resourceSuffix, n9api.ObjectAlertMethod),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
-						Check:  CheckObjectCreated(fmt.Sprintf("nobl9_integration_%s.%s", tc.resourceSuffix, tc.name)),
+						Check:  CheckObjectCreated(fmt.Sprintf("nobl9_alert_method_%s.%s", tc.resourceSuffix, tc.name)),
 					},
 				},
 			})
@@ -45,7 +45,7 @@ func TestAcc_Nobl9Integration(t *testing.T) {
 
 func testWebhookTemplateConfig(name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_integration_webhook" "%s" {
+resource "nobl9_alert_method_webhook" "%s" {
   name        = "%s"
   project     = "%s"
   description = "wehbook"
@@ -57,7 +57,7 @@ resource "nobl9_integration_webhook" "%s" {
 
 func testWebhookTemplateFieldsConfig(name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_integration_webhook" "%s" {
+resource "nobl9_alert_method_webhook" "%s" {
   name            = "%s"
   project         = "%s"
   description	  = "wehbook"
@@ -69,7 +69,7 @@ resource "nobl9_integration_webhook" "%s" {
 
 func testPagerDutyConfig(name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_integration_pagerduty" "%s" {
+resource "nobl9_alert_method_pagerduty" "%s" {
   name            = "%s"
   project         = "%s"
   description     = "paderduty"
@@ -80,7 +80,7 @@ resource "nobl9_integration_pagerduty" "%s" {
 
 func testSlackConfig(name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_integration_slack" "%s" {
+resource "nobl9_alert_method_slack" "%s" {
   name        = "%s"
   project     = "%s"
   description = "slack"
@@ -91,7 +91,7 @@ resource "nobl9_integration_slack" "%s" {
 
 func testDiscordConfig(name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_integration_discord" "%s" {
+resource "nobl9_alert_method_discord" "%s" {
   name        = "%s"
   project     = "%s"
   description = "discord"
@@ -102,7 +102,7 @@ resource "nobl9_integration_discord" "%s" {
 
 func testOpsgenieConfig(name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_integration_opsgenie" "%s" {
+resource "nobl9_alert_method_opsgenie" "%s" {
   name        = "%s"
   project     = "%s"
   description = "opsgenie"
@@ -114,7 +114,7 @@ resource "nobl9_integration_opsgenie" "%s" {
 
 func testServiceNowConfig(name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_integration_servicenow" "%s" {
+resource "nobl9_alert_method_servicenow" "%s" {
   name        = "%s"
   project     = "%s"
   description = "servicenow"
@@ -127,21 +127,21 @@ resource "nobl9_integration_servicenow" "%s" {
 
 func testJiraConfig(name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_integration_jira" "%s" {
+resource "nobl9_alert_method_jira" "%s" {
   name        = "%s"
   project     = "%s"
   description = "jira"
   url		  = "https://jira.com"
   username    = "nobleUser"
   apitoken    = "very sercret"
-  projectid   = "1"
+  project_key = "PC"
 }
 `, name, name, testProject)
 }
 
 func testTeamsConfig(name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_integration_msteams" "%s" {
+resource "nobl9_alert_method_msteams" "%s" {
   name        = "%s"
   project     = "%s"
   description = "teams"
@@ -152,7 +152,7 @@ resource "nobl9_integration_msteams" "%s" {
 
 func testEmailConfig(name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_integration_email" "%s" {
+resource "nobl9_alert_method_email" "%s" {
   name        = "%s"
   project     = "%s"
   description = "teams"

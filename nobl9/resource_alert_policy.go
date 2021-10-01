@@ -54,7 +54,7 @@ func resourceAlertPolicy() *schema.Resource {
 				},
 			},
 
-			"integration": {
+			"alert_method": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "",
@@ -68,7 +68,7 @@ func resourceAlertPolicy() *schema.Resource {
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Name of the integration defined earlier.",
+							Description: "Name of the alertMethod defined earlier.",
 						},
 					},
 				},
@@ -96,18 +96,18 @@ func marshalAlertPolicy(d *schema.ResourceData) *n9api.AlertPolicy {
 			Description:  d.Get("description").(string),
 			Severity:     d.Get("severity").(string),
 			Conditions:   marshalAlertConditions(d),
-			Integrations: marshalAlertIntegrations(d),
+			AlertMethods: marshalAlertIntegrations(d),
 		},
 	}
 }
 
-func marshalAlertIntegrations(d *schema.ResourceData) []n9api.IntegrationAssignment {
-	integrations := d.Get("integration").([]interface{})
-	resultConditions := make([]n9api.IntegrationAssignment, len(integrations))
+func marshalAlertIntegrations(d *schema.ResourceData) []n9api.AlertMethodsAssignment {
+	integrations := d.Get("alert_method").([]interface{})
+	resultConditions := make([]n9api.AlertMethodsAssignment, len(integrations))
 	for i, c := range integrations {
 		integration := c.(map[string]interface{})
 
-		resultConditions[i] = n9api.IntegrationAssignment{
+		resultConditions[i] = n9api.AlertMethodsAssignment{
 			Project: integration["project"].(string),
 			Name:    integration["name"].(string),
 		}
@@ -165,9 +165,9 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 	err = d.Set("condition", unmarshalAlertPolicyConditions(conditions))
 	diags = appendError(diags, err)
 
-	if i, ok := spec["integrations"]; ok {
-		integrations := i.([]interface{})
-		err = d.Set("integration", integrations)
+	if i, ok := spec["alertMethods"]; ok {
+		alertMethods := i.([]interface{})
+		err = d.Set("alert_method", alertMethods)
 		diags = appendError(diags, err)
 	}
 

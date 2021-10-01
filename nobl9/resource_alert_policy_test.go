@@ -15,7 +15,7 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 		configFunc func(name string) string
 	}{
 		{"alert-policy", testAlertPolicyWithoutIntegration},
-		{"alert-policy-with-integration", testAlertPolicyWithIntegration},
+		{"alert-policy-with-alert-method", testAlertPolicyWithIntegration},
 	}
 
 	for _, tc := range cases {
@@ -24,8 +24,8 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
 				CheckDestroy: destroyMultiple(
-					[]string{"nobl9_alert_policy", "nobl9_integration_webhook"},
-					[]n9api.Object{n9api.ObjectAlertPolicy, n9api.ObjectIntegration},
+					[]string{"nobl9_alert_policy", "nobl9_alert_method_webhook"},
+					[]n9api.Object{n9api.ObjectAlertPolicy, n9api.ObjectAlertMethod},
 				),
 				Steps: []resource.TestStep{
 					{
@@ -80,7 +80,7 @@ resource "nobl9_alert_policy" "%s" {
 func testAlertPolicyWithIntegration(name string) string {
 	return testWebhookTemplateConfig(name) +
 		fmt.Sprintf(`
-resource "nobl9_integration_webhook" "integration-%s" {
+resource "nobl9_alert_method_webhook" "%s-am" {
   name        = "%s"
   project     = "%s"
   description = "wehbook"
@@ -110,9 +110,9 @@ resource "nobl9_alert_policy" "%s" {
 	lasts_for	   = "300s"
   }
 
-  integration {
+  alert_method {
 	project = "%s"
-	name	= "%s"
+	name	= nobl9_alert_method_webhook.%s-am.name
   }
 }
 `, name, name, testProject, name, name, testProject, testProject, name)
