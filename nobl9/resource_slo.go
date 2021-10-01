@@ -712,8 +712,8 @@ func unmarshalNewRelicMetric(metric map[string]interface{}) map[string]interface
 
 func unmarshalAppdynamicsMetric(metric map[string]interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
-	res["application_name"] = metric["application_name"]
-	res["metric_path"] = metric["metric_path"]
+	res["application_name"] = metric["applicationName"]
+	res["metric_path"] = metric["metricPath"]
 
 	return res
 }
@@ -758,7 +758,7 @@ func unmarshalThousandeyesMetric(metric map[string]interface{}) map[string]inter
 
 func unmarshalGraphiteMetric(metric map[string]interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
-	res["metric_path"] = metric["metric_path"]
+	res["metric_path"] = metric["metricPath"]
 
 	return res
 }
