@@ -16,7 +16,7 @@ release-dry-run:
 	goreleaser release --snapshot --skip-publish --rm-dist
 
 release:
-	GOOS=darwin GOARCH=amd64 go build -ldflags $(BUILD_FLAGS)-o ./bin/${BINARY}_${VERSION}_darwin_amd64
+	GOOS=darwin GOARCH=amd64 go build -ldflags $(BUILD_FLAGS) -o ./bin/${BINARY}_${VERSION}_darwin_amd64
 	GOOS=freebsd GOARCH=386 go build -ldflags $(BUILD_FLAGS) -o ./bin/${BINARY}_${VERSION}_freebsd_386
 	GOOS=freebsd GOARCH=amd64 go build -ldflags $(BUILD_FLAGS) -o ./bin/${BINARY}_${VERSION}_freebsd_amd64
 	GOOS=freebsd GOARCH=arm go build -ldflags $(BUILD_FLAGS) -o ./bin/${BINARY}_${VERSION}_freebsd_arm
