@@ -200,11 +200,6 @@ func resourceSLO() *schema.Resource {
 }
 
 func marshalSLO(d *schema.ResourceData) *n9api.SLO {
-	alertPolicies := d.Get("alert_policies").([]interface{})
-	alertPoliciesStr := make([]string, len(alertPolicies))
-	for i, s := range alertPolicies {
-		alertPoliciesStr[i] = s.(string)
-	} // TODO use slinceOfSting
 
 	indicator := marshalIndicator(d)
 	isRawMetric := indicator.RawMetric != nil
@@ -221,8 +216,8 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 			Indicator:       indicator,
 			Thresholds:      marshalThresholds(d, isRawMetric),
 			TimeWindows:     marshalTimeWindows(d),
-			AlertPolicies:   alertPoliciesStr,
-			Attachments:     marshalAttachments(d),
+			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
+			Attachments:     marshalAttachments(d.Get("attachments").([]interface{})),
 		},
 	}
 }
@@ -238,8 +233,7 @@ func marshalTimeWindows(d *schema.ResourceData) []n9api.TimeWindow {
 	}}
 }
 
-func marshalAttachments(d *schema.ResourceData) []n9api.Attachment {
-	attachments := d.Get("attachments").([]interface{})
+func marshalAttachments(attachments []interface{}) []n9api.Attachment {
 	resultConditions := make([]n9api.Attachment, len(attachments))
 	for i, c := range attachments {
 		attachments := c.(map[string]interface{})

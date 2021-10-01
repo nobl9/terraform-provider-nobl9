@@ -259,15 +259,15 @@ resource "nobl9_slo" ":name" {
     op           = "lt"
   }
 
-  attachments {
-    display_name = "Hope this works"
-	url = "https://nobl9.com"
-  }
+//  attachments {
+//    display_name = "Hope this works"
+//	url = "https://nobl9.com"
+//  }
 
   time_window {
 	calendar {
-		start_time = 2020-03-09 00:00:00
-		time_zone = Europe/Warsaw
+	  start_time = "2020-03-09 00:00:00"
+	  time_zone = "Europe/Warsaw"
 	}
     count      = 7
     unit       = "Day"

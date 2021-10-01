@@ -91,3 +91,11 @@ func appendError(d diag.Diagnostics, err error) diag.Diagnostics {
 
 	return d
 }
+
+func toStringSlice(in []interface{}) []string {
+	ret := make([]string, len(in))
+	for i, v := range in {
+		ret[i] = v.(string)
+	}
+	return ret
+}
