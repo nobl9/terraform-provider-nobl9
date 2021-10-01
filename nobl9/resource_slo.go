@@ -750,14 +750,14 @@ func unmarshalSplunkObservabilityMetric(metric map[string]interface{}) map[strin
 
 func unmarshalDynatraceMetric(metric map[string]interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
-	res["metric_selector"] = metric["metric_selector"]
+	res["metric_selector"] = metric["metricSelector"]
 
 	return res
 }
 
 func unmarshalThousandeyesMetric(metric map[string]interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
-	res["test_id"] = metric["test_id"]
+	res["test_id"] = metric["testID"]
 
 	return res
 }
