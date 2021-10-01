@@ -602,7 +602,13 @@ func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}) er
 	timeWindowsTF["is_rolling"] = timeWindow["isRolling"]
 	timeWindowsTF["unit"] = timeWindow["unit"]
 	timeWindowsTF["period"] = timeWindow["period"]
-	timeWindowsTF["calendar"] = timeWindow["calendar"]
+	if c, ok := timeWindow["calendar"]; ok {
+		calendar := c.(map[string]interface{})
+		calendarTF := make(map[string]interface{})
+		calendarTF["start_time"] = calendar["startTime"].(string)
+		calendarTF["time_zone"] = calendar["timeZone"].(string)
+		timeWindowsTF["calendar"] = schema.NewSet(oneElementSet, []interface{}{calendarTF})
+	}
 	return d.Set("time_window", schema.NewSet(oneElementSet, []interface{}{timeWindowsTF}))
 }
 

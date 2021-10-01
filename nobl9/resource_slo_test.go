@@ -256,7 +256,6 @@ resource "nobl9_slo" ":name" {
     display_name = "obj2"
     target       = 0.5
     value        = 10
-	time_slice_target = 0.5
     op           = "lt"
   }
 
