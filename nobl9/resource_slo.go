@@ -228,13 +228,13 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 }
 
 func marshalTimeWindows(d *schema.ResourceData) []n9api.TimeWindow {
-	timeWindows := d.Get("time_window").(*schema.Set).List()[0].(map[string]interface{})
+	timeWindow := d.Get("time_window").(*schema.Set).List()[0].(map[string]interface{})
 
 	return []n9api.TimeWindow{{
-		Unit:      timeWindows["unit"].(string),
-		Count:     timeWindows["count"].(int),
-		IsRolling: timeWindows["is_rolling"].(bool),
-		Calendar:  marshalCalendar(d),
+		Unit:      timeWindow["unit"].(string),
+		Count:     timeWindow["count"].(int),
+		IsRolling: timeWindow["is_rolling"].(bool),
+		Calendar:  marshalCalendar(timeWindow),
 	}}
 }
 
@@ -254,12 +254,12 @@ func marshalAttachments(d *schema.ResourceData) []n9api.Attachment {
 	return resultConditions
 }
 
-func marshalCalendar(d *schema.ResourceData) *n9api.Calendar {
-	if d.Get("calendar").(*schema.Set).Len() != 1 {
+func marshalCalendar(c map[string]interface{}) *n9api.Calendar {
+	calendars := c["calendar"].(*schema.Set).List()
+	if len(calendars) == 0 {
 		return nil
 	}
-
-	calendar := d.Get("calendar").(*schema.Set).List()[0].(map[string]interface{})
+	calendar := calendars[0].(map[string]interface{})
 
 	return &n9api.Calendar{
 		StartTime: calendar["start_time"].(string),
