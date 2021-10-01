@@ -80,6 +80,7 @@ func Provider() *schema.Provider {
 			"nobl9_integration_email":      resourceIntegrationFactory(integrationEmail{}),
 			"nobl9_project":                resourceProject(),
 			"nobl9_role_binding":           resourceRoleBinding(),
+			"nobl9_slo":                    resourceSLO(),
 		},
 
 		ConfigureContextFunc: providerConfigure,

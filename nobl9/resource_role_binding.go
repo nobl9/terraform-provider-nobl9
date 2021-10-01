@@ -80,15 +80,15 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 
 	metadata := object["metadata"].(map[string]interface{})
 	err := d.Set("name", metadata["name"])
-	appendError(diags, err)
+	diags = appendError(diags, err)
 
 	spec := object["spec"].(map[string]interface{})
 	err = d.Set("user", spec["user"])
-	appendError(diags, err)
+	diags = appendError(diags, err)
 	err = d.Set("role_ref", spec["roleRef"])
-	appendError(diags, err)
+	diags = appendError(diags, err)
 	err = d.Set("project_ref", spec["projectRef"])
-	appendError(diags, err)
+	diags = appendError(diags, err)
 
 	return diags
 }

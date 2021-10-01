@@ -529,13 +529,6 @@ func (i integrationEmail) GetSchema() map[string]*schema.Schema {
 }
 
 func (i integrationEmail) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
-	toStringSlice := func(in []interface{}) []string {
-		ret := make([]string, len(in))
-		for i, v := range in {
-			ret[i] = v.(string)
-		}
-		return ret
-	}
 
 	return n9api.IntegrationSpec{
 		Description: d.Get("description").(string),
