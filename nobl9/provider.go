@@ -66,23 +66,6 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{},
 
 		ResourcesMap: map[string]*schema.Resource{
-<<<<<<< HEAD
-			"nobl9_service":                resourceService(),
-			"nobl9_agent":                  resourceAgent(),
-			"nobl9_alert_policy":           resourceAlertPolicy(),
-			"nobl9_integration_webhook":    resourceIntegrationFactory(integrationWebhook{}),
-			"nobl9_integration_pagerduty":  resourceIntegrationFactory(integrationPagerDuty{}),
-			"nobl9_integration_slack":      resourceIntegrationFactory(integrationSlack{}),
-			"nobl9_integration_discord":    resourceIntegrationFactory(integrationDiscord{}),
-			"nobl9_integration_opsgenie":   resourceIntegrationFactory(integrationOpsgenie{}),
-			"nobl9_integration_servicenow": resourceIntegrationFactory(integrationServiceNow{}),
-			"nobl9_integration_jira":       resourceIntegrationFactory(integrationJira{}),
-			"nobl9_integration_msteams":    resourceIntegrationFactory(integrationTeams{}),
-			"nobl9_integration_email":      resourceIntegrationFactory(integrationEmail{}),
-			"nobl9_project":                resourceProject(),
-			"nobl9_role_binding":           resourceRoleBinding(),
-			"nobl9_slo":                    resourceSLO(),
-=======
 			"nobl9_service":                 resourceService(),
 			"nobl9_agent":                   resourceAgent(),
 			"nobl9_alert_policy":            resourceAlertPolicy(),
@@ -97,7 +80,7 @@ func Provider() *schema.Provider {
 			"nobl9_alert_method_email":      resourceAlertMethodFactory(alertMethodEmail{}),
 			"nobl9_project":                 resourceProject(),
 			"nobl9_role_binding":            resourceRoleBinding(),
->>>>>>> 6ee5d8c7a5d89361a4095b93aa095b5f947347b8
+			"nobl9_slo":                     resourceSLO(),
 		},
 
 		ConfigureContextFunc: providerConfigure,

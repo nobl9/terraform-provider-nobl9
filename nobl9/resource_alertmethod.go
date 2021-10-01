@@ -528,9 +528,6 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-<<<<<<< HEAD:nobl9/resource_integration.go
-func (i integrationEmail) MarshalSpec(d *schema.ResourceData) n9api.IntegrationSpec {
-=======
 func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
 	toStringSlice := func(in []interface{}) []string {
 		ret := make([]string, len(in))
@@ -539,7 +536,6 @@ func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodS
 		}
 		return ret
 	}
->>>>>>> 6ee5d8c7a5d89361a4095b93aa095b5f947347b8:nobl9/resource_alertmethod.go
 
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
