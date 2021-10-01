@@ -308,6 +308,11 @@ func marshalThresholds(d *schema.ResourceData, isRawMetric bool) []n9api.Thresho
 	for i, o := range objectives {
 		objective := o.(map[string]interface{})
 		target := objective["target"].(float64)
+		timeSliceTarget := objective["time_slice_target"].(float64)
+		var timeSliceTargetPtr *float64
+		if timeSliceTarget != 0 {
+			timeSliceTargetPtr = &timeSliceTarget
+		}
 		operator := objective["op"].(string)
 		var countMetrics *n9api.CountMetricsSpec
 		if !isRawMetric {
@@ -320,9 +325,10 @@ func marshalThresholds(d *schema.ResourceData, isRawMetric bool) []n9api.Thresho
 				DisplayName: objective["display_name"].(string),
 				Value:       objective["value"].(float64),
 			},
-			BudgetTarget: &target,
-			Operator:     &operator,
-			CountMetrics: countMetrics,
+			BudgetTarget:    &target,
+			TimeSliceTarget: timeSliceTargetPtr,
+			Operator:        &operator,
+			CountMetrics:    countMetrics,
 		}
 	}
 
@@ -555,9 +561,9 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	err = d.Set("service", service)
 	diags = appendError(diags, err)
 
-	err = unmarshalTimeWindow(d, spec, err)
+	err = unmarshalTimeWindow(d, spec)
 	diags = appendError(diags, err)
-	isRawMetric, err := unmarshalIndicator(d, spec, diags, err)
+	isRawMetric, err := unmarshalIndicator(d, spec)
 	diags = appendError(diags, err)
 
 	err = unmarshalObjectives(d, spec, isRawMetric)
@@ -575,7 +581,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	return diags
 }
 
-func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}, diags diag.Diagnostics, err error) (bool, error) {
+func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}) (bool, error) {
 	indicator := spec["indicator"].(map[string]interface{})
 	res := make(map[string]interface{})
 	metricSource := indicator["metricSource"].(map[string]interface{})
@@ -594,7 +600,7 @@ func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}, dia
 	return isRawMetric, d.Set("indicator", schema.NewSet(oneElementSet, []interface{}{res}))
 }
 
-func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}, err error) error {
+func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}) error {
 	timeWindows := spec["timeWindows"].([]interface{})
 	timeWindow := timeWindows[0].(map[string]interface{})
 	timeWindowsTF := make(map[string]interface{})
@@ -603,8 +609,7 @@ func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}, er
 	timeWindowsTF["unit"] = timeWindow["unit"]
 	timeWindowsTF["period"] = timeWindow["period"]
 	timeWindowsTF["calendar"] = timeWindow["calendar"]
-	err = d.Set("time_window", schema.NewSet(oneElementSet, []interface{}{timeWindowsTF}))
-	return err
+	return d.Set("time_window", schema.NewSet(oneElementSet, []interface{}{timeWindowsTF}))
 }
 
 func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}, isRawMetric bool) error {
@@ -618,6 +623,7 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}, is
 		objectiveTF["op"] = objective["op"]
 		objectiveTF["value"] = objective["value"]
 		objectiveTF["target"] = objective["target"]
+		objectiveTF["time_slice_target"] = objective["timeSliceTarget"]
 
 		countMetrics, ok := objective["countMetrics"]
 		if isRawMetric && ok {
