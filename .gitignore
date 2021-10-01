@@ -1,8 +1,6 @@
 terraform-provider-nobl9
 bin
 .env
-# Example for now
-/example/*
 
 # Local .terraform directories
 **/.terraform/*
