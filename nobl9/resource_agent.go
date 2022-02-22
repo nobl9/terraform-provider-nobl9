@@ -182,9 +182,6 @@ func resourceAgent() *schema.Resource {
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-thousandeyes)",
 				MinItems:    1,
 				MaxItems:    1,
-				Elem: &schema.Resource{
-					Description: "Agent configuration is not required.",
-				},
 			},
 
 			"graphite_config": {
@@ -210,9 +207,6 @@ func resourceAgent() *schema.Resource {
 				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-bigquery)",
 				MinItems:    1,
 				MaxItems:    1,
-				Elem: &schema.Resource{
-					Description: "Agent configuration is not required.",
-				},
 			},
 
 			"opentsdb_config": {

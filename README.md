@@ -33,3 +33,9 @@ resource "nobl9_service" "test" {
   }
 }
 ```
+Documentation
+-------------------
+
+Documentation is generated using the [tfplugindocs](https://github.com/hashicorp/terraform-plugin-docs too) tool.
+The `examples` and `templates` directories are used to generate the docs in the
+`docs` folder
