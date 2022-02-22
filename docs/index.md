@@ -35,7 +35,7 @@ provider "nobl9" {
 
 ### Required
 
-- **client_id** (String) Authentication parameter ClientID
+- **client_id** (String) Authentication parameter ClientID.
 - **client_secret** (String, Sensitive) Authentication parameter ClientSecret.
 - **organization** (String) Nobl9 Organization that contain resources managed by this provider.
 - **project** (String) Nobl9 project used when importing resources.
