@@ -3,12 +3,12 @@
 page_title: "nobl9_slo Resource - terraform-provider-nobl9"
 subcategory: ""
 description: |-
-  SLO configuration documentation https://nobl9.github.io/techdocs_YAML_Guide/#SLO
+  SLO configuration documentation https://docs.nobl9.com/yaml-guide#slo
 ---
 
 # nobl9_slo (Resource)
 
-[SLO configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#SLO)
+[SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)
 
 ## Example Usage
 
@@ -70,7 +70,7 @@ resource "nobl9_slo" "this" {
 - **budgeting_method** (String) Method which will be use to calculate budget
 - **indicator** (Block Set, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--indicator))
 - **name** (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **objective** (Block Set, Min: 1) [Objectives documentation](https://nobl9.github.io/techdocs_YAML_Guide/#objectives) (see [below for nested schema](#nestedblock--objective))
+- **objective** (Block Set, Min: 1) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
 - **project** (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - **service** (String) Name of the service
 - **time_window** (Block Set, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--time_window))
@@ -101,20 +101,20 @@ Optional:
 
 Optional:
 
-- **appdynamics** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-appdynamics) (see [below for nested schema](#nestedblock--indicator--raw_metric--appdynamics))
-- **bigquery** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-bigquery) (see [below for nested schema](#nestedblock--indicator--raw_metric--bigquery))
-- **datadog** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-datadog) (see [below for nested schema](#nestedblock--indicator--raw_metric--datadog))
-- **dynatrace** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-dynatrace) (see [below for nested schema](#nestedblock--indicator--raw_metric--dynatrace))
-- **elasticsearch** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-elasticsearch) (see [below for nested schema](#nestedblock--indicator--raw_metric--elasticsearch))
-- **grafana_loki** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-loki (see [below for nested schema](#nestedblock--indicator--raw_metric--grafana_loki))
-- **graphite** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-graphite) (see [below for nested schema](#nestedblock--indicator--raw_metric--graphite))
-- **lightstep** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-lightstep) (see [below for nested schema](#nestedblock--indicator--raw_metric--lightstep))
-- **newrelic** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-newrelic) (see [below for nested schema](#nestedblock--indicator--raw_metric--newrelic))
-- **opentsdb** (Block Set) [Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-opentsdb) (see [below for nested schema](#nestedblock--indicator--raw_metric--opentsdb))
-- **prometheus** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-prometheus) (see [below for nested schema](#nestedblock--indicator--raw_metric--prometheus))
-- **splunk** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk) (see [below for nested schema](#nestedblock--indicator--raw_metric--splunk))
-- **splunk_observability** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk-observability) (see [below for nested schema](#nestedblock--indicator--raw_metric--splunk_observability))
-- **thousandeyes** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-thousandeyes) (see [below for nested schema](#nestedblock--indicator--raw_metric--thousandeyes))
+- **appdynamics** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--indicator--raw_metric--appdynamics))
+- **bigquery** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--indicator--raw_metric--bigquery))
+- **datadog** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--indicator--raw_metric--datadog))
+- **dynatrace** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--indicator--raw_metric--dynatrace))
+- **elasticsearch** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--indicator--raw_metric--elasticsearch))
+- **grafana_loki** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/loki#creating-slos-with-loki (see [below for nested schema](#nestedblock--indicator--raw_metric--grafana_loki))
+- **graphite** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--indicator--raw_metric--graphite))
+- **lightstep** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--indicator--raw_metric--lightstep))
+- **newrelic** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--indicator--raw_metric--newrelic))
+- **opentsdb** (Block Set) [Configuration documentation] (https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--indicator--raw_metric--opentsdb))
+- **prometheus** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--indicator--raw_metric--prometheus))
+- **splunk** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--indicator--raw_metric--splunk))
+- **splunk_observability** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--indicator--raw_metric--splunk_observability))
+- **thousandeyes** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--indicator--raw_metric--thousandeyes))
 
 <a id="nestedblock--indicator--raw_metric--appdynamics"></a>
 ### Nested Schema for `indicator.raw_metric.appdynamics`
@@ -271,20 +271,20 @@ Optional:
 
 Optional:
 
-- **appdynamics** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--good--appdynamics))
-- **bigquery** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good--bigquery))
-- **datadog** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--good--datadog))
-- **dynatrace** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--good--dynatrace))
-- **elasticsearch** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--good--elasticsearch))
-- **grafana_loki** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-loki (see [below for nested schema](#nestedblock--objective--count_metrics--good--grafana_loki))
-- **graphite** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--good--graphite))
-- **lightstep** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--good--lightstep))
-- **newrelic** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-newrelic) (see [below for nested schema](#nestedblock--objective--count_metrics--good--newrelic))
-- **opentsdb** (Block Set) [Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--opentsdb))
-- **prometheus** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good--prometheus))
-- **splunk** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--good--splunk))
-- **splunk_observability** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--good--splunk_observability))
-- **thousandeyes** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--good--thousandeyes))
+- **appdynamics** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--good--appdynamics))
+- **bigquery** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good--bigquery))
+- **datadog** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--good--datadog))
+- **dynatrace** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--good--dynatrace))
+- **elasticsearch** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--good--elasticsearch))
+- **grafana_loki** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/loki#creating-slos-with-loki (see [below for nested schema](#nestedblock--objective--count_metrics--good--grafana_loki))
+- **graphite** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--good--graphite))
+- **lightstep** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--good--lightstep))
+- **newrelic** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--good--newrelic))
+- **opentsdb** (Block Set) [Configuration documentation] (https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--opentsdb))
+- **prometheus** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good--prometheus))
+- **splunk** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--good--splunk))
+- **splunk_observability** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--good--splunk_observability))
+- **thousandeyes** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--good--thousandeyes))
 
 <a id="nestedblock--obejective---count_metrics--good--appdynamics"></a>
 ### Nested Schema for `objective.count_metrics.good.appdynamics`
@@ -413,20 +413,20 @@ Required:
 
 Optional:
 
-- **appdynamics** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--total--appdynamics))
-- **bigquery** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--total--bigquery))
-- **datadog** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--total--datadog))
-- **dynatrace** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--total--dynatrace))
-- **elasticsearch** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--total--elasticsearch))
-- **grafana_loki** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-loki (see [below for nested schema](#nestedblock--objective--count_metrics--total--grafana_loki))
-- **graphite** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--total--graphite))
-- **lightstep** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--total--lightstep))
-- **newrelic** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-newrelic) (see [below for nested schema](#nestedblock--objective--count_metrics--total--newrelic))
-- **opentsdb** (Block Set) [Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--opentsdb))
-- **prometheus** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--total--prometheus))
-- **splunk** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--total--splunk))
-- **splunk_observability** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--total--splunk_observability))
-- **thousandeyes** (Block Set) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--total--thousandeyes))
+- **appdynamics** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--total--appdynamics))
+- **bigquery** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--total--bigquery))
+- **datadog** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--total--datadog))
+- **dynatrace** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--total--dynatrace))
+- **elasticsearch** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--total--elasticsearch))
+- **grafana_loki** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/loki#creating-slos-with-loki (see [below for nested schema](#nestedblock--objective--count_metrics--total--grafana_loki))
+- **graphite** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--total--graphite))
+- **lightstep** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--total--lightstep))
+- **newrelic** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--total--newrelic))
+- **opentsdb** (Block Set) [Configuration documentation] (https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--opentsdb))
+- **prometheus** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--total--prometheus))
+- **splunk** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--total--splunk))
+- **splunk_observability** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--total--splunk_observability))
+- **thousandeyes** (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--total--thousandeyes))
 
 <a id="nestedblock--obejective---count_metrics--total--appdynamics"></a>
 ### Nested Schema for `objective.count_metrics.total.appdynamics`

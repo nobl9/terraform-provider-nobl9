@@ -3,12 +3,12 @@
 page_title: "nobl9_alert_method_servicenow Resource - terraform-provider-nobl9"
 subcategory: ""
 description: |-
-  Integration configuration documentation https://nobl9.github.io/techdocs_YAML_Guide/#servicenow-alert-method
+  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/servicenow
 ---
 
 # nobl9_alert_method_servicenow (Resource)
 
-[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#servicenow-alert-method)
+[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/servicenow)
 
 
 

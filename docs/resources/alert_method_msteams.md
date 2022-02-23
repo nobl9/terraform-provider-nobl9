@@ -3,12 +3,12 @@
 page_title: "nobl9_alert_method_msteams Resource - terraform-provider-nobl9"
 subcategory: ""
 description: |-
-  Integration configuration documentation https://nobl9.github.io/techdocs_YAML_Guide/#ms-teams-alert-method
+  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/ms-teams
 ---
 
 # nobl9_alert_method_msteams (Resource)
 
-[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#ms-teams-alert-method)
+[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/ms-teams)
 
 
 
