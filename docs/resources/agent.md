@@ -37,7 +37,7 @@ description: |-
 - **opentsdb_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#opentsdb-agent) (see [below for nested schema](#nestedblock--opentsdb_config))
 - **prometheus_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#prometheus-agent) (see [below for nested schema](#nestedblock--prometheus_config))
 - **splunk_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent) (see [below for nested schema](#nestedblock--splunk_config))
-- **splunk_observability_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent-observability) (see [below for nested schema](#nestedblock--splunk_observability_config))
+- **splunk_observability_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk-observability) (see [below for nested schema](#nestedblock--splunk_observability_config))
 - **thousandeyes_config** (Set of String) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-agent)
 
 ### Read-Only
