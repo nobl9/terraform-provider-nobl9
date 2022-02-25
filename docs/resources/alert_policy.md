@@ -3,12 +3,12 @@
 page_title: "nobl9_alert_policy Resource - terraform-provider-nobl9"
 subcategory: ""
 description: |-
-  AlertPolicy configuration documentation https://nobl9.github.io/techdocs_YAML_Guide/#alertpolicy
+  AlertPolicy configuration documentation https://docs.nobl9.com/yaml-guide#alertpolicy
 ---
 
 # nobl9_alert_policy (Resource)
 
-[AlertPolicy configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#alertpolicy)
+[AlertPolicy configuration documentation](https://docs.nobl9.com/yaml-guide#alertpolicy)
 
 ## Example Usage
 

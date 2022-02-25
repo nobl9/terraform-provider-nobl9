@@ -31,7 +31,7 @@ func resourceService() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "* [Service configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#service)",
+		Description: "* [Service configuration documentation](https://docs.nobl9.com/yaml-guide#service)",
 	}
 }
 

@@ -32,13 +32,13 @@ func resourceAgent() *schema.Resource {
 			"agent_type": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Type of an agent. [Supported agent types](https://nobl9.github.io/techdocs_YAML_Guide/#agent)",
+				Description: "Type of an agent. [Supported agent types](https://docs.nobl9.com/the-nobl9-agent)",
 			},
 
 			"prometheus_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-prometheus)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/prometheus#prometheus-agent)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -55,7 +55,7 @@ func resourceAgent() *schema.Resource {
 			"datadog_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-datadog)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/datadog#datadog-agent)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -72,7 +72,7 @@ func resourceAgent() *schema.Resource {
 			"newrelic_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-new-relic)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/new-relic#new-relic-agent)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -89,7 +89,7 @@ func resourceAgent() *schema.Resource {
 			"appdynamics_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-appdynamics)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-agent)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -106,7 +106,7 @@ func resourceAgent() *schema.Resource {
 			"splunk_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-splunk)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -123,7 +123,7 @@ func resourceAgent() *schema.Resource {
 			"lightstep_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-lightstep)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-agent)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -145,7 +145,7 @@ func resourceAgent() *schema.Resource {
 			"splunk_observability_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-splunk-observability)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent-observability)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -162,7 +162,7 @@ func resourceAgent() *schema.Resource {
 			"dynatrace_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-dynatrace)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#dynatrace-agent)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -179,7 +179,7 @@ func resourceAgent() *schema.Resource {
 			"thousandeyes_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-thousandeyes)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-agent)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -190,7 +190,7 @@ func resourceAgent() *schema.Resource {
 			"graphite_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-graphite)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/graphite#graphite-agent)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -207,7 +207,7 @@ func resourceAgent() *schema.Resource {
 			"bigquery_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-bigquery)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-agent)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -218,7 +218,7 @@ func resourceAgent() *schema.Resource {
 			"opentsdb_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-opentsdb)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#opentsdb-agent)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -245,7 +245,7 @@ func resourceAgent() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[Agent configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent)",
+		Description: "[Agent configuration documentation](https://docs.nobl9.com/the-nobl9-agent)",
 	}
 }
 

@@ -3,12 +3,12 @@
 page_title: "nobl9_service Resource - terraform-provider-nobl9"
 subcategory: ""
 description: |-
-  Service configuration documentation https://nobl9.github.io/techdocs_YAML_Guide/#service
+  Service configuration documentation https://docs.nobl9.com/yaml-guide#service
 ---
 
 # nobl9_service (Resource)
 
-* [Service configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#service)
+* [Service configuration documentation](https://docs.nobl9.com/yaml-guide#service)
 
 ## Example Usage
 

@@ -138,7 +138,7 @@ func resourceAlertMethodDelete(_ context.Context, d *schema.ResourceData, meta i
 type alertMethodWebhook struct{}
 
 func (i alertMethodWebhook) GetDescription() string {
-	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#webhook-alert-method)"
+	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/webhook)"
 }
 
 func (i alertMethodWebhook) GetSchema() map[string]*schema.Schema {
@@ -205,7 +205,7 @@ func (i alertMethodWebhook) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 type alertMethodPagerDuty struct{}
 
 func (i alertMethodPagerDuty) GetDescription() string {
-	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#pagerduty-alert-method)"
+	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/pagerduty)"
 }
 
 func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
@@ -237,7 +237,7 @@ func (i alertMethodPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec map[str
 type alertMethodSlack struct{}
 
 func (i alertMethodSlack) GetDescription() string {
-	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slack-alert-method)"
+	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/slack)"
 }
 
 func (i alertMethodSlack) GetSchema() map[string]*schema.Schema {
@@ -269,7 +269,7 @@ func (i alertMethodSlack) UnmarshalSpec(d *schema.ResourceData, spec map[string]
 type alertMethodDiscord struct{}
 
 func (i alertMethodDiscord) GetDescription() string {
-	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#discord-alert-method)"
+	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/discord)"
 }
 
 func (i alertMethodDiscord) GetSchema() map[string]*schema.Schema {
@@ -301,7 +301,7 @@ func (i alertMethodDiscord) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 type alertMethodOpsgenie struct{}
 
 func (i alertMethodOpsgenie) GetDescription() string {
-	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#opsgenie-alert-method)"
+	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/opsgenie)"
 }
 
 func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
@@ -344,7 +344,7 @@ func (i alertMethodOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec map[stri
 type alertMethodServiceNow struct{}
 
 func (i alertMethodServiceNow) GetDescription() string {
-	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#servicenow-alert-method)"
+	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/servicenow)"
 }
 
 func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
@@ -395,7 +395,7 @@ func (i alertMethodServiceNow) UnmarshalSpec(d *schema.ResourceData, spec map[st
 type alertMethodJira struct{}
 
 func (i alertMethodJira) GetDescription() string {
-	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#jira-alert-method)"
+	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/jira)"
 }
 
 func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
@@ -454,7 +454,7 @@ func (i alertMethodJira) UnmarshalSpec(d *schema.ResourceData, spec map[string]i
 type alertMethodTeams struct{}
 
 func (i alertMethodTeams) GetDescription() string {
-	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#ms-teams-alert-method)"
+	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/ms-teams)"
 }
 
 func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
@@ -486,7 +486,7 @@ func (i alertMethodTeams) UnmarshalSpec(d *schema.ResourceData, spec map[string]
 type alertMethodEmail struct{}
 
 func (i alertMethodEmail) GetDescription() string {
-	return "[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#alert-method)"
+	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/email-alert)"
 }
 
 func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {

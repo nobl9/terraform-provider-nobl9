@@ -3,12 +3,12 @@
 page_title: "nobl9_role_binding Resource - terraform-provider-nobl9"
 subcategory: ""
 description: |-
-  RoleBinding configuration documentation https://nobl9.github.io/techdocs_YAML_Guide/
+  RoleBinding configuration documentation https://docs.nobl9.com/yaml-guide#rolebinding
 ---
 
 # nobl9_role_binding (Resource)
 
-[RoleBinding configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/)
+[RoleBinding configuration documentation](https://docs.nobl9.com/yaml-guide#rolebinding)
 
 
 

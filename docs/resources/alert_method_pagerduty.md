@@ -3,12 +3,12 @@
 page_title: "nobl9_alert_method_pagerduty Resource - terraform-provider-nobl9"
 subcategory: ""
 description: |-
-  Integration configuration documentation https://nobl9.github.io/techdocs_YAML_Guide/#pagerduty-alert-method
+  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/pagerduty
 ---
 
 # nobl9_alert_method_pagerduty (Resource)
 
-[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#pagerduty-alert-method)
+[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/pagerduty)
 
 
 

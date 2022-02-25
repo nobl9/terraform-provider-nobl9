@@ -14,7 +14,7 @@ func schemaMetricSpec() *schema.Schema {
 				"appdynamics": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-appdynamics)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"application_name": {
@@ -34,7 +34,7 @@ func schemaMetricSpec() *schema.Schema {
 				"bigquery": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-bigquery)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"location": {
@@ -59,7 +59,7 @@ func schemaMetricSpec() *schema.Schema {
 				"datadog": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-datadog)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"query": {
@@ -74,7 +74,7 @@ func schemaMetricSpec() *schema.Schema {
 				"dynatrace": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-dynatrace)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"metric_selector": {
@@ -89,7 +89,7 @@ func schemaMetricSpec() *schema.Schema {
 				"elasticsearch": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-elasticsearch)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"index": {
@@ -109,7 +109,7 @@ func schemaMetricSpec() *schema.Schema {
 				"graphite": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-graphite)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"metric_path": {
@@ -124,7 +124,7 @@ func schemaMetricSpec() *schema.Schema {
 				"lightstep": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-lightstep)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"percentile": {
@@ -149,7 +149,7 @@ func schemaMetricSpec() *schema.Schema {
 				"newrelic": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-newrelic)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"nrql": {
@@ -164,7 +164,7 @@ func schemaMetricSpec() *schema.Schema {
 				"opentsdb": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation] (https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-opentsdb)",
+					Description: "[Configuration documentation] (https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"query": {
@@ -179,7 +179,7 @@ func schemaMetricSpec() *schema.Schema {
 				"prometheus": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-prometheus)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"promql": {
@@ -194,7 +194,7 @@ func schemaMetricSpec() *schema.Schema {
 				"splunk": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"query": {
@@ -209,7 +209,7 @@ func schemaMetricSpec() *schema.Schema {
 				"splunk_observability": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-splunk-observability)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"program": {
@@ -224,7 +224,7 @@ func schemaMetricSpec() *schema.Schema {
 				"thousandeyes": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-thousandeyes)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"test_id": {
@@ -239,7 +239,7 @@ func schemaMetricSpec() *schema.Schema {
 				"grafana_loki": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#slo-using-loki",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/loki#creating-slos-with-loki",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"logql": {

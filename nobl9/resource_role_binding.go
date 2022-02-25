@@ -45,7 +45,7 @@ func resourceRoleBinding() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[RoleBinding configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/)",
+		Description: "[RoleBinding configuration documentation](https://docs.nobl9.com/yaml-guide#rolebinding)",
 	}
 }
 

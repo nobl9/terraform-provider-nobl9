@@ -3,12 +3,12 @@
 page_title: "nobl9_alert_method_email Resource - terraform-provider-nobl9"
 subcategory: ""
 description: |-
-  Integration configuration documentation https://nobl9.github.io/techdocs_YAML_Guide/#alert-method
+  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/email-alert
 ---
 
 # nobl9_alert_method_email (Resource)
 
-[Integration configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#alert-method)
+[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/email-alert)
 
 
 

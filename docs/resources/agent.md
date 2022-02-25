@@ -3,12 +3,12 @@
 page_title: "nobl9_agent Resource - terraform-provider-nobl9"
 subcategory: ""
 description: |-
-  Agent configuration documentation https://nobl9.github.io/techdocs_YAML_Guide/#agent
+  Agent configuration documentation https://docs.nobl9.com/the-nobl9-agent
 ---
 
 # nobl9_agent (Resource)
 
-[Agent configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent)
+[Agent configuration documentation](https://docs.nobl9.com/the-nobl9-agent)
 
 
 
@@ -17,28 +17,28 @@ description: |-
 
 ### Required
 
-- **agent_type** (String) Type of an agent. [Supported agent types](https://nobl9.github.io/techdocs_YAML_Guide/#agent)
+- **agent_type** (String) Type of an agent. [Supported agent types](https://docs.nobl9.com/the-nobl9-agent)
 - **name** (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - **project** (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - **source_of** (List of String) Source of Metrics and/or Services
 
 ### Optional
 
-- **appdynamics_config** (Block Set, Max: 1) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-appdynamics) (see [below for nested schema](#nestedblock--appdynamics_config))
-- **bigquery_config** (Set of String) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-bigquery)
-- **datadog_config** (Block Set, Max: 1) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-datadog) (see [below for nested schema](#nestedblock--datadog_config))
+- **appdynamics_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-agent) (see [below for nested schema](#nestedblock--appdynamics_config))
+- **bigquery_config** (Set of String) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-agent)
+- **datadog_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#datadog-agent) (see [below for nested schema](#nestedblock--datadog_config))
 - **description** (String) Optional description of the resource.
 - **display_name** (String) Display name of the resource.
-- **dynatrace_config** (Block Set, Max: 1) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-dynatrace) (see [below for nested schema](#nestedblock--dynatrace_config))
-- **graphite_config** (Block Set, Max: 1) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-graphite) (see [below for nested schema](#nestedblock--graphite_config))
+- **dynatrace_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#dynatrace-agent) (see [below for nested schema](#nestedblock--dynatrace_config))
+- **graphite_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#graphite-agent) (see [below for nested schema](#nestedblock--graphite_config))
 - **id** (String) The ID of this resource.
-- **lightstep_config** (Block Set, Max: 1) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-lightstep) (see [below for nested schema](#nestedblock--lightstep_config))
-- **newrelic_config** (Block Set, Max: 1) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-new-relic) (see [below for nested schema](#nestedblock--newrelic_config))
-- **opentsdb_config** (Block Set, Max: 1) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-opentsdb) (see [below for nested schema](#nestedblock--opentsdb_config))
-- **prometheus_config** (Block Set, Max: 1) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-prometheus) (see [below for nested schema](#nestedblock--prometheus_config))
-- **splunk_config** (Block Set, Max: 1) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-splunk) (see [below for nested schema](#nestedblock--splunk_config))
-- **splunk_observability_config** (Block Set, Max: 1) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-splunk-observability) (see [below for nested schema](#nestedblock--splunk_observability_config))
-- **thousandeyes_config** (Set of String) [Configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#agent-using-thousandeyes)
+- **lightstep_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-agent) (see [below for nested schema](#nestedblock--lightstep_config))
+- **newrelic_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#new-relic-agent) (see [below for nested schema](#nestedblock--newrelic_config))
+- **opentsdb_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#opentsdb-agent) (see [below for nested schema](#nestedblock--opentsdb_config))
+- **prometheus_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#prometheus-agent) (see [below for nested schema](#nestedblock--prometheus_config))
+- **splunk_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent) (see [below for nested schema](#nestedblock--splunk_config))
+- **splunk_observability_config** (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk-observability) (see [below for nested schema](#nestedblock--splunk_observability_config))
+- **thousandeyes_config** (Set of String) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-agent)
 
 ### Read-Only
 
@@ -123,5 +123,3 @@ Required:
 Required:
 
 - **realm** (String) SplunkObservability Realm.
-
-

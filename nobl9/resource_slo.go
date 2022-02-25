@@ -61,7 +61,7 @@ func resourceSLO() *schema.Resource {
 			"objective": {
 				Type:        schema.TypeSet,
 				Required:    true,
-				Description: "[Objectives documentation](https://nobl9.github.io/techdocs_YAML_Guide/#objectives)",
+				Description: "[Objectives documentation](https://docs.nobl9.com/yaml-guide#objective)",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"count_metrics": {
@@ -195,7 +195,7 @@ func resourceSLO() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[SLO configuration documentation](https://nobl9.github.io/techdocs_YAML_Guide/#SLO)",
+		Description: "[SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)",
 	}
 }
 
