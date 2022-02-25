@@ -60,12 +60,44 @@ func resourceAlertPolicy() *schema.Resource {
 				Description: "",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"project": {
+						"description": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Optional, if not defined project is the same as an Alert Policy.",
 						},
-						"name": {
+						"webhook": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Description: "Alert Policies attached to SLO",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"hiddenurl": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "URL of the webhook endpoint.",
+										Sensitive:   true,
+										Computed:    true,
+									},
+									"template": {
+										Type:          schema.TypeString,
+										Optional:      true,
+										Description:   "Webhook message template. See documentation for template format and samples.",
+										ConflictsWith: []string{"template_fields"},
+									},
+									"template_fields": {
+										Type:          schema.TypeList,
+										Optional:      true,
+										Description:   "Webhook meesage fields. The message will contain json payload with specified fields. See documentation for allowed fields.",
+										ConflictsWith: []string{"template"},
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"headers": {
+										Type:
+									}
+						},
+						"pagerduty": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Name of the alertMethod defined earlier.",
