@@ -25,12 +25,10 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-lightstep", testLightstepSLO},
 		{"test-splunk-observability", testSplunkObservabilitySLO},
 		{"test-dynatrace", testDynatraceSLO},
-		{"test-elasticsearch", testElasticsearchSLO},
 		{"test-thousandeyes", testThousandeyesSLO},
 		{"test-graphite", testGraphiteSLO},
 		{"test-bigquery", testBigQuerySLO},
 		{"test-opentsdb", testOpenTSDBSLO},
-		{"test-grafana-loki", testGrafanaLokiSLO},
 	}
 
 	for _, tc := range cases {
@@ -378,7 +376,7 @@ resource "nobl9_slo" ":name" {
 
 func testNewRelicSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testNewrelicConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -420,7 +418,7 @@ resource "nobl9_slo" ":name" {
 
 func testAppdynamicsSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testAppDynamicsConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -463,7 +461,7 @@ resource "nobl9_slo" ":name" {
 
 func testSplunkSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testSplunkConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -505,7 +503,7 @@ resource "nobl9_slo" ":name" {
 
 func testLightstepSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testLightstepConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -549,7 +547,7 @@ resource "nobl9_slo" ":name" {
 
 func testSplunkObservabilitySLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testSplunkObservabilityConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -591,7 +589,7 @@ resource "nobl9_slo" ":name" {
 
 func testDynatraceSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testDynatraceConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -635,7 +633,7 @@ EOT
 
 func testThousandeyesSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testThousandEyesConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -677,7 +675,7 @@ resource "nobl9_slo" ":name" {
 
 func testGraphiteSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testGraphiteConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -719,7 +717,7 @@ resource "nobl9_slo" ":name" {
 
 func testBigQuerySLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testBigQueryConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -763,7 +761,7 @@ resource "nobl9_slo" ":name" {
 
 func testOpenTSDBSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testOpenTSDBConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -792,91 +790,6 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       opentsdb {
         query = "m=none:{{.N9RESOLUTION}}-avg-zero:cpu{cpu.usage=core.1}"
-      }
-    }
-  }
-}
-`
-	config = strings.ReplaceAll(config, ":name", name)
-	config = strings.ReplaceAll(config, ":project", testProject)
-
-	return config
-}
-
-func testGrafanaLokiSLO(name string) string {
-	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
-resource "nobl9_slo" ":name" {
-  name         = ":name"
-  display_name = ":name"
-  project      = "terraform"
-  service      = nobl9_service.:name-service.name
-
-  budgeting_method = "Occurrences"
-
-  objective {
-    display_name = "obj1"
-    target       = 0.7
-    value        = 1
-    op           = "lt"
-  }
-
-  time_window {
-    count      = 10
-    is_rolling = true
-    unit       = "Minute"
-  }
-
-  indicator {
-    name    = nobl9_agent.:name-agent.name
-    project = ":project"
-	kind    = "Agent"
-    raw_metric {
-      grafana_loki {
-        logql = "TODO"
-      }
-    }
-  }
-}
-`
-	config = strings.ReplaceAll(config, ":name", name)
-	config = strings.ReplaceAll(config, ":project", testProject)
-
-	return config
-}
-
-func testElasticsearchSLO(name string) string {
-	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
-resource "nobl9_slo" ":name" {
-  name         = ":name"
-  display_name = ":name"
-  project      = "terraform"
-  service      = nobl9_service.:name-service.name
-
-  budgeting_method = "Occurrences"
-
-  objective {
-    display_name = "obj1"
-    target       = 0.7
-    value        = 1
-    op           = "lt"
-  }
-
-  time_window {
-    count      = 10
-    is_rolling = true
-    unit       = "Minute"
-  }
-
-  indicator {
-    name    = nobl9_agent.:name-agent.name
-    project = ":project"
-	kind    = "Agent"
-    raw_metric {
-      elasticsearch {
-		index = "TODO"
-        query = "TODO"
       }
     }
   }
