@@ -54,7 +54,7 @@ func resourceAlertPolicy() *schema.Resource {
 				},
 			},
 
-			"alert_method": {
+			"alert_methods": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "",
@@ -96,16 +96,16 @@ func marshalAlertPolicy(d *schema.ResourceData) *n9api.AlertPolicy {
 			Description:  d.Get("description").(string),
 			Severity:     d.Get("severity").(string),
 			Conditions:   marshalAlertConditions(d),
-			AlertMethods: marshalAlertIntegrations(d),
+			AlertMethods: marshalAlertMethods(d),
 		},
 	}
 }
 
-func marshalAlertIntegrations(d *schema.ResourceData) []n9api.AlertMethodsAssignment {
-	integrations := d.Get("alert_method").([]interface{})
-	resultConditions := make([]n9api.AlertMethodsAssignment, len(integrations))
-	for i, c := range integrations {
-		integration := c.(map[string]interface{})
+func marshalAlertMethods(d *schema.ResourceData) []n9api.AlertMethodsAssignment {
+	methods := d.Get("alert_method").([]interface{})
+	resultConditions := make([]n9api.AlertMethodsAssignment, len(methods))
+	for i, c := range methods {
+		method := c.(map[string]interface{})
 
 		resultConditions[i] = n9api.AlertMethodsAssignment{
 			Project: integration["project"].(string),

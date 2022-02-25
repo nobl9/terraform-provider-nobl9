@@ -182,7 +182,7 @@ func (i alertMethodWebhook) MarshalSpec(d *schema.ResourceData) n9api.AlertMetho
 
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Webhook: &n9api.WebhookIntegration{
+		Webhook: &n9api.WebhookAlertMethod{
 			URL:            d.Get("url").(string),
 			Template:       template,
 			TemplateFields: templateFields,
@@ -223,7 +223,7 @@ func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
 func (i alertMethodPagerDuty) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		PagerDuty: &n9api.PagerDutyIntegration{
+		PagerDuty: &n9api.PagerDutyAlertMethod{
 			IntegrationKey: d.Get("integration_key").(string),
 		},
 	}
@@ -255,7 +255,7 @@ func (i alertMethodSlack) GetSchema() map[string]*schema.Schema {
 func (i alertMethodSlack) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Slack: &n9api.SlackIntegration{
+		Slack: &n9api.SlackAlertMethod{
 			URL: d.Get("url").(string),
 		},
 	}
@@ -287,7 +287,7 @@ func (i alertMethodDiscord) GetSchema() map[string]*schema.Schema {
 func (i alertMethodDiscord) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Discord: &n9api.DiscordIntegration{
+		Discord: &n9api.DiscordAlertMethod{
 			URL: d.Get("url").(string),
 		},
 	}
@@ -324,7 +324,7 @@ func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
 func (i alertMethodOpsgenie) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Opsgenie: &n9api.OpsgenieIntegration{
+		Opsgenie: &n9api.OpsgenieAlertMethod{
 			Auth: d.Get("auth").(string),
 			URL:  d.Get("url").(string),
 		},
@@ -372,7 +372,7 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 func (i alertMethodServiceNow) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		ServiceNow: &n9api.ServiceNowIntegration{
+		ServiceNow: &n9api.ServiceNowAlertMethod{
 			Username:   d.Get("username").(string),
 			Password:   d.Get("password").(string),
 			InstanceID: d.Get("instanceid").(string),
@@ -428,7 +428,7 @@ func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
 func (i alertMethodJira) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Jira: &n9api.JiraIntegration{
+		Jira: &n9api.JiraAlertMethod{
 			URL:        d.Get("url").(string),
 			Username:   d.Get("username").(string),
 			APIToken:   d.Get("apitoken").(string),
@@ -472,7 +472,7 @@ func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
 func (i alertMethodTeams) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Teams: &n9api.TeamsIntegration{
+		Teams: &n9api.TeamsAlertMethod{
 			URL: d.Get("url").(string),
 		},
 	}
@@ -539,7 +539,7 @@ func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodS
 
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Email: &n9api.EmailIntegration{
+		Email: &n9api.EmailAlertMethod{
 			To:      toStringSlice(d.Get("to").([]interface{})),
 			Cc:      toStringSlice(d.Get("cc").([]interface{})),
 			Bcc:     toStringSlice(d.Get("bcc").([]interface{})),

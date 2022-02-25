@@ -378,7 +378,7 @@ resource "nobl9_slo" ":name" {
 
 func testNewRelicSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testNewrelicConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -420,7 +420,7 @@ resource "nobl9_slo" ":name" {
 
 func testAppdynamicsSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testAppDynamicsConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -463,7 +463,7 @@ resource "nobl9_slo" ":name" {
 
 func testSplunkSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testSplunkConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -505,7 +505,7 @@ resource "nobl9_slo" ":name" {
 
 func testLightstepSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testLightstepConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -549,7 +549,7 @@ resource "nobl9_slo" ":name" {
 
 func testSplunkObservabilitySLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testSplunkObservabilityConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -591,7 +591,7 @@ resource "nobl9_slo" ":name" {
 
 func testDynatraceSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testDynatraceConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -635,7 +635,7 @@ EOT
 
 func testThousandeyesSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testThousandEyesConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -677,7 +677,7 @@ resource "nobl9_slo" ":name" {
 
 func testGraphiteSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testGraphiteConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -719,7 +719,7 @@ resource "nobl9_slo" ":name" {
 
 func testBigQuerySLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testBigQueryConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -763,7 +763,7 @@ resource "nobl9_slo" ":name" {
 
 func testOpenTSDBSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testOpenTSDBConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -805,7 +805,7 @@ resource "nobl9_slo" ":name" {
 
 func testGrafanaLokiSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testGrafanaLokiConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -847,7 +847,7 @@ resource "nobl9_slo" ":name" {
 
 func testElasticsearchSLO(name string) string {
 	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+		testElasticsearchConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
