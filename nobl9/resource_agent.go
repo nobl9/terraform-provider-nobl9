@@ -145,7 +145,7 @@ func resourceAgent() *schema.Resource {
 			"splunk_observability_config": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent-observability)",
+				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk-observability)",
 				MinItems:    1,
 				MaxItems:    1,
 				Elem: &schema.Resource{
