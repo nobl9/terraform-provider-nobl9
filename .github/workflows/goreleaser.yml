@@ -33,6 +33,8 @@ jobs:
           # These secrets will need to be configured for the repository:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           PASSPHRASE: ${{ secrets.PASSPHRASE }}
+      - name: setup github
+        run: git config --global url."https://n9-machine-user:${{ secrets.GH_TOKEN }}@github.com".insteadOf "https://github.com"
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2.8.1
         with:
