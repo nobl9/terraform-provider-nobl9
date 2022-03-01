@@ -34,7 +34,7 @@ func schemaMetricSpec() *schema.Schema {
 				"bigquery": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"location": {

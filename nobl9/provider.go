@@ -39,7 +39,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_ID", nil),
-				Description: "Authentication parameter ClientID",
+				Description: "Authentication parameter ClientID.",
 			},
 
 			"client_secret": {
