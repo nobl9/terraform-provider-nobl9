@@ -3,7 +3,7 @@ HOSTNAME=nobl9.com
 NAMESPACE=nobl9
 NAME=nobl9
 BINARY=terraform-provider-${NAME}
-VERSION=0.1.1
+VERSION=0.1.4
 BUILD_FLAGS="-X github.com/nobl9/terraform-provider-nobl9/nobl9.Version=$(VERSION)"
 OS_ARCH=linux_amd64
 

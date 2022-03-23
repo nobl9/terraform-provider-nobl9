@@ -412,11 +412,17 @@ func marshalSLOLightstep(s *schema.Set) *n9api.LightstepMetric {
 
 	streamID := metric["stream_id"].(string)
 	typeOfData := metric["type_of_data"].(string)
-	percentile := metric["percentile"].(float64)
+	var percentile *float64
+	if p := metric["percentile"].(float64); p != 0 {
+		// the API does not accept percentile = 0
+		// terraform sets it to 0 even if it was ommitted in the .tf
+		percentile = &p
+	}
+
 	return &n9api.LightstepMetric{
 		StreamID:   &streamID,
 		TypeOfData: &typeOfData,
-		Percentile: &percentile,
+		Percentile: percentile,
 	}
 }
 func marshalSLOSplunkObservability(s *schema.Set) *n9api.SplunkObservabilityMetric {

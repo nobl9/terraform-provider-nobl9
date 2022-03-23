@@ -15,7 +15,7 @@ terraform {
   required_providers {
     nobl9 = {
       source = "nobl9/nobl9"
-      version = "0.1.3"
+      version = "0.1.4"
     }
   }
 }
@@ -27,10 +27,13 @@ provider "nobl9" {
   client_secret = "<CLIENT_SECRET>"
 }
 
+resource "nobl9_project" "test" {
+  name = "test"
+}
+
 resource "nobl9_service" "test" {
-  metadata {
-    name = "test"
-  }
+  name    = "test"
+  project = "test"
 }
 ```
 Documentation
