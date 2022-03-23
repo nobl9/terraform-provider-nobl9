@@ -3,7 +3,7 @@
 page_title: "nobl9 Provider"
 subcategory: ""
 description: |-
-  
+
 ---
 
 # nobl9 Provider
@@ -17,7 +17,7 @@ terraform {
   required_providers {
     nobl9 = {
       source  = "nobl9/nobl9"
-      version = "0.1.3"
+      version = "0.1.4"
     }
   }
 }
