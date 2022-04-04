@@ -2,9 +2,11 @@ package nobl9
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -55,9 +57,10 @@ func resourceAlertPolicy() *schema.Resource {
 			},
 
 			"alert_method": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "",
+				Type:             schema.TypeList,
+				Optional:         true,
+				Description:      "",
+				DiffSuppressFunc: diffSuppressAlertMethods,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"project": {
@@ -83,6 +86,31 @@ func resourceAlertPolicy() *schema.Resource {
 		},
 		Description: "[AlertPolicy configuration documentation](https://docs.nobl9.com/yaml-guide#alertpolicy)",
 	}
+}
+
+func diffSuppressAlertMethods(_, _, _ string, d *schema.ResourceData) bool {
+	old, new := d.GetChange("alert_method")
+	alertMethodsOld := old.([]interface{})
+	alertMethodsNew := new.([]interface{})
+
+	oldMap := transformAlertMethodsTo2DMap(alertMethodsOld)
+	newMap := transformAlertMethodsTo2DMap(alertMethodsNew)
+
+	return reflect.DeepEqual(oldMap, newMap)
+}
+
+func transformAlertMethodsTo2DMap(alertMethods []interface{}) map[string]map[string]string {
+	result := make(map[string]map[string]string)
+	for _, method := range alertMethods {
+		s := method.(map[string]interface{})
+
+		values := make(map[string]string)
+
+		values["name"] = s["name"].(string)
+		values["project"] = s["name"].(string)
+		result[s["name"].(string)] = values
+	}
+	return result
 }
 
 func marshalAlertPolicy(d *schema.ResourceData) *n9api.AlertPolicy {
