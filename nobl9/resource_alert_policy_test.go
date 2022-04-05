@@ -16,6 +16,9 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 	}{
 		{"alert-policy", testAlertPolicyWithoutIntegration},
 		{"alert-policy-with-alert-method", testAlertPolicyWithIntegration},
+		{"alert-policy-with-multi-alert-method", testAlertPolicyWithMultipleIntegration},
+		// This is coming from SRE-738 where the order of the alert methods was always showing a diff
+		{"alert-policy-with-multi-alert-method-reverse", testAlertPolicyWithMultipleIntegrationReverseOrder},
 	}
 
 	for _, tc := range cases {
@@ -31,6 +34,12 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 					{
 						Config: tc.configFunc(tc.name),
 						Check:  CheckObjectCreated("nobl9_alert_policy." + tc.name),
+					},
+					// make sure that applying the same config results in a no-op plan, regardless of alert_method order
+					{
+						Config:             tc.configFunc(tc.name),
+						PlanOnly:           true,
+						ExpectNonEmptyPlan: false,
 					},
 				},
 			})
@@ -116,4 +125,82 @@ resource "nobl9_alert_policy" "%s" {
   }
 }
 `, name, name, testProject, name, name, testProject, testProject, name)
+}
+
+func testAlertPolicyWithMultipleIntegration(name string) string {
+	return testWebhookTemplateConfig(name+"-am") +
+		testWebhookTemplateConfig(name+"-am-two") +
+		fmt.Sprintf(`
+resource "nobl9_alert_policy" "%s" {
+  name       = "%s"
+  project    = "%s"
+  severity   = "Medium"
+
+  condition {
+    measurement = "burnedBudget"
+    value 	  = 0.9
+  }
+
+  condition {
+    measurement = "averageBurnRate"
+    value 	  = 3
+    lasts_for	  = "1m"
+  }
+
+  condition {
+    measurement  = "timeToBurnBudget"
+    value_string = "1h"
+    lasts_for	   = "300s"
+  }
+
+  alert_method {
+    project = "%s"
+    name	= nobl9_alert_method_webhook.%s-am.name
+  }
+
+  alert_method {
+    project = "%s"
+    name	= nobl9_alert_method_webhook.%s-am-two.name
+  }
+}
+`, name, name, testProject, testProject, name, testProject, name)
+}
+
+func testAlertPolicyWithMultipleIntegrationReverseOrder(name string) string {
+	return testWebhookTemplateConfig(name+"-am") +
+		testWebhookTemplateConfig(name+"-am-two") +
+		fmt.Sprintf(`
+resource "nobl9_alert_policy" "%s" {
+  name       = "%s"
+  project    = "%s"
+  severity   = "Medium"
+
+  condition {
+    measurement = "burnedBudget"
+    value 	  = 0.9
+  }
+
+  condition {
+    measurement = "averageBurnRate"
+    value 	  = 3
+    lasts_for	  = "1m"
+  }
+
+  condition {
+    measurement  = "timeToBurnBudget"
+    value_string = "1h"
+    lasts_for	   = "300s"
+  }
+
+  alert_method {
+    project = "%s"
+    name	= nobl9_alert_method_webhook.%s-am-two.name
+  }
+
+  alert_method {
+    project = "%s"
+    name	= nobl9_alert_method_webhook.%s-am.name
+  }
+}
+`, name, name, testProject, testProject, name, testProject, name)
 }
