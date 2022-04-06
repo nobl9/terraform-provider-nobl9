@@ -8,13 +8,18 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
+// NOTE: We currently can't create Agents via the API, so these SLOs are creating with an existing Agent. When
+// we are able to, we should change over to dynamically created Agents, but in the mean time, we will have to
+// use the existing ones.
+
 func TestAcc_Nobl9SLO(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name       string
 		configFunc func(string) string
 	}{
 		{"test-prometheus", testPrometheusSLO},
-		{"test-prom-with-ap", testPrometheusSLOWithAlerPolicy},
+		{"test-prom-with-ap", testPrometheusSLOWithAlertPolicy},
 		{"test-prom-with-countmetrics", testPrometheusSLOWithCountMetrics},
 		{"test-prom-with-multiple-objectives", testPrometheusSLOWithMultipleObjectives},
 		{"test-prom-full", testPrometheusSLOFULL},
@@ -49,12 +54,11 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 }
 
 func testPrometheusSLO(name string) string {
-	config := testService(name+"-service") +
-		testPrometheusConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -73,9 +77,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name = "test-terraform-prom-agent"
     project = ":project"
-	kind    = "Agent"
+    kind    = "Agent"
     raw_metric {
       prometheus {
         promql = "1.0"
@@ -90,14 +94,13 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testPrometheusSLOWithAlerPolicy(name string) string {
+func testPrometheusSLOWithAlertPolicy(name string) string {
 	config := testService(name+"-service") +
-		testPrometheusConfig(name+"-agent") +
 		testAlertPolicyWithoutIntegration(name+"-ap") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -116,9 +119,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-prom-agent"
     project = ":project"
-	kind    = "Agent"
+    kind    = "Agent"
     raw_metric {
       prometheus {
         promql = "1.0"
@@ -136,12 +139,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testPrometheusSLOWithCountMetrics(name string) string {
-	config := testService(name+"-service") +
-		testPrometheusConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -153,14 +155,14 @@ resource "nobl9_slo" ":name" {
 	count_metrics {
 	  incremental = true
 	  good {
-		prometheus {
-		  promql = "1.0"
-		}
+			prometheus {
+				promql = "1.0"
+			}
 	  }
 	  total {
-		prometheus {
-		  promql = "1.0"
-		}
+			prometheus {
+				promql = "1.0"
+			}
 	  }
 	}
   }
@@ -172,9 +174,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-prom-agent"
     project = ":project"
-	kind    = "Agent"
+    kind    = "Agent"
   }
 }
 `
@@ -184,12 +186,11 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 func testPrometheusSLOWithMultipleObjectives(name string) string {
-	config := testService(name+"-service") +
-		testPrometheusConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -215,9 +216,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-prom-agent"
     project = ":project"
-	kind    = "Agent"
+    kind    = "Agent"
     raw_metric {
       prometheus {
         promql = "1.0"
@@ -233,12 +234,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testPrometheusSLOFULL(name string) string {
-	config := testService(name+"-service") +
-		testPrometheusConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -272,9 +272,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-prom-agent"
     project = ":project"
-	kind    = "Agent"
+    kind    = "Agent"
     raw_metric {
       prometheus {
         promql = "1.0"
@@ -290,12 +290,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testPrometheusSLOWithTimeSlices(name string) string {
-	config := testService(name+"-service") +
-		testPrometheusConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Timeslices"
@@ -315,9 +314,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-prom-agent"
     project = ":project"
-	kind    = "Agent"
+    kind    = "Agent"
     raw_metric {
       prometheus {
         promql = "1.0"
@@ -333,12 +332,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testDatadogSLO(name string) string {
-	config := testService(name+"-service") +
-		testDatadogConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -357,9 +355,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-datadog-agent"
     project = ":project"
-	kind    = "Agent"
+	  kind    = "Agent"
     raw_metric {
       datadog {
         query = "avg:system.cpu.user{cluster_name:main}"
@@ -375,12 +373,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testNewRelicSLO(name string) string {
-	config := testService(name+"-service") +
-		testNewrelicConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -399,9 +396,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+		name    = "test-terraform-newrelic-agent"
     project = ":project"
-	kind    = "Agent"
+    kind    = "Agent"
     raw_metric {
       newrelic {
         nrql = "SELECT average(duration * 1000) FROM Transaction TIMESERIES"
@@ -417,12 +414,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testAppdynamicsSLO(name string) string {
-	config := testService(name+"-service") +
-		testAppDynamicsConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -441,12 +437,12 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-appd-agent"
     project = ":project"
-	kind    = "Agent"
+    kind    = "Agent"
     raw_metric {
       appdynamics {
-		application_name = "polakpotrafi"
+        application_name = "polakpotrafi"
         metric_path = "End User Experience|App|End User Response Time 95th percentile (ms)"
       }
     }
@@ -460,12 +456,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testSplunkSLO(name string) string {
-	config := testService(name+"-service") +
-		testSplunkConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -484,9 +479,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-splunk-agent"
     project = ":project"
-	kind    = "Agent"
+	  kind    = "Agent"
     raw_metric {
       splunk {
         query = "search index=polakpotrafi-events source=udp:5072 sourcetype=syslog status<400 | bucket _time span=1m | stats avg(response_time) as n9value by _time | rename _time as n9time | fields n9time n9value"
@@ -502,12 +497,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testLightstepSLO(name string) string {
-	config := testService(name+"-service") +
-		testLightstepConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -526,14 +520,14 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-lightstep-agent"
     project = ":project"
-	kind    = "Agent"
+	  kind    = "Agent"
     raw_metric {
       lightstep {
         stream_id = "DzpxcSRh"
-		type_of_data = "latency"
-		percentile = 95
+	      type_of_data = "latency"
+	      percentile = 95
       }
     }
   }
@@ -546,12 +540,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testSplunkObservabilitySLO(name string) string {
-	config := testService(name+"-service") +
-		testSplunkObservabilityConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -570,9 +563,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-splunkobs-agent"
     project = ":project"
-	kind    = "Agent"
+	  kind    = "Agent"
     raw_metric {
       splunk_observability {
         program = "TODO"
@@ -588,12 +581,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testDynatraceSLO(name string) string {
-	config := testService(name+"-service") +
-		testDynatraceConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -612,9 +604,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-dynatrace-agent"
     project = ":project"
-	kind    = "Agent"
+    kind    = "Agent"
     raw_metric {
       dynatrace {
         metric_selector = <<EOT
@@ -632,12 +624,11 @@ EOT
 }
 
 func testThousandeyesSLO(name string) string {
-	config := testService(name+"-service") +
-		testThousandEyesConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -656,9 +647,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-thousandeyes-agent"
     project = ":project"
-	kind    = "Agent"
+    kind    = "Agent"
     raw_metric {
       thousandeyes {
         test_id = 11
@@ -674,12 +665,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testGraphiteSLO(name string) string {
-	config := testService(name+"-service") +
-		testGraphiteConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -698,9 +688,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-graphite-agent"
     project = ":project"
-	kind    = "Agent"
+	  kind    = "Agent"
     raw_metric {
       graphite {
         metric_path = "TODO"
@@ -716,12 +706,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testBigQuerySLO(name string) string {
-	config := testService(name+"-service") +
-		testBigQueryConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -740,9 +729,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-bigquery-agent"
     project = ":project"
-	kind    = "Agent"
+    kind    = "Agent"
     raw_metric {
       bigquery {
         project_id = "bdwtest-256112"
@@ -760,12 +749,11 @@ resource "nobl9_slo" ":name" {
 }
 
 func testOpenTSDBSLO(name string) string {
-	config := testService(name+"-service") +
-		testOpenTSDBConfig(name+"-agent") + `
+	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = "terraform"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -784,9 +772,9 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = nobl9_agent.:name-agent.name
+    name    = "test-terraform-opentsdb-agent"
     project = ":project"
-	kind    = "Agent"
+	  kind    = "Agent"
     raw_metric {
       opentsdb {
         query = "m=none:{{.N9RESOLUTION}}-avg-zero:cpu{cpu.usage=core.1}"
