@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -166,6 +167,7 @@ func resourceSLO() *schema.Resource {
 					Type:        schema.TypeString,
 					Description: "Alert Policy",
 				},
+				DiffSuppressFunc: diffSuppressAlertPolicyNames,
 			},
 			"attachments": {
 				Type:        schema.TypeList,
@@ -197,6 +199,37 @@ func resourceSLO() *schema.Resource {
 		},
 		Description: "[SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)",
 	}
+}
+
+func diffSuppressAlertPolicyNames(_, _, _ string, d *schema.ResourceData) bool {
+	// Ignore the order of elements on alert_policy list
+	old, new := d.GetChange("alert_policies")
+	if old == nil && new == nil {
+		return true
+	}
+	apOld := old.([]interface{})
+	apNew := new.([]interface{})
+
+	sort.Slice(apOld, func(i, j int) bool {
+		return apOld[i].(string) < apNew[j].(string)
+	})
+	sort.Slice(apNew, func(i, j int) bool {
+		return apNew[i].(string) < apNew[j].(string)
+	})
+
+	return equalSlices(apOld, apNew)
+}
+
+func equalSlices(a, b []interface{}) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func marshalSLO(d *schema.ResourceData) *n9api.SLO {
@@ -573,7 +606,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 		diags = appendError(diags, err)
 	}
 
-	err = d.Set("alert_policies", spec["alertPolicies"])
+	err = d.Set("alert_policies", spec["alertPolicies"].([]interface{}))
 	diags = appendError(diags, err)
 
 	return diags

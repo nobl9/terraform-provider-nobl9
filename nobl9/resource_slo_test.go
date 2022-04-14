@@ -34,6 +34,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-graphite", testGraphiteSLO},
 		{"test-bigquery", testBigQuerySLO},
 		{"test-opentsdb", testOpenTSDBSLO},
+		{"test-multiple-ap", testMultipleAlertPolicies},
 	}
 
 	for _, tc := range cases {
@@ -781,6 +782,54 @@ resource "nobl9_slo" ":name" {
       }
     }
   }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testMultipleAlertPolicies(name string) string {
+	config := testService(name+"-service") +
+		testAlertPolicyWithoutIntegration(name+"-fast") +
+		testAlertPolicyWithoutIntegration(name+"-slow") + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+	project      = ":project"
+  service      = nobl9_service.:name-service.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name = "test-terraform-prom-agent"
+    project = ":project"
+    kind    = "Agent"
+    raw_metric {
+      prometheus {
+        promql = "1.0"
+      }
+    }
+  }
+
+  alert_policies = [
+    nobl9_alert_policy.:name-slow.name,
+    nobl9_alert_policy.:name-fast.name
+    ]
 }
 `
 	config = strings.ReplaceAll(config, ":name", name)
