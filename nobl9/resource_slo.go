@@ -38,7 +38,7 @@ func resourceSLO() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"op": {
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "Type of logical operation",
 									},
 									"value": {
