@@ -2,7 +2,6 @@ package nobl9
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"hash/fnv"
 	"sort"
@@ -39,19 +38,16 @@ func resourceSLO() *schema.Resource {
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
-							ForceNew:    true,
 							Description: "Name of the metric source (agent).",
 						},
 						"project": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							ForceNew:    true,
 							Description: "Name of the metric source project.",
 						},
 						"kind": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							ForceNew:    true,
 							Default:     "Agent",
 							Description: "Kind of the metric source. One of {Agent, Direct}.",
 						},
@@ -68,7 +64,7 @@ func resourceSLO() *schema.Resource {
 						"count_metrics": {
 							Type:        schema.TypeSet,
 							Optional:    true,
-							Description: "Alert Policies attached to SLO",
+							Description: "Compares two time series, indicating the ratio of the count of good values to total values.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"good":  schemaMetricSpec(),
@@ -78,6 +74,16 @@ func resourceSLO() *schema.Resource {
 										Required:    true,
 										Description: "Should the metrics be incrementing or not",
 									},
+								},
+							},
+						},
+						"raw_metric": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Description: "Raw data is used to compare objective values.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"query": schemaMetricSpec(),
 								},
 							},
 						},
@@ -235,7 +241,6 @@ func equalSlices(a, b []interface{}) bool {
 func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 
 	indicator := marshalIndicator(d)
-	isRawMetric := indicator.RawMetric != nil
 	return &n9api.SLO{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
@@ -247,7 +252,7 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 			Service:         d.Get("service").(string),
 			BudgetingMethod: d.Get("budgeting_method").(string),
 			Indicator:       indicator,
-			Thresholds:      marshalThresholds(d, isRawMetric),
+			Thresholds:      marshalThresholds(d),
 			TimeWindows:     marshalTimeWindows(d),
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
 			Attachments:     marshalAttachments(d.Get("attachments").([]interface{})),
@@ -310,6 +315,71 @@ func marshalIndicator(d *schema.ResourceData) n9api.Indicator {
 	}
 }
 
+func marshalThresholds(d *schema.ResourceData) []n9api.Threshold {
+	objectives := d.Get("objective").(*schema.Set).List()
+	thresholds := make([]n9api.Threshold, len(objectives))
+	for i, o := range objectives {
+		objective := o.(map[string]interface{})
+		target := objective["target"].(float64)
+		timeSliceTarget := objective["time_slice_target"].(float64)
+		var timeSliceTargetPtr *float64
+		if timeSliceTarget != 0 {
+			timeSliceTargetPtr = &timeSliceTarget
+		}
+		operator := objective["op"].(string)
+
+		thresholds[i] = n9api.Threshold{
+			ThresholdBase: n9api.ThresholdBase{
+				DisplayName: objective["display_name"].(string),
+				Value:       objective["value"].(float64),
+			},
+			BudgetTarget:    &target,
+			TimeSliceTarget: timeSliceTargetPtr,
+			Operator:        &operator,
+			CountMetrics:    marshalCountMetrics(objective),
+			RawMetric:       marshalRawMetric(objective),
+		}
+	}
+
+	return thresholds
+}
+
+func marshalRawMetric(metricRoot map[string]interface{}) *n9api.RawMetricSpec {
+	rawMetricSet := metricRoot["raw_metric"].(*schema.Set)
+	if rawMetricSet.Len() == 0 {
+		return nil
+	}
+
+	rawMetric := metricRoot["raw_metric"].(*schema.Set).List()[0].(map[string]interface{})
+	if _, ok := rawMetric["query"]; !ok {
+		return nil
+	}
+
+	metric := rawMetric["query"].(*schema.Set).List()[0].(map[string]interface{})
+
+	return &n9api.RawMetricSpec{
+		MetricQuery: marshalMetric(metric),
+	}
+}
+
+func marshalCountMetrics(countMetricsTf map[string]interface{}) *n9api.CountMetricsSpec {
+	countMetricsSet := countMetricsTf["count_metrics"].(*schema.Set)
+	if countMetricsSet.Len() == 0 {
+		return nil
+	}
+
+	countMetrics := countMetricsSet.List()[0].(map[string]interface{})
+
+	incremental := countMetrics["incremental"].(bool)
+	good := countMetrics["good"].(*schema.Set).List()[0].(map[string]interface{})
+	total := countMetrics["total"].(*schema.Set).List()[0].(map[string]interface{})
+	return &n9api.CountMetricsSpec{
+		Incremental: &incremental,
+		GoodMetric:  marshalMetric(good),
+		TotalMetric: marshalMetric(total),
+	}
+}
+
 func marshalMetric(metric map[string]interface{}) *n9api.MetricSpec {
 	return &n9api.MetricSpec{
 		Prometheus:          marshalSLOPrometheus(metric["prometheus"].(*schema.Set)),
@@ -326,50 +396,6 @@ func marshalMetric(metric map[string]interface{}) *n9api.MetricSpec {
 		BigQuery:            marshalSLOBigQuery(metric["bigquery"].(*schema.Set)),
 		OpenTSDB:            marshalSLOOpenTSDB(metric["opentsdb"].(*schema.Set)),
 		GrafanaLoki:         marshalSLOGrafanaLoki(metric["grafana_loki"].(*schema.Set)),
-	}
-}
-
-func marshalThresholds(d *schema.ResourceData, isRawMetric bool) []n9api.Threshold {
-	objectives := d.Get("objective").(*schema.Set).List()
-	thresholds := make([]n9api.Threshold, len(objectives))
-	for i, o := range objectives {
-		objective := o.(map[string]interface{})
-		target := objective["target"].(float64)
-		timeSliceTarget := objective["time_slice_target"].(float64)
-		var timeSliceTargetPtr *float64
-		if timeSliceTarget != 0 {
-			timeSliceTargetPtr = &timeSliceTarget
-		}
-		operator := objective["op"].(string)
-		var countMetrics *n9api.CountMetricsSpec
-		if !isRawMetric {
-			cm := objective["count_metrics"].(*schema.Set).List()[0].(map[string]interface{})
-			countMetrics = marshalCountMetrics(cm)
-		}
-
-		thresholds[i] = n9api.Threshold{
-			ThresholdBase: n9api.ThresholdBase{
-				DisplayName: objective["display_name"].(string),
-				Value:       objective["value"].(float64),
-			},
-			BudgetTarget:    &target,
-			TimeSliceTarget: timeSliceTargetPtr,
-			Operator:        &operator,
-			CountMetrics:    countMetrics,
-		}
-	}
-
-	return thresholds
-}
-
-func marshalCountMetrics(countMetrics map[string]interface{}) *n9api.CountMetricsSpec {
-	incremental := countMetrics["incremental"].(bool)
-	good := countMetrics["good"].(*schema.Set).List()[0].(map[string]interface{})
-	total := countMetrics["total"].(*schema.Set).List()[0].(map[string]interface{})
-	return &n9api.CountMetricsSpec{
-		Incremental: &incremental,
-		GoodMetric:  marshalMetric(good),
-		TotalMetric: marshalMetric(total),
 	}
 }
 
@@ -448,7 +474,7 @@ func marshalSLOLightstep(s *schema.Set) *n9api.LightstepMetric {
 	var percentile *float64
 	if p := metric["percentile"].(float64); p != 0 {
 		// the API does not accept percentile = 0
-		// terraform sets it to 0 even if it was ommitted in the .tf
+		// terraform sets it to 0 even if it was omitted in the .tf
 		percentile = &p
 	}
 
@@ -594,15 +620,15 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 
 	err = unmarshalTimeWindow(d, spec)
 	diags = appendError(diags, err)
-	isRawMetric, err := unmarshalIndicator(d, spec)
+	err = unmarshalIndicator(d, spec)
 	diags = appendError(diags, err)
 
-	err = unmarshalObjectives(d, spec, isRawMetric)
+	err = unmarshalObjectives(d, spec)
 	diags = appendError(diags, err)
 
-	if i, ok := spec["attachemnts"]; ok {
+	if i, ok := spec["attachments"]; ok {
 		attachments := i.([]interface{})
-		err = d.Set("attachemnts", attachments)
+		err = d.Set("attachments", attachments)
 		diags = appendError(diags, err)
 	}
 
@@ -612,23 +638,21 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	return diags
 }
 
-func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}) (bool, error) {
+func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}) error {
 	indicator := spec["indicator"].(map[string]interface{})
 	res := make(map[string]interface{})
 	metricSource := indicator["metricSource"].(map[string]interface{})
 	res["name"] = metricSource["name"]
 	res["project"] = metricSource["project"]
 	res["kind"] = metricSource["kind"]
-	isRawMetric := false
 	if rawMetric, ok := indicator["rawMetric"]; ok {
-		isRawMetric = true
 		tfMetric, err := unmarshalSLOMetric(rawMetric.(map[string]interface{}))
 		if err != nil {
-			return false, err
+			return err
 		}
 		res["raw_metric"] = tfMetric
 	}
-	return isRawMetric, d.Set("indicator", schema.NewSet(oneElementSet, []interface{}{res}))
+	return d.Set("indicator", schema.NewSet(oneElementSet, []interface{}{res}))
 }
 
 func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}) error {
@@ -649,7 +673,7 @@ func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}) er
 	return d.Set("time_window", schema.NewSet(oneElementSet, []interface{}{timeWindowsTF}))
 }
 
-func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}, isRawMetric bool) error {
+func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) error {
 	objectives := spec["objectives"].([]interface{})
 	objectivesTF := make([]interface{}, len(objectives))
 
@@ -662,11 +686,7 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}, is
 		objectiveTF["target"] = objective["target"]
 		objectiveTF["time_slice_target"] = objective["timeSliceTarget"]
 
-		countMetrics, ok := objective["countMetrics"]
-		if isRawMetric && ok {
-			return errors.New("cannot be rawMetric and countMetric at the same time")
-		}
-		if !isRawMetric {
+		if countMetrics, isCountMetrics := objective["countMetrics"]; isCountMetrics {
 			cm := countMetrics.(map[string]interface{})
 			countMetricsTF := make(map[string]interface{})
 			countMetricsTF["incremental"] = cm["incremental"]
@@ -682,6 +702,16 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}, is
 			countMetricsTF["total"] = total
 			objectiveTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
 		}
+
+		if rawMetric, isRawMetric := objective["rawMetric"]; isRawMetric {
+			rm := rawMetric.(map[string]interface{})
+			tfMetric, err := unmarshalSLORawMetric(rm)
+			if err != nil {
+				return err
+			}
+			objectiveTF["raw_metric"] = tfMetric
+		}
+
 		objectivesTF[i] = objectiveTF
 	}
 	return d.Set("objective", schema.NewSet(objectiveHash, objectivesTF))
@@ -696,6 +726,18 @@ func objectiveHash(objective interface{}) int {
 		panic(err)
 	}
 	return int(hash.Sum32())
+}
+
+func unmarshalSLORawMetric(rawMetricSource map[string]interface{}) (*schema.Set, error) {
+	var rawMetricQuery *schema.Set
+	var err error
+	if rawMetricQuerySource, isRawMetric := rawMetricSource["query"]; isRawMetric {
+		rawMetricQuery, err = unmarshalSLOMetric(rawMetricQuerySource.(map[string]interface{}))
+		if err != nil {
+			return nil, err
+		}
+	}
+	return schema.NewSet(oneElementSet, []interface{}{map[string]interface{}{"query": rawMetricQuery}}), nil
 }
 
 func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
