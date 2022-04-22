@@ -18,6 +18,40 @@ func resourceSLO() *schema.Resource {
 			"display_name": schemaDisplayName(),
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
+			"composite": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "TODO Composite SLO docs link..",
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"target": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Designated value",
+						},
+						"burnRateCondition": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Description: "",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"op": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Type of logical operation",
+									},
+									"value": {
+										Type:        schema.TypeFloat,
+										Required:    true,
+										Description: "Value",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"budgeting_method": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -252,12 +286,19 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 			Service:         d.Get("service").(string),
 			BudgetingMethod: d.Get("budgeting_method").(string),
 			Indicator:       indicator,
+			Composite:       marshalComposite(d),
 			Thresholds:      marshalThresholds(d),
 			TimeWindows:     marshalTimeWindows(d),
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
 			Attachments:     marshalAttachments(d.Get("attachments").([]interface{})),
 		},
 	}
+}
+
+func marshalComposite(d *schema.ResourceData) n9api.Composite {
+
+	//TODO handle marshal
+	return n9api.Composite{}
 }
 
 func marshalTimeWindows(d *schema.ResourceData) []n9api.TimeWindow {
@@ -626,6 +667,9 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	err = unmarshalObjectives(d, spec)
 	diags = appendError(diags, err)
 
+	err = unmarshalComposite(d, spec)
+	diags = appendError(diags, err)
+
 	if i, ok := spec["attachments"]; ok {
 		attachments := i.([]interface{})
 		err = d.Set("attachments", attachments)
@@ -715,6 +759,12 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) er
 		objectivesTF[i] = objectiveTF
 	}
 	return d.Set("objective", schema.NewSet(objectiveHash, objectivesTF))
+}
+
+func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) error {
+
+	//TODO handle unmarshal
+	return nil
 }
 
 func objectiveHash(objective interface{}) int {
