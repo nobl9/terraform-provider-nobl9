@@ -32,7 +32,7 @@ func resourceSLO() *schema.Resource {
 						},
 						"burnRateCondition": {
 							Type:        schema.TypeSet,
-							Optional:    true,
+							Required:    true,
 							Description: "",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
