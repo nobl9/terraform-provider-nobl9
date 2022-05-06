@@ -21,19 +21,19 @@ func resourceSLO() *schema.Resource {
 			"composite": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "TODO Composite SLO docs link..",
+				Description: "[Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo)",
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"target": {
-							Type:        schema.TypeString,
+							Type:        schema.TypeFloat,
 							Required:    true,
 							Description: "Designated value",
 						},
-						"burnRateCondition": {
+						"burn_rate_condition": {
 							Type:        schema.TypeSet,
-							Required:    true,
-							Description: "",
+							Optional:    true,
+							Description: "Condition when the Composite SLO’s error budget is burning.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"op": {
@@ -44,7 +44,7 @@ func resourceSLO() *schema.Resource {
 									"value": {
 										Type:        schema.TypeFloat,
 										Required:    true,
-										Description: "Value",
+										Description: "Burn rate value.",
 									},
 								},
 							},
@@ -85,7 +85,6 @@ func resourceSLO() *schema.Resource {
 							Default:     "Agent",
 							Description: "Kind of the metric source. One of {Agent, Direct}.",
 						},
-						"raw_metric": schemaMetricSpec(),
 					},
 				},
 			},
@@ -113,7 +112,7 @@ func resourceSLO() *schema.Resource {
 						},
 						"raw_metric": {
 							Type:        schema.TypeSet,
-							Optional:    true,
+							Required:    true,
 							Description: "Raw data is used to compare objective values.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -295,10 +294,32 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 	}
 }
 
-func marshalComposite(d *schema.ResourceData) n9api.Composite {
+func marshalComposite(d *schema.ResourceData) *n9api.Composite {
 
-	//TODO handle marshal
-	return n9api.Composite{}
+	compositeSet := d.Get("composite").(*schema.Set)
+
+	if compositeSet.Len() > 0 {
+		compositeTf := compositeSet.List()[0].(map[string]interface{})
+
+		var burnRateCondition *n9api.CompositeBurnRateCondition
+		burnRateConditionSet := compositeTf["burn_rate_condition"].(*schema.Set)
+
+		if burnRateConditionSet.Len() > 0 {
+			burnRateConditionTf := burnRateConditionSet.List()[0].(map[string]interface{})
+
+			burnRateCondition = &n9api.CompositeBurnRateCondition{
+				Value:    burnRateConditionTf["value"].(float64),
+				Operator: burnRateConditionTf["op"].(string),
+			}
+		}
+
+		return &n9api.Composite{
+			BudgetTarget:      compositeTf["target"].(float64),
+			BurnRateCondition: burnRateCondition,
+		}
+	}
+
+	return nil
 }
 
 func marshalTimeWindows(d *schema.ResourceData) []n9api.TimeWindow {
@@ -342,17 +363,13 @@ func marshalCalendar(c map[string]interface{}) *n9api.Calendar {
 
 func marshalIndicator(d *schema.ResourceData) n9api.Indicator {
 	indicator := d.Get("indicator").(*schema.Set).List()[0].(map[string]interface{})
-	var rawMetric *n9api.MetricSpec
-	if raw := indicator["raw_metric"].(*schema.Set); raw.Len() > 0 {
-		rawMetric = marshalMetric(raw.List()[0].(map[string]interface{}))
-	}
+
 	return n9api.Indicator{
 		MetricSource: &n9api.MetricSourceSpec{
 			Project: indicator["project"].(string),
 			Name:    indicator["name"].(string),
 			Kind:    indicator["kind"].(string),
 		},
-		RawMetric: rawMetric,
 	}
 }
 
@@ -762,8 +779,23 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) er
 }
 
 func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) error {
+	if compositeSpec, isCompositeSLO := spec["composite"]; isCompositeSLO {
+		composite := compositeSpec.(map[string]interface{})
+		compositeTF := make(map[string]interface{})
 
-	//TODO handle unmarshal
+		compositeTF["target"] = composite["target"]
+
+		if burnRateConditionRaw, isBurnRateConditionSet := composite["burnRateCondition"]; isBurnRateConditionSet {
+			burnRateCondition := burnRateConditionRaw.(map[string]interface{})
+			burnRateConditionTF := make(map[string]interface{})
+			burnRateConditionTF["value"] = burnRateCondition["value"]
+			burnRateConditionTF["op"] = burnRateCondition["op"]
+			compositeTF["burn_rate_condition"] = schema.NewSet(oneElementSet, []interface{}{burnRateConditionTF})
+		}
+
+		return d.Set("composite", schema.NewSet(oneElementSet, []interface{}{compositeTF}))
+	}
+
 	return nil
 }
 
