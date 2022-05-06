@@ -17,14 +17,17 @@ description: |-
 
 ### Required
 
-- **name** (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **project** (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 
-- **description** (String) Optional description of the resource.
-- **display_name** (String) Display name of the resource.
-- **id** (String) The ID of this resource.
-- **url** (String, Sensitive) MSTeams webhook endpoint URL.
+- `description` (String) Optional description of the resource.
+- `display_name` (String) Display name of the resource.
+- `url` (String, Sensitive) MSTeams webhook endpoint URL.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 

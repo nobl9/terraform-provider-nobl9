@@ -45,16 +45,19 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ### Required
 
-- **name** (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **project** (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 
-- **description** (String) Optional description of the resource.
-- **display_name** (String) Display name of the resource.
-- **id** (String) The ID of this resource.
-- **template** (String) Webhook message template. See documentation for template format and samples.
-- **template_fields** (List of String) Webhook meesage fields. The message will contain json payload with specified fields. See documentation for allowed fields.
-- **url** (String, Sensitive) URL of the webhook endpoint.
+- `description` (String) Optional description of the resource.
+- `display_name` (String) Display name of the resource.
+- `template` (String) Webhook message template. See documentation for template format and samples.
+- `template_fields` (List of String) Webhook meesage fields. The message will contain json payload with specified fields. See documentation for allowed fields.
+- `url` (String, Sensitive) URL of the webhook endpoint.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 

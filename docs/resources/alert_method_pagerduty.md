@@ -17,14 +17,17 @@ description: |-
 
 ### Required
 
-- **name** (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **project** (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 
-- **description** (String) Optional description of the resource.
-- **display_name** (String) Display name of the resource.
-- **id** (String) The ID of this resource.
-- **integration_key** (String, Sensitive) PagerDuty Integration Key, found on Integrations tab.
+- `description` (String) Optional description of the resource.
+- `display_name` (String) Display name of the resource.
+- `integration_key` (String, Sensitive) PagerDuty Integration Key, found on Integrations tab.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 

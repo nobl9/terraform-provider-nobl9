@@ -50,30 +50,33 @@ resource "nobl9_alert_policy" "this" {
 
 ### Required
 
-- **condition** (Block List, Min: 1) Configuration of an alert condition. (see [below for nested schema](#nestedblock--condition))
-- **name** (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **project** (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **severity** (String) Alert severity. One of Low | Medium | High.
+- `condition` (Block List, Min: 1) Configuration of an alert condition. (see [below for nested schema](#nestedblock--condition))
+- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `severity` (String) Alert severity. One of Low | Medium | High.
 
 ### Optional
 
-- **alert_method** (Block List) (see [below for nested schema](#nestedblock--alert_method))
-- **description** (String) Optional description of the resource.
-- **display_name** (String) Display name of the resource.
-- **id** (String) The ID of this resource.
+- `alert_method` (Block List) (see [below for nested schema](#nestedblock--alert_method))
+- `description` (String) Optional description of the resource.
+- `display_name` (String) Display name of the resource.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--condition"></a>
 ### Nested Schema for `condition`
 
 Required:
 
-- **measurement** (String) One of timeToBurnBudget | burnRate | burnedBudget.
+- `measurement` (String) One of timeToBurnBudget | burnRate | burnedBudget.
 
 Optional:
 
-- **lasts_for** (String) How long a given condition needs to be valid to mark a condition as true. Time duration string.
-- **value** (Number) For averageBurnRate it tells how fast the error budget is burning. For burnedBudget it tells how much error budget is already burned.
-- **value_string** (String) Used with timeToBurnBudget. When the budget would be exhausted. Expected value is a string in time duration string format.
+- `lasts_for` (String) How long a given condition needs to be valid to mark a condition as true. Time duration string.
+- `value` (Number) For averageBurnRate it tells how fast the error budget is burning. For burnedBudget it tells how much error budget is already burned.
+- `value_string` (String) Used with timeToBurnBudget. When the budget would be exhausted. Expected value is a string in time duration string format.
 
 
 <a id="nestedblock--alert_method"></a>
@@ -81,10 +84,10 @@ Optional:
 
 Required:
 
-- **name** (String) Name of the alertMethod defined earlier.
+- `name` (String) Name of the alertMethod defined earlier.
 
 Optional:
 
-- **project** (String) Optional, if not defined project is the same as an Alert Policy.
+- `project` (String) Optional, if not defined project is the same as an Alert Policy.
 
 

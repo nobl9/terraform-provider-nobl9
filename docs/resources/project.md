@@ -25,12 +25,15 @@ resource "nobl9_project" "this" {
 
 ### Required
 
-- **name** (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 
-- **description** (String) Optional description of the resource.
-- **display_name** (String) Display name of the resource.
-- **id** (String) The ID of this resource.
+- `description` (String) Optional description of the resource.
+- `display_name` (String) Display name of the resource.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 

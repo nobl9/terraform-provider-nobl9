@@ -17,15 +17,18 @@ description: |-
 
 ### Required
 
-- **name** (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **project** (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **url** (String) Opsgenie API URL.
+- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `url` (String) Opsgenie API URL.
 
 ### Optional
 
-- **auth** (String, Sensitive) Opsgenie authentication credentials. See documentation for supported formats.
-- **description** (String) Optional description of the resource.
-- **display_name** (String) Display name of the resource.
-- **id** (String) The ID of this resource.
+- `auth` (String, Sensitive) Opsgenie authentication credentials. See documentation for supported formats.
+- `description` (String) Optional description of the resource.
+- `display_name` (String) Display name of the resource.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 
