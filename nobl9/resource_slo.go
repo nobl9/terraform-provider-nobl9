@@ -112,7 +112,7 @@ func resourceSLO() *schema.Resource {
 						},
 						"raw_metric": {
 							Type:        schema.TypeSet,
-							Required:    true,
+							Optional:    true,
 							Description: "Raw data is used to compare objective values.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{

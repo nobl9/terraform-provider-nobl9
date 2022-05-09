@@ -942,7 +942,7 @@ resource "nobl9_slo" ":name" {
 
   composite {
     burn_rate_condition {
-      op    = "gte"
+      op    = "gt"
       value = 1
     }
     target = 0.5
