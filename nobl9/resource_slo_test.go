@@ -636,7 +636,7 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       query {
         splunk_observability {
-        program = "TODO"
+          program = "TODO"
         }
       }
     }
