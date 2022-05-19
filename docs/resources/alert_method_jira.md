@@ -17,17 +17,20 @@ description: |-
 
 ### Required
 
-- **name** (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **project** (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **project_key** (String) The code of the project.
-- **url** (String) Jira instance URL.
-- **username** (String) Jira username for the owner of the API Token.
+- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project_key` (String) The code of the project.
+- `url` (String) Jira instance URL.
+- `username` (String) Jira username for the owner of the API Token.
 
 ### Optional
 
-- **apitoken** (String, Sensitive) API Token with access rights to the project.
-- **description** (String) Optional description of the resource.
-- **display_name** (String) Display name of the resource.
-- **id** (String) The ID of this resource.
+- `apitoken` (String, Sensitive) API Token with access rights to the project.
+- `description` (String) Optional description of the resource.
+- `display_name` (String) Display name of the resource.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 

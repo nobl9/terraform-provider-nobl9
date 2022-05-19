@@ -24,6 +24,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-prom-with-multiple-objectives", testPrometheusSLOWithMultipleObjectives},
 		{"test-prom-full", testPrometheusSLOFULL},
 		{"test-prom-with-time-slices", testPrometheusSLOWithTimeSlices},
+		{"test-prom-with-raw-metric-in-objective", testPrometheusSLOWithRawMetricInObjective},
 		{"test-newrelic", testNewRelicSLO},
 		{"test-appdynamics", testAppdynamicsSLO},
 		{"test-splunk", testSplunkSLO},
@@ -35,6 +36,8 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-bigquery", testBigQuerySLO},
 		{"test-opentsdb", testOpenTSDBSLO},
 		{"test-multiple-ap", testMultipleAlertPolicies},
+		{"test-composite-occurrences", testCompositeSLOOccurrences},
+		{"test-composite-time-slices", testCompositeSLOTimeSlices},
 	}
 
 	for _, tc := range cases {
@@ -59,7 +62,7 @@ func testPrometheusSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -69,6 +72,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
   }
 
   time_window {
@@ -81,11 +91,7 @@ resource "nobl9_slo" ":name" {
     name = "test-terraform-prom-agent"
     project = ":project"
     kind    = "Agent"
-    raw_metric {
-      prometheus {
-        promql = "1.0"
-      }
-    }
+
   }
 }
 `
@@ -101,7 +107,7 @@ func testPrometheusSLOWithAlertPolicy(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -111,6 +117,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
   }
 
   time_window {
@@ -123,11 +136,6 @@ resource "nobl9_slo" ":name" {
     name    = "test-terraform-prom-agent"
     project = ":project"
     kind    = "Agent"
-    raw_metric {
-      prometheus {
-        promql = "1.0"
-      }
-    }
   }
 
   alert_policies = [ nobl9_alert_policy.:name-ap.name ]
@@ -144,7 +152,7 @@ func testPrometheusSLOWithCountMetrics(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -153,19 +161,19 @@ resource "nobl9_slo" ":name" {
     display_name = "obj1"
     target       = 0.7
     value        = 1
-	count_metrics {
-	  incremental = true
-	  good {
-			prometheus {
-				promql = "1.0"
-			}
-	  }
-	  total {
-			prometheus {
-				promql = "1.0"
-			}
-	  }
-	}
+    count_metrics {
+      incremental = true
+      good {
+            prometheus {
+                promql = "1.0"
+            }
+      }
+      total {
+            prometheus {
+                promql = "1.0"
+            }
+      }
+    }
   }
 
   time_window {
@@ -191,7 +199,7 @@ func testPrometheusSLOWithMultipleObjectives(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -201,6 +209,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
   }
 
   objective {
@@ -208,6 +223,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.5
     value        = 10
     op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
   }
 
   time_window {
@@ -220,11 +242,6 @@ resource "nobl9_slo" ":name" {
     name    = "test-terraform-prom-agent"
     project = ":project"
     kind    = "Agent"
-    raw_metric {
-      prometheus {
-        promql = "1.0"
-      }
-    }
   }
 }
 `
@@ -239,7 +256,7 @@ func testPrometheusSLOFULL(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -249,6 +266,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
   }
 
   objective {
@@ -256,18 +280,20 @@ resource "nobl9_slo" ":name" {
     target       = 0.5
     value        = 10
     op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
   }
 
-//  attachments {
-//    display_name = "Hope this works"
-//	url = "https://nobl9.com"
-//  }
-
   time_window {
-	calendar {
-	  start_time = "2020-03-09 00:00:00"
-	  time_zone = "Europe/Warsaw"
-	}
+    calendar {
+      start_time = "2020-03-09 00:00:00"
+      time_zone = "Europe/Warsaw"
+    }
     count      = 7
     unit       = "Day"
   }
@@ -276,11 +302,6 @@ resource "nobl9_slo" ":name" {
     name    = "test-terraform-prom-agent"
     project = ":project"
     kind    = "Agent"
-    raw_metric {
-      prometheus {
-        promql = "1.0"
-      }
-    }
   }
 }
 `
@@ -295,7 +316,7 @@ func testPrometheusSLOWithTimeSlices(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Timeslices"
@@ -304,8 +325,15 @@ resource "nobl9_slo" ":name" {
     display_name      = "obj2"
     target            = 0.5
     value             = 10
-	time_slice_target = 0.5
+    time_slice_target = 0.5
     op                = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
   }
 
   time_window {
@@ -318,11 +346,50 @@ resource "nobl9_slo" ":name" {
     name    = "test-terraform-prom-agent"
     project = ":project"
     kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testPrometheusSLOWithRawMetricInObjective(name string) string {
+	config := testService(name+"-service") + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:name-service.name
+
+  budgeting_method = "Timeslices"
+
+  objective {
+    display_name      = "obj2"
+    target            = 0.5
+    value             = 10
+    time_slice_target = 0.5
+    op                = "lt"
     raw_metric {
-      prometheus {
-        promql = "1.0"
+      query{
+        prometheus {
+          promql = "1.0"
+        }
       }
     }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = "test-terraform-prom-agent"
+    project = ":project"
+    kind    = "Agent"
   }
 }
 `
@@ -337,7 +404,7 @@ func testDatadogSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+    project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -347,6 +414,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        datadog {
+          query = "avg:system.cpu.user{cluster_name:main}"
+        }
+      }
+    }
   }
 
   time_window {
@@ -358,12 +432,7 @@ resource "nobl9_slo" ":name" {
   indicator {
     name    = "test-terraform-datadog-agent"
     project = ":project"
-	  kind    = "Agent"
-    raw_metric {
-      datadog {
-        query = "avg:system.cpu.user{cluster_name:main}"
-      }
-    }
+    kind    = "Agent"
   }
 }
 `
@@ -378,7 +447,7 @@ func testNewRelicSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+    project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -388,6 +457,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        newrelic {
+          nrql = "SELECT average(duration * 1000) FROM Transaction TIMESERIES"
+        }
+      }
+    }
   }
 
   time_window {
@@ -397,14 +473,10 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-		name    = "test-terraform-newrelic-agent"
+    name    = "test-terraform-newrelic-agent"
     project = ":project"
     kind    = "Agent"
-    raw_metric {
-      newrelic {
-        nrql = "SELECT average(duration * 1000) FROM Transaction TIMESERIES"
-      }
-    }
+
   }
 }
 `
@@ -419,7 +491,7 @@ func testAppdynamicsSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+    project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -429,6 +501,14 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        appdynamics {
+          application_name = "polakpotrafi"
+          metric_path = "End User Experience|App|End User Response Time 95th percentile (ms)"
+        }
+      }
+    }
   }
 
   time_window {
@@ -441,12 +521,6 @@ resource "nobl9_slo" ":name" {
     name    = "test-terraform-appd-agent"
     project = ":project"
     kind    = "Agent"
-    raw_metric {
-      appdynamics {
-        application_name = "polakpotrafi"
-        metric_path = "End User Experience|App|End User Response Time 95th percentile (ms)"
-      }
-    }
   }
 }
 `
@@ -471,6 +545,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        splunk {
+          query = "search index=polakpotrafi-events source=udp:5072 sourcetype=syslog status<400 | bucket _time span=1m | stats avg(response_time) as n9value by _time | rename _time as n9time | fields n9time n9value"
+        }
+      }
+    }
   }
 
   time_window {
@@ -482,12 +563,7 @@ resource "nobl9_slo" ":name" {
   indicator {
     name    = "test-terraform-splunk-agent"
     project = ":project"
-	  kind    = "Agent"
-    raw_metric {
-      splunk {
-        query = "search index=polakpotrafi-events source=udp:5072 sourcetype=syslog status<400 | bucket _time span=1m | stats avg(response_time) as n9value by _time | rename _time as n9time | fields n9time n9value"
-      }
-    }
+    kind    = "Agent"
   }
 }
 `
@@ -502,7 +578,7 @@ func testLightstepSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+    project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -512,6 +588,15 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        lightstep {
+          stream_id = "DzpxcSRh"
+          type_of_data = "latency"
+          percentile = 95
+        }
+      }
+    }
   }
 
   time_window {
@@ -523,14 +608,7 @@ resource "nobl9_slo" ":name" {
   indicator {
     name    = "test-terraform-lightstep-agent"
     project = ":project"
-	  kind    = "Agent"
-    raw_metric {
-      lightstep {
-        stream_id = "DzpxcSRh"
-	      type_of_data = "latency"
-	      percentile = 95
-      }
-    }
+    kind    = "Agent"
   }
 }
 `
@@ -545,7 +623,7 @@ func testSplunkObservabilitySLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+    project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -555,6 +633,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        splunk_observability {
+          program = "TODO"
+        }
+      }
+    }
   }
 
   time_window {
@@ -566,12 +651,7 @@ resource "nobl9_slo" ":name" {
   indicator {
     name    = "test-terraform-splunkobs-agent"
     project = ":project"
-	  kind    = "Agent"
-    raw_metric {
-      splunk_observability {
-        program = "TODO"
-      }
-    }
+    kind    = "Agent"
   }
 }
 `
@@ -586,7 +666,7 @@ func testDynatraceSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+    project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -596,6 +676,15 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        dynatrace {
+          metric_selector = <<EOT
+builtin:synthetic.http.duration.geo:filter(and(in("dt.entity.http_check",entitySelector("type(http_check),entityName(~"API Sample~")")),in("dt.entity.synthetic_location",entitySelector("type(synthetic_location),entityName(~"N. California~")")))):splitBy("dt.entity.http_check","dt.entity.synthetic_location"):avg:auto:sort(value(avg,descending)):limit(20)
+EOT
+        }
+      }
+    }
   }
 
   time_window {
@@ -608,13 +697,6 @@ resource "nobl9_slo" ":name" {
     name    = "test-terraform-dynatrace-agent"
     project = ":project"
     kind    = "Agent"
-    raw_metric {
-      dynatrace {
-        metric_selector = <<EOT
-builtin:synthetic.http.duration.geo:filter(and(in("dt.entity.http_check",entitySelector("type(http_check),entityName(~"API Sample~")")),in("dt.entity.synthetic_location",entitySelector("type(synthetic_location),entityName(~"N. California~")")))):splitBy("dt.entity.http_check","dt.entity.synthetic_location"):avg:auto:sort(value(avg,descending)):limit(20)
-EOT
-      }
-    }
   }
 }
 `
@@ -629,7 +711,7 @@ func testThousandeyesSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+    project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -639,6 +721,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        thousandeyes {
+          test_id = 11
+        }
+      }
+    }
   }
 
   time_window {
@@ -651,11 +740,6 @@ resource "nobl9_slo" ":name" {
     name    = "test-terraform-thousandeyes-agent"
     project = ":project"
     kind    = "Agent"
-    raw_metric {
-      thousandeyes {
-        test_id = 11
-      }
-    }
   }
 }
 `
@@ -670,7 +754,7 @@ func testGraphiteSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+    project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -680,6 +764,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        graphite {
+          metric_path = "TODO"
+        }
+      }
+    }
   }
 
   time_window {
@@ -691,12 +782,7 @@ resource "nobl9_slo" ":name" {
   indicator {
     name    = "test-terraform-graphite-agent"
     project = ":project"
-	  kind    = "Agent"
-    raw_metric {
-      graphite {
-        metric_path = "TODO"
-      }
-    }
+      kind    = "Agent"
   }
 }
 `
@@ -711,7 +797,7 @@ func testBigQuerySLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+    project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -721,6 +807,15 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        bigquery {
+          project_id = "bdwtest-256112"
+          location = "EU"
+          query = "SELECT response_time AS n9value, created AS n9date FROM 'bdwtest-256112.metrics.http_response' WHERE date_col BETWEEN DATETIME(@n9date_from) AND DATETIME(@n9date_to) "
+        }
+      }
+    }
   }
 
   time_window {
@@ -733,13 +828,6 @@ resource "nobl9_slo" ":name" {
     name    = "test-terraform-bigquery-agent"
     project = ":project"
     kind    = "Agent"
-    raw_metric {
-      bigquery {
-        project_id = "bdwtest-256112"
-        location = "EU"
-        query = "SELECT response_time AS n9value, created AS n9date FROM 'bdwtest-256112.metrics.http_response' WHERE date_col BETWEEN DATETIME(@n9date_from) AND DATETIME(@n9date_to) "
-      }
-    }
   }
 }
 `
@@ -754,7 +842,7 @@ func testOpenTSDBSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+    project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -764,6 +852,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        opentsdb {
+          query = "m=none:{{.N9RESOLUTION}}-avg-zero:cpu{cpu.usage=core.1}"
+        }
+      }
+    }
   }
 
   time_window {
@@ -775,12 +870,7 @@ resource "nobl9_slo" ":name" {
   indicator {
     name    = "test-terraform-opentsdb-agent"
     project = ":project"
-	  kind    = "Agent"
-    raw_metric {
-      opentsdb {
-        query = "m=none:{{.N9RESOLUTION}}-avg-zero:cpu{cpu.usage=core.1}"
-      }
-    }
+    kind    = "Agent"
   }
 }
 `
@@ -797,7 +887,7 @@ func testMultipleAlertPolicies(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-	project      = ":project"
+    project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -807,6 +897,13 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
   }
 
   time_window {
@@ -819,17 +916,141 @@ resource "nobl9_slo" ":name" {
     name = "test-terraform-prom-agent"
     project = ":project"
     kind    = "Agent"
-    raw_metric {
-      prometheus {
-        promql = "1.0"
-      }
-    }
   }
 
   alert_policies = [
     nobl9_alert_policy.:name-slow.name,
     nobl9_alert_policy.:name-fast.name
     ]
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testCompositeSLOOccurrences(name string) string {
+	config := testService(name+"-service") + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:name-service.name
+
+  budgeting_method = "Occurrences"
+
+  composite {
+    burn_rate_condition {
+      op    = "gt"
+      value = 1
+    }
+    target = 0.5
+  }
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
+  }
+
+  objective {
+    display_name = "obj2"
+    target       = 0.8
+    value        = 1.5
+    op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name = "test-terraform-prom-agent"
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testCompositeSLOTimeSlices(name string) string {
+
+	config := testService(name+"-service") + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:name-service.name
+
+  budgeting_method = "Timeslices"
+
+  composite {
+    target = 0.5
+  }
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 15
+    time_slice_target = 0.7
+    op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
+  }
+
+  objective {
+    display_name      = "obj2"
+    target            = 0.5
+	value             = 10
+	time_slice_target = 0.5
+	op                = "lt"
+	raw_metric {
+	  query {
+	    prometheus {
+	      promql = "1.0"
+	    }
+	  }
+	}
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name = "test-terraform-prom-agent"
+    project = ":project"
+    kind    = "Agent"
+  }
 }
 `
 	config = strings.ReplaceAll(config, ":name", name)

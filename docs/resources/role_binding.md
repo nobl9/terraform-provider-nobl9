@@ -17,14 +17,17 @@ description: |-
 
 ### Required
 
-- **role_ref** (String) Role name.
-- **user** (String) ID of the user.
+- `role_ref` (String) Role name.
+- `user` (String) ID of the user.
 
 ### Optional
 
-- **display_name** (String) Display name of the resource.
-- **id** (String) The ID of this resource.
-- **name** (String) Automatically generated, unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **project_ref** (String) Project name. When empty, `role_ref` has to be Organization Role.
+- `display_name` (String) Display name of the resource.
+- `name` (String) Automatically generated, unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project_ref` (String) Project name. When empty, `role_ref` has to be Organization Role.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 

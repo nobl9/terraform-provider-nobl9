@@ -32,17 +32,19 @@ resource "nobl9_slo" "this" {
     display_name = "OK"
     value        = 2000
     op           = "gte"
+    raw_metric {
+      query {
+        prometheus {
+          promql = <<EOT
+          latency_west_c7{code="ALL",instance="localhost:3000",job="prometheus",service="globacount"}
+          EOT
+        }
+      }
+    }
   }
 
   indicator {
     name = "test-terraform-prom-agent"
-    raw_metric {
-      prometheus {
-        promql = <<EOT
-        latency_west_c7{code="ALL",instance="localhost:3000",job="prometheus",service="globacount"}
-        EOT
-      }
-    }
   }
 }
 

@@ -17,18 +17,21 @@ description: |-
 
 ### Required
 
-- **body** (String) Body of the email. For format and samples see documentation and nobl9 application.
-- **name** (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **project** (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- **subject** (String) Subject of the email.
-- **to** (List of String) Recipients.
+- `body` (String) Body of the email. For format and samples see documentation and nobl9 application.
+- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `subject` (String) Subject of the email.
+- `to` (List of String) Recipients.
 
 ### Optional
 
-- **bcc** (List of String) Blind carbon copy recipients.
-- **cc** (List of String) Carbon copy recipients.
-- **description** (String) Optional description of the resource.
-- **display_name** (String) Display name of the resource.
-- **id** (String) The ID of this resource.
+- `bcc` (List of String) Blind carbon copy recipients.
+- `cc` (List of String) Carbon copy recipients.
+- `description` (String) Optional description of the resource.
+- `display_name` (String) Display name of the resource.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 
