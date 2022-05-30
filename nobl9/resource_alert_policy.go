@@ -132,24 +132,16 @@ func marshalAlertPolicy(d *schema.ResourceData) *n9api.AlertPolicy {
 	}
 }
 
-func marshalAlertMethods(d *schema.ResourceData) []n9api.PublicAlertMethod {
+func marshalAlertMethods(d *schema.ResourceData) []n9api.AlertMethodAssignment {
 	methods := d.Get("alert_method").([]interface{})
-	resultConditions := make([]n9api.PublicAlertMethod, len(methods))
-	for i, m := range methods {
-		method := m.(map[string]interface{})
-
-		resultConditions[i] = n9api.PublicAlertMethod{
-			ObjectHeader: n9api.ObjectHeader{
-				MetadataHolder: n9api.MetadataHolder{
-					Metadata: n9api.Metadata{
-						Project: method["project"].(string),
-						Name:    method["name"].(string),
-					},
-				},
-			},
+	resultConditions := make([]n9api.AlertMethodAssignment, len(methods))
+	for i, c := range methods {
+		method := c.(map[string]interface{})
+		resultConditions[i] = n9api.AlertMethodAssignment{
+			Project: method["project"].(string),
+			Name:    method["name"].(string),
 		}
 	}
-
 	return resultConditions
 }
 
@@ -202,9 +194,11 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 	err = d.Set("condition", unmarshalAlertPolicyConditions(conditions))
 	diags = appendError(diags, err)
 
-	alertMethods := spec["alertMethods"].([]interface{})
-	err = d.Set("alert_method", unmarshalAlertMethods(alertMethods))
-	diags = appendError(diags, err)
+	if i, ok := spec["alertMethods"]; ok {
+		alertMethods := i.([]interface{})
+		err = d.Set("alert_method", alertMethods)
+		diags = appendError(diags, err)
+	}
 
 	return diags
 }
@@ -232,22 +226,6 @@ func unmarshalAlertPolicyConditions(conditions []interface{}) interface{} {
 	}
 
 	return resultConditions
-}
-
-func unmarshalAlertMethods(alertMethods []interface{}) interface{} {
-	resultMethods := make([]map[string]interface{}, len(alertMethods))
-
-	for i, m := range alertMethods {
-		method := m.(map[string]interface{})
-		metadata := method["metadata"].(map[string]interface{})
-
-		resultMethods[i] = map[string]interface{}{
-			"name":    metadata["name"],
-			"project": metadata["project"],
-		}
-	}
-
-	return resultMethods
 }
 
 func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
