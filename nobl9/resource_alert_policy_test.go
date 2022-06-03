@@ -87,16 +87,8 @@ resource "nobl9_alert_policy" "%s" {
 }
 
 func testAlertPolicyWithIntegration(name string) string {
-	return testWebhookTemplateConfig(name) +
+	return testWebhookTemplateConfig(name+"-am") +
 		fmt.Sprintf(`
-resource "nobl9_alert_method_webhook" "%s-am" {
-  name        = "%s"
-  project     = "%s"
-  description = "wehbook"
-  url         = "http://web.net"
-  template    = "SLO needs attention $slo_name"
-}
-
 resource "nobl9_alert_policy" "%s" {
   name       = "%s"
   project    = "%s"
@@ -124,7 +116,7 @@ resource "nobl9_alert_policy" "%s" {
 	name	= nobl9_alert_method_webhook.%s-am.name
   }
 }
-`, name, name, testProject, name, name, testProject, testProject, name)
+`, name, name, testProject, testProject, name)
 }
 
 func testAlertPolicyWithMultipleIntegration(name string) string {
