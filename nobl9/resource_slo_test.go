@@ -25,6 +25,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-prom-full", testPrometheusSLOFULL},
 		{"test-prom-with-time-slices", testPrometheusSLOWithTimeSlices},
 		{"test-prom-with-raw-metric-in-objective", testPrometheusSLOWithRawMetricInObjective},
+		{"test-prom-with-attachments", testPrometheusWithAttachments},
 		{"test-newrelic", testNewRelicSLO},
 		{"test-appdynamics", testAppdynamicsSLO},
 		{"test-splunk", testSplunkSLO},
@@ -390,6 +391,55 @@ resource "nobl9_slo" ":name" {
     name    = "test-terraform-prom-agent"
     project = ":project"
     kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testPrometheusWithAttachments(name string) string {
+	config := testService(name+"-service") + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:name-service.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name = "test-terraform-prom-agent"
+    project = ":project"
+    kind    = "Agent"
+
+  }
+
+  attachments {
+    display_name = "test"
+    url          = "https://google.com"
   }
 }
 `

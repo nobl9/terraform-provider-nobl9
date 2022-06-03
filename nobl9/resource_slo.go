@@ -212,6 +212,7 @@ func resourceSLO() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"display_name": {
@@ -687,16 +688,32 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	err = unmarshalComposite(d, spec)
 	diags = appendError(diags, err)
 
-	if i, ok := spec["attachments"]; ok {
-		attachments := i.([]interface{})
-		err = d.Set("attachments", attachments)
-		diags = appendError(diags, err)
-	}
+	err = unmarshalAttachments(d, spec)
+	diags = appendError(diags, err)
 
 	err = d.Set("alert_policies", spec["alertPolicies"].([]interface{}))
 	diags = appendError(diags, err)
 
 	return diags
+}
+
+func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) error {
+	if _, ok := spec["attachments"]; !ok {
+		return nil
+	}
+
+	attachments := spec["attachments"].([]interface{})
+	res := make([]interface{}, len(attachments))
+	for i, v := range attachments {
+		m := v.(map[string]interface{})
+		attachment := map[string]interface{}{
+			"display_name": m["displayName"],
+			"url":          m["url"],
+		}
+		res[i] = attachment
+	}
+
+	return d.Set("attachments", res)
 }
 
 func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}) error {
