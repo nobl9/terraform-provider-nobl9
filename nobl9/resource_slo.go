@@ -251,7 +251,7 @@ func diffSuppressAlertPolicyNames(_, _, _ string, d *schema.ResourceData) bool {
 	apNew := new.([]interface{})
 
 	sort.Slice(apOld, func(i, j int) bool {
-		return apOld[i].(string) < apNew[j].(string)
+		return apOld[i].(string) < apOld[j].(string)
 	})
 	sort.Slice(apNew, func(i, j int) bool {
 		return apNew[i].(string) < apNew[j].(string)
@@ -273,7 +273,6 @@ func equalSlices(a, b []interface{}) bool {
 }
 
 func marshalSLO(d *schema.ResourceData) *n9api.SLO {
-
 	indicator := marshalIndicator(d)
 	return &n9api.SLO{
 		ObjectHeader: n9api.ObjectHeader{
@@ -296,7 +295,6 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 }
 
 func marshalComposite(d *schema.ResourceData) *n9api.Composite {
-
 	compositeSet := d.Get("composite").(*schema.Set)
 
 	if compositeSet.Len() > 0 {
@@ -509,6 +507,7 @@ func marshalSLOAppDynamics(s *schema.Set) *n9api.AppDynamicsMetric {
 		MetricPath:      &metricPath,
 	}
 }
+
 func marshalSLOSplunk(s *schema.Set) *n9api.SplunkMetric {
 	if s.Len() == 0 {
 		return nil
@@ -521,6 +520,7 @@ func marshalSLOSplunk(s *schema.Set) *n9api.SplunkMetric {
 		Query: &query,
 	}
 }
+
 func marshalSLOLightstep(s *schema.Set) *n9api.LightstepMetric {
 	if s.Len() == 0 {
 		return nil
@@ -543,6 +543,7 @@ func marshalSLOLightstep(s *schema.Set) *n9api.LightstepMetric {
 		Percentile: percentile,
 	}
 }
+
 func marshalSLOSplunkObservability(s *schema.Set) *n9api.SplunkObservabilityMetric {
 	if s.Len() == 0 {
 		return nil
@@ -555,6 +556,7 @@ func marshalSLOSplunkObservability(s *schema.Set) *n9api.SplunkObservabilityMetr
 		Program: &program,
 	}
 }
+
 func marshalSLODynatrace(s *schema.Set) *n9api.DynatraceMetric {
 	if s.Len() == 0 {
 		return nil
@@ -567,6 +569,7 @@ func marshalSLODynatrace(s *schema.Set) *n9api.DynatraceMetric {
 		MetricSelector: &selector,
 	}
 }
+
 func marshalSLOThousandEyes(s *schema.Set) *n9api.ThousandEyesMetric {
 	if s.Len() == 0 {
 		return nil
@@ -579,6 +582,7 @@ func marshalSLOThousandEyes(s *schema.Set) *n9api.ThousandEyesMetric {
 		TestID: &testID,
 	}
 }
+
 func marshalSLOGraphite(s *schema.Set) *n9api.GraphiteMetric {
 	if s.Len() == 0 {
 		return nil
@@ -591,6 +595,7 @@ func marshalSLOGraphite(s *schema.Set) *n9api.GraphiteMetric {
 		MetricPath: &metricPath,
 	}
 }
+
 func marshalSLOBigQuery(s *schema.Set) *n9api.BigQueryMetric {
 	if s.Len() == 0 {
 		return nil
@@ -604,6 +609,7 @@ func marshalSLOBigQuery(s *schema.Set) *n9api.BigQueryMetric {
 		Location:  metric["location"].(string),
 	}
 }
+
 func marshalSLOOpenTSDB(s *schema.Set) *n9api.OpenTSDBMetric {
 	if s.Len() == 0 {
 		return nil
