@@ -649,6 +649,8 @@ github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OS
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nobl9/nobl9-go v0.0.0-20220629130434-044750c773a8 h1:9huVgplOrCqvisQnY8TqqdfYn7PkeqlCja/cxEW397I=
 github.com/nobl9/nobl9-go v0.0.0-20220629130434-044750c773a8/go.mod h1:V+SUN5VoHZrBtNQ7ghBEFIzqHw/IWPzWAm6KF4agKvE=
+github.com/nobl9/nobl9-go v1.33.0 h1:xv4c2EdVXX9iRUL+oidO0AezDzR1NfiUvQumbnVcavE=
+github.com/nobl9/nobl9-go v1.33.0/go.mod h1:V+SUN5VoHZrBtNQ7ghBEFIzqHw/IWPzWAm6KF4agKvE=
 github.com/nsf/jsondiff v0.0.0-20200515183724-f29ed568f4ce h1:RPclfga2SEJmgMmz2k+Mg7cowZ8yv4Trqw9UsJby758=
 github.com/nsf/jsondiff v0.0.0-20200515183724-f29ed568f4ce/go.mod h1:uFMI8w+ref4v2r9jz+c9i1IfIttS/OkmLfrk1jne5hs=
 github.com/oklog/oklog v0.3.2/go.mod h1:FCV+B7mhrz4o+ueLpx+KqkyXRGMWOYEvfiXtdGtbWGs=
