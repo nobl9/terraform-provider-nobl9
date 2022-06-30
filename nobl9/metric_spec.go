@@ -164,7 +164,7 @@ func schemaMetricSpec() *schema.Schema {
 				"opentsdb": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation] (https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"query": {
