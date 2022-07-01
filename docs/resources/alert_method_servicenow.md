@@ -17,7 +17,7 @@ description: |-
 
 ### Required
 
-- `instanceid` (String) ServiceNow InstanceID. For details see documentation.
+- `instance_name` (String) ServiceNow InstanceName. For details see documentation.
 - `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `username` (String) ServiceNow username.

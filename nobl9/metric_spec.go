@@ -164,7 +164,7 @@ func schemaMetricSpec() *schema.Schema {
 				"opentsdb": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation] (https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb)",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"query": {
@@ -239,13 +239,73 @@ func schemaMetricSpec() *schema.Schema {
 				"grafana_loki": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/loki#creating-slos-with-loki",
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"logql": {
 								Type:        schema.TypeString,
 								Required:    true,
 								Description: "Query for the logs",
+							},
+						},
+					},
+				},
+				"cloudwatch": {
+					Type:        schema.TypeSet,
+					Optional:    true,
+					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch)",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"region": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "Region of the CloudWatch instance",
+							},
+							"namespace": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Namespace of the metric",
+							},
+							"metric_name": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Metric name",
+							},
+							"stat": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Metric data aggregations",
+							},
+							"sql": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "SQL query",
+							},
+							"json": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "JSON query",
+							},
+							"dimensions": {
+								Type:        schema.TypeSet,
+								Optional:    true,
+								Description: "Set of name/value pairs that is a part of the identity of a metric",
+								MinItems:    1,
+								MaxItems:    10,
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										"name": {
+											Type:        schema.TypeString,
+											Required:    true,
+											Description: "Name",
+										},
+										"value": {
+											Type:        schema.TypeString,
+											Required:    true,
+											Description: "Value",
+										},
+									},
+								},
 							},
 						},
 					},

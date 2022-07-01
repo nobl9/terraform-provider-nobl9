@@ -11,8 +11,10 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-var testProvider *schema.Provider
-var testProject string
+var (
+	testProvider *schema.Provider
+	testProject  string
+)
 
 func init() {
 	testProject = os.Getenv("NOBL9_PROJECT")
@@ -72,7 +74,10 @@ func CheckObjectCreated(name string) resource.TestCheckFunc {
 
 func CheckDestory(rsType string, objectType n9api.Object) func(s *terraform.State) error {
 	return func(s *terraform.State) error {
-		config := testProvider.Meta().(ProviderConfig)
+		config, ok := testProvider.Meta().(ProviderConfig)
+		if !ok {
+			return fmt.Errorf("could not cast data to ProviderConfig")
+		}
 		client, ds := newClient(config, testProject)
 		if ds.HasError() {
 			return fmt.Errorf("unable create client when deleting objects")

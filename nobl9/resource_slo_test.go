@@ -36,6 +36,9 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-graphite", testGraphiteSLO},
 		{"test-bigquery", testBigQuerySLO},
 		{"test-opentsdb", testOpenTSDBSLO},
+		{"test-cloudwatch-with-stat", testCloudWatchWithStat},
+		{"test-cloudwatch-with-sql", testCloudWatchWithSQL},
+		{"test-cloudwatch-with-json", testCloudWatchWithJson},
 		{"test-multiple-ap", testMultipleAlertPolicies},
 		{"test-composite-occurrences", testCompositeSLOOccurrences},
 		{"test-composite-time-slices", testCompositeSLOTimeSlices},
@@ -195,6 +198,7 @@ resource "nobl9_slo" ":name" {
 
 	return config
 }
+
 func testPrometheusSLOWithMultipleObjectives(name string) string {
 	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
@@ -1046,7 +1050,6 @@ resource "nobl9_slo" ":name" {
 }
 
 func testCompositeSLOTimeSlices(name string) string {
-
 	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
@@ -1098,6 +1101,193 @@ resource "nobl9_slo" ":name" {
 
   indicator {
     name = "test-terraform-prom-agent"
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testCloudWatchWithStat(name string) string {
+	config := testService(name+"-service") + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+    project      = ":project"
+  service      = nobl9_service.:name-service.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        cloudwatch {
+		region = "eu-central-1"
+		namespace = "namespace"
+		metric_name = "metric_name"
+          	stat        = "Sum"
+
+          	dimensions {
+          	  name  = "name1"
+            	value = "value1"
+          	}
+
+          	dimensions {
+            	name  = "name2"
+            	value = "value3"
+          	}
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = "test-terraform-cloudwatch-agent"
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testCloudWatchWithSQL(name string) string {
+	config := testService(name+"-service") + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+    project      = ":project"
+  service      = nobl9_service.:name-service.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        cloudwatch {
+		region = "eu-central-1"
+		sql = "SELECT AVG(CPUUtilization)FROM \"AWS/EC2\""
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = "test-terraform-cloudwatch-agent"
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testCloudWatchWithJson(name string) string {
+	config := testService(name+"-service") + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+    project      = ":project"
+  service      = nobl9_service.:name-service.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        cloudwatch {
+		region = "eu-central-1"
+		json = jsonencode(
+		[
+	                {
+	                    "Id": "e1",
+	                    "Expression": "m1 / m2",
+	                    "Period": 60
+	                },
+	                {
+	                    "Id": "m1",
+	                    "MetricStat": {
+	                        "Metric": {
+	                            "Namespace": "AWS/ApplicationELB",
+	                            "MetricName": "HTTPCode_Target_2XX_Count",
+	                            "Dimensions": [
+	                                {
+	                                    "Name": "name1",
+	                                    "Value": "name2"
+	                                }
+	                            ]
+	                        },
+	                        "Period": 60,
+	                        "Stat": "SampleCount"
+	                    },
+	                    "ReturnData": false
+	                },
+	                {
+	                    "Id": "m2",
+	                    "MetricStat": {
+	                        "Metric": {
+	                            "Namespace": "AWS/ApplicationELB",
+	                            "MetricName": "RequestCount",
+	                            "Dimensions": [
+	                                {
+	                                    "Name": "name2",
+	                                    "Value": "value2"
+	                                }
+	                            ]
+	                        },
+	                        "Period": 60,
+	                        "Stat": "SampleCount"
+	                    },
+	                    "ReturnData": false
+	                }
+            	])
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = "test-terraform-cloudwatch-agent"
     project = ":project"
     kind    = "Agent"
   }

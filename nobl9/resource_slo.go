@@ -453,6 +453,7 @@ func marshalMetric(metric map[string]interface{}) *n9api.MetricSpec {
 		BigQuery:            marshalSLOBigQuery(metric["bigquery"].(*schema.Set)),
 		OpenTSDB:            marshalSLOOpenTSDB(metric["opentsdb"].(*schema.Set)),
 		GrafanaLoki:         marshalSLOGrafanaLoki(metric["grafana_loki"].(*schema.Set)),
+		CloudWatch:          marshalSLOCloudWatch(metric["cloudwatch"].(*schema.Set)),
 	}
 }
 
@@ -633,6 +634,65 @@ func marshalSLOGrafanaLoki(s *schema.Set) *n9api.GrafanaLokiMetric {
 	logql := metric["logql"].(string)
 	return &n9api.GrafanaLokiMetric{
 		Logql: &logql,
+	}
+}
+
+func marshalSLOCloudWatch(s *schema.Set) *n9api.CloudWatchMetric {
+	if s.Len() == 0 {
+		return nil
+	}
+
+	metric := s.List()[0].(map[string]interface{})
+
+	region := metric["region"].(string)
+
+	var namespace *string
+	if value := metric["namespace"].(string); value != "" {
+		namespace = &value
+	}
+
+	var metricName *string
+	if value := metric["metric_name"].(string); value != "" {
+		metricName = &value
+	}
+
+	var stat *string
+	if value := metric["stat"].(string); value != "" {
+		stat = &value
+	}
+
+	var sql *string
+	if value := metric["sql"].(string); value != "" {
+		sql = &value
+	}
+
+	var json *string
+	if value := metric["json"].(string); value != "" {
+		json = &value
+	}
+
+	var metricDimensions []n9api.CloudWatchMetricDimension
+
+	dimensions := metric["dimensions"].(*schema.Set)
+	for _, dimension := range dimensions.List() {
+		n9Dimension := dimension.(map[string]interface{})
+		name := n9Dimension["name"].(string)
+		value := n9Dimension["value"].(string)
+
+		metricDimensions = append(metricDimensions, n9api.CloudWatchMetricDimension{
+			Name:  &name,
+			Value: &value,
+		})
+	}
+
+	return &n9api.CloudWatchMetric{
+		Region:     &region,
+		Namespace:  namespace,
+		MetricName: metricName,
+		Stat:       stat,
+		Dimensions: metricDimensions,
+		SQL:        sql,
+		JSON:       json,
 	}
 }
 
@@ -865,6 +925,7 @@ func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
 		{"opentsdb", "opentsdb", unmarshalOpentsdbMetric},
 		{"elasticsearch", "elasticsearch", unmarshalElasticsearchMetric},
 		{"grafana_loki", "grafanaLoki", unmarshalGrafanaLokiMetric},
+		{"cloudwatch", "cloudWatch", unmarshalCloudWatchMetric},
 	}
 
 	res := make(map[string]interface{})
@@ -979,6 +1040,19 @@ func unmarshalElasticsearchMetric(metric map[string]interface{}) map[string]inte
 func unmarshalGrafanaLokiMetric(metric map[string]interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	res["logql"] = metric["logql"]
+
+	return res
+}
+
+func unmarshalCloudWatchMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["region"] = metric["region"]
+	res["namespace"] = metric["namespace"]
+	res["metric_name"] = metric["metricName"]
+	res["stat"] = metric["stat"]
+	res["sql"] = metric["sql"]
+	res["json"] = metric["json"]
+	res["dimensions"] = metric["dimensions"]
 
 	return res
 }
