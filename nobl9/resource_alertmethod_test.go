@@ -115,12 +115,12 @@ resource "nobl9_alert_method_opsgenie" "%s" {
 func testServiceNowConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_alert_method_servicenow" "%s" {
-  name        = "%s"
-  project     = "%s"
-  description = "servicenow"
-  username    = "nobleUser"
-  password    = "very sercret"
-  instanceid  = "1"
+  name           = "%s"
+  project        = "%s"
+  description    = "servicenow"
+  username       = "nobleUser"
+  password       = "very sercret"
+  instance_name  = "name"
 }
 `, name, name, testProject)
 }
