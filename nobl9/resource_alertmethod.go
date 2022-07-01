@@ -361,10 +361,10 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 			Computed:    true,
 		},
-		"instanceid": {
+		"instance_name": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "ServiceNow InstanceID. For details see documentation.",
+			Description: "ServiceNow InstanceName. For details see documentation.",
 		},
 	}
 }
@@ -373,9 +373,9 @@ func (i alertMethodServiceNow) MarshalSpec(d *schema.ResourceData) n9api.AlertMe
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
 		ServiceNow: &n9api.ServiceNowAlertMethod{
-			Username:   d.Get("username").(string),
-			Password:   d.Get("password").(string),
-			InstanceID: d.Get("instanceid").(string),
+			Username:     d.Get("username").(string),
+			Password:     d.Get("password").(string),
+			InstanceName: d.Get("instance_name").(string),
 		},
 	}
 }
@@ -386,7 +386,7 @@ func (i alertMethodServiceNow) UnmarshalSpec(d *schema.ResourceData, spec map[st
 
 	err := d.Set("username", config["username"])
 	diags = appendError(diags, err)
-	err = d.Set("instanceid", config["instanceid"])
+	err = d.Set("instance_name", config["instanceName"])
 	diags = appendError(diags, err)
 
 	return diags
