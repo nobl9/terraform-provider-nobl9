@@ -251,7 +251,7 @@ func diffSuppressAlertPolicyNames(_, _, _ string, d *schema.ResourceData) bool {
 	apNew := new.([]interface{})
 
 	sort.Slice(apOld, func(i, j int) bool {
-		return apOld[i].(string) < apNew[j].(string)
+		return apOld[i].(string) < apOld[j].(string)
 	})
 	sort.Slice(apNew, func(i, j int) bool {
 		return apNew[i].(string) < apNew[j].(string)
