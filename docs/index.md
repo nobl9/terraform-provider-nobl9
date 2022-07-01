@@ -16,8 +16,8 @@ description: |-
 terraform {
   required_providers {
     nobl9 = {
-      source  = "nobl9/nobl9"
-      version = "0.2.2"
+      source  = "nobl9.com/nobl9/nobl9"
+      version = "0.1.4"
     }
   }
 }
