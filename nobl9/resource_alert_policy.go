@@ -173,7 +173,7 @@ func marshalAlertConditions(d *schema.ResourceData) []n9api.AlertCondition {
 			Measurement:      measurement,
 			Value:            value,
 			LastsForDuration: condition["lasts_for"].(string),
-			Operation:        op,
+			Operator:         op,
 		}
 	}
 
