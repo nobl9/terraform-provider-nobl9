@@ -22,7 +22,7 @@ steps:
   test:
     title: "Running test"
     type: "freestyle" # Run any command
-    image: "hashicorp/terraform:1.0.11" # The image in which command will be executed
+    image: "hashicorp/terraform:1.2.5" # The image in which command will be executed
     working_directory: "${{clone}}" # Running command where code cloned
     commands:
       - "apk add go make"
