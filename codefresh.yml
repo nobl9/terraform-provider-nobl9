@@ -41,7 +41,7 @@ steps:
 
   notify:
     title: "Notifying about tests failure"
-    image: byrnedo/alpine-curl # curlimages/curl, or any other curl image
+    image: byrnedo/alpine-curl
     commands:
-      - curl -X POST --data-urlencode 'payload={"channel": "#deployments", "username": "Nobl9 Terraform Provider", "text": "Tests failed for Nobl9 Terraform Provider repository", "attachments": [ { "color": "#d00000", "blocks": [ { "type": "context", "elements": [ { "type": "plain_text", "text": "Tests failed for Nobl9 Terraform Provider repository", "emoji": true } ] } ] } ], "icon_emoji": ":terraform:"}' ${{SLACK_WEBHOOK}}
+      - curl -X POST --data-urlencode 'payload={"channel":"#deployments", "username":"Nobl9 Terraform Provider", "text":"Tests failed for Nobl9 Terraform Provider repository", "attachments":[{ "color":"#d00000", "blocks":[{"type":"context", "elements":[ { "type":"plain_text","text":"Tests failed for Nobl9 Terraform Provider repository", "emoji":true }]}]}], "icon_emoji":":terraform:"}' ${{SLACK_WEBHOOK}}
     stage: "notify"
