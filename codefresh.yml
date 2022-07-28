@@ -5,6 +5,7 @@ version: "1.0"
 # Stages can help you organize your steps in stages
 stages:
   - "clone"
+  - "preload"
   - "check"
   - "test"
   - "notify"
@@ -20,48 +21,10 @@ steps:
     git: "github"
     stage: "clone"
 
-  check:
-    type: "parallel"
-    stage: check
-    steps:
-      lint:
-        title: Lint
-        working_directory: "${{clone}}"
-        image: golangci/golangci-lint:v1.33.0
-        commands:
-          - "mkdir -p ~/.ssh"
-          - "echo ${{GH_SSH_PUBLIC}} > ~/.ssh/id_ed25519.pub"
-          - "echo ${{GH_SSH_PRIVATE}} | base64 -d > /root/.ssh/id_ed25519"
-          - "chmod 644 ~/.ssh/id_ed25519.pub"
-          - "chmod 600 ~/.ssh/id_ed25519"
-          - "eval  $(ssh-agent -s)"
-          - "ssh-add ~/.ssh/id_ed25519"
-          - "ssh -T -oStrictHostKeyChecking=accept-new git@github.com || true"
-          - 'git config --global --add url."git@github.com:".insteadOf "https://github.com/"'
-          - golangci-lint run -v --timeout 10m .
-      securityAnalysis:
-        title: Security Scan
-        working_directory: "${{clone}}"
-        image: 'securego/gosec:v2.5.0'
-        commands:
-          - "mkdir -p ~/.ssh"
-          - "echo ${{GH_SSH_PUBLIC}} > ~/.ssh/id_ed25519.pub"
-          - "echo ${{GH_SSH_PRIVATE}} | base64 -d > /root/.ssh/id_ed25519"
-          - "chmod 644 ~/.ssh/id_ed25519.pub"
-          - "chmod 600 ~/.ssh/id_ed25519"
-          - "eval  $(ssh-agent -s)"
-          - "ssh-add ~/.ssh/id_ed25519"
-          - "ssh -T -oStrictHostKeyChecking=accept-new git@github.com || true"
-          - 'git config --global --add url."git@github.com:".insteadOf "https://github.com/"'
-          - gosec ./...
-
-  test:
-    title: "Running test"
-    type: "freestyle" # Run any command
-    image: "hashicorp/terraform:1.2.5" # The image in which command will be executed
-    working_directory: "${{clone}}" # Running command where code cloned
+  preload:
+    stage: preload
+    image: golang:1.18-alpine
     commands:
-      - "apk add go make"
       - "mkdir -p ~/.ssh"
       - "echo ${{GH_SSH_PUBLIC}} > ~/.ssh/id_ed25519.pub"
       - "echo ${{GH_SSH_PRIVATE}} | base64 -d > /root/.ssh/id_ed25519"
@@ -71,6 +34,32 @@ steps:
       - "ssh-add ~/.ssh/id_ed25519"
       - "ssh -T -oStrictHostKeyChecking=accept-new git@github.com || true"
       - 'git config --global --add url."git@github.com:".insteadOf "https://github.com/"'
+      - go get -d -v
+
+  check:
+    type: "parallel"
+    stage: check
+    steps:
+      lint:
+        title: Lint
+        working_directory: "${{clone}}"
+        image: golangci/golangci-lint:v1.33.0
+        commands:
+          - golangci-lint run -v --timeout 10m .
+      securityAnalysis:
+        title: Security Scan
+        working_directory: "${{clone}}"
+        image: 'securego/gosec:v2.5.0'
+        commands:
+          - gosec ./...
+
+  test:
+    title: "Running test"
+    type: "freestyle" # Run any command
+    image: "hashicorp/terraform:1.2.5" # The image in which command will be executed
+    working_directory: "${{clone}}" # Running command where code cloned
+    commands:
+      - "apk add go make"
       - "make testacc"
     stage: "test"
 
