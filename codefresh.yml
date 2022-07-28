@@ -5,7 +5,7 @@ version: "1.0"
 # Stages can help you organize your steps in stages
 stages:
   - "clone"
-  - "build"
+  - "check"
   - "test"
   - "notify"
 
@@ -19,6 +19,23 @@ steps:
     revision: "${{CF_BRANCH}}"
     git: "github"
     stage: "clone"
+
+  check:
+    type: "parallel"
+    stage: check
+    steps:
+      lint:
+        title: Lint
+        working_directory: "${{clone}}"
+        image: golangci/golangci-lint:v1.33.0
+        commands:
+          - golangci-lint run -v --timeout 10m .
+      securityAnalysis:
+        title: Security Scan
+        working_directory: "${{clone}}"
+        image: 'securego/gosec:v2.5.0'
+        commands:
+          - gosec ./...
 
   test:
     title: "Running test"
