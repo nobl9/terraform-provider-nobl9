@@ -25,6 +25,8 @@ steps:
     stage: preload
     image: golang:1.18-alpine
     working_directory: "${{clone}}"
+    environment:
+      - GOPATH=/codefresh/volume/go
     commands:
       - apk add --no-cache openssh-client git
       - "mkdir -p ~/.ssh"
@@ -46,12 +48,16 @@ steps:
         title: Lint
         working_directory: "${{clone}}"
         image: golangci/golangci-lint:v1.33.0
+        environment:
+          - GOPATH=/codefresh/volume/go
         commands:
           - golangci-lint run -v --modules-download-mode vendor --timeout 10m
       securityAnalysis:
         title: Security Scan
         working_directory: "${{clone}}"
         image: 'securego/gosec:v2.5.0'
+        environment:
+          - GOPATH=/codefresh/volume/go
         commands:
           - gosec -quiet -exclude-generated ./...
 
