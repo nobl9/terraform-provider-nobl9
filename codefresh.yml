@@ -24,6 +24,7 @@ steps:
   preload:
     stage: preload
     image: golang:1.18-alpine
+    working_directory: "${{clone}}"
     commands:
       - apk add --no-cache openssh-client git
       - "mkdir -p ~/.ssh"
