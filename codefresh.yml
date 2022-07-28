@@ -47,13 +47,13 @@ steps:
         working_directory: "${{clone}}"
         image: golangci/golangci-lint:v1.33.0
         commands:
-          - golangci-lint run -v --timeout 10m .
+          - golangci-lint run -v --modules-download-mode vendor --timeout 10m
       securityAnalysis:
         title: Security Scan
         working_directory: "${{clone}}"
         image: 'securego/gosec:v2.5.0'
         commands:
-          - gosec ./...
+          - gosec -quiet -exclude-generated ./...
 
   test:
     title: "Running test"
