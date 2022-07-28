@@ -56,7 +56,7 @@ steps:
       securityAnalysis:
         title: Security Scan
         working_directory: "${{clone}}"
-        image: 'securego/gosec:v2.12.0'
+        image: 'securego/gosec:2.12.0'
         environment:
           - GOPATH=/codefresh/volume/go
         commands:
