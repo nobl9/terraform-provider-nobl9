@@ -52,7 +52,7 @@ steps:
         environment:
           - GOPATH=/codefresh/volume/go
         commands:
-          - golangci-lint run -v --modules-download-mode vendor --timeout 10m
+          - golangci-lint run -v --timeout 10m
       securityAnalysis:
         title: Security Scan
         working_directory: "${{clone}}"
