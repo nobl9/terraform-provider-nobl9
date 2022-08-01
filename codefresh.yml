@@ -2,13 +2,21 @@
 # https://codefresh.io/docs/docs/yaml-examples/examples/
 
 version: "1.0"
+
+hooks:
+  on_fail:
+    # Notify about pipeline failure
+    exec:
+      image: byrnedo/alpine-curl
+      commands:
+        - curl -X POST --data-urlencode 'payload={"channel":"#deployments", "username":"Nobl9 Terraform Provider", "text":"Pipeline failed for Nobl9 Terraform Provider repository", "attachments":[{ "color":"#d00000", "blocks":[{"type":"context", "elements":[ { "type":"plain_text","text":"Pipeline failed for Nobl9 Terraform Provider repository", "emoji":true }]}]}], "icon_emoji":":terraform:"}' ${{SLACK_WEBHOOK}}
+
 # Stages can help you organize your steps in stages
 stages:
   - "clone"
   - "preload"
   - "check"
   - "test"
-  - "notify"
 
 steps:
   clone:
@@ -22,6 +30,7 @@ steps:
     stage: "clone"
 
   preload:
+    title: "Loading dependencies"
     stage: preload
     image: golang:1.18-alpine
     working_directory: "${{clone}}"
@@ -42,6 +51,7 @@ steps:
       - go mod vendor
 
   check:
+    title: "Checking GO Files"
     type: "parallel"
     stage: check
     steps:
@@ -71,10 +81,3 @@ steps:
       - "apk add go make"
       - "make testacc"
     stage: "test"
-
-  notify:
-    title: "Notifying about tests failure"
-    image: byrnedo/alpine-curl
-    commands:
-      - curl -X POST --data-urlencode 'payload={"channel":"#deployments", "username":"Nobl9 Terraform Provider", "text":"Tests failed for Nobl9 Terraform Provider repository", "attachments":[{ "color":"#d00000", "blocks":[{"type":"context", "elements":[ { "type":"plain_text","text":"Tests failed for Nobl9 Terraform Provider repository", "emoji":true }]}]}], "icon_emoji":":terraform:"}' ${{SLACK_WEBHOOK}}
-    stage: "notify"
