@@ -47,6 +47,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 	}
 }
 
+//nolint:unused
 func testPrometheusConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -61,6 +62,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+//nolint:unused
 func testDatadogConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -75,6 +77,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+//nolint:unused
 func testNewrelicConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -89,6 +92,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+//nolint:unused
 func testAppDynamicsConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -103,6 +107,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+//nolint:unused
 func testSplunkConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -117,6 +122,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+//nolint:unused
 func testLightstepConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -132,6 +138,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+//nolint:unused
 func testSplunkObservabilityConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -146,6 +153,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+//nolint:unused
 func testDynatraceConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -160,6 +168,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+//nolint:unused
 func testThousandEyesConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -171,6 +180,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+//nolint:unused
 func testGraphiteConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -185,6 +195,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+//nolint:unused
 func testBigQueryConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -196,6 +207,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+//nolint:unused
 func testOpenTSDBConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {

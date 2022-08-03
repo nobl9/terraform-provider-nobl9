@@ -1,3 +1,4 @@
+// Package nobl9 Main provider package
 package nobl9
 
 import (
@@ -9,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+//nolint:gochecknoglobals,revive
 var Version string
 
 func Provider() *schema.Provider {

@@ -11,11 +11,13 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
+//nolint:gochecknoglobals
 var (
 	testProvider *schema.Provider
 	testProject  string
 )
 
+//nolint:gochecknoinits
 func init() {
 	testProject = os.Getenv("NOBL9_PROJECT")
 }

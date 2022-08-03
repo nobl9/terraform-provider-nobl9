@@ -11,6 +11,7 @@ import (
 
 const wildcardProject = "*"
 
+//nolint:lll
 func resourceRoleBinding() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{

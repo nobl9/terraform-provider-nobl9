@@ -36,7 +36,6 @@ func resourceService() *schema.Resource {
 }
 
 func marshalService(d *schema.ResourceData) *n9api.Service {
-
 	return &n9api.Service{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,

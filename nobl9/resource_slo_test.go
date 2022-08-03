@@ -1,3 +1,4 @@
+// Package nobl9
 package nobl9
 
 import (
@@ -38,7 +39,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-opentsdb", testOpenTSDBSLO},
 		{"test-cloudwatch-with-stat", testCloudWatchWithStat},
 		{"test-cloudwatch-with-sql", testCloudWatchWithSQL},
-		{"test-cloudwatch-with-json", testCloudWatchWithJson},
+		{"test-cloudwatch-with-json", testCloudWatchWithJSON},
 		{"test-multiple-ap", testMultipleAlertPolicies},
 		{"test-composite-occurrences", testCompositeSLOOccurrences},
 		{"test-composite-time-slices", testCompositeSLOTimeSlices},
@@ -453,6 +454,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
+//nolint:unused,deadcode
 func testDatadogSLO(name string) string {
 	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
@@ -584,6 +586,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
+//nolint:lll
 func testSplunkSLO(name string) string {
 	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
@@ -715,6 +718,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
+//nolint:lll
 func testDynatraceSLO(name string) string {
 	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
@@ -846,6 +850,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
+//nolint:lll
 func testBigQuerySLO(name string) string {
 	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
@@ -1212,7 +1217,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testCloudWatchWithJson(name string) string {
+func testCloudWatchWithJSON(name string) string {
 	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
