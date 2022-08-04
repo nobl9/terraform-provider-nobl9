@@ -6,6 +6,13 @@ version: "1.0"
 hooks:
   on_fail:
     # Notify about pipeline failure
+    image: codefresh/slacknotifier
+      environment:
+        - 'SLACK_HOOK_URL=${{SLACK_WEBHOOK}}'
+        - 'SLACK_TEXT=Pipeline failed for Nobl9 Terraform Provider repository'
+        - 'SLACK_ATTACHMENTS=[{ "color":"#d00000", "blocks":[{"type":"context", "elements":[ { "type":"plain_text","text":"Pipeline failed for Nobl9 Terraform Provider repository", "emoji":true }]}]}]'
+        - 'SLACK_USER_NAME=Nobl9 Terraform Provider'
+        - 'SLACK_EMOJI_ICON=terraform'
     steps:
       NotifyOnSlack:
         type: slack-notifier
