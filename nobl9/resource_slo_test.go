@@ -1140,7 +1140,7 @@ resource "nobl9_slo" ":name" {
           	stat        = "Sum"
 
           	dimensions {
-          	  name  = "name1"
+          	  	name  = "name1"
             	value = "value1"
           	}
 
