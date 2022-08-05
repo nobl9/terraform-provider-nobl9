@@ -27,7 +27,7 @@ steps:
     title: "Cloning repository"
     type: "git-clone"
     repo: "nobl9/terraform-provider-nobl9"
-    revision: "main"
+    revision: "${{CF_BRANCH}}"
     git: "github"
     stage: "clone"
 
