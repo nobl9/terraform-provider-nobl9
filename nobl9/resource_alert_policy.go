@@ -10,7 +10,6 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-//nolint:lll
 func resourceAlertPolicy() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -24,7 +23,7 @@ func resourceAlertPolicy() *schema.Resource {
 				Required:    true,
 				Description: "Alert severity. One of Low | Medium | High.",
 			},
-
+			//nolint:lll
 			"condition": {
 				Type:        schema.TypeList,
 				Required:    true,

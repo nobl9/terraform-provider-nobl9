@@ -1,4 +1,3 @@
-// Package nobl9 Main provider package
 package nobl9
 
 import (
