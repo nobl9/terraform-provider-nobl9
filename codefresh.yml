@@ -13,7 +13,7 @@ hooks:
         - 'SLACK_TEXT=Pipeline failed for Nobl9 Terraform Provider repository'
         - 'SLACK_ATTACHMENTS=[{ "color":"#d00000", "blocks":[{"type":"context", "elements":[ { "type":"plain_text","text":"Pipeline failed for Nobl9 Terraform Provider repository", "emoji":true }]}]}]'
         - 'SLACK_USER_NAME=Nobl9 Terraform Provider'
-        - 'SLACK_EMOJI_ICON=:terraform:'
+        - 'SLACK_ICON_EMOJI=:terraform:'
 
 # Stages can help you organize your steps in stages
 stages:
