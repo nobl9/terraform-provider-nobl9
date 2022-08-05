@@ -1,6 +1,3 @@
-# More examples of Codefresh YAML can be found at
-# https://codefresh.io/docs/docs/yaml-examples/examples/
-
 version: "1.0"
 
 hooks:
@@ -15,7 +12,6 @@ hooks:
         - 'SLACK_USER_NAME=Nobl9 Terraform Provider'
         - 'SLACK_ICON_EMOJI=:terraform:'
 
-# Stages can help you organize your steps in stages
 stages:
   - "clone"
   - "preload"
@@ -76,9 +72,9 @@ steps:
 
   test:
     title: "Running test"
-    type: "freestyle" # Run any command
-    image: "hashicorp/terraform:1.2.5" # The image in which command will be executed
-    working_directory: "${{clone}}" # Running command where code cloned
+    type: "freestyle"
+    image: "hashicorp/terraform:1.2.5"
+    working_directory: "${{clone}}"
     commands:
       - "apk add go make"
       - "make testacc"
