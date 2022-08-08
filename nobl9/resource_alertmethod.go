@@ -532,15 +532,6 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 }
 
 func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
-	//nolint:govet
-	toStringSlice := func(in []interface{}) []string {
-		ret := make([]string, len(in))
-		for i, v := range in {
-			ret[i] = v.(string)
-		}
-		return ret
-	}
-
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
 		Email: &n9api.EmailAlertMethod{
