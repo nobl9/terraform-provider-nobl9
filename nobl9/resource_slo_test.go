@@ -1118,53 +1118,7 @@ resource "nobl9_slo" ":name" {
 
 func testCloudWatchWithStat(name string) string {
 	config := testService(name+"-service") + `
-resource "nobl9_slo" ":name" {
-  name         = ":name"
-  display_name = ":name"
-  project      = ":project"
-  service      = nobl9_service.:name-service.name
 
-  budgeting_method = "Occurrences"
-
-  objective {
-    display_name = "obj1"
-    target       = 0.7
-    value        = 1
-    op           = "lt"
-    raw_metric {
-      query {
-        cloudwatch {
-          region = "eu-central-1"
-          namespace = "namespace"
-          metric_name = "metric_name"
-          stat = "Sum"
-
-          dimensions {
-            name  = "name1"
-            value = "value1"
-          }
-
-          dimensions {
-            name  = "name2"
-            value = "value3"
-          }
-        }
-      }
-    }
-  }
-
-  time_window {
-    count      = 10
-    is_rolling = true
-    unit       = "Minute"
-  }
-
-  indicator {
-    name    = "test-terraform-cloudwatch-agent"
-    project = ":project"
-    kind    = "Agent"
-  }
-}
 `
 	config = strings.ReplaceAll(config, ":name", name)
 	config = strings.ReplaceAll(config, ":project", testProject)
@@ -1179,9 +1133,7 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
     project      = ":project"
   service      = nobl9_service.:name-service.name
-
   budgeting_method = "Occurrences"
-
   objective {
     display_name = "obj1"
     target       = 0.7
@@ -1191,18 +1143,26 @@ resource "nobl9_slo" ":name" {
       query {
         cloudwatch {
 		region = "eu-central-1"
-		sql = "SELECT AVG(CPUUtilization)FROM \"AWS/EC2\""
+		namespace = "namespace"
+		metric_name = "metric_name"
+          	stat        = "Sum"
+          	dimensions {
+          	  name  = "name1"
+            	value = "value1"
+          	}
+          	dimensions {
+            	name  = "name2"
+            	value = "value3"
+          	}
         }
       }
     }
   }
-
   time_window {
     count      = 10
     is_rolling = true
     unit       = "Minute"
   }
-
   indicator {
     name    = "test-terraform-cloudwatch-agent"
     project = ":project"
