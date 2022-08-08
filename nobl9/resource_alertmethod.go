@@ -78,6 +78,7 @@ func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []n9ap
 	return diags
 }
 
+//nolint:lll
 func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := newClient(config, d.Get("project").(string))
@@ -100,6 +101,7 @@ func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.Res
 	return a.resourceAlertMethodRead(ctx, d, meta)
 }
 
+//nolint:lll
 func (a alertMethod) resourceAlertMethodRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	project := d.Get("project").(string)
@@ -141,6 +143,7 @@ func (i alertMethodWebhook) GetDescription() string {
 	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/webhook)"
 }
 
+//nolint:lll
 func (i alertMethodWebhook) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"url": {
@@ -529,14 +532,6 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 }
 
 func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
-	toStringSlice := func(in []interface{}) []string {
-		ret := make([]string, len(in))
-		for i, v := range in {
-			ret[i] = v.(string)
-		}
-		return ret
-	}
-
 	return n9api.AlertMethodSpec{
 		Description: d.Get("description").(string),
 		Email: &n9api.EmailAlertMethod{

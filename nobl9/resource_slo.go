@@ -218,7 +218,7 @@ func resourceSLO() *schema.Resource {
 						"display_name": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Name which is dispalyed for the attachment",
+							Description: "Name which is displayed for the attachment",
 						},
 						"url": {
 							Type:        schema.TypeString,
@@ -243,12 +243,12 @@ func resourceSLO() *schema.Resource {
 
 func diffSuppressAlertPolicyNames(_, _, _ string, d *schema.ResourceData) bool {
 	// Ignore the order of elements on alert_policy list
-	old, new := d.GetChange("alert_policies")
-	if old == nil && new == nil {
+	oldValue, newValue := d.GetChange("alert_policies")
+	if oldValue == nil && newValue == nil {
 		return true
 	}
-	apOld := old.([]interface{})
-	apNew := new.([]interface{})
+	apOld := oldValue.([]interface{})
+	apNew := newValue.([]interface{})
 
 	sort.Slice(apOld, func(i, j int) bool {
 		return apOld[i].(string) < apOld[j].(string)
@@ -671,18 +671,18 @@ func marshalSLOCloudWatch(s *schema.Set) *n9api.CloudWatchMetric {
 		json = &value
 	}
 
-	var metricDimensions []n9api.CloudWatchMetricDimension
-
 	dimensions := metric["dimensions"].(*schema.Set)
-	for _, dimension := range dimensions.List() {
+	var metricDimensions = make([]n9api.CloudWatchMetricDimension, dimensions.Len())
+
+	for idx, dimension := range dimensions.List() {
 		n9Dimension := dimension.(map[string]interface{})
 		name := n9Dimension["name"].(string)
 		value := n9Dimension["value"].(string)
 
-		metricDimensions = append(metricDimensions, n9api.CloudWatchMetricDimension{
+		metricDimensions[idx] = n9api.CloudWatchMetricDimension{
 			Name:  &name,
 			Value: &value,
-		})
+		}
 	}
 
 	return &n9api.CloudWatchMetric{

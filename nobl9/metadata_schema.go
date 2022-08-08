@@ -6,6 +6,7 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
+//nolint:lll
 func schemaName() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
@@ -23,6 +24,7 @@ func schemaDisplayName() *schema.Schema {
 	}
 }
 
+//nolint:unused,deadcode
 func schemaLabels() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
@@ -32,6 +34,7 @@ func schemaLabels() *schema.Schema {
 	}
 }
 
+//nolint:lll
 func schemaProject() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,

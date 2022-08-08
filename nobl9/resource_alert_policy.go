@@ -23,7 +23,7 @@ func resourceAlertPolicy() *schema.Resource {
 				Required:    true,
 				Description: "Alert severity. One of Low | Medium | High.",
 			},
-
+			//nolint:lll
 			"condition": {
 				Type:        schema.TypeList,
 				Required:    true,
@@ -92,9 +92,9 @@ func diffSuppressAlertMethods(_, _, _ string, d *schema.ResourceData) bool {
 	// the N9 API will return the alert methods in alphabetical by name order, however users
 	// can have them in any order.  So we want to flatten the list into a 2D map and do a DeepEqual
 	// comparison to see if we have any actual changes
-	old, new := d.GetChange("alert_method")
-	alertMethodsOld := old.([]interface{})
-	alertMethodsNew := new.([]interface{})
+	oldValue, newValue := d.GetChange("alert_method")
+	alertMethodsOld := oldValue.([]interface{})
+	alertMethodsNew := newValue.([]interface{})
 
 	oldMap := transformAlertMethodsTo2DMap(alertMethodsOld)
 	newMap := transformAlertMethodsTo2DMap(alertMethodsNew)

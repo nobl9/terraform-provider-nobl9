@@ -9,6 +9,7 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
+//nolint:lll
 func resourceAgent() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -506,6 +507,7 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 	return diags
 }
 
+//nolint:lll
 func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclName, jsonName string) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	spec := object["spec"].(map[string]interface{})
@@ -513,7 +515,7 @@ func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclNa
 		return false, nil
 	}
 
-	//err := d.Set("agent_type", spec[""]) TODO
+	// err := d.Set("agent_type", spec[""]) TODO
 	err := d.Set("source_of", spec["sourceOf"])
 	diags = appendError(diags, err)
 	err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{spec[jsonName]}))
