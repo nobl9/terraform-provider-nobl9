@@ -1121,7 +1121,7 @@ func testCloudWatchWithStat(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -1134,20 +1134,20 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       query {
         cloudwatch {
-		region = "eu-central-1"
-		namespace = "namespace"
-		metric_name = "metric_name"
-          	stat        = "Sum"
+          region = "eu-central-1"
+          namespace = "namespace"
+          metric_name = "metric_name"
+          stat = "Sum"
 
-          	dimensions {
-		name  = "name1"
-            	value = "value1"
-          	}
+          dimensions {
+            name  = "name1"
+            value = "value1"
+          }
 
-          	dimensions {
-            	name  = "name2"
-            	value = "value3"
-          	}
+          dimensions {
+            name  = "name2"
+            value = "value3"
+          }
         }
       }
     }
