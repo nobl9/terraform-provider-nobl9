@@ -671,9 +671,10 @@ func marshalSLOCloudWatch(s *schema.Set) *n9api.CloudWatchMetric {
 		json = &value
 	}
 
-	dimensions := metric["dimensions"].(*schema.Set)
-	var metricDimensions = make([]n9api.CloudWatchMetricDimension, dimensions.Len())
+	//nolint:prealloc
+	var metricDimensions []n9api.CloudWatchMetricDimension
 
+	dimensions := metric["dimensions"].(*schema.Set)
 	for _, dimension := range dimensions.List() {
 		n9Dimension := dimension.(map[string]interface{})
 		name := n9Dimension["name"].(string)
