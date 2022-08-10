@@ -14,6 +14,7 @@ func resourceProject() *schema.Resource {
 			"name":         schemaName(),
 			"display_name": schemaDisplayName(),
 			"description":  schemaDescription(),
+			"labels":       schemaLabels(),
 		},
 		CreateContext: resourceProjectApply,
 		UpdateContext: resourceProjectApply,
