@@ -1,3 +1,7 @@
+# IDE specific
+.vscode
+.idea
+
 terraform-provider-nobl9
 bin
 .env
