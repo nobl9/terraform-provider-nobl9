@@ -2,11 +2,12 @@ package nobl9
 
 import (
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
-	"sort"
-	"strings"
 )
 
 //nolint:lll
@@ -127,15 +128,11 @@ func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
 	labelsResult := make(n9api.Labels, 0)
 
 	for _, labelRaw := range labels {
-		label, err := newLabel(labelRaw.(string))
+		l, err := newLabel(labelRaw.(string))
 		if err != nil {
-			diags = appendError(diags, fmt.Errorf("error creating new label - %w", err))
+			diags = appendError(diags, fmt.Errorf("error creating new l - %w", err))
 		} else {
-			if _, ok := labelsResult[label.key]; ok {
-				labelsResult[label.key] = append(labelsResult[label.key], label.value)
-			} else {
-				labelsResult[label.key] = []string{label.value}
-			}
+			labelsResult[l.key] = append(labelsResult[l.key], l.value)
 		}
 	}
 
