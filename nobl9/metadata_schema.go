@@ -2,12 +2,11 @@ package nobl9
 
 import (
 	"fmt"
-	"sort"
-	"strings"
-	
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
+	"sort"
+	"strings"
 )
 
 //nolint:lll
@@ -47,12 +46,12 @@ func diffSuppressListStringOrder(attribute string) func(
 ) bool {
 	return func(_, _, _ string, d *schema.ResourceData) bool {
 		// Ignore the order of elements on alert_policy list
-		old, new := d.GetChange(attribute)
-		if old == nil && new == nil {
+		oldValue, newValue := d.GetChange(attribute)
+		if oldValue == nil && newValue == nil {
 			return true
 		}
-		apOld := old.([]interface{})
-		apNew := new.([]interface{})
+		apOld := oldValue.([]interface{})
+		apNew := newValue.([]interface{})
 
 		sort.Slice(apOld, func(i, j int) bool {
 			return apOld[i].(string) < apOld[j].(string)
@@ -102,27 +101,6 @@ func marshalMetadata(d *schema.ResourceData) (n9api.MetadataHolder, diag.Diagnos
 	}, diags
 }
 
-func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	labelsResult := make(n9api.Labels, 0)
-
-	for _, labelRaw := range labels {
-		label, err := newLabel(labelRaw.(string))
-		if err != nil {
-			diags = appendError(diags, fmt.Errorf("error creating new label - %w", err))
-		} else {
-			if _, ok := labelsResult[label.key]; ok == true {
-				labelsResult[label.key] = append(labelsResult[label.key], label.value)
-			} else {
-				labelsResult[label.key] = []string{label.value}
-			}
-		}
-	}
-
-	return labelsResult, diags
-}
-
 type label struct {
 	key   string
 	value string
@@ -141,6 +119,27 @@ func newLabel(labelRaw string) (*label, error) {
 
 func (l label) toString() string {
 	return strings.Join([]string{l.key, l.value}, ":")
+}
+
+func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	labelsResult := make(n9api.Labels, 0)
+
+	for _, labelRaw := range labels {
+		label, err := newLabel(labelRaw.(string))
+		if err != nil {
+			diags = appendError(diags, fmt.Errorf("error creating new label - %w", err))
+		} else {
+			if _, ok := labelsResult[label.key]; ok {
+				labelsResult[label.key] = append(labelsResult[label.key], label.value)
+			} else {
+				labelsResult[label.key] = []string{label.value}
+			}
+		}
+	}
+
+	return labelsResult, diags
 }
 
 func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Diagnostics {
@@ -172,11 +171,11 @@ func unmarshalLabels(d *schema.ResourceData, metadata map[string]interface{}) er
 	var res []string
 	for key, valuesRaw := range labels {
 		for _, value := range valuesRaw.([]interface{}) {
-			label := label{
+			l := label{
 				key:   key,
 				value: value.(string),
 			}
-			res = append(res, label.toString())
+			res = append(res, l.toString())
 		}
 	}
 
