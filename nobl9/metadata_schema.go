@@ -1,9 +1,12 @@
 package nobl9
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
+	"sort"
+	"strings"
 )
 
 func schemaName() *schema.Schema {
@@ -28,7 +31,34 @@ func schemaLabels() *schema.Schema {
 		Type:        schema.TypeList,
 		Optional:    true,
 		Description: "Additional labels for the resource",
-		Elem:        &schema.Schema{Type: schema.TypeString},
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+		DiffSuppressFunc: diffSuppressListStringOrder("labels"),
+	}
+}
+
+func diffSuppressListStringOrder(attribute string) func(
+	_, _, _ string,
+	d *schema.ResourceData,
+) bool {
+	return func(_, _, _ string, d *schema.ResourceData) bool {
+		// Ignore the order of elements on alert_policy list
+		old, new := d.GetChange(attribute)
+		if old == nil && new == nil {
+			return true
+		}
+		apOld := old.([]interface{})
+		apNew := new.([]interface{})
+
+		sort.Slice(apOld, func(i, j int) bool {
+			return apOld[i].(string) < apOld[j].(string)
+		})
+		sort.Slice(apNew, func(i, j int) bool {
+			return apNew[i].(string) < apNew[j].(string)
+		})
+
+		return equalSlices(apOld, apNew)
 	}
 }
 
@@ -48,15 +78,65 @@ func schemaDescription() *schema.Schema {
 	}
 }
 
-func marshalMetadata(d *schema.ResourceData) n9api.MetadataHolder {
+func marshalMetadata(d *schema.ResourceData) (n9api.MetadataHolder, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var labels []interface{}
+	if labelsData := d.Get("labels"); labelsData != nil {
+		labels = labelsData.([]interface{})
+	}
+	var labelsMarshalled n9api.Labels
+	labelsMarshalled, diags = marshalLabels(labels)
+
 	return n9api.MetadataHolder{
 		Metadata: n9api.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: d.Get("display_name").(string),
 			Project:     d.Get("project").(string),
-			// TODO Metadata should also support labels - SDK is outdated
+			Labels:      labelsMarshalled,
 		},
+	}, diags
+}
+
+func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	labelsResult := make(n9api.Labels, 0)
+
+	for _, labelRaw := range labels {
+		label, err := newLabel(labelRaw.(string))
+		if err != nil {
+			diags = appendError(diags, fmt.Errorf("error creating new label - %w", err))
+		} else {
+			if _, ok := labelsResult[label.key]; ok == true {
+				labelsResult[label.key] = append(labelsResult[label.key], label.value)
+			} else {
+				labelsResult[label.key] = []string{label.value}
+			}
+		}
 	}
+
+	return labelsResult, diags
+}
+
+type label struct {
+	key   string
+	value string
+}
+
+func newLabel(labelRaw string) (*label, error) {
+	labelSegments := strings.Split(labelRaw, ":")
+	if len(labelSegments) != 2 {
+		return nil, fmt.Errorf("wrong label format, expected \"key:value\", got \"%s\" ", labelRaw)
+	}
+	return &label{
+		key:   labelSegments[0],
+		value: labelSegments[1],
+	}, nil
+}
+
+func (l label) toString() string {
+	return strings.Join([]string{l.key, l.value}, ":")
 }
 
 func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Diagnostics {
@@ -67,12 +147,36 @@ func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Dia
 	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata["displayName"])
 	diags = appendError(diags, err)
-	// err = d.Set("labels", metadata["labels"]) // TODO labels are not supported yet
+
 	diags = appendError(diags, err)
 	err = d.Set("project", metadata["project"])
 	diags = appendError(diags, err)
 
+	err = unmarshalLabels(d, metadata)
+	diags = appendError(diags, err)
+
 	return diags
+}
+
+func unmarshalLabels(d *schema.ResourceData, metadata map[string]interface{}) error {
+	labelsRaw, exist := metadata["labels"]
+	if !exist {
+		return nil
+	}
+
+	labels := labelsRaw.(map[string]interface{})
+	var res []string
+	for key, valuesRaw := range labels {
+		for _, value := range valuesRaw.([]interface{}) {
+			label := label{
+				key:   key,
+				value: value.(string),
+			}
+			res = append(res, label.toString())
+		}
+	}
+
+	return d.Set("labels", res)
 }
 
 // oneElementSet implements schema.SchemaSetFunc and created only one element set.

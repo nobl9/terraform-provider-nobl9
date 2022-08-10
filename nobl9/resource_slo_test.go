@@ -69,6 +69,10 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
+  labels = [
+    "team:green", "team:sapphire", "env:dev", "who:me", "team:purple"
+  ]
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -95,7 +99,6 @@ resource "nobl9_slo" ":name" {
     name = "test-terraform-prom-agent"
     project = ":project"
     kind    = "Agent"
-
   }
 }
 `
@@ -113,6 +116,10 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire", "env:dev", "who:me", "team:purple"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -158,6 +165,10 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -206,6 +217,10 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -263,6 +278,10 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -324,6 +343,10 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
+  labels = [
+    "team:green", "team:sapphire"
+  ]
+
   budgeting_method = "Timeslices"
 
   objective {
@@ -368,6 +391,10 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
+  labels = [
+    "team:green", "team:sapphire"
+  ]
+
   budgeting_method = "Timeslices"
 
   objective {
@@ -411,6 +438,10 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -458,8 +489,12 @@ func testDatadogSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -501,8 +536,12 @@ func testNewRelicSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -545,8 +584,12 @@ func testAppdynamicsSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -592,6 +635,10 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
+  labels = [
+    "team:green", "team:sapphire"
+  ]
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -632,8 +679,12 @@ func testLightstepSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -677,8 +728,12 @@ func testSplunkObservabilitySLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -720,8 +775,12 @@ func testDynatraceSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -765,8 +824,12 @@ func testThousandeyesSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -808,8 +871,12 @@ func testGraphiteSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -851,8 +918,12 @@ func testBigQuerySLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -896,8 +967,12 @@ func testOpenTSDBSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -941,8 +1016,12 @@ func testMultipleAlertPolicies(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -991,6 +1070,10 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -1057,6 +1140,10 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
+  labels = [
+    "team:green", "team:sapphire"
+  ]
+
   budgeting_method = "Timeslices"
 
   composite {
@@ -1117,8 +1204,12 @@ func testCloudWatchWithStat(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -1173,8 +1264,12 @@ func testCloudWatchWithSQL(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
@@ -1217,8 +1312,12 @@ func testCloudWatchWithJson(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:name-service.name
+
+  labels = [
+    "team:green", "team:sapphire"
+  ]
 
   budgeting_method = "Occurrences"
 
