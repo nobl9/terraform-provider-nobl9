@@ -2,13 +2,15 @@ package nobl9
 
 import (
 	"fmt"
+	"sort"
+	"strings"
+	
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
-	"sort"
-	"strings"
 )
 
+//nolint:lll
 func schemaName() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
@@ -26,6 +28,7 @@ func schemaDisplayName() *schema.Schema {
 	}
 }
 
+//nolint:unused,deadcode
 func schemaLabels() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
@@ -62,6 +65,7 @@ func diffSuppressListStringOrder(attribute string) func(
 	}
 }
 
+//nolint:lll
 func schemaProject() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,

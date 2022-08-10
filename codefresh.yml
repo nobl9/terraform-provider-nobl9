@@ -1,11 +1,21 @@
-# More examples of Codefresh YAML can be found at
-# https://codefresh.io/docs/docs/yaml-examples/examples/
-
 version: "1.0"
-# Stages can help you organize your steps in stages
+
+hooks:
+  on_fail:
+    # Notify about pipeline failure
+    exec:
+      image: codefresh/slacknotifier
+      environment:
+        - 'SLACK_HOOK_URL=${{SLACK_WEBHOOK}}'
+        - 'SLACK_TEXT=Pipeline failed for Nobl9 Terraform Provider repository'
+        - 'SLACK_ATTACHMENTS=[{ "color":"#d00000", "blocks":[{"type":"context", "elements":[ { "type":"plain_text","text":"Pipeline failed for Nobl9 Terraform Provider repository", "emoji":true }]}]}]'
+        - 'SLACK_USER_NAME=Nobl9 Terraform Provider'
+        - 'SLACK_ICON_EMOJI=:terraform:'
+
 stages:
   - "clone"
-  - "build"
+  - "preload"
+  - "check"
   - "test"
 
 steps:
@@ -13,19 +23,19 @@ steps:
     title: "Cloning repository"
     type: "git-clone"
     repo: "nobl9/terraform-provider-nobl9"
-    # CF_BRANCH value is auto set when pipeline is triggered
-    # Learn more at codefresh.io/docs/docs/codefresh-yaml/variables/
-    revision: "${{CF_BRANCH}}"
+    revision: "${{CF_REVISION}}"
     git: "github"
     stage: "clone"
 
-  test:
-    title: "Running test"
-    type: "freestyle" # Run any command
-    image: "hashicorp/terraform:1.2.5" # The image in which command will be executed
-    working_directory: "${{clone}}" # Running command where code cloned
+  preload:
+    title: "Loading dependencies"
+    stage: preload
+    image: golang:1.18-alpine
+    working_directory: "${{clone}}"
+    environment:
+      - GOPATH=/codefresh/volume/go
     commands:
-      - "apk add go make"
+      - apk add --no-cache openssh-client git
       - "mkdir -p ~/.ssh"
       - "echo ${{GH_SSH_PUBLIC}} > ~/.ssh/id_ed25519.pub"
       - "echo ${{GH_SSH_PRIVATE}} | base64 -d > /root/.ssh/id_ed25519"
@@ -35,5 +45,37 @@ steps:
       - "ssh-add ~/.ssh/id_ed25519"
       - "ssh -T -oStrictHostKeyChecking=accept-new git@github.com || true"
       - 'git config --global --add url."git@github.com:".insteadOf "https://github.com/"'
+      - go get -d -v
+      - go mod vendor
+
+  check:
+    title: "Checking GO Files"
+    type: "parallel"
+    stage: check
+    steps:
+      lint:
+        title: Lint
+        working_directory: "${{clone}}"
+        image: golangci/golangci-lint:v1.46.0
+        environment:
+          - GOPATH=/codefresh/volume/go
+        commands:
+          - golangci-lint run -v --timeout 10m
+      securityAnalysis:
+        title: Security Scan
+        working_directory: "${{clone}}"
+        image: 'securego/gosec:2.12.0'
+        environment:
+          - GOPATH=/codefresh/volume/go
+        commands:
+          - gosec -quiet -exclude-generated ./...
+
+  test:
+    title: "Running test"
+    type: "freestyle"
+    image: "hashicorp/terraform:1.2.5"
+    working_directory: "${{clone}}"
+    commands:
+      - "apk add go make"
       - "make testacc"
     stage: "test"

@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+//nolint:lll
 func schemaMetricSpec() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeSet,

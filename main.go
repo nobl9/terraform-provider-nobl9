@@ -1,9 +1,7 @@
 package main
 
 import (
-	"context"
 	"flag"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/nobl9/terraform-provider-nobl9/nobl9"
@@ -19,10 +17,9 @@ func main() {
 	}
 
 	if debugMode {
-		err := plugin.Debug(context.Background(), "nobl9.com/nobl9/nobl9", opts)
-		if err != nil {
-			log.Fatal(err.Error())
-		}
+		opts.Debug = true
+		opts.ProviderAddr = "nobl9.com/nobl9/nobl9"
+		plugin.Serve(opts)
 		return
 	}
 

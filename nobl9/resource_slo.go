@@ -3,10 +3,11 @@ package nobl9
 import (
 	"context"
 	"fmt"
+	"hash/fnv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
-	"hash/fnv"
 )
 
 func resourceSLO() *schema.Resource {
@@ -217,7 +218,7 @@ func resourceSLO() *schema.Resource {
 						"display_name": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Name which is dispalyed for the attachment",
+							Description: "Name which is displayed for the attachment",
 						},
 						"url": {
 							Type:        schema.TypeString,
@@ -656,18 +657,18 @@ func marshalSLOCloudWatch(s *schema.Set) *n9api.CloudWatchMetric {
 		json = &value
 	}
 
-	var metricDimensions []n9api.CloudWatchMetricDimension
-
 	dimensions := metric["dimensions"].(*schema.Set)
-	for _, dimension := range dimensions.List() {
+	var metricDimensions = make([]n9api.CloudWatchMetricDimension, dimensions.Len())
+
+	for idx, dimension := range dimensions.List() {
 		n9Dimension := dimension.(map[string]interface{})
 		name := n9Dimension["name"].(string)
 		value := n9Dimension["value"].(string)
 
-		metricDimensions = append(metricDimensions, n9api.CloudWatchMetricDimension{
+		metricDimensions[idx] = n9api.CloudWatchMetricDimension{
 			Name:  &name,
 			Value: &value,
-		})
+		}
 	}
 
 	return &n9api.CloudWatchMetric{
