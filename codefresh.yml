@@ -40,7 +40,6 @@ steps:
     environment:
       - GOPATH=/codefresh/volume/go
     commands:
-      - exit 1
       - apk add --no-cache openssh-client git
       - "mkdir -p ~/.ssh"
       - "echo ${{GH_SSH_PUBLIC}} > ~/.ssh/id_ed25519.pub"
