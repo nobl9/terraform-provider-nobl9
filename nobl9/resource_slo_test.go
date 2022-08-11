@@ -8,7 +8,6 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-
 func TestAcc_Nobl9SLO(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
@@ -105,7 +104,7 @@ resource "nobl9_slo" ":name" {
 
 func testPrometheusSLOWithAlertPolicy(name string) string {
 	config := testService(name+"-service") +
-    testPrometheusConfig(name+"-agent") +
+		testPrometheusConfig(name+"-agent") +
 		testAlertPolicyWithoutIntegration(name+"-ap") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
@@ -152,7 +151,7 @@ resource "nobl9_slo" ":name" {
 
 func testPrometheusSLOWithCountMetrics(name string) string {
 	config := testService(name+"-service") +
-  	testPrometheusConfig(name+"-agent") + `
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -201,7 +200,7 @@ resource "nobl9_slo" ":name" {
 
 func testPrometheusSLOWithMultipleObjectives(name string) string {
 	config := testService(name+"-service") +
-    testPrometheusConfig(name+"-agent") + `
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -259,7 +258,7 @@ resource "nobl9_slo" ":name" {
 
 func testPrometheusSLOFULL(name string) string {
 	config := testService(name+"-service") +
-    testPrometheusConfig(name+"-agent") + `
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -320,7 +319,7 @@ resource "nobl9_slo" ":name" {
 
 func testPrometheusSLOWithTimeSlices(name string) string {
 	config := testService(name+"-service") +
-    testPrometheusConfig(name+"-agent") + `
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -365,7 +364,7 @@ resource "nobl9_slo" ":name" {
 
 func testPrometheusSLOWithRawMetricInObjective(name string) string {
 	config := testService(name+"-service") +
-      testPrometheusConfig(name+"-agent") + `
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -410,7 +409,7 @@ resource "nobl9_slo" ":name" {
 
 func testPrometheusWithAttachments(name string) string {
 	config := testService(name+"-service") +
-    testPrometheusConfig(name+"-agent") + `
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -461,7 +460,7 @@ resource "nobl9_slo" ":name" {
 //nolint:unused,deadcode
 func testDatadogSLO(name string) string {
 	config := testService(name+"-service") +
-    testDatadogConfig(name+"-agent") + `
+		testDatadogConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -505,7 +504,7 @@ resource "nobl9_slo" ":name" {
 
 func testNewRelicSLO(name string) string {
 	config := testService(name+"-service") +
-    testNewrelicConfig(name+"-agent") + `
+		testNewrelicConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -550,7 +549,7 @@ resource "nobl9_slo" ":name" {
 
 func testAppdynamicsSLO(name string) string {
 	config := testService(name+"-service") +
-    testAppDynamicsConfig(name+"-agent") + `
+		testAppDynamicsConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -596,7 +595,7 @@ resource "nobl9_slo" ":name" {
 //nolint:lll
 func testSplunkSLO(name string) string {
 	config := testService(name+"-service") +
-    testSplunkConfig(name+"-agent") + `
+		testSplunkConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -640,7 +639,7 @@ resource "nobl9_slo" ":name" {
 
 func testLightstepSLO(name string) string {
 	config := testService(name+"-service") +
-    testLightstepConfig(name+"-agent") + `
+		testLightstepConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -686,7 +685,7 @@ resource "nobl9_slo" ":name" {
 
 func testSplunkObservabilitySLO(name string) string {
 	config := testService(name+"-service") +
-    testSplunkObservabilityConfig(name+"-agent") + `
+		testSplunkObservabilityConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -731,7 +730,7 @@ resource "nobl9_slo" ":name" {
 //nolint:lll
 func testDynatraceSLO(name string) string {
 	config := testService(name+"-service") +
-    testDynatraceConfig(name+"-agent") + `
+		testDynatraceConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -777,7 +776,7 @@ EOT
 
 func testThousandeyesSLO(name string) string {
 	config := testService(name+"-service") +
-    testThousandEyesConfig(name+"-agent") + `
+		testThousandEyesConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -821,7 +820,7 @@ resource "nobl9_slo" ":name" {
 
 func testGraphiteSLO(name string) string {
 	config := testService(name+"-service") +
-    testGraphiteConfig(name+"-agent") + `
+		testGraphiteConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -866,7 +865,7 @@ resource "nobl9_slo" ":name" {
 //nolint:lll
 func testBigQuerySLO(name string) string {
 	config := testService(name+"-service") +
-    testBigQueryConfig(name+"-agent") + `
+		testBigQueryConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -912,7 +911,7 @@ resource "nobl9_slo" ":name" {
 
 func testOpenTSDBSLO(name string) string {
 	config := testService(name+"-service") +
-    testOpenTSDBConfig(name+"-agent") + `
+		testOpenTSDBConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
