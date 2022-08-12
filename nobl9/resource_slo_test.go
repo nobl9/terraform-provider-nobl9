@@ -1134,6 +1134,8 @@ func testCompositeSLOTimeSlices(name string) string {
 	return config
 }
 
+// TODO: When we have implemented support for the CloudWatch Agent and tests for it,
+// change the Agent in Cloudwatch SLOs to dynamically created.
 func testCloudWatchWithStat(name string) string {
 	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
