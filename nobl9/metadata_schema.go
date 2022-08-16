@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
-	"sort"
+	"reflect"
 )
 
 //nolint:lll
@@ -29,16 +29,16 @@ func schemaDisplayName() *schema.Schema {
 //nolint:unused,deadcode
 func schemaLabels() *schema.Schema {
 	return &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Labels containing a single key and a list of values.",
+		Type:             schema.TypeList,
+		Optional:         true,
+		Description:      "Labels containing a single key and a list of values.",
+		DiffSuppressFunc: diffSuppressLabels,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"key": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					Description:  "One key for the label, unique within the associated resource.",
-					ValidateFunc: validateUniqueLabelKeys,
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "One key for the label, unique within the associated resource.",
 				},
 				"values": {
 					Type:        schema.TypeList,
@@ -52,28 +52,31 @@ func schemaLabels() *schema.Schema {
 	}
 }
 
-func diffSuppressListStringOrder(attribute string) func(
-	_, _, _ string,
-	d *schema.ResourceData,
-) bool {
-	return func(_, _, _ string, d *schema.ResourceData) bool {
-		// Ignore the order of elements on alert_policy list
-		oldValue, newValue := d.GetChange(attribute)
-		if oldValue == nil && newValue == nil {
-			return true
-		}
-		apOld := oldValue.([]interface{})
-		apNew := newValue.([]interface{})
+func diffSuppressLabels(_, _, _ string, d *schema.ResourceData) bool {
+	// the N9 API will return the labels in alphabetical by name order, however users
+	// can have them in any order.  So we want to flatten the list into a 2D map and do a DeepEqual
+	// comparison to see if we have any actual changes
+	oldValue, newValue := d.GetChange("label")
+	labelsOld := oldValue.([]interface{})
+	labelsNew := newValue.([]interface{})
 
-		sort.Slice(apOld, func(i, j int) bool {
-			return apOld[i].(string) < apOld[j].(string)
-		})
-		sort.Slice(apNew, func(i, j int) bool {
-			return apNew[i].(string) < apNew[j].(string)
-		})
+	oldMap := transformLabelsTo2DMap(labelsOld)
+	newMap := transformLabelsTo2DMap(labelsNew)
 
-		return equalSlices(apOld, apNew)
+	return reflect.DeepEqual(oldMap, newMap)
+}
+
+func transformLabelsTo2DMap(labels []interface{}) map[string]map[string]interface{} {
+	result := make(map[string]map[string]interface{})
+	for _, label := range labels {
+		s := label.(map[string]interface{})
+		values := make(map[string]interface{})
+
+		values["key"] = s["key"].(string)
+		values["values"] = s["values"].([]interface{})
+		result[s["key"].(string)] = values
 	}
+	return result
 }
 
 //nolint:lll
@@ -132,30 +135,6 @@ func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Dia
 	return diags
 }
 
-func unmarshalLabels(d *schema.ResourceData, metadata map[string]interface{}) error {
-	labelsRaw, exist := metadata["labels"].([]interface{})
-	if !exist {
-		return nil
-	}
-
-	fmt.Println("unmarshala")
-
-	resultLabels := make([]map[string]interface{}, len(labelsRaw))
-
-	for i, labelRaw := range labelsRaw {
-		labelMap := labelRaw.(map[string]interface{})
-
-		resultLabels[i] = map[string]interface{}{
-			"key":    labelMap["key"].(string),
-			"values": labelMap["values"].([]string),
-		}
-	}
-
-	fmt.Println("result Labels")
-
-	return d.Set("label", resultLabels)
-}
-
 func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	labelsResult := make(n9api.Labels, 0)
@@ -166,6 +145,12 @@ func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
 		labelKey := labelMap["key"].(string)
 		if labelKey == "" {
 			diags = appendError(diags, fmt.Errorf("error creating label because the key is empty"))
+		}
+		if _, exists := labelsResult[labelKey]; exists == true {
+			diags = appendError(diags, fmt.Errorf(
+				"duplicate label key [%s] found - expected only one occurance of each label key",
+				labelKey,
+			))
 		}
 
 		labelValuesRaw := labelMap["values"].([]interface{})
@@ -181,6 +166,29 @@ func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
 	}
 
 	return labelsResult, diags
+}
+
+func unmarshalLabels(d *schema.ResourceData, metadata map[string]interface{}) error {
+	labelsRaw, exist := metadata["labels"].(map[string]interface{})
+	if !exist {
+		return nil
+	}
+
+	resultLabels := make([]map[string]interface{}, 0)
+
+	for labelKey, labelValuesRaw := range labelsRaw {
+		var labelValuesStr []string
+		for _, labelValueRaw := range labelValuesRaw.([]interface{}) {
+			labelValuesStr = append(labelValuesStr, labelValueRaw.(string))
+		}
+		labelKeyWithValues := make(map[string]interface{})
+		labelKeyWithValues["key"] = labelKey
+		labelKeyWithValues["values"] = labelValuesStr
+
+		resultLabels = append(resultLabels, labelKeyWithValues)
+	}
+
+	return d.Set("label", resultLabels)
 }
 
 // oneElementSet implements schema.SchemaSetFunc and created only one element set.

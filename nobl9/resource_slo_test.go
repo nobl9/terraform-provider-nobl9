@@ -47,13 +47,13 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				PreCheck: func() { testAccPreCheck(t) },
-				//ProviderFactories: ProviderFactory(),
-				CheckDestroy: CheckDestory("nobl9_slo", n9api.ObjectSLO),
+				PreCheck:          func() { testAccPreCheck(t) },
+				ProviderFactories: ProviderFactory(),
+				CheckDestroy:      CheckDestory("nobl9_slo", n9api.ObjectSLO),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
-						Check:  CheckObjectCreated("nobl9_slo." + tc.name),
+						//Check:  CheckObjectCreated("nobl9_slo." + tc.name),
 					},
 				},
 			})
@@ -69,13 +69,13 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "team"
+    key = "env1"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "env"
-    values = ["dev", "staging", "prod"]
+    key = "en2"
+    values = ["a", "c", "b"]
   }
 
   budgeting_method = "Occurrences"

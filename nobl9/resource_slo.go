@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"hash/fnv"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -241,9 +242,35 @@ func resourceSLO() *schema.Resource {
 	}
 }
 
+func diffSuppressListStringOrder(attribute string) func(
+	_, _, _ string,
+	d *schema.ResourceData,
+) bool {
+	return func(_, _, _ string, d *schema.ResourceData) bool {
+		// Ignore the order of elements on alert_policy list
+		oldValue, newValue := d.GetChange(attribute)
+		if oldValue == nil && newValue == nil {
+			return true
+		}
+		apOld := oldValue.([]interface{})
+		apNew := newValue.([]interface{})
+
+		sort.Slice(apOld, func(i, j int) bool {
+			return apOld[i].(string) < apOld[j].(string)
+		})
+		sort.Slice(apNew, func(i, j int) bool {
+			return apNew[i].(string) < apNew[j].(string)
+		})
+
+		return equalSlices(apOld, apNew)
+	}
+}
+
 func validateUniqueLabelKeys(i interface{}, s string) ([]string, []error) {
 	var str []string
 	var errs []error
+	fmt.Println("i:", i)
+	fmt.Println("s", s)
 	return str, errs
 }
 
