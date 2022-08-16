@@ -266,14 +266,6 @@ func diffSuppressListStringOrder(attribute string) func(
 	}
 }
 
-func validateUniqueLabelKeys(i interface{}, s string) ([]string, []error) {
-	var str []string
-	var errs []error
-	fmt.Println("i:", i)
-	fmt.Println("s", s)
-	return str, errs
-}
-
 func equalSlices(a, b []interface{}) bool {
 	if len(a) != len(b) {
 		return false
