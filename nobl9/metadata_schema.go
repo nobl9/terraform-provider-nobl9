@@ -147,9 +147,9 @@ func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
 		if labelKey == "" {
 			diags = appendError(diags, fmt.Errorf("error creating label because the key is empty"))
 		}
-		if _, exist := labelsResult[labelKey]; exist == true {
+		if _, exist := labelsResult[labelKey]; exist {
 			diags = appendError(diags, fmt.Errorf(
-				"duplicate label key [%s] found - expected only one occurence of each label key",
+				"duplicate label key [%s] found - expected only one occurrence of each label key",
 				labelKey,
 			))
 		}
