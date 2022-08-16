@@ -17,7 +17,7 @@ func resourceSLO() *schema.Resource {
 			"display_name": schemaDisplayName(),
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
-			"labels":       schemaLabels(),
+			"label":        schemaLabels(),
 			"composite": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -239,6 +239,12 @@ func resourceSLO() *schema.Resource {
 		},
 		Description: "[SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)",
 	}
+}
+
+func validateUniqueLabelKeys(i interface{}, s string) ([]string, []error) {
+	var str []string
+	var errs []error
+	return str, errs
 }
 
 func equalSlices(a, b []interface{}) bool {

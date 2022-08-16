@@ -17,7 +17,6 @@ func resourceAlertPolicy() *schema.Resource {
 			"display_name": schemaDisplayName(),
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
-
 			"severity": {
 				Type:        schema.TypeString,
 				Required:    true,

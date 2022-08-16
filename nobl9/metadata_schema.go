@@ -2,12 +2,10 @@ package nobl9
 
 import (
 	"fmt"
-	"sort"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
+	"sort"
 )
 
 //nolint:lll
@@ -33,11 +31,24 @@ func schemaLabels() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: "Additional labels for the resource",
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
+		Description: "Labels containing a single key and a list of values.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"key": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "One key for the label, unique within the associated resource.",
+					ValidateFunc: validateUniqueLabelKeys,
+				},
+				"values": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					MinItems:    1,
+					Description: "A list of unique values for a single key.",
+					Elem:        &schema.Schema{Type: schema.TypeString},
+				},
+			},
 		},
-		DiffSuppressFunc: diffSuppressListStringOrder("labels"),
 	}
 }
 
@@ -86,7 +97,7 @@ func marshalMetadata(d *schema.ResourceData) (n9api.MetadataHolder, diag.Diagnos
 	var diags diag.Diagnostics
 
 	var labels []interface{}
-	if labelsData := d.Get("labels"); labelsData != nil {
+	if labelsData := d.Get("label"); labelsData != nil {
 		labels = labelsData.([]interface{})
 	}
 	var labelsMarshalled n9api.Labels
@@ -100,43 +111,6 @@ func marshalMetadata(d *schema.ResourceData) (n9api.MetadataHolder, diag.Diagnos
 			Labels:      labelsMarshalled,
 		},
 	}, diags
-}
-
-type label struct {
-	key   string
-	value string
-}
-
-func newLabel(labelRaw string) (*label, error) {
-	labelSegments := strings.Split(labelRaw, ":")
-	if len(labelSegments) != 2 {
-		return nil, fmt.Errorf("wrong label format, expected \"key:value\", got \"%s\" ", labelRaw)
-	}
-	return &label{
-		key:   labelSegments[0],
-		value: labelSegments[1],
-	}, nil
-}
-
-func (l label) toString() string {
-	return strings.Join([]string{l.key, l.value}, ":")
-}
-
-func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	labelsResult := make(n9api.Labels, 0)
-
-	for _, labelRaw := range labels {
-		l, err := newLabel(labelRaw.(string))
-		if err != nil {
-			diags = appendError(diags, fmt.Errorf("error creating new l - %w", err))
-		} else {
-			labelsResult[l.key] = append(labelsResult[l.key], l.value)
-		}
-	}
-
-	return labelsResult, diags
 }
 
 func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Diagnostics {
@@ -159,24 +133,54 @@ func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Dia
 }
 
 func unmarshalLabels(d *schema.ResourceData, metadata map[string]interface{}) error {
-	labelsRaw, exist := metadata["labels"]
+	labelsRaw, exist := metadata["labels"].([]interface{})
 	if !exist {
 		return nil
 	}
 
-	labels := labelsRaw.(map[string]interface{})
-	var res []string
-	for key, valuesRaw := range labels {
-		for _, value := range valuesRaw.([]interface{}) {
-			l := label{
-				key:   key,
-				value: value.(string),
-			}
-			res = append(res, l.toString())
+	fmt.Println("unmarshala")
+
+	resultLabels := make([]map[string]interface{}, len(labelsRaw))
+
+	for i, labelRaw := range labelsRaw {
+		labelMap := labelRaw.(map[string]interface{})
+
+		resultLabels[i] = map[string]interface{}{
+			"key":    labelMap["key"].(string),
+			"values": labelMap["values"].([]string),
 		}
 	}
 
-	return d.Set("labels", res)
+	fmt.Println("result Labels")
+
+	return d.Set("label", resultLabels)
+}
+
+func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	labelsResult := make(n9api.Labels, 0)
+
+	for _, labelRaw := range labels {
+		labelMap := labelRaw.(map[string]interface{})
+
+		labelKey := labelMap["key"].(string)
+		if labelKey == "" {
+			diags = appendError(diags, fmt.Errorf("error creating label because the key is empty"))
+		}
+
+		labelValuesRaw := labelMap["values"].([]interface{})
+		labelValuesStr := make([]string, len(labelValuesRaw))
+		if len(labelValuesRaw) < 1 {
+			diags = appendError(diags, fmt.Errorf("error creating label because there was no value specified"))
+		}
+		for i, labelValueRaw := range labelValuesRaw {
+			labelValuesStr[i] = labelValueRaw.(string)
+		}
+
+		labelsResult[labelKey] = labelValuesStr
+	}
+
+	return labelsResult, diags
 }
 
 // oneElementSet implements schema.SchemaSetFunc and created only one element set.

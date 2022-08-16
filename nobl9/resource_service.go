@@ -15,7 +15,7 @@ func resourceService() *schema.Resource {
 			"display_name": schemaDisplayName(),
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
-			"labels":       schemaLabels(),
+			"label":        schemaLabels(),
 			"status": {
 				Type:        schema.TypeMap,
 				Computed:    true,
