@@ -1,7 +1,6 @@
 package nobl9
 
 import (
-	n9api "github.com/nobl9/nobl9-go"
 	"strings"
 	"testing"
 
@@ -19,29 +18,29 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		configFunc func(string) string
 	}{
 		{"test-prometheus", testPrometheusSLO},
-		//{"test-prom-with-ap", testPrometheusSLOWithAlertPolicy},
-		//{"test-prom-with-countmetrics", testPrometheusSLOWithCountMetrics},
-		//{"test-prom-with-multiple-objectives", testPrometheusSLOWithMultipleObjectives},
-		//{"test-prom-full", testPrometheusSLOFULL},
-		//{"test-prom-with-time-slices", testPrometheusSLOWithTimeSlices},
-		//{"test-prom-with-raw-metric-in-objective", testPrometheusSLOWithRawMetricInObjective},
-		//{"test-prom-with-attachments", testPrometheusWithAttachments},
-		//{"test-newrelic", testNewRelicSLO},
-		//{"test-appdynamics", testAppdynamicsSLO},
-		//{"test-splunk", testSplunkSLO},
-		//{"test-lightstep", testLightstepSLO},
-		//{"test-splunk-observability", testSplunkObservabilitySLO},
-		//{"test-dynatrace", testDynatraceSLO},
-		//{"test-thousandeyes", testThousandeyesSLO},
-		//{"test-graphite", testGraphiteSLO},
-		//{"test-bigquery", testBigQuerySLO},
-		//{"test-opentsdb", testOpenTSDBSLO},
-		//{"test-cloudwatch-with-stat", testCloudWatchWithStat},
-		//{"test-cloudwatch-with-sql", testCloudWatchWithSQL},
-		//{"test-cloudwatch-with-json", testCloudWatchWithJSON},
-		//{"test-multiple-ap", testMultipleAlertPolicies},
-		//{"test-composite-occurrences", testCompositeSLOOccurrences},
-		//{"test-composite-time-slices", testCompositeSLOTimeSlices},
+		{"test-prom-with-ap", testPrometheusSLOWithAlertPolicy},
+		{"test-prom-with-countmetrics", testPrometheusSLOWithCountMetrics},
+		{"test-prom-with-multiple-objectives", testPrometheusSLOWithMultipleObjectives},
+		{"test-prom-full", testPrometheusSLOFULL},
+		{"test-prom-with-time-slices", testPrometheusSLOWithTimeSlices},
+		{"test-prom-with-raw-metric-in-objective", testPrometheusSLOWithRawMetricInObjective},
+		{"test-prom-with-attachments", testPrometheusWithAttachments},
+		{"test-newrelic", testNewRelicSLO},
+		{"test-appdynamics", testAppdynamicsSLO},
+		{"test-splunk", testSplunkSLO},
+		{"test-lightstep", testLightstepSLO},
+		{"test-splunk-observability", testSplunkObservabilitySLO},
+		{"test-dynatrace", testDynatraceSLO},
+		{"test-thousandeyes", testThousandeyesSLO},
+		{"test-graphite", testGraphiteSLO},
+		{"test-bigquery", testBigQuerySLO},
+		{"test-opentsdb", testOpenTSDBSLO},
+		{"test-cloudwatch-with-stat", testCloudWatchWithStat},
+		{"test-cloudwatch-with-sql", testCloudWatchWithSQL},
+		{"test-cloudwatch-with-json", testCloudWatchWithJSON},
+		{"test-multiple-ap", testMultipleAlertPolicies},
+		{"test-composite-occurrences", testCompositeSLOOccurrences},
+		{"test-composite-time-slices", testCompositeSLOTimeSlices},
 	}
 
 	for _, tc := range cases {
@@ -49,11 +48,11 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestory("nobl9_slo", n9api.ObjectSLO),
+				//CheckDestroy:      CheckDestory("nobl9_slo", n9api.ObjectSLO),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
-						//Check:  CheckObjectCreated("nobl9_slo." + tc.name),
+						Check:  CheckObjectCreated("nobl9_slo." + tc.name),
 					},
 				},
 			})
@@ -69,13 +68,13 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env1"
+    key = "env"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "en2"
-    values = ["a", "c", "b"]
+    key = "prod"
+    values = ["dev", "staging", "prod"]
   }
 
   budgeting_method = "Occurrences"
@@ -122,9 +121,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire", "env:dev", "who:me", "team:purple"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -171,9 +176,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -223,9 +234,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -284,9 +301,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -348,9 +371,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Timeslices"
 
@@ -396,9 +425,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Timeslices"
 
@@ -444,9 +479,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -498,9 +539,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -545,9 +592,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -575,7 +628,6 @@ resource "nobl9_slo" ":name" {
     name    = "test-terraform-newrelic-agent"
     project = ":project"
     kind    = "Agent"
-
   }
 }
 `
@@ -593,9 +645,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -642,9 +700,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -689,9 +753,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -738,9 +808,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -786,9 +862,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -835,9 +917,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -882,9 +970,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -930,9 +1024,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -979,9 +1079,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -1028,9 +1134,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -1080,9 +1192,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -1149,9 +1267,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Timeslices"
 
@@ -1216,9 +1340,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -1276,9 +1406,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -1324,9 +1460,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  labels = [
-    "team:green", "team:sapphire"
-  ]
+  label {
+    key = "env"
+    values = ["green","sapphire"]
+  }
+
+  label {
+    key = "prod"
+    values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
