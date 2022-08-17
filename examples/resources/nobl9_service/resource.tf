@@ -1,6 +1,6 @@
 resource "nobl9_project" "this" {
-  display_name = "Test Terraform"
-  name         = "test-terraform"
+  display_name = "Foo Project"
+  name         = "foo-project"
   description  = "An example terraform project"
 }
 
