@@ -9,9 +9,6 @@ import (
 )
 
 func TestAcc_Nobl9Agent(t *testing.T) {
-	// we dont' currently support creating Agents via the API
-	// so skipping this for now
-	t.SkipNow()
 	cases := []struct {
 		name       string
 		configFunc func(string) string

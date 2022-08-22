@@ -8,10 +8,6 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-// NOTE: We currently can't create Agents via the API, so these SLOs are creating with an existing Agent. When
-// we are able to, we should change over to dynamically created Agents, but in the mean time, we will have to
-// use the existing ones.
-
 func TestAcc_Nobl9SLO(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
@@ -62,11 +58,12 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 }
 
 func testPrometheusSLO(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-  project      = ":project"
+	project      = ":project"
   service      = nobl9_service.:name-service.name
 
   budgeting_method = "Occurrences"
@@ -92,7 +89,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name = "test-terraform-prom-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
 
@@ -107,6 +104,7 @@ resource "nobl9_slo" ":name" {
 
 func testPrometheusSLOWithAlertPolicy(name string) string {
 	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") +
 		testAlertPolicyWithoutIntegration(name+"-ap") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
@@ -137,7 +135,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-prom-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -152,7 +150,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testPrometheusSLOWithCountMetrics(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -187,7 +186,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-prom-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -200,7 +199,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testPrometheusSLOWithMultipleObjectives(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -244,7 +244,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-prom-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -257,7 +257,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testPrometheusSLOFULL(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -304,7 +305,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-prom-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -317,7 +318,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testPrometheusSLOWithTimeSlices(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -348,7 +350,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-prom-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -361,7 +363,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testPrometheusSLOWithRawMetricInObjective(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -392,7 +395,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-prom-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -405,7 +408,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testPrometheusWithAttachments(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -435,7 +439,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name = "test-terraform-prom-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
 
@@ -455,7 +459,8 @@ resource "nobl9_slo" ":name" {
 
 //nolint:unused,deadcode
 func testDatadogSLO(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testDatadogConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -485,7 +490,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-datadog-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -498,7 +503,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testNewRelicSLO(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testNewrelicConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -528,7 +534,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-newrelic-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
 
@@ -542,7 +548,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testAppdynamicsSLO(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testAppDynamicsConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -573,7 +580,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-appd-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -587,7 +594,8 @@ resource "nobl9_slo" ":name" {
 
 //nolint:lll
 func testSplunkSLO(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testSplunkConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -617,7 +625,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-splunk-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -630,7 +638,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testLightstepSLO(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testLightstepConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -662,7 +671,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-lightstep-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -675,7 +684,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testSplunkObservabilitySLO(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testSplunkObservabilityConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -705,7 +715,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-splunkobs-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -719,7 +729,8 @@ resource "nobl9_slo" ":name" {
 
 //nolint:lll
 func testDynatraceSLO(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testDynatraceConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -751,7 +762,7 @@ EOT
   }
 
   indicator {
-    name    = "test-terraform-dynatrace-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -764,7 +775,8 @@ EOT
 }
 
 func testThousandeyesSLO(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testThousandEyesConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -794,7 +806,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-thousandeyes-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -807,7 +819,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testGraphiteSLO(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testGraphiteConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -837,7 +850,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-graphite-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
       kind    = "Agent"
   }
@@ -851,7 +864,8 @@ resource "nobl9_slo" ":name" {
 
 //nolint:lll
 func testBigQuerySLO(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testBigQueryConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -883,7 +897,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-bigquery-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -896,7 +910,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testOpenTSDBSLO(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testOpenTSDBConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -926,7 +941,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name    = "test-terraform-opentsdb-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -940,6 +955,7 @@ resource "nobl9_slo" ":name" {
 
 func testMultipleAlertPolicies(name string) string {
 	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") +
 		testAlertPolicyWithoutIntegration(name+"-fast") +
 		testAlertPolicyWithoutIntegration(name+"-slow") + `
 resource "nobl9_slo" ":name" {
@@ -971,7 +987,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name = "test-terraform-prom-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -989,7 +1005,8 @@ resource "nobl9_slo" ":name" {
 }
 
 func testCompositeSLOOccurrences(name string) string {
-	config := testService(name+"-service") + `
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -1041,7 +1058,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name = "test-terraform-prom-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -1054,8 +1071,9 @@ resource "nobl9_slo" ":name" {
 }
 
 func testCompositeSLOTimeSlices(name string) string {
-	config := testService(name+"-service") + `
-resource "nobl9_slo" ":name" {
+	config := testService(name+"-service") +
+		testPrometheusConfig(name+"-agent") + `
+  resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
   project      = ":project"
@@ -1104,7 +1122,7 @@ resource "nobl9_slo" ":name" {
   }
 
   indicator {
-    name = "test-terraform-prom-agent"
+    name    = nobl9_agent.:name-agent.name
     project = ":project"
     kind    = "Agent"
   }
@@ -1116,6 +1134,8 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
+// TODO: When we have implemented support for the CloudWatch Agent and tests for it,
+// change the Agent in Cloudwatch SLOs to dynamically created.
 func testCloudWatchWithStat(name string) string {
 	config := testService(name+"-service") + `
 resource "nobl9_slo" ":name" {
