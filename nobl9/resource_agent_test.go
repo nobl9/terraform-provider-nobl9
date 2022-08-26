@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -13,18 +14,27 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 		name       string
 		configFunc func(string) string
 	}{
-		{"test-prometheus", testPrometheusConfig},
-		{"test-ddog", testDatadogConfig},
-		{"test-newrelic", testNewrelicConfig},
+		{"test-amazonprometheus", testAmazonPrometheusConfig},
 		{"test-appd", testAppDynamicsConfig},
-		{"test-splunk", testSplunkConfig},
-		{"test-lightstep", testLightstepConfig},
-		{"test-splunkobs", testSplunkObservabilityConfig},
+		//{"test-bigquery", testBigQueryConfig},
+		{"test-cloudwatch", testCloudWatchConfig},
+		{"test-ddog", testDatadogConfig},
 		{"test-dynatrace", testDynatraceConfig},
-		{"test-thousandeyes", testThousandEyesConfig},
+		//{"test-elasticsearch", testElasticsearch},
+		//{"test-gcm", testGoogleCloudMonitoringConfig},
+		//{"test-grafanaloki", testGrafanaLokiConfig},
 		{"test-graphite", testGraphiteConfig},
-		{"test-bigquery", testBigQueryConfig},
+		//{"test-influxdb", testInfluxDBConfig},
+		//{"test-instana", testInstanaConfig},
+		{"test-lightstep", testLightstepConfig},
+		{"test-newrelic", testNewrelicConfig},
 		{"test-opentsdb", testOpenTSDBConfig},
+		{"test-prometheus", testPrometheusConfig},
+		//{"test-redshift", testRedshiftConfig},
+		{"test-splunk", testSplunkConfig},
+		{"test-splunkobs", testSplunkObservabilityConfig},
+		//{"test-sumologic", testSumoLogicConfig},
+		{"test-thousandeyes", testThousandEyesConfig},
 	}
 
 	for _, tc := range cases {
@@ -44,52 +54,22 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 	}
 }
 
-//nolint:unused
-func testPrometheusConfig(name string) string {
+func testAmazonPrometheusConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  agent_type = "prometheus"
-  prometheus_config {
+  agent_type = "amazonprometheus"
+  amazonprometheus_config {
 	url = "http://web.net"
-	}
-}
-`, name, name, testProject)
-}
-
-//nolint:unused
-func testDatadogConfig(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_agent" "%s" {
-  name      = "%s"
-  project   = "%s"
-  source_of = ["Metrics", "Services"]
-  agent_type = "datadog"
-  datadog_config {
-    site = "eu"
+	region = "eu-central-1"
   }
 }
 `, name, name, testProject)
+
 }
 
-//nolint:unused
-func testNewrelicConfig(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_agent" "%s" {
-  name      = "%s"
-  project   = "%s"
-  source_of = ["Metrics", "Services"]
-  agent_type = "newrelic"
-  newrelic_config {
-    account_id = 1234
-  }
-}
-`, name, name, testProject)
-}
-
-//nolint:unused
 func testAppDynamicsConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -104,22 +84,73 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-//nolint:unused
-func testSplunkConfig(name string) string {
+func testCloudWatchConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  agent_type = "splunk"
-  splunk_config {
+  agent_type = "cloudwatch"
+  cloudwatch_config {
+	url = "http://web.net"
+  }
+}
+`, name, name, testProject)
+}
+
+//func testBigQueryConfig(name string) string {
+//	return fmt.Sprintf(`
+//resource "nobl9_agent" "%s" {
+//  name      = "%s"
+//  project   = "%s"
+//  source_of = ["Metrics", "Services"]
+//  agent_type = "bigquery"
+//}
+//`, name, name, testProject)
+//}
+
+func testDatadogConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "datadog"
+  datadog_config {
+    site = "eu"
+  }
+}
+`, name, name, testProject)
+}
+
+func testDynatraceConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "dynatrace"
+  dynatrace_config {
     url = "http://web.net"
   }
 }
 `, name, name, testProject)
 }
 
-//nolint:unused
+func testGraphiteConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "graphite"
+  graphite_config {
+    url = "http://web.net"
+  }
+}
+`, name, name, testProject)
+}
+
 func testLightstepConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -135,7 +166,62 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-//nolint:unused
+func testNewrelicConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "newrelic"
+  newrelic_config {
+    account_id = 1234
+  }
+}
+`, name, name, testProject)
+}
+
+func testOpenTSDBConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "opentsdb"
+  opentsdb_config {
+    url = "http://web.net"
+  }
+}
+`, name, name, testProject)
+}
+
+func testPrometheusConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "prometheus"
+  prometheus_config {
+	url = "http://web.net"
+	}
+}
+`, name, name, testProject)
+}
+
+func testSplunkConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "splunk"
+  splunk_config {
+    url = "http://web.net"
+  }
+}
+`, name, name, testProject)
+}
+
 func testSplunkObservabilityConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -150,22 +236,6 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-//nolint:unused
-func testDynatraceConfig(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_agent" "%s" {
-  name      = "%s"
-  project   = "%s"
-  source_of = ["Metrics", "Services"]
-  agent_type = "dynatrace"
-  dynatrace_config {
-    url = "http://web.net"
-  }
-}
-`, name, name, testProject)
-}
-
-//nolint:unused
 func testThousandEyesConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -173,48 +243,6 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "thousandeyes"
-}
-`, name, name, testProject)
-}
-
-//nolint:unused
-func testGraphiteConfig(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_agent" "%s" {
-  name      = "%s"
-  project   = "%s"
-  source_of = ["Metrics", "Services"]
-  agent_type = "graphite"
-  graphite_config {
-    url = "http://web.net"
-  }
-}
-`, name, name, testProject)
-}
-
-//nolint:unused
-func testBigQueryConfig(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_agent" "%s" {
-  name      = "%s"
-  project   = "%s"
-  source_of = ["Metrics", "Services"]
-  agent_type = "bigquery"
-}
-`, name, name, testProject)
-}
-
-//nolint:unused
-func testOpenTSDBConfig(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_agent" "%s" {
-  name      = "%s"
-  project   = "%s"
-  source_of = ["Metrics", "Services"]
-  agent_type = "opentsdb"
-  opentsdb_config {
-    url = "http://web.net"
-  }
 }
 `, name, name, testProject)
 }
