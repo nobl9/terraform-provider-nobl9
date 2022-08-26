@@ -3,242 +3,19 @@ package nobl9
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-//nolint:lll
+const agentTypeKey = "agent_type"
+
 func resourceAgent() *schema.Resource {
 	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"name":         schemaName(),
-			"display_name": schemaDisplayName(),
-			"project":      schemaProject(),
-			"description":  schemaDescription(),
-
-			"source_of": {
-				Type:        schema.TypeList,
-				Required:    true,
-				MinItems:    1,
-				MaxItems:    2,
-				Description: "Source of Metrics and/or Services",
-				Elem: &schema.Schema{
-					Type:        schema.TypeString,
-					Description: "Source of Metrics or Services",
-				},
-			},
-
-			"agent_type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Type of an agent. [Supported agent types](https://docs.nobl9.com/the-nobl9-agent)",
-			},
-
-			"prometheus_config": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/prometheus#prometheus-agent)",
-				MinItems:    1,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Base URL to Prometheus server.",
-						},
-					},
-				},
-			},
-
-			"datadog_config": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/datadog#datadog-agent)",
-				MinItems:    1,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"site": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "`com` or `eu`, Datadog SaaS instance, which corresponds to one of their two locations (https://www.datadoghq.com/ in the U.S. or https://datadoghq.eu/ in the European Union)",
-						},
-					},
-				},
-			},
-
-			"newrelic_config": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/new-relic#new-relic-agent)",
-				MinItems:    1,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"account_id": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "ID number assigned to the New Relic user account",
-						},
-					},
-				},
-			},
-
-			"appdynamics_config": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-agent)",
-				MinItems:    1,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Base URL to a AppDynamics Controller.",
-						},
-					},
-				},
-			},
-
-			"splunk_config": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent)",
-				MinItems:    1,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Base API URL of the Splunk Search app.",
-						},
-					},
-				},
-			},
-
-			"lightstep_config": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-agent)",
-				MinItems:    1,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"organization": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Organization name registered in Lightstep.",
-						},
-						"project": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Name of the Lightstep project.",
-						},
-					},
-				},
-			},
-
-			"splunk_observability_config": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk-observability)",
-				MinItems:    1,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"realm": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "SplunkObservability Realm.",
-						},
-					},
-				},
-			},
-
-			"dynatrace_config": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#dynatrace-agent)",
-				MinItems:    1,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Dynatrace API URL.",
-						},
-					},
-				},
-			},
-
-			"thousandeyes_config": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-agent)",
-				MinItems:    1,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Description: "Agent configuration is not required.",
-				},
-			},
-
-			"graphite_config": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/graphite#graphite-agent)",
-				MinItems:    1,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "API URL endpoint of Graphite's instance.",
-						},
-					},
-				},
-			},
-
-			"bigquery_config": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-agent)",
-				MinItems:    1,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Description: "Agent configuration is not required.",
-				},
-			},
-
-			"opentsdb_config": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "[Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#opentsdb-agent)",
-				MinItems:    1,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "OpenTSDB cluster URL.",
-						},
-					},
-				},
-			},
-
-			"status": {
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Description: "Status of created agent.",
-			},
-		},
+		Schema:        agentSchema(),
 		CreateContext: resourceAgentApply,
 		UpdateContext: resourceAgentApply,
 		DeleteContext: resourceAgentDelete,
@@ -250,223 +27,130 @@ func resourceAgent() *schema.Resource {
 	}
 }
 
-func marshalAgent(d *schema.ResourceData) *n9api.Agent {
-	sourceOf := d.Get("source_of").([]interface{})
-	sourceOfStr := make([]string, len(sourceOf))
-	for i, s := range sourceOf {
-		sourceOfStr[i] = s.(string)
-	}
-
-	return &n9api.Agent{
-		ObjectHeader: n9api.ObjectHeader{
-			APIVersion:     n9api.APIVersion,
-			Kind:           n9api.KindAgent,
-			MetadataHolder: marshalMetadata(d),
+func agentSchema() map[string]*schema.Schema {
+	agentSchema := map[string]*schema.Schema{
+		"name":         schemaName(),
+		"display_name": schemaDisplayName(),
+		"project":      schemaProject(),
+		"description":  schemaDescription(),
+		"source_of": {
+			Type:        schema.TypeList,
+			Required:    true,
+			MinItems:    1,
+			MaxItems:    2,
+			Description: "Source of Metrics and/or Services",
+			Elem: &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "Source of Metrics or Services",
+			},
 		},
-		Spec: n9api.AgentSpec{
-			Description:         d.Get("description").(string),
-			SourceOf:            sourceOfStr,
-			Prometheus:          marshalAgentPrometheus(d),
-			Datadog:             marshalAgentDatadog(d),
-			NewRelic:            marshalAgentNewRelic(d),
-			AppDynamics:         marshalAgentAppDynamics(d),
-			Splunk:              marshalAgentSplunk(d),
-			Lightstep:           marshalAgentLightstep(d),
-			SplunkObservability: marshalAgentSplunkObservability(d),
-			Dynatrace:           marshalDynatrace(d),
-			ThousandEyes:        marshalAgentThousandEyes(d),
-			Graphite:            marshalAgentGraphite(d),
-			BigQuery:            marshalAgentBigQuery(d),
-			OpenTSDB:            marshalAgentOpenTSDB(d),
+		agentTypeKey: {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Type of an agent. [Supported agent types](https://docs.nobl9.com/the-nobl9-agent)",
+		},
+		"status": {
+			Type:        schema.TypeMap,
+			Computed:    true,
+			Description: "Status of created agent.",
 		},
 	}
+
+	agentSchemaDefinitions := []map[string]*schema.Schema{
+		schemaAgentAmazonPrometheus(),
+		schemaAgentAppDynamics(),
+		schemaAgentBigQuery(),
+		schemaAgentDatadog(),
+		schemaAgentDynatrace(),
+		schemaAgentGraphite(),
+		schemaAgentLightstep(),
+		schemaAgentNewRelic(),
+		schemaAgentOpenTSDB(),
+		schemaAgentPrometheus(),
+		schemaAgentSplunk(),
+		schemaAgentSplunkObservability(),
+		schemaAgentThousandEyes(),
+	}
+
+	for _, agentSchemaDef := range agentSchemaDefinitions {
+		for agentKey, schema := range agentSchemaDef {
+			agentSchema[agentKey] = schema
+		}
+	}
+	return agentSchema
 }
 
-func marshalAgentPrometheus(d *schema.ResourceData) *n9api.PrometheusConfig {
-	agentType := d.Get("agent_type").(string)
-	if agentType != "prometheus" {
-		return nil
-	}
-	p := d.Get("prometheus_config").(*schema.Set).List()
-	if len(p) == 0 {
-		return nil
-	}
-	prom := p[0].(map[string]interface{})
+func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 
-	url := prom["url"].(string)
-	return &n9api.PrometheusConfig{
-		URL: &url,
+	config := meta.(ProviderConfig)
+	client, ds := newClient(config, d.Get("project").(string))
+	if ds != nil {
+		return ds
 	}
+	service := marshalAgent(d, diags)
+	if diags.HasError() {
+		diags = append(diags, ds...)
+	}
+
+	var p n9api.Payload
+	p.AddObject(service)
+
+	err := client.ApplyObjects(p.GetObjects())
+	if err != nil {
+		return diag.Errorf("could not add agent: %s", err.Error())
+	}
+
+	d.SetId(service.Metadata.Name)
+
+	readAgentDiags := resourceAgentRead(ctx, d, meta)
+
+	return append(diags, readAgentDiags...)
 }
 
-func marshalAgentDatadog(d *schema.ResourceData) *n9api.DatadogAgentConfig {
-	agentType := d.Get("agent_type").(string)
-	if agentType != "datadog" {
-		return nil
+func resourceAgentRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	project := d.Get("project").(string)
+	if project == "" {
+		// project is empty when importing
+		project = config.Project
 	}
-	p := d.Get("datadog_config").(*schema.Set).List()
-	if len(p) == 0 {
-		return nil
+	client, ds := newClient(config, project)
+	if ds.HasError() {
+		return ds
 	}
-	ddog := p[0].(map[string]interface{})
 
-	return &n9api.DatadogAgentConfig{
-		Site: ddog["site"].(string),
+	objects, err := client.GetObject(n9api.ObjectAgent, "", d.Id())
+	if err != nil {
+		return diag.FromErr(err)
 	}
+
+	return unmarshalAgent(d, objects)
 }
 
-func marshalAgentNewRelic(d *schema.ResourceData) *n9api.NewRelicAgentConfig {
-	agentType := d.Get("agent_type").(string)
-	if agentType != "newrelic" {
-		return nil
-	}
-	p := d.Get("newrelic_config").(*schema.Set).List()
-	if len(p) == 0 {
-		return nil
-	}
-	newrelic := p[0].(map[string]interface{})
-
-	accountID := newrelic["account_id"].(string)
-	return &n9api.NewRelicAgentConfig{
-		AccountID: json.Number(accountID),
-	}
-}
-
-func marshalAgentAppDynamics(d *schema.ResourceData) *n9api.AppDynamicsAgentConfig {
-	agentType := d.Get("agent_type").(string)
-	if agentType != "appdynamics" {
-		return nil
-	}
-	p := d.Get("appdynamics_config").(*schema.Set).List()
-	if len(p) == 0 {
-		return nil
-	}
-	appdynamics := p[0].(map[string]interface{})
-
-	url := appdynamics["url"].(string)
-	return &n9api.AppDynamicsAgentConfig{
-		URL: &url,
-	}
-}
-
-func marshalAgentSplunk(d *schema.ResourceData) *n9api.SplunkAgentConfig {
-	agentType := d.Get("agent_type").(string)
-	if agentType != "splunk" {
-		return nil
-	}
-	p := d.Get("splunk_config").(*schema.Set).List()
-	if len(p) == 0 {
-		return nil
-	}
-	splunk := p[0].(map[string]interface{})
-
-	return &n9api.SplunkAgentConfig{
-		URL: splunk["url"].(string),
-	}
-}
-
-func marshalAgentLightstep(d *schema.ResourceData) *n9api.LightstepAgentConfig {
-	agentType := d.Get("agent_type").(string)
-	if agentType != "lightstep" {
-		return nil
-	}
-	p := d.Get("lightstep_config").(*schema.Set).List()
-	if len(p) == 0 {
-		return nil
-	}
-	lightstep := p[0].(map[string]interface{})
-
-	return &n9api.LightstepAgentConfig{
-		Organization: lightstep["organization"].(string),
-		Project:      lightstep["project"].(string),
-	}
-}
-
-func marshalAgentSplunkObservability(d *schema.ResourceData) *n9api.SplunkObservabilityAgentConfig {
-	agentType := d.Get("agent_type").(string)
-	if agentType != "splunk_observability" {
-		return nil
-	}
-	p := d.Get("splunk_observability_config").(*schema.Set).List()
-	if len(p) == 0 {
-		return nil
-	}
-	splunk := p[0].(map[string]interface{})
-
-	return &n9api.SplunkObservabilityAgentConfig{
-		Realm: splunk["realm"].(string),
-	}
-}
-
-func marshalDynatrace(d *schema.ResourceData) *n9api.DynatraceAgentConfig {
-	agentType := d.Get("agent_type").(string)
-	if agentType != "dynatrace" {
-		return nil
-	}
-	p := d.Get("dynatrace_config").(*schema.Set).List()
-	if len(p) == 0 {
-		return nil
-	}
-	dynatrace := p[0].(map[string]interface{})
-
-	return &n9api.DynatraceAgentConfig{
-		URL: dynatrace["url"].(string),
-	}
-}
-
-func marshalAgentThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesAgentConfig {
-	agentType := d.Get("agent_type").(string)
-	if agentType != "thousandeyes" {
-		return nil
+func resourceAgentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	client, ds := newClient(config, d.Get("project").(string))
+	if ds.HasError() {
+		return ds
 	}
 
-	return &n9api.ThousandEyesAgentConfig{}
-}
-
-func marshalAgentGraphite(d *schema.ResourceData) *n9api.GraphiteAgentConfig {
-	agentType := d.Get("agent_type").(string)
-	if agentType != "graphite" {
-		return nil
-	}
-	p := d.Get("graphite_config").(*schema.Set).List()
-	if len(p) == 0 {
-		return nil
-	}
-	graphite := p[0].(map[string]interface{})
-
-	return &n9api.GraphiteAgentConfig{
-		URL: graphite["url"].(string),
-	}
-}
-
-func marshalAgentBigQuery(d *schema.ResourceData) *n9api.BigQueryAgentConfig {
-	agentType := d.Get("agent_type").(string)
-	if agentType != "bigquery" {
-		return nil
+	err := client.DeleteObjectsByName(n9api.ObjectAgent, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	return &n9api.BigQueryAgentConfig{}
-}
-
-func marshalAgentOpenTSDB(d *schema.ResourceData) *n9api.OpenTSDBAgentConfig {
-	p := d.Get("opentsdb_config").(*schema.Set).List()
-	if len(p) == 0 {
-		return nil
-	}
-	graphite := p[0].(map[string]interface{})
-
-	return &n9api.OpenTSDBAgentConfig{
-		URL: graphite["url"].(string),
-	}
+	return nil
 }
 
 func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
 	}
 	object := objects[0]
-	var diags diag.Diagnostics
 
 	if ds := unmarshalMetadata(object, d); ds.HasError() {
 		diags = append(diags, ds...)
@@ -507,7 +191,6 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 	return diags
 }
 
-//nolint:lll
 func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclName, jsonName string) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	spec := object["spec"].(map[string]interface{})
@@ -524,59 +207,573 @@ func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclNa
 	return true, diags
 }
 
-func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(ProviderConfig)
-	client, ds := newClient(config, d.Get("project").(string))
-	if ds != nil {
-		return ds
+func marshalAgent(d *schema.ResourceData, diag diag.Diagnostics) *n9api.Agent {
+	sourceOf := d.Get("source_of").([]interface{})
+	sourceOfStr := make([]string, len(sourceOf))
+	for i, s := range sourceOf {
+		sourceOfStr[i] = s.(string)
 	}
 
-	service := marshalAgent(d)
-
-	var p n9api.Payload
-	p.AddObject(service)
-
-	err := client.ApplyObjects(p.GetObjects())
-	if err != nil {
-		return diag.Errorf("could not add agent: %s", err.Error())
+	return &n9api.Agent{
+		ObjectHeader: n9api.ObjectHeader{
+			APIVersion:     n9api.APIVersion,
+			Kind:           n9api.KindAgent,
+			MetadataHolder: marshalMetadata(d),
+		},
+		Spec: n9api.AgentSpec{
+			Description:         d.Get("description").(string),
+			SourceOf:            sourceOfStr,
+			AmazonPrometheus:    marshalAgentAmazonPrometheus(d, diag),
+			AppDynamics:         marshalAgentAppDynamics(d, diag),
+			BigQuery:            marshalAgentBigQuery(d),
+			Datadog:             marshalAgentDatadog(d, diag),
+			Dynatrace:           marshalAgentDynatrace(d, diag),
+			Graphite:            marshalAgentGraphite(d, diag),
+			Lightstep:           marshalAgentLightstep(d, diag),
+			NewRelic:            marshalAgentNewRelic(d, diag),
+			OpenTSDB:            marshalAgentOpenTSDB(d, diag),
+			Prometheus:          marshalAgentPrometheus(d, diag),
+			Splunk:              marshalAgentSplunk(d, diag),
+			SplunkObservability: marshalAgentSplunkObservability(d, diag),
+			ThousandEyes:        marshalAgentThousandEyes(d),
+			//CloudWatch:          marshalAgentCloudWatch(d),
+			//Pingdom:             marshalAgentPingdom(d),
+		},
 	}
-
-	d.SetId(service.Metadata.Name)
-
-	return resourceAgentRead(ctx, d, meta)
 }
 
-func resourceAgentRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(ProviderConfig)
-	project := d.Get("project").(string)
-	if project == "" {
-		// project is empty when importing
-		project = config.Project
-	}
-	client, ds := newClient(config, project)
-	if ds.HasError() {
-		return ds
-	}
+/**
+ * Amazon Prometheus Agent
+ * https://docs.nobl9.com/Sources/Amazon_Prometheus/#ams-prometheus-agent
+ */
+const amazonPrometheusAgentType = "amazonprometheus"
+const amazonPrometheusAgentConfigKey = "amazonprometheus_config"
 
-	objects, err := client.GetObject(n9api.ObjectAgent, "", d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+func schemaAgentAmazonPrometheus() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		amazonPrometheusAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#ams-prometheus-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Base URL to Amazon Prometheus server.",
+					},
+					"region": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "AWS region ex. eu-central-1",
+					},
+				},
+			},
+		},
 	}
-
-	return unmarshalAgent(d, objects)
 }
 
-func resourceAgentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(ProviderConfig)
-	client, ds := newClient(config, d.Get("project").(string))
-	if ds.HasError() {
-		return ds
+func marshalAgentAmazonPrometheus(d *schema.ResourceData, diags diag.Diagnostics) *n9api.AmazonPrometheusAgentConfig {
+	data := getAgentResourceData(d, amazonPrometheusAgentType, amazonPrometheusAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
 	}
 
-	err := client.DeleteObjectsByName(n9api.ObjectAgent, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+	return &n9api.AmazonPrometheusAgentConfig{
+		URL:    data["url"].(string),
+		Region: data["region"].(string),
+	}
+}
+
+/**
+ * AppDynamics Agent
+ * https://docs.nobl9.com/Sources/appdynamics#appdynamics-agent
+ */
+const appDynamicsAgentType = "appdynamics"
+const appDynamicsAgentConfigKey = "appdynamics_config"
+
+func schemaAgentAppDynamics() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		appDynamicsAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Base URL to a AppDynamics Controller.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentAppDynamics(d *schema.ResourceData, diags diag.Diagnostics) *n9api.AppDynamicsAgentConfig {
+	data := getAgentResourceData(d, appDynamicsAgentType, appDynamicsAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
 	}
 
-	return nil
+	url := data["url"].(string)
+	return &n9api.AppDynamicsAgentConfig{
+		URL: &url,
+	}
+}
+
+/**
+ * BigQuery Agent
+ * https://docs.nobl9.com/Sources/bigquery#bigquery-agent
+ */
+const bigqueryAgentType = "bigquery"
+
+func schemaAgentBigQuery() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		bigqueryAgentType: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Description: "Agent configuration is not required.",
+			},
+		},
+	}
+}
+
+func marshalAgentBigQuery(d *schema.ResourceData) *n9api.BigQueryAgentConfig {
+	if !isAgentType(d, bigqueryAgentType) {
+		return nil
+	}
+
+	return &n9api.BigQueryAgentConfig{}
+}
+
+/**
+ * Datadog Agent
+ * https://docs.nobl9.com/Sources/prometheus#prometheus-agent
+ */
+const datadogAgentType = "datadog"
+
+const datadogAgentConfigKey = "datadog_config"
+
+func schemaAgentDatadog() map[string]*schema.Schema {
+	return map[string]*schema.Schema{datadogAgentConfigKey: {
+		Type:        schema.TypeSet,
+		Optional:    true,
+		Description: "[Configuration documentation](https://docs.nobl9.com/Sources/datadog#datadog-agent)",
+		MinItems:    1,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"site": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "`com` or `eu`, Datadog SaaS instance, which corresponds to one of their two locations (https://www.datadoghq.com/ in the U.S. or https://datadoghq.eu/ in the European Union)",
+				},
+			},
+		},
+	},
+	}
+}
+
+func marshalAgentDatadog(d *schema.ResourceData, diags diag.Diagnostics) *n9api.DatadogAgentConfig {
+	data := getAgentResourceData(d, datadogAgentType, datadogAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.DatadogAgentConfig{
+		Site: data["site"].(string),
+	}
+}
+
+/**
+ * Dynatrace Agent
+ * https://docs.nobl9.com/Sources/dynatrace#dynatrace-agent
+ */
+const dynatraceAgentType = "dynatrace"
+
+const dynatraceAgentConfigKey = "dynatrace_config"
+
+func schemaAgentDynatrace() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		dynatraceAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#dynatrace-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Dynatrace API URL.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentDynatrace(d *schema.ResourceData, diags diag.Diagnostics) *n9api.DynatraceAgentConfig {
+	data := getAgentResourceData(d, dynatraceAgentType, dynatraceAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.DynatraceAgentConfig{
+		URL: data["url"].(string),
+	}
+}
+
+/**
+ * Graphite Agent
+ * https://docs.nobl9.com/Sources/graphite#graphite-agent
+ */
+const graphiteAgentType = "graphite"
+
+const graphiteAgentConfigKey = "graphite_config"
+
+func schemaAgentGraphite() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		graphiteAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/graphite#graphite-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "API URL endpoint of Graphite's instance.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentGraphite(d *schema.ResourceData, diags diag.Diagnostics) *n9api.GraphiteAgentConfig {
+	data := getAgentResourceData(d, graphiteAgentType, graphiteAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.GraphiteAgentConfig{
+		URL: data["url"].(string),
+	}
+}
+
+/**
+ * Lightstep Agent
+ * https://docs.nobl9.com/Sources/lightstep#lightstep-agent
+ */
+const lightstepAgentType = "lightstep"
+
+const lightstepAgentConfigKey = "lightstep_config"
+
+func schemaAgentLightstep() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+
+		lightstepAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"organization": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Organization name registered in Lightstep.",
+					},
+					"project": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Name of the Lightstep project.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentLightstep(d *schema.ResourceData, diags diag.Diagnostics) *n9api.LightstepAgentConfig {
+	data := getAgentResourceData(d, lightstepAgentType, lightstepAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.LightstepAgentConfig{
+		Organization: data["organization"].(string),
+		Project:      data["project"].(string),
+	}
+}
+
+/**
+ * New Relic Agent
+ * https://docs.nobl9.com/Sources/new-relic#new-relic-agent)
+ */
+const newRelicAgentType = "newrelic"
+
+const newRelicAgentConfigKey = "newrelic_config"
+
+func schemaAgentNewRelic() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		newRelicAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/new-relic#new-relic-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"account_id": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "ID number assigned to the New Relic user account",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentNewRelic(d *schema.ResourceData, diags diag.Diagnostics) *n9api.NewRelicAgentConfig {
+	data := getAgentResourceData(d, newRelicAgentType, newRelicAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.NewRelicAgentConfig{
+		AccountID: json.Number(data["account_id"].(string)),
+	}
+}
+
+/**
+ * OpenTSDB Agent
+ * https://docs.nobl9.com/Sources/opentsdb#opentsdb-agent
+ */
+const opentsdbAgentType = "opentsdb"
+const opentsdbAgentConfigKey = "opentsdb_config"
+
+func schemaAgentOpenTSDB() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		opentsdbAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#opentsdb-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "OpenTSDB cluster URL.",
+					},
+				},
+			},
+		}}
+}
+
+func marshalAgentOpenTSDB(d *schema.ResourceData, diags diag.Diagnostics) *n9api.OpenTSDBAgentConfig {
+	data := getAgentResourceData(d, opentsdbAgentType, opentsdbAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.OpenTSDBAgentConfig{
+		URL: data["url"].(string),
+	}
+}
+
+/**
+ * Prometheus Agent
+ * https://docs.nobl9.com/Sources/prometheus#prometheus-agent
+ */
+const prometheusAgentType = "prometheus"
+
+const prometheusAgentConfigKey = "prometheus_config"
+
+func schemaAgentPrometheus() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		prometheusAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/prometheus#prometheus-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Base URL to Prometheus server.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentPrometheus(d *schema.ResourceData, diags diag.Diagnostics) *n9api.PrometheusAgentConfig {
+	data := getAgentResourceData(d, prometheusAgentType, prometheusAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	url := data["url"].(string)
+	return &n9api.PrometheusAgentConfig{
+		URL: &url,
+	}
+}
+
+/**
+ * Splunk Agent
+ * https://docs.nobl9.com/Sources/splunk#splunk-agent
+ */
+const splunkAgentType = "splunk"
+
+const splunkAgentConfigKey = "splunk_config"
+
+func schemaAgentSplunk() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		splunkAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Base API URL of the Splunk Search app.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentSplunk(d *schema.ResourceData, diags diag.Diagnostics) *n9api.SplunkAgentConfig {
+	data := getAgentResourceData(d, splunkAgentType, splunkAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.SplunkAgentConfig{
+		URL: data["url"].(string),
+	}
+}
+
+/**
+ * Splunk Observability Agent
+ * https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-agent
+ */
+const splunkObservabilityAgentType = "splunk_observability"
+
+const splunkObservabilityAgentConfigKey = "splunk_observability_config"
+
+func schemaAgentSplunkObservability() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		splunkObservabilityAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"realm": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "SplunkObservability Realm.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentSplunkObservability(d *schema.ResourceData, diags diag.Diagnostics) *n9api.SplunkObservabilityAgentConfig {
+	data := getAgentResourceData(d, splunkObservabilityAgentType, splunkObservabilityAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.SplunkObservabilityAgentConfig{
+		Realm: data["realm"].(string),
+	}
+}
+
+/**
+ * ThousandEyes Agent
+ * https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-agent
+ */
+const thousandeyesAgentType = "thousandeyes"
+
+func schemaAgentThousandEyes() map[string]*schema.Schema {
+	return map[string]*schema.Schema{"thousandeyes_config": {
+		Type:        schema.TypeSet,
+		Optional:    true,
+		Description: "[Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-agent)",
+		MinItems:    1,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Description: "Agent configuration is not required.",
+		},
+	}}
+}
+
+func marshalAgentThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesAgentConfig {
+	if !isAgentType(d, thousandeyesAgentType) {
+		return nil
+	}
+
+	return &n9api.ThousandEyesAgentConfig{}
+}
+
+func getAgentResourceData(d *schema.ResourceData, agentType, agentConfigKey string, diags diag.Diagnostics) map[string]interface{} {
+	if !isAgentType(d, agentType) {
+		return nil
+	}
+	p := d.Get(agentConfigKey).(*schema.Set).List()
+	if len(p) == 0 {
+		appendError(diags, fmt.Errorf("no resource data '%s' for agent type '%s'", agentConfigKey, agentType))
+		return nil
+	}
+	resourceData := p[0].(map[string]interface{})
+
+	return resourceData
+}
+
+func isAgentType(d *schema.ResourceData, agentType string) bool {
+	agentTypeResource := d.Get(agentTypeKey).(string)
+	return agentTypeResource == agentType
 }
