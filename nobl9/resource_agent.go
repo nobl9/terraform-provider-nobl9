@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -60,15 +62,24 @@ func agentSchema() map[string]*schema.Schema {
 		schemaAgentAmazonPrometheus(),
 		schemaAgentAppDynamics(),
 		schemaAgentBigQuery(),
+		schemaAgentCloudWatch(),
 		schemaAgentDatadog(),
 		schemaAgentDynatrace(),
+		schemaAgentElasticsearch(),
+		schemaAgentGCM(),
+		schemaAgentGrafanaLoki(),
 		schemaAgentGraphite(),
+		schemaAgentInfluxDB(),
+		schemaAgentInstana(),
 		schemaAgentLightstep(),
 		schemaAgentNewRelic(),
 		schemaAgentOpenTSDB(),
+		schemaAgentPingdom(),
 		schemaAgentPrometheus(),
+		schemaAgentRedshift(),
 		schemaAgentSplunk(),
 		schemaAgentSplunkObservability(),
+		schemaAgentSumoLogic(),
 		schemaAgentThousandEyes(),
 	}
 
@@ -143,6 +154,48 @@ func resourceAgentDelete(_ context.Context, d *schema.ResourceData, meta interfa
 	return nil
 }
 
+func marshalAgent(d *schema.ResourceData, diag diag.Diagnostics) *n9api.Agent {
+	sourceOf := d.Get("source_of").([]interface{})
+	sourceOfStr := make([]string, len(sourceOf))
+	for i, s := range sourceOf {
+		sourceOfStr[i] = s.(string)
+	}
+
+	return &n9api.Agent{
+		ObjectHeader: n9api.ObjectHeader{
+			APIVersion:     n9api.APIVersion,
+			Kind:           n9api.KindAgent,
+			MetadataHolder: marshalMetadata(d),
+		},
+		Spec: n9api.AgentSpec{
+			Description:         d.Get("description").(string),
+			SourceOf:            sourceOfStr,
+			AmazonPrometheus:    marshalAgentAmazonPrometheus(d, diag),
+			AppDynamics:         marshalAgentAppDynamics(d, diag),
+			BigQuery:            marshalAgentBigQuery(d),
+			CloudWatch:          marshalAgentCloudWatch(d),
+			Datadog:             marshalAgentDatadog(d, diag),
+			Dynatrace:           marshalAgentDynatrace(d, diag),
+			Elasticsearch:       marshalAgentElasticsearch(d, diag),
+			GCM:                 marshalAgentGCM(d),
+			GrafanaLoki:         marshalAgentGrafanaLoki(d, diag),
+			Graphite:            marshalAgentGraphite(d, diag),
+			InfluxDB:            marshalAgentInfluxDB(d, diag),
+			Instana:             marshalAgentInstana(d, diag),
+			Lightstep:           marshalAgentLightstep(d, diag),
+			NewRelic:            marshalAgentNewRelic(d, diag),
+			OpenTSDB:            marshalAgentOpenTSDB(d, diag),
+			Prometheus:          marshalAgentPrometheus(d, diag),
+			Pingdom:             marshalAgentPingdom(d),
+			Redshift:            marshalAgentRedshift(d),
+			Splunk:              marshalAgentSplunk(d, diag),
+			SplunkObservability: marshalAgentSplunkObservability(d, diag),
+			SumoLogic:           marshalAgentSumoLogic(d, diag),
+			ThousandEyes:        marshalAgentThousandEyes(d),
+		},
+	}
+}
+
 func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -159,23 +212,33 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 	status := object["status"].(map[string]interface{})
 	err := d.Set("status", status)
 	diags = appendError(diags, err)
-
+	spec := n9api.AgentSpec{}
 	supportedAgents := []struct {
 		hclName  string
 		jsonName string
 	}{
-		{"prometheus_config", "prometheus"},
-		{"datadog_config", "datadog"},
-		{"newrelic_config", "newrelic"},
-		{"appdynamics_config", "appDynamics"},
-		{"splunk_config", "splunk"},
-		{"lightstep_config", "lightstep"},
-		{"splunk_observability_config", "splunkObservability"},
-		{"dynatrace_config", "dynatrace"},
-		{"thousandeyes_config", "thousandEyes"},
-		{"graphite_config", "graphite"},
-		{"bigquery_config", "bigQuery"},
-		{"opentsdb_config", "opentsdb"},
+		{amazonPrometheusAgentConfigKey, agentSpecJsonName(spec.AmazonPrometheus, diags)},
+		{appDynamicsAgentConfigKey, agentSpecJsonName(spec.AppDynamics, diags)},
+		{bigqueryAgentConfigKey, agentSpecJsonName(spec.BigQuery, diags)},
+		{cloudWatchAgentConfigKey, agentSpecJsonName(spec.CloudWatch, diags)},
+		{datadogAgentConfigKey, agentSpecJsonName(spec.Datadog, diags)},
+		{dynatraceAgentConfigKey, agentSpecJsonName(spec.Dynatrace, diags)},
+		{elasticsearchAgentConfigKey, agentSpecJsonName(spec.Elasticsearch, diags)},
+		{gcmAgentConfigKey, agentSpecJsonName(spec.GCM, diags)},
+		{grafanalokiAgentConfigKey, agentSpecJsonName(spec.GrafanaLoki, diags)},
+		{graphiteAgentConfigKey, agentSpecJsonName(spec.Graphite, diags)},
+		{influxdbAgentConfigKey, agentSpecJsonName(spec.InfluxDB, diags)},
+		{instanaAgentConfigKey, agentSpecJsonName(spec.Instana, diags)},
+		{lightstepAgentConfigKey, agentSpecJsonName(spec.Lightstep, diags)},
+		{newRelicAgentConfigKey, agentSpecJsonName(spec.NewRelic, diags)},
+		{opentsdbAgentConfigKey, agentSpecJsonName(spec.OpenTSDB, diags)},
+		{pingdomAgentConfigKey, agentSpecJsonName(spec.Pingdom, diags)},
+		{prometheusAgentConfigKey, agentSpecJsonName(spec.Prometheus, diags)},
+		{redshiftAgentConfigKey, agentSpecJsonName(spec.Redshift, diags)},
+		{splunkAgentConfigKey, agentSpecJsonName(spec.Splunk, diags)},
+		{splunkObservabilityAgentConfigKey, agentSpecJsonName(spec.SplunkObservability, diags)},
+		{sumologicAgentConfigKey, agentSpecJsonName(spec.SumoLogic, diags)},
+		{thousandeyesAgentConfigKey, agentSpecJsonName(spec.ThousandEyes, diags)},
 	}
 
 	for _, name := range supportedAgents {
@@ -207,39 +270,35 @@ func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclNa
 	return true, diags
 }
 
-func marshalAgent(d *schema.ResourceData, diag diag.Diagnostics) *n9api.Agent {
-	sourceOf := d.Get("source_of").([]interface{})
-	sourceOfStr := make([]string, len(sourceOf))
-	for i, s := range sourceOf {
-		sourceOfStr[i] = s.(string)
+func agentSpecJsonName(agentSpecField any, diags diag.Diagnostics) string {
+	agentSpec := n9api.AgentSpec{}
+	getAgentSpecFieldName := func() string {
+		var name string
+		val := reflect.Indirect(reflect.ValueOf(agentSpec))
+		for i := 0; i < val.NumField(); i++ {
+			typeField := val.Type().Field(i)
+
+			if typeField.Type == reflect.TypeOf(agentSpecField) {
+				name = typeField.Name
+			}
+		}
+		return name
 	}
 
-	return &n9api.Agent{
-		ObjectHeader: n9api.ObjectHeader{
-			APIVersion:     n9api.APIVersion,
-			Kind:           n9api.KindAgent,
-			MetadataHolder: marshalMetadata(d),
-		},
-		Spec: n9api.AgentSpec{
-			Description:         d.Get("description").(string),
-			SourceOf:            sourceOfStr,
-			AmazonPrometheus:    marshalAgentAmazonPrometheus(d, diag),
-			AppDynamics:         marshalAgentAppDynamics(d, diag),
-			BigQuery:            marshalAgentBigQuery(d),
-			Datadog:             marshalAgentDatadog(d, diag),
-			Dynatrace:           marshalAgentDynatrace(d, diag),
-			Graphite:            marshalAgentGraphite(d, diag),
-			Lightstep:           marshalAgentLightstep(d, diag),
-			NewRelic:            marshalAgentNewRelic(d, diag),
-			OpenTSDB:            marshalAgentOpenTSDB(d, diag),
-			Prometheus:          marshalAgentPrometheus(d, diag),
-			Splunk:              marshalAgentSplunk(d, diag),
-			SplunkObservability: marshalAgentSplunkObservability(d, diag),
-			ThousandEyes:        marshalAgentThousandEyes(d),
-			//CloudWatch:          marshalAgentCloudWatch(d),
-			//Pingdom:             marshalAgentPingdom(d),
-		},
+	agentSpecType := reflect.TypeOf(agentSpec)
+	name := getAgentSpecFieldName()
+
+	field, _ := agentSpecType.FieldByName(name)
+	if tag, tagOk := field.Tag.Lookup("json"); tagOk {
+		jsonName := strings.Split(tag, ",")
+		if len(jsonName) > 1 {
+			return jsonName[0]
+		}
 	}
+
+	appendError(diags, fmt.Errorf("not supported agent type: %v", reflect.TypeOf(agentSpecField).String()))
+
+	return ""
 }
 
 /**
@@ -334,10 +393,11 @@ func marshalAgentAppDynamics(d *schema.ResourceData, diags diag.Diagnostics) *n9
  * https://docs.nobl9.com/Sources/bigquery#bigquery-agent
  */
 const bigqueryAgentType = "bigquery"
+const bigqueryAgentConfigKey = "bigquery_config"
 
 func schemaAgentBigQuery() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		bigqueryAgentType: {
+		bigqueryAgentConfigKey: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-agent)",
@@ -359,11 +419,40 @@ func marshalAgentBigQuery(d *schema.ResourceData) *n9api.BigQueryAgentConfig {
 }
 
 /**
+ * Amazon CloudWatch Agent
+ * https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-agent
+ */
+const cloudWatchAgentType = "cloudwatch"
+const cloudWatchAgentConfigKey = "cloudwatch_config"
+
+func schemaAgentCloudWatch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		cloudWatchAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Description: "Agent configuration is not required.",
+			},
+		},
+	}
+}
+
+func marshalAgentCloudWatch(d *schema.ResourceData) *n9api.CloudWatchAgentConfig {
+	if !isAgentType(d, cloudWatchAgentType) {
+		return nil
+	}
+
+	return &n9api.CloudWatchAgentConfig{}
+}
+
+/**
  * Datadog Agent
  * https://docs.nobl9.com/Sources/prometheus#prometheus-agent
  */
 const datadogAgentType = "datadog"
-
 const datadogAgentConfigKey = "datadog_config"
 
 func schemaAgentDatadog() map[string]*schema.Schema {
@@ -440,11 +529,114 @@ func marshalAgentDynatrace(d *schema.ResourceData, diags diag.Diagnostics) *n9ap
 }
 
 /**
+ * Elasticsearch Agent
+ * https://docs.nobl9.com/Sources/elasticsearch#elasticsearch-agent
+ */
+const elasticsearchAgentType = "elasticsearch"
+const elasticsearchAgentConfigKey = "elasticsearch_config"
+
+func schemaAgentElasticsearch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		elasticsearchAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#elasticsearch-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "API URL endpoint of Elasticsearch's instance.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentElasticsearch(d *schema.ResourceData, diags diag.Diagnostics) *n9api.ElasticsearchAgentConfig {
+	data := getAgentResourceData(d, elasticsearchAgentType, elasticsearchAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.ElasticsearchAgentConfig{
+		URL: data["url"].(string),
+	}
+}
+
+/**
+ * Google Cloud Monitoring (GCM) Agent
+ * https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-agent
+ */
+const gcmAgentType = "gcm"
+const gcmAgentConfigKey = "gcm_config"
+
+func schemaAgentGCM() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		gcmAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Description: "Agent configuration is not required.",
+			},
+		},
+	}
+}
+
+func marshalAgentGCM(d *schema.ResourceData) *n9api.GCMAgentConfig {
+	if !isAgentType(d, gcmAgentType) {
+		return nil
+	}
+
+	return &n9api.GCMAgentConfig{}
+}
+
+/**
+ * Grafana Loki Agent
+ * https://docs.nobl9.com/Sources/grafana-loki#grafana-loki-agent
+ */
+const grafanalokiAgentType = "grafanaloki"
+const grafanalokiAgentConfigKey = "grafanaloki_config"
+
+func schemaAgentGrafanaLoki() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		elasticsearchAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#grafana-loki-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Description: "Agent configuration is not required.",
+			},
+		},
+	}
+}
+
+func marshalAgentGrafanaLoki(d *schema.ResourceData, diags diag.Diagnostics) *n9api.GrafanaLokiAgentConfig {
+	data := getAgentResourceData(d, grafanalokiAgentType, grafanalokiAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.GrafanaLokiAgentConfig{
+		URL: data["url"].(string),
+	}
+}
+
+/**
  * Graphite Agent
  * https://docs.nobl9.com/Sources/graphite#graphite-agent
  */
 const graphiteAgentType = "graphite"
-
 const graphiteAgentConfigKey = "graphite_config"
 
 func schemaAgentGraphite() map[string]*schema.Schema {
@@ -481,11 +673,90 @@ func marshalAgentGraphite(d *schema.ResourceData, diags diag.Diagnostics) *n9api
 }
 
 /**
+ * InfluxDB Agent
+ * https://docs.nobl9.com/Sources/influxdb#influxdb-agent
+ */
+const influxdbAgentType = "influxdb"
+const influxdbAgentConfigKey = "influxdb_config"
+
+func schemaAgentInfluxDB() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		graphiteAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/influxdb#influxdb-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "API URL endpoint of InfluxDB's instance.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentInfluxDB(d *schema.ResourceData, diags diag.Diagnostics) *n9api.InfluxDBAgentConfig {
+	data := getAgentResourceData(d, influxdbAgentType, influxdbAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.InfluxDBAgentConfig{
+		URL: data["url"].(string),
+	}
+}
+
+/**
+ * Instana Agent
+ * https://docs.nobl9.com/Sources/instana#instana-agent
+ */
+const instanaAgentType = "instana"
+const instanaAgentConfigKey = "instana_config"
+
+func schemaAgentInstana() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		instanaAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/instana#instana-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "API URL endpoint of InfluxDB's instance.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentInstana(d *schema.ResourceData, diags diag.Diagnostics) *n9api.InstanaAgentConfig {
+	data := getAgentResourceData(d, instanaAgentType, instanaAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.InstanaAgentConfig{
+		URL: data["url"].(string),
+	}
+}
+
+/**
  * Lightstep Agent
  * https://docs.nobl9.com/Sources/lightstep#lightstep-agent
  */
 const lightstepAgentType = "lightstep"
-
 const lightstepAgentConfigKey = "lightstep_config"
 
 func schemaAgentLightstep() map[string]*schema.Schema {
@@ -533,7 +804,6 @@ func marshalAgentLightstep(d *schema.ResourceData, diags diag.Diagnostics) *n9ap
  * https://docs.nobl9.com/Sources/new-relic#new-relic-agent)
  */
 const newRelicAgentType = "newrelic"
-
 const newRelicAgentConfigKey = "newrelic_config"
 
 func schemaAgentNewRelic() map[string]*schema.Schema {
@@ -609,11 +879,39 @@ func marshalAgentOpenTSDB(d *schema.ResourceData, diags diag.Diagnostics) *n9api
 }
 
 /**
+ * Pingdom Agent
+ * https://docs.nobl9.com/Sources/pingdom#pingdom-agent
+ */
+const pingdomAgentType = "pingdom"
+const pingdomAgentConfigKey = "pingdom_config"
+
+func schemaAgentPingdom() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		opentsdbAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/pingdom#pingdom-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Description: "Agent configuration is not required.",
+			},
+		}}
+}
+
+func marshalAgentPingdom(d *schema.ResourceData) *n9api.PingdomAgentConfig {
+	if !isAgentType(d, pingdomAgentType) {
+		return nil
+	}
+
+	return &n9api.PingdomAgentConfig{}
+}
+
+/**
  * Prometheus Agent
  * https://docs.nobl9.com/Sources/prometheus#prometheus-agent
  */
 const prometheusAgentType = "prometheus"
-
 const prometheusAgentConfigKey = "prometheus_config"
 
 func schemaAgentPrometheus() map[string]*schema.Schema {
@@ -651,11 +949,40 @@ func marshalAgentPrometheus(d *schema.ResourceData, diags diag.Diagnostics) *n9a
 }
 
 /**
+ * Amazon Redshift Agent
+ * https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-agent
+ */
+const redshiftAgentType = "redshift"
+const redshiftAgentConfigKey = "redshift_config"
+
+func schemaAgentRedshift() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		redshiftAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Description: "Agent configuration is not required.",
+			},
+		},
+	}
+}
+
+func marshalAgentRedshift(d *schema.ResourceData) *n9api.RedshiftAgentConfig {
+	if !isAgentType(d, redshiftAgentType) {
+		return nil
+	}
+
+	return &n9api.RedshiftAgentConfig{}
+}
+
+/**
  * Splunk Agent
  * https://docs.nobl9.com/Sources/splunk#splunk-agent
  */
 const splunkAgentType = "splunk"
-
 const splunkAgentConfigKey = "splunk_config"
 
 func schemaAgentSplunk() map[string]*schema.Schema {
@@ -696,7 +1023,6 @@ func marshalAgentSplunk(d *schema.ResourceData, diags diag.Diagnostics) *n9api.S
  * https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-agent
  */
 const splunkObservabilityAgentType = "splunk_observability"
-
 const splunkObservabilityAgentConfigKey = "splunk_observability_config"
 
 func schemaAgentSplunkObservability() map[string]*schema.Schema {
@@ -733,22 +1059,63 @@ func marshalAgentSplunkObservability(d *schema.ResourceData, diags diag.Diagnost
 }
 
 /**
+ * Sumo Logic Agent
+ * https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-agent
+ */
+const sumologicAgentType = "sumologic"
+const sumologicAgentConfigKey = "sumologic_config"
+
+func schemaAgentSumoLogic() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		sumologicAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Base API URL of the Splunk Search app.",
+					},
+				},
+			},
+		}}
+}
+
+func marshalAgentSumoLogic(d *schema.ResourceData, diags diag.Diagnostics) *n9api.SumoLogicAgentConfig {
+	data := getAgentResourceData(d, sumologicAgentType, sumologicAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &n9api.SumoLogicAgentConfig{
+		URL: data["url"].(string),
+	}
+}
+
+/**
  * ThousandEyes Agent
  * https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-agent
  */
 const thousandeyesAgentType = "thousandeyes"
+const thousandeyesAgentConfigKey = "thousandeyes_config"
 
 func schemaAgentThousandEyes() map[string]*schema.Schema {
-	return map[string]*schema.Schema{"thousandeyes_config": {
-		Type:        schema.TypeSet,
-		Optional:    true,
-		Description: "[Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-agent)",
-		MinItems:    1,
-		MaxItems:    1,
-		Elem: &schema.Resource{
-			Description: "Agent configuration is not required.",
-		},
-	}}
+	return map[string]*schema.Schema{
+		thousandeyesAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Description: "Agent configuration is not required.",
+			},
+		}}
 }
 
 func marshalAgentThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesAgentConfig {
