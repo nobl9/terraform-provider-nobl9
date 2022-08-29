@@ -16,24 +16,25 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 	}{
 		{"test-amazonprometheus", testAmazonPrometheusConfig},
 		{"test-appd", testAppDynamicsConfig},
-		//{"test-bigquery", testBigQueryConfig},
+		{"test-bigquery", testBigQueryConfig},
 		{"test-cloudwatch", testCloudWatchConfig},
 		{"test-ddog", testDatadogConfig},
 		{"test-dynatrace", testDynatraceConfig},
-		//{"test-elasticsearch", testElasticsearch},
-		//{"test-gcm", testGoogleCloudMonitoringConfig},
-		//{"test-grafanaloki", testGrafanaLokiConfig},
+		{"test-elasticsearch", testElasticsearch},
+		{"test-gcm", testGoogleCloudMonitoringConfig},
+		{"test-grafanaloki", testGrafanaLokiConfig},
 		{"test-graphite", testGraphiteConfig},
-		//{"test-influxdb", testInfluxDBConfig},
-		//{"test-instana", testInstanaConfig},
+		{"test-influxdb", testInfluxDBConfig},
+		{"test-instana", testInstanaConfig},
 		{"test-lightstep", testLightstepConfig},
 		{"test-newrelic", testNewrelicConfig},
 		{"test-opentsdb", testOpenTSDBConfig},
+		{"test-pingdom", testPingdomConfig},
 		{"test-prometheus", testPrometheusConfig},
-		//{"test-redshift", testRedshiftConfig},
+		{"test-redshift", testRedshiftConfig},
 		{"test-splunk", testSplunkConfig},
 		{"test-splunkobs", testSplunkObservabilityConfig},
-		//{"test-sumologic", testSumoLogicConfig},
+		{"test-sumologic", testSumoLogicConfig},
 		{"test-thousandeyes", testThousandEyesConfig},
 	}
 
@@ -91,23 +92,22 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "cloudwatch"
-  cloudwatch_config {
-	url = "http://web.net"
-  }
+  cloudwatch_config
 }
 `, name, name, testProject)
 }
 
-//func testBigQueryConfig(name string) string {
-//	return fmt.Sprintf(`
-//resource "nobl9_agent" "%s" {
-//  name      = "%s"
-//  project   = "%s"
-//  source_of = ["Metrics", "Services"]
-//  agent_type = "bigquery"
-//}
-//`, name, name, testProject)
-//}
+func testBigQueryConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+ name      = "%s"
+ project   = "%s"
+ source_of = ["Metrics", "Services"]
+ agent_type = "bigquery"
+ bigquery_config
+}
+`, name, name, testProject)
+}
 
 func testDatadogConfig(name string) string {
 	return fmt.Sprintf(`
@@ -137,6 +137,46 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+func testElasticsearch(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "elasticsearch"
+  elasticsearch_config {
+    url = "http://web.net"
+  }
+}
+`, name, name, testProject)
+}
+
+func testGoogleCloudMonitoringConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "gcm"
+  gcm_config = []
+}
+`, name, name, testProject)
+}
+
+func testGrafanaLokiConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "grafanaloki"
+  grafanaloki_config = {
+    url = "http://web.net"
+  }
+}
+`, name, name, testProject)
+}
+
 func testGraphiteConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -145,6 +185,34 @@ resource "nobl9_agent" "%s" {
   source_of = ["Metrics", "Services"]
   agent_type = "graphite"
   graphite_config {
+    url = "http://web.net"
+  }
+}
+`, name, name, testProject)
+}
+
+func testInfluxDBConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "influxdb"
+  influxdb_config {
+    url = "http://web.net"
+  }
+}
+`, name, name, testProject)
+}
+
+func testInstanaConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "instana"
+  instana_config {
     url = "http://web.net"
   }
 }
@@ -194,6 +262,18 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+func testPingdomConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "pingdom"
+  pingdom_config = {}
+}
+`, name, name, testProject)
+}
+
 func testPrometheusConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -204,6 +284,18 @@ resource "nobl9_agent" "%s" {
   prometheus_config {
 	url = "http://web.net"
 	}
+}
+`, name, name, testProject)
+}
+
+func testRedshiftConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "redshift"
+  redshift_config = []
 }
 `, name, name, testProject)
 }
@@ -236,6 +328,18 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+func testSumoLogicConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics"]
+  agent_type = "sumologic"
+  sumologic_config = {}
+}
+`, name, name, testProject)
+}
+
 func testThousandEyesConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -243,6 +347,7 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "thousandeyes"
+  thousandeyes_config = {}
 }
 `, name, name, testProject)
 }
