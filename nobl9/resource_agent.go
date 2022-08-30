@@ -269,8 +269,15 @@ func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclNa
 	// err := d.Set("agent_type", spec[""]) TODO
 	err := d.Set("source_of", spec["sourceOf"])
 	diags = appendError(diags, err)
-	err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{spec[jsonName]}))
-	diags = appendError(diags, err)
+
+	switch jsonName {
+	case agentSpecJsonName(n9api.AgentSpec{}.NewRelic, diags):
+		unmarshalDiags := unmarshalNewRelicAgentSpec(d, object)
+		diags = append(diags, unmarshalDiags...)
+	default:
+		err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{spec[jsonName]}))
+		diags = appendError(diags, err)
+	}
 
 	return true, diags
 }
@@ -612,14 +619,20 @@ const grafanalokiAgentConfigKey = "grafanaloki_config"
 
 func schemaAgentGrafanaLoki() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		elasticsearchAgentConfigKey: {
+		grafanalokiAgentConfigKey: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#grafana-loki-agent)",
 			MinItems:    1,
 			MaxItems:    1,
 			Elem: &schema.Resource{
-				Description: "Agent configuration is not required.",
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "API URL endpoint of Grafana Loki instance.",
+					},
+				},
 			},
 		},
 	}
@@ -686,7 +699,7 @@ const influxdbAgentConfigKey = "influxdb_config"
 
 func schemaAgentInfluxDB() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		graphiteAgentConfigKey: {
+		influxdbAgentConfigKey: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/influxdb#influxdb-agent)",
@@ -892,7 +905,7 @@ const pingdomAgentConfigKey = "pingdom_config"
 
 func schemaAgentPingdom() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		opentsdbAgentConfigKey: {
+		pingdomAgentConfigKey: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/pingdom#pingdom-agent)",
@@ -981,6 +994,19 @@ func marshalAgentRedshift(d *schema.ResourceData) *n9api.RedshiftAgentConfig {
 	}
 
 	return &n9api.RedshiftAgentConfig{}
+}
+
+func unmarshalNewRelicAgentSpec(d *schema.ResourceData, object n9api.AnyJSONObj) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if spec, ok := object["spec"]; ok {
+		if newRelicSpec, ok := spec.(map[string]interface{})["newRelic"]; ok {
+			accountId := newRelicSpec.(map[string]interface{})["accountId"]
+			accountIdVal := map[string]interface{}{"account_id": fmt.Sprint(accountId)}
+			d.Set(newRelicAgentConfigKey, schema.NewSet(oneElementSet, []interface{}{accountIdVal}))
+		}
+	}
+
+	return diags
 }
 
 /**
