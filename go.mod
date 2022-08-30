@@ -8,8 +8,6 @@ require (
 	github.com/nobl9/nobl9-go v0.2.1
 )
 
-replace github.com/nobl9/nobl9-go => /home/mateusz.karasiewicz/Projects/nobl9-go
-
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
