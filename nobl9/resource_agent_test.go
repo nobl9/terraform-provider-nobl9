@@ -20,7 +20,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 		{"test-cloudwatch", testCloudWatchConfig},
 		{"test-ddog", testDatadogConfig},
 		{"test-dynatrace", testDynatraceConfig},
-		{"test-elasticsearch", testElasticsearch},
+		{"test-elasticsearch", testElasticsearchConfig},
 		{"test-gcm", testGoogleCloudMonitoringConfig},
 		{"test-grafanaloki", testGrafanaLokiConfig},
 		{"test-graphite", testGraphiteConfig},
@@ -85,18 +85,6 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testCloudWatchConfig(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_agent" "%s" {
-  name      = "%s"
-  project   = "%s"
-  source_of = ["Metrics", "Services"]
-  agent_type = "cloudwatch"
-  cloudwatch_config
-}
-`, name, name, testProject)
-}
-
 func testBigQueryConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
@@ -104,7 +92,17 @@ resource "nobl9_agent" "%s" {
  project   = "%s"
  source_of = ["Metrics", "Services"]
  agent_type = "bigquery"
- bigquery_config
+}
+`, name, name, testProject)
+}
+
+func testCloudWatchConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "cloudwatch"
 }
 `, name, name, testProject)
 }
@@ -137,7 +135,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testElasticsearch(name string) string {
+func testElasticsearchConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -158,7 +156,6 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "gcm"
-  gcm_config = []
 }
 `, name, name, testProject)
 }
@@ -170,7 +167,7 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "grafanaloki"
-  grafanaloki_config = {
+  grafanaloki_config {
     url = "http://web.net"
   }
 }
@@ -269,7 +266,6 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "pingdom"
-  pingdom_config = {}
 }
 `, name, name, testProject)
 }
@@ -295,7 +291,6 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "redshift"
-  redshift_config = []
 }
 `, name, name, testProject)
 }
@@ -335,7 +330,9 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics"]
   agent_type = "sumologic"
-  sumologic_config = {}
+  sumologic_config {
+    url = "http://web.net"
+  }
 }
 `, name, name, testProject)
 }
@@ -347,7 +344,6 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "thousandeyes"
-  thousandeyes_config = {}
 }
 `, name, name, testProject)
 }
