@@ -241,6 +241,400 @@ func resourceSLO() *schema.Resource {
 	}
 }
 
+func schemaMetricSpec() *schema.Schema {
+	metricSchema := map[string]*schema.Schema{}
+
+	metricSchemaDefinitions := []map[string]*schema.Schema{
+		schemaMetricAppDynamics(),
+		schemaMetricBigQuery(),
+		schemaMetricDataDog(),
+		schemaMetricDynatrace(),
+		schemaMetricCloudwatch(),
+		schemaMetricElasticsearch(),
+		schemaMetricGrafanaLoki(),
+		schemaMetricGraphite(),
+		schemaMetricLightstep(),
+		schemaMetricNewRelic(),
+		schemaMetricOpenTSDB(),
+		schemaMetricPrometheus(),
+		schemaMetricSplunk(),
+		schemaMetricSplunkObservability(),
+		schemaMetricThousandEyes(),
+	}
+	for _, metricSchemaDef := range metricSchemaDefinitions {
+		for agentKey, schema := range metricSchemaDef {
+			metricSchema[agentKey] = schema
+		}
+	}
+
+	return &schema.Schema{
+		Type:        schema.TypeSet,
+		Optional:    true,
+		Description: "Configuration for metric source",
+		Elem: &schema.Resource{
+			Schema: metricSchema,
+		},
+	}
+}
+
+func schemaMetricAppDynamics() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"appdynamics": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"application_name": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Name of the added application",
+					},
+					"metric_path": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Path to the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricDataDog() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"datadog": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"query": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricBigQuery() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"bigquery": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"location": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Location of you BigQuery",
+					},
+					"project_id": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Project ID",
+					},
+					"query": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+func schemaMetricDynatrace() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"dynatrace": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"metric_selector": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Selector for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+func schemaMetricElasticsearch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"elasticsearch": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"index": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Index of metrics we want to query",
+					},
+					"query": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricGraphite() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"graphite": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"metric_path": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Path to the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+func schemaMetricLightstep() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"lightstep": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"percentile": {
+						Type:        schema.TypeFloat,
+						Optional:    true,
+						Description: "Optional value to filter by percentiles",
+					},
+					"stream_id": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "ID of the metrics stream",
+					},
+					"type_of_data": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Type of data to filter by",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricNewRelic() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"newrelic": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"nrql": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricOpenTSDB() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"opentsdb": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"query": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricPrometheus() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"prometheus": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"promql": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricSplunk() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"splunk": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"query": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricSplunkObservability() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"splunk_observability": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"program": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricThousandEyes() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"thousandeyes": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"test_id": {
+						Type:        schema.TypeInt,
+						Required:    true,
+						Description: "ID of the test",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricGrafanaLoki() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"grafana_loki": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"logql": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the logs",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricCloudwatch() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"cloudwatch": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"region": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Region of the CloudWatch instance",
+					},
+					"namespace": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Namespace of the metric",
+					},
+					"metric_name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Metric name",
+					},
+					"stat": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Metric data aggregations",
+					},
+					"sql": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "SQL query",
+					},
+					"json": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "JSON query",
+					},
+					"dimensions": {
+						Type:        schema.TypeSet,
+						Optional:    true,
+						Description: "Set of name/value pairs that is a part of the identity of a metric",
+						MinItems:    1,
+						MaxItems:    10,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"name": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "Name",
+								},
+								"value": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "Value",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func diffSuppressAlertPolicyNames(_, _, _ string, d *schema.ResourceData) bool {
 	// Ignore the order of elements on alert_policy list
 	oldValue, newValue := d.GetChange("alert_policies")

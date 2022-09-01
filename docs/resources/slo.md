@@ -683,7 +683,7 @@ Required:
 
 Optional:
 
-- `display_name` (String) Name which is dispalyed for the attachment
+- `display_name` (String) Name which is displayed for the attachment
 
 
 <a id="nestedblock--composite"></a>
