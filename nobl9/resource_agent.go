@@ -313,8 +313,8 @@ func agentSpecJsonName(agentSpecField any, diags diag.Diagnostics) string {
  * Amazon Prometheus Agent
  * https://docs.nobl9.com/Sources/Amazon_Prometheus/#ams-prometheus-agent
  */
-const amazonPrometheusAgentType = "amazonprometheus"
-const amazonPrometheusAgentConfigKey = "amazonprometheus_config"
+const amazonPrometheusAgentType = "amazon_prometheus"
+const amazonPrometheusAgentConfigKey = "amazon_prometheus_config"
 
 func schemaAgentAmazonPrometheus() map[string]*schema.Schema {
 	return map[string]*schema.Schema{

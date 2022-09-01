@@ -245,20 +245,27 @@ func schemaMetricSpec() *schema.Schema {
 	metricSchema := map[string]*schema.Schema{}
 
 	metricSchemaDefinitions := []map[string]*schema.Schema{
+		schemaMetricAmazonPrometheus(),
 		schemaMetricAppDynamics(),
 		schemaMetricBigQuery(),
+		schemaMetricCloudwatch(),
 		schemaMetricDataDog(),
 		schemaMetricDynatrace(),
-		schemaMetricCloudwatch(),
 		schemaMetricElasticsearch(),
+		schemaMetricGCM(),
 		schemaMetricGrafanaLoki(),
 		schemaMetricGraphite(),
+		schemaMetricInfluxDB(),
+		schemaMetricInstana(),
 		schemaMetricLightstep(),
 		schemaMetricNewRelic(),
 		schemaMetricOpenTSDB(),
+		schemaMetricPingdom(),
 		schemaMetricPrometheus(),
+		schemaMetricRedshift(),
 		schemaMetricSplunk(),
 		schemaMetricSplunkObservability(),
+		schemaMetricSumoLogic(),
 		schemaMetricThousandEyes(),
 	}
 	for _, metricSchemaDef := range metricSchemaDefinitions {
@@ -273,6 +280,169 @@ func schemaMetricSpec() *schema.Schema {
 		Description: "Configuration for metric source",
 		Elem: &schema.Resource{
 			Schema: metricSchema,
+		},
+	}
+}
+
+func schemaMetricSumoLogic() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"sumologic": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"type": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Sumologic source - metrics or logs",
+					},
+					"rollup": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Aggregation function - avg, sum, min, max, count, none",
+					},
+					"quantization": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Period of data aggregation",
+					},
+					"query": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricRedshift() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"redshift": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"region": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Region of the Redshift instance",
+					},
+					"cluster_id": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Redshift custer ID",
+					},
+					"database_name": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Database name",
+					},
+					"query": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricPingdom() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"pingdom": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"check_id": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Pingdom uptime or transaction check's ID",
+					},
+					"check_type": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Pingdom check type - uptime or transaction",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Required:    false,
+						Description: "Optional for the Uptime checks. Use it to filter the Pingdom check results by status",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricInstana() map[string]*schema.Schema {
+
+}
+
+func schemaMetricInfluxDB() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"influxdb": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"query": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricGCM() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"gcm": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"project_id": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Project ID",
+					},
+					"query": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaMetricAmazonPrometheus() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"amazon_prometheus": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"promql": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
 		},
 	}
 }
