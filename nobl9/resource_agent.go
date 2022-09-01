@@ -88,6 +88,7 @@ func agentSchema() map[string]*schema.Schema {
 			agentSchema[agentKey] = schema
 		}
 	}
+
 	return agentSchema
 }
 
@@ -614,8 +615,8 @@ func marshalAgentGCM(d *schema.ResourceData) *n9api.GCMAgentConfig {
  * Grafana Loki Agent
  * https://docs.nobl9.com/Sources/grafana-loki#grafana-loki-agent
  */
-const grafanalokiAgentType = "grafanaloki"
-const grafanalokiAgentConfigKey = "grafanaloki_config"
+const grafanalokiAgentType = "grafana_loki"
+const grafanalokiAgentConfigKey = "grafana_loki_config"
 
 func schemaAgentGrafanaLoki() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
