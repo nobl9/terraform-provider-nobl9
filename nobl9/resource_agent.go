@@ -500,7 +500,6 @@ func marshalAgentDatadog(d *schema.ResourceData, diags diag.Diagnostics) *n9api.
  * https://docs.nobl9.com/Sources/dynatrace#dynatrace-agent
  */
 const dynatraceAgentType = "dynatrace"
-
 const dynatraceAgentConfigKey = "dynatrace_config"
 
 func schemaAgentDynatrace() map[string]*schema.Schema {
@@ -815,7 +814,7 @@ func marshalAgentLightstep(d *schema.ResourceData, diags diag.Diagnostics) *n9ap
 
 /**
  * New Relic Agent
- * https://docs.nobl9.com/Sources/new-relic#new-relic-agent)
+ * https://docs.nobl9.com/Sources/new-relic#new-relic-agent
  */
 const newRelicAgentType = "newrelic"
 const newRelicAgentConfigKey = "newrelic_config"
