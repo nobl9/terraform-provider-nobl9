@@ -326,7 +326,7 @@ func schemaMetricSpec() *schema.Schema {
 		schemaMetricRedshift(),
 		schemaMetricSplunk(),
 		schemaMetricSplunkObservability(),
-		schemaMetricSumoLogic(),
+		schemaMetricSumologic(),
 		schemaMetricThousandEyes(),
 	}
 	for _, metricSchemaDef := range metricSchemaDefinitions {
@@ -543,21 +543,28 @@ func marshalCountMetrics(countMetricsTf map[string]interface{}) *n9api.CountMetr
 
 func marshalMetric(metric map[string]interface{}) *n9api.MetricSpec {
 	return &n9api.MetricSpec{
-		Prometheus:          marshalSLOPrometheus(metric["prometheus"].(*schema.Set)),
-		Datadog:             marshalSLODatadog(metric["datadog"].(*schema.Set)),
-		NewRelic:            marshalSLONewRelic(metric["newrelic"].(*schema.Set)),
-		AppDynamics:         marshalSLOAppDynamics(metric["appdynamics"].(*schema.Set)),
-		Splunk:              marshalSLOSplunk(metric["splunk"].(*schema.Set)),
-		Lightstep:           marshalSLOLightstep(metric["lightstep"].(*schema.Set)),
-		SplunkObservability: marshalSLOSplunkObservability(metric["splunk_observability"].(*schema.Set)),
-		Dynatrace:           marshalSLODynatrace(metric["dynatrace"].(*schema.Set)),
-		Elasticsearch:       marshalSLOElasticsearch(metric["elasticsearch"].(*schema.Set)),
-		ThousandEyes:        marshalSLOThousandEyes(metric["thousandeyes"].(*schema.Set)),
-		Graphite:            marshalSLOGraphite(metric["graphite"].(*schema.Set)),
-		BigQuery:            marshalSLOBigQuery(metric["bigquery"].(*schema.Set)),
-		OpenTSDB:            marshalSLOOpenTSDB(metric["opentsdb"].(*schema.Set)),
-		GrafanaLoki:         marshalSLOGrafanaLoki(metric["grafana_loki"].(*schema.Set)),
-		CloudWatch:          marshalSLOCloudWatch(metric["cloudwatch"].(*schema.Set)),
+		AmazonPrometheus:    marshalSLOAmazonPrometheus(metric[amazonPrometheusMetric].(*schema.Set)),
+		AppDynamics:         marshalSLOAppDynamics(metric[appDynamicsMetric].(*schema.Set)),
+		BigQuery:            marshalSLOBigQuery(metric[bigQueryMetric].(*schema.Set)),
+		CloudWatch:          marshalSLOCloudWatch(metric[cloudwatchMetric].(*schema.Set)),
+		Datadog:             marshalSLODatadog(metric[datadogMetric].(*schema.Set)),
+		Dynatrace:           marshalSLODynatrace(metric[dynatraceMetric].(*schema.Set)),
+		Elasticsearch:       marshalSLOElasticsearch(metric[elasticsearchMetric].(*schema.Set)),
+		GCM:                 marshalSLOGCM(metric[gcmMetric].(*schema.Set)),
+		GrafanaLoki:         marshalSLOGrafanaLoki(metric[grafanaLokiMetric].(*schema.Set)),
+		Graphite:            marshalSLOGraphite(metric[graphiteMetric].(*schema.Set)),
+		InfluxDB:            marshalSLOInfluxDB(metric[influxdbMetric].(*schema.Set)),
+		Instana:             marshalSLOInstana(metric[instanaMetric].(*schema.Set)),
+		Lightstep:           marshalSLOLightstep(metric[lightstepMetric].(*schema.Set)),
+		NewRelic:            marshalSLONewRelic(metric[newrelicMetric].(*schema.Set)),
+		OpenTSDB:            marshalSLOOpenTSDB(metric[opentsdbMetric].(*schema.Set)),
+		Pingdom:             marshalSLOPingdom(metric[opentsdbMetric].(*schema.Set)),
+		Prometheus:          marshalSLOPrometheus(metric[prometheusMetric].(*schema.Set)),
+		Redshift:            marshalSLORedshift(metric[redshiftMetric].(*schema.Set)),
+		Splunk:              marshalSLOSplunk(metric[splunkMetric].(*schema.Set)),
+		SplunkObservability: marshalSLOSplunkObservability(metric[splunkObservabilityMetric].(*schema.Set)),
+		SumoLogic:           marshalSLOSumologic(metric[sumologicMetric].(*schema.Set)),
+		ThousandEyes:        marshalSLOThousandEyes(metric[thousandeyesMetric].(*schema.Set)),
 	}
 }
 
@@ -761,21 +768,28 @@ func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
 		jsonName      string
 		unmarshalFunc func(map[string]interface{}) map[string]interface{}
 	}{
-		{"prometheus", "prometheus", unmarshalPrometheusMetric},
-		{"datadog", "datadog", unmarshalDatadogMetric},
-		{"newrelic", "newRelic", unmarshalNewRelicMetric},
-		{"appdynamics", "appDynamics", unmarshalAppdynamicsMetric},
-		{"splunk", "splunk", unmarshalSplunkMetric},
-		{"lightstep", "lightstep", unmarshalLightstepMetric},
-		{"splunk_observability", "splunkObservability", unmarshalSplunkObservabilityMetric},
-		{"dynatrace", "dynatrace", unmarshalDynatraceMetric},
-		{"thousandeyes", "thousandEyes", unmarshalThousandeyesMetric},
-		{"graphite", "graphite", unmarshalGraphiteMetric},
-		{"bigquery", "bigQuery", unmarshalBigqueryMetric},
-		{"opentsdb", "opentsdb", unmarshalOpentsdbMetric},
-		{"elasticsearch", "elasticsearch", unmarshalElasticsearchMetric},
-		{"grafana_loki", "grafanaLoki", unmarshalGrafanaLokiMetric},
-		{"cloudwatch", "cloudWatch", unmarshalCloudWatchMetric},
+		{amazonPrometheusMetric, "amazonPrometheus", unmarshalAmazonPrometheusMetric},
+		{appDynamicsMetric, "appDynamics", unmarshalAppdynamicsMetric},
+		{bigQueryMetric, "bigQuery", unmarshalBigqueryMetric},
+		{cloudwatchMetric, "cloudWatch", unmarshalCloudWatchMetric},
+		{datadogMetric, "datadog", unmarshalDatadogMetric},
+		{dynatraceMetric, "dynatrace", unmarshalDynatraceMetric},
+		{elasticsearchMetric, "elasticsearch", unmarshalElasticsearchMetric},
+		{gcmMetric, "gcm", unmarshalGCMMetric},
+		{grafanaLokiMetric, "grafanaLoki", unmarshalGrafanaLokiMetric},
+		{graphiteMetric, "graphite", unmarshalGraphiteMetric},
+		{influxdbMetric, "influxdb", unmarshalInfluxDBMetric},
+		{instanaMetric, "instana", unmarshalInstanaMetric},
+		{lightstepMetric, "lightstep", unmarshalLightstepMetric},
+		{newrelicMetric, "newRelic", unmarshalNewRelicMetric},
+		{opentsdbMetric, "opentsdb", unmarshalOpentsdbMetric},
+		{pingdomMetric, "pingdom", unmarshalPingdomMetric},
+		{prometheusMetric, "prometheus", unmarshalPrometheusMetric},
+		{redshiftMetric, "redshift", unmarshalRedshiftMetric},
+		{splunkMetric, "splunk", unmarshalSplunkMetric},
+		{splunkObservabilityMetric, "splunkObservability", unmarshalSplunkObservabilityMetric},
+		{sumologicMetric, "sumoLogic", unmarshalSumologicMetric},
+		{thousandeyesMetric, "thousandEyes", unmarshalThousandeyesMetric},
 	}
 
 	res := make(map[string]interface{})
@@ -794,9 +808,11 @@ func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
  * Amazon Prometheus Metric
  * https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus
  */
+const amazonPrometheusMetric = "amazon_prometheus"
+
 func schemaMetricAmazonPrometheus() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"amazon_prometheus": {
+		amazonPrometheusMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus)",
@@ -813,13 +829,34 @@ func schemaMetricAmazonPrometheus() map[string]*schema.Schema {
 	}
 }
 
+func marshalSLOAmazonPrometheus(s *schema.Set) *n9api.AmazonPrometheusMetric {
+	if s.Len() == 0 {
+		return nil
+	}
+
+	metric := s.List()[0].(map[string]interface{})
+	query := metric["promql"].(string)
+	return &n9api.AmazonPrometheusMetric{
+		PromQL: &query,
+	}
+}
+
+func unmarshalAmazonPrometheusMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["promql"] = metric["promql"]
+
+	return res
+}
+
 /**
  * AppDynamics Metric
  * https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics
  */
+const appDynamicsMetric = "appdynamics"
+
 func schemaMetricAppDynamics() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"appdynamics": {
+		appDynamicsMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics)",
@@ -868,9 +905,11 @@ func unmarshalAppdynamicsMetric(metric map[string]interface{}) map[string]interf
  * BigQuery Metric
  * https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery
  */
+const bigQueryMetric = "bigquery"
+
 func schemaMetricBigQuery() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"bigquery": {
+		bigQueryMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery)",
@@ -924,9 +963,11 @@ func unmarshalBigqueryMetric(metric map[string]interface{}) map[string]interface
  * Amazon CloudWatch Metric
  * https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch
  */
+const cloudwatchMetric = "cloudwatch"
+
 func schemaMetricCloudwatch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"cloudwatch": {
+		cloudwatchMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch)",
@@ -1065,9 +1106,11 @@ func unmarshalCloudWatchMetric(metric map[string]interface{}) map[string]interfa
  * Datadog Metric
  * https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog
  */
+const datadogMetric = "datadog"
+
 func schemaMetricDatadog() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"datadog": {
+		datadogMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog)",
@@ -1107,9 +1150,11 @@ func unmarshalDatadogMetric(metric map[string]interface{}) map[string]interface{
  * Dynatrace Metric
  * https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace)
  */
+const dynatraceMetric = "dynatrace"
+
 func schemaMetricDynatrace() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"dynatrace": {
+		dynatraceMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace)",
@@ -1150,9 +1195,11 @@ func unmarshalDynatraceMetric(metric map[string]interface{}) map[string]interfac
  * Elasticsearch Metric
  * https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch
  */
+const elasticsearchMetric = "elasticsearch"
+
 func schemaMetricElasticsearch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"elasticsearch": {
+		elasticsearchMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch)",
@@ -1201,9 +1248,11 @@ func unmarshalElasticsearchMetric(metric map[string]interface{}) map[string]inte
  * Google Cloud Monitoring (GCM) Metric
  * https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring
  */
+const gcmMetric = "gcm"
+
 func schemaMetricGCM() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"gcm": {
+		gcmMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring)",
@@ -1225,13 +1274,36 @@ func schemaMetricGCM() map[string]*schema.Schema {
 	}
 }
 
+func marshalSLOGCM(s *schema.Set) *n9api.GCMMetric {
+	if s.Len() == 0 {
+		return nil
+	}
+
+	metric := s.List()[0].(map[string]interface{})
+
+	return &n9api.GCMMetric{
+		ProjectID: metric["project_id"].(string),
+		Query:     metric["query"].(string),
+	}
+}
+
+func unmarshalGCMMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["project_id"] = metric["projectId"]
+	res["query"] = metric["query"]
+
+	return res
+}
+
 /**
  * Grafana Loki Metric
  * https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki
  */
+const grafanaLokiMetric = "grafana_loki"
+
 func schemaMetricGrafanaLoki() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"grafana_loki": {
+		grafanaLokiMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki)",
@@ -1272,9 +1344,11 @@ func unmarshalGrafanaLokiMetric(metric map[string]interface{}) map[string]interf
  * Graphite Metric
  * https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite
  */
+const graphiteMetric = "graphite"
+
 func schemaMetricGraphite() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"graphite": {
+		graphiteMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite)",
@@ -1315,9 +1389,11 @@ func unmarshalGraphiteMetric(metric map[string]interface{}) map[string]interface
  * InfluxDB Metric
  * https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb
  */
+const influxdbMetric = "influxdb"
+
 func schemaMetricInfluxDB() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"influxdb": {
+		influxdbMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb)",
@@ -1334,10 +1410,32 @@ func schemaMetricInfluxDB() map[string]*schema.Schema {
 	}
 }
 
+func marshalSLOInfluxDB(s *schema.Set) *n9api.InfluxDBMetric {
+	if s.Len() == 0 {
+		return nil
+	}
+
+	metric := s.List()[0].(map[string]interface{})
+
+	query := metric["query"].(string)
+	return &n9api.InfluxDBMetric{
+		Query: &query,
+	}
+}
+
+func unmarshalInfluxDBMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["query"] = metric["query"]
+
+	return res
+}
+
 /**
  * Instana Metric
  * https://docs.nobl9.com/Sources/instana#creating-slos-with-instana
  */
+const instanaMetric = "instana"
+
 func schemaMetricInstana() map[string]*schema.Schema {
 	validateMetricType := func(v any, p cty.Path) diag.Diagnostics {
 		const appType = "application"
@@ -1356,7 +1454,7 @@ func schemaMetricInstana() map[string]*schema.Schema {
 	}
 
 	return map[string]*schema.Schema{
-		"instana": {
+		instanaMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana)",
@@ -1428,14 +1526,14 @@ func schemaMetricInstana() map[string]*schema.Schema {
 												Required:    true,
 												Description: "Group by tag",
 											},
-											"tagEntity": {
+											"tag_entity": {
 												Type:        schema.TypeString,
 												Required:    true,
 												Description: "Tag entity - one of 'DESTINATION', 'SOURCE', 'NOT_APPLICABLE'",
 											},
-											"tagSecondLevelKey": {
+											"tag_second_level_key": {
 												Type:     schema.TypeString,
-												Required: true,
+												Required: false,
 											},
 										},
 									},
@@ -1461,13 +1559,132 @@ func schemaMetricInstana() map[string]*schema.Schema {
 	}
 }
 
+func marshalSLOInstana(s *schema.Set) *n9api.InstanaMetric {
+	if s.Len() == 0 {
+		return nil
+	}
+
+	metric := s.List()[0].(map[string]interface{})
+
+	return &n9api.InstanaMetric{
+		MetricType:     metric["metric_type"].(string),
+		Infrastructure: marshalSLOInstanaInfrastructure(metric["infrastructure"].(*schema.Set)),
+		Application:    marshalSLOInstanaApplication(metric["application"].(*schema.Set)),
+	}
+}
+
+func marshalSLOInstanaInfrastructure(s *schema.Set) *n9api.InstanaInfrastructureMetricType {
+	if s.Len() == 0 {
+		return nil
+	}
+	infrastructure := s.List()[0].(map[string]interface{})
+
+	var query *string
+	if value := infrastructure["query"].(string); value != "" {
+		query = &value
+	}
+	var snapshotID *string
+	if value := infrastructure["snapshot_id"].(string); value != "" {
+		snapshotID = &value
+	}
+
+	return &n9api.InstanaInfrastructureMetricType{
+		MetricRetrievalMethod: infrastructure["metric_retrieval_method"].(string),
+		Query:                 query,
+		SnapshotID:            snapshotID,
+		MetricID:              infrastructure["metric_id"].(string),
+		PluginID:              infrastructure["plugin_id"].(string),
+	}
+}
+
+func marshalSLOInstanaApplication(s *schema.Set) *n9api.InstanaApplicationMetricType {
+	if s.Len() == 0 {
+		return nil
+	}
+	application := s.List()[0].(map[string]interface{})
+
+	var includeInternal *bool
+	if value, ok := application["include_internal"].(bool); ok {
+		includeInternal = &value
+	}
+
+	var includeSynthetic *bool
+	if value, ok := application["include_synthetic"].(bool); ok {
+		includeSynthetic = &value
+	}
+
+	var groupBy = application["group_by"].(*schema.Set).List()[0].(map[string]interface{})
+	var tagSecondLevelKey *string
+	if value, ok := groupBy["tag_second_level_key"].(string); ok && value != "" {
+		tagSecondLevelKey = &value
+	}
+
+	return &n9api.InstanaApplicationMetricType{
+		MetricID:    application["metric_id"].(string),
+		Aggregation: application["aggregation"].(string),
+		GroupBy: n9api.InstanaApplicationMetricGroupBy{
+			Tag:               groupBy["tag"].(string),
+			TagEntity:         groupBy["tag_entity"].(string),
+			TagSecondLevelKey: tagSecondLevelKey,
+		},
+		APIQuery:         application["api_query"].(string),
+		IncludeInternal:  includeInternal,
+		IncludeSynthetic: includeSynthetic,
+	}
+}
+
+func unmarshalInstanaMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["metric_type"] = metric["metricType"]
+	res["infrastructure"] = unmarshalInstanaInfrastructureMetric(metric)
+	res["application"] = unmarshalInstanaApplicationMetric(metric)
+
+	return res
+}
+
+func unmarshalInstanaInfrastructureMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+
+	if infrastructure, ok := metric["infrastructure"].(map[string]interface{}); ok {
+		res["metric_retrieval_method"] = infrastructure["metricRetrievalMethod"]
+		res["query"] = infrastructure["query"]
+		res["snapshot_id"] = infrastructure["snapshotId"]
+		res["metric_id"] = infrastructure["metricId"]
+		res["plugin_id"] = infrastructure["pluginId"]
+	}
+
+	return nil
+}
+
+func unmarshalInstanaApplicationMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+
+	if application, ok := metric["application"].(map[string]interface{}); ok {
+		groupBy := make(map[string]interface{})
+		groupBy["tag"] = application["groupBy"].(map[string]interface{})["tag"]
+		groupBy["tag_entity"] = application["groupBy"].(map[string]interface{})["tagEntity"]
+		groupBy["tag_second_level_key"] = application["groupBy"].(map[string]interface{})["tagSecondLevelKey"]
+
+		res["metric_id"] = application["metricId"]
+		res["aggregation"] = application["aggregation"]
+		res["group_by"] = groupBy
+		res["api_query"] = application["apiQuery"]
+		res["include_internal"] = application["includeInternal"]
+		res["include_synthetic"] = application["includeSynthetic"]
+	}
+
+	return nil
+}
+
 /**
  * Lightstep Metric
  * https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep
  */
+const lightstepMetric = "lightstep"
+
 func schemaMetricLightstep() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"lightstep": {
+		lightstepMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep)",
@@ -1530,9 +1747,11 @@ func unmarshalLightstepMetric(metric map[string]interface{}) map[string]interfac
  * New Relic Metric
  * https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic
  */
+const newrelicMetric = "newrelic"
+
 func schemaMetricNewRelic() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"newrelic": {
+		newrelicMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic)",
@@ -1573,9 +1792,11 @@ func unmarshalNewRelicMetric(metric map[string]interface{}) map[string]interface
  * OpenTSDB Metric
  * https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb
  */
+const opentsdbMetric = "opentsdb"
+
 func schemaMetricOpenTSDB() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"opentsdb": {
+		opentsdbMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb)",
@@ -1616,9 +1837,11 @@ func unmarshalOpentsdbMetric(metric map[string]interface{}) map[string]interface
  * Pingdom Metric
  * https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom
  */
+const pingdomMetric = "pingdom"
+
 func schemaMetricPingdom() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"pingdom": {
+		pingdomMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom)",
@@ -1631,7 +1854,7 @@ func schemaMetricPingdom() map[string]*schema.Schema {
 					},
 					"check_type": {
 						Type:        schema.TypeString,
-						Required:    true,
+						Required:    false,
 						Description: "Pingdom check type - uptime or transaction",
 					},
 					"status": {
@@ -1645,13 +1868,48 @@ func schemaMetricPingdom() map[string]*schema.Schema {
 	}
 }
 
+func marshalSLOPingdom(s *schema.Set) *n9api.PingdomMetric {
+	if s.Len() == 0 {
+		return nil
+	}
+
+	metric := s.List()[0].(map[string]interface{})
+
+	checkId := metric["check_id"].(string)
+
+	var checkType *string
+	if value, ok := metric["check_type"].(string); ok && value != "" {
+		checkType = &value
+	}
+	var status *string
+	if value, ok := metric["status"].(string); ok && value != "" {
+		status = &value
+	}
+	return &n9api.PingdomMetric{
+		CheckID:   &checkId,
+		CheckType: checkType,
+		Status:    status,
+	}
+}
+
+func unmarshalPingdomMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["check_id"] = metric["checkId"]
+	res["check_type"] = metric["checkType"]
+	res["status"] = metric["status"]
+
+	return res
+}
+
 /**
  * Prometheus Metric
  * https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus
  */
+const prometheusMetric = "prometheus"
+
 func schemaMetricPrometheus() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"prometheus": {
+		prometheusMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus)",
@@ -1691,9 +1949,11 @@ func unmarshalPrometheusMetric(metric map[string]interface{}) map[string]interfa
  * Amazon Redshift Metric
  * https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift
  */
+const redshiftMetric = "redshift"
+
 func schemaMetricRedshift() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"redshift": {
+		redshiftMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift)",
@@ -1725,13 +1985,41 @@ func schemaMetricRedshift() map[string]*schema.Schema {
 	}
 }
 
+func marshalSLORedshift(s *schema.Set) *n9api.RedshiftMetric {
+	if s.Len() == 0 {
+		return nil
+	}
+
+	metric := s.List()[0].(map[string]interface{})
+	region := metric["region"].(string)
+	clusterID := metric["cluster_id"].(string)
+	databaseName := metric["database_name"].(string)
+	query := metric["query"].(string)
+
+	return &n9api.RedshiftMetric{
+		Region:       &region,
+		ClusterID:    &clusterID,
+		DatabaseName: &databaseName,
+		Query:        &query,
+	}
+}
+
+func unmarshalRedshiftMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["promql"] = metric["promql"]
+
+	return res
+}
+
 /**
  * Splunk Metric
  * https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk
  */
+const splunkMetric = "splunk"
+
 func schemaMetricSplunk() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"splunk": {
+		splunkMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk)",
@@ -1772,9 +2060,11 @@ func unmarshalSplunkMetric(metric map[string]interface{}) map[string]interface{}
  * Splunk Observability Metric
  * https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability
  */
+const splunkObservabilityMetric = "splunk_observability"
+
 func schemaMetricSplunkObservability() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"splunk_observability": {
+		splunkObservabilityMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability)",
@@ -1815,9 +2105,11 @@ func unmarshalSplunkObservabilityMetric(metric map[string]interface{}) map[strin
  * Sumo Logic Metric
  * https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic
  */
-func schemaMetricSumoLogic() map[string]*schema.Schema {
+const sumologicMetric = "sumologic"
+
+func schemaMetricSumologic() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"sumologic": {
+		sumologicMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic)",
@@ -1828,20 +2120,20 @@ func schemaMetricSumoLogic() map[string]*schema.Schema {
 						Required:    true,
 						Description: "Sumologic source - metrics or logs",
 					},
-					"rollup": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Aggregation function - avg, sum, min, max, count, none",
-					},
-					"quantization": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Period of data aggregation",
-					},
 					"query": {
 						Type:        schema.TypeString,
 						Required:    true,
 						Description: "Query for the metrics",
+					},
+					"rollup": {
+						Type:        schema.TypeString,
+						Required:    false,
+						Description: "Aggregation function - avg, sum, min, max, count, none",
+					},
+					"quantization": {
+						Type:        schema.TypeString,
+						Required:    false,
+						Description: "Period of data aggregation",
 					},
 				},
 			},
@@ -1849,13 +2141,50 @@ func schemaMetricSumoLogic() map[string]*schema.Schema {
 	}
 }
 
+func marshalSLOSumologic(s *schema.Set) *n9api.SumoLogicMetric {
+	if s.Len() == 0 {
+		return nil
+	}
+
+	metric := s.List()[0].(map[string]interface{})
+
+	metricType := metric["type"].(string)
+	query := metric["query"].(string)
+	var quantization *string
+	if value, ok := metric["quantization"].(string); ok && value != "" {
+		quantization = &value
+	}
+	var rollup *string
+	if value, ok := metric["rollup"].(string); ok && value != "" {
+		rollup = &value
+	}
+	return &n9api.SumoLogicMetric{
+		Type:         &metricType,
+		Query:        &query,
+		Quantization: quantization,
+		Rollup:       rollup,
+	}
+}
+
+func unmarshalSumologicMetric(metric map[string]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	res["type"] = metric["type"]
+	res["query"] = metric["query"]
+	res["quantization"] = metric["quantization"]
+	res["rollup"] = metric["rollup"]
+
+	return res
+}
+
 /**
  * ThousandEyes Metric
  * https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes
  */
+const thousandeyesMetric = "thousandeyes"
+
 func schemaMetricThousandEyes() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"thousandeyes": {
+		thousandeyesMetric: {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes)",
