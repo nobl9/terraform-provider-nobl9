@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
@@ -410,7 +411,126 @@ func schemaMetricPingdom() map[string]*schema.Schema {
 }
 
 func schemaMetricInstana() map[string]*schema.Schema {
+	validateMetricType := func(v any, p cty.Path) diag.Diagnostics {
+		const appType = "application"
+		const infraType = "infrastructure"
+		value := v.(string)
+		var diags diag.Diagnostics
+		if value != appType && value != infraType {
+			diag := diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "wrong value",
+				Detail:   fmt.Sprintf("%q is not %q or %q", value, appType, infraType),
+			}
+			diags = append(diags, diag)
+		}
+		return diags
+	}
 
+	return map[string]*schema.Schema{
+		"instana": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+
+					"metric_type": {
+						Type:             schema.TypeString,
+						Required:         true,
+						Description:      "Instana metric type 'application' or 'infrastructure'",
+						ValidateDiagFunc: validateMetricType,
+					},
+					"infrastructure": {
+						Type:        schema.TypeSet,
+						Required:    true,
+						Description: "Infrastructure metric type",
+						Elem: &schema.Resource{Schema: map[string]*schema.Schema{
+							"metric_retrieval_method": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "Metric retrieval method 'query' or 'snapshot'",
+							},
+							"query": {
+								Type:        schema.TypeString,
+								Required:    false,
+								Description: "Query for the metrics",
+							},
+							"snapshot_id": {
+								Type:        schema.TypeString,
+								Required:    false,
+								Description: "Snapshot ID",
+							},
+							"metric_id": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "Metric ID",
+							},
+							"plugin_id": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "Plugin ID",
+							},
+						}},
+					},
+					"application": {
+						Type:        schema.TypeSet,
+						Required:    true,
+						Description: "Infrastructure metric type",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"metric_id": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "Metric ID one of 'calls', 'erroneousCalls', 'errors', 'latency'",
+								},
+								"aggregation": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "Depends on the value specified for 'metric_id'- more info in N9 docs",
+								},
+								"group_by": {
+									Type:        schema.TypeSet,
+									Required:    true,
+									Description: "Group by method",
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"tag": {
+												Type:        schema.TypeString,
+												Required:    true,
+												Description: "Group by tag",
+											},
+											"tagEntity": {
+												Type:        schema.TypeString,
+												Required:    true,
+												Description: "Tag entity - one of 'DESTINATION', 'SOURCE', 'NOT_APPLICABLE'",
+											},
+											"tagSecondLevelKey": {
+												Type:     schema.TypeString,
+												Required: true,
+											},
+										},
+									},
+								},
+								"api_query": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "API query user passes in a JSON format",
+								},
+								"include_internal": {
+									Type:     schema.TypeBool,
+									Required: false,
+								},
+								"include_synthetic": {
+									Type:     schema.TypeBool,
+									Required: false,
+								},
+							}},
+					},
+				},
+			},
+		},
+	}
 }
 
 func schemaMetricInfluxDB() map[string]*schema.Schema {
