@@ -1498,12 +1498,12 @@ func schemaMetricInstana() map[string]*schema.Schema {
 							},
 							"query": {
 								Type:        schema.TypeString,
-								Required:    false,
+								Optional:    true,
 								Description: "Query for the metrics",
 							},
 							"snapshot_id": {
 								Type:        schema.TypeString,
-								Required:    false,
+								Optional:    true,
 								Description: "Snapshot ID",
 							},
 							"metric_id": {
@@ -1552,7 +1552,7 @@ func schemaMetricInstana() map[string]*schema.Schema {
 											},
 											"tag_second_level_key": {
 												Type:     schema.TypeString,
-												Required: false,
+												Optional: true,
 											},
 										},
 									},
@@ -1563,12 +1563,14 @@ func schemaMetricInstana() map[string]*schema.Schema {
 									Description: "API query user passes in a JSON format",
 								},
 								"include_internal": {
-									Type:     schema.TypeBool,
-									Required: false,
+									Type:        schema.TypeBool,
+									Optional:    true,
+									Description: "Include internal",
 								},
 								"include_synthetic": {
-									Type:     schema.TypeBool,
-									Required: false,
+									Type:        schema.TypeBool,
+									Optional:    true,
+									Description: "Include synthetic",
 								},
 							}},
 					},
@@ -1873,12 +1875,12 @@ func schemaMetricPingdom() map[string]*schema.Schema {
 					},
 					"check_type": {
 						Type:        schema.TypeString,
-						Required:    false,
+						Optional:    true,
 						Description: "Pingdom check type - uptime or transaction",
 					},
 					"status": {
 						Type:        schema.TypeString,
-						Required:    false,
+						Optional:    true,
 						Description: "Optional for the Uptime checks. Use it to filter the Pingdom check results by status",
 					},
 				},
@@ -2146,12 +2148,12 @@ func schemaMetricSumologic() map[string]*schema.Schema {
 					},
 					"rollup": {
 						Type:        schema.TypeString,
-						Required:    false,
+						Optional:    true,
 						Description: "Aggregation function - avg, sum, min, max, count, none",
 					},
 					"quantization": {
 						Type:        schema.TypeString,
-						Required:    false,
+						Optional:    true,
 						Description: "Period of data aggregation",
 					},
 				},
