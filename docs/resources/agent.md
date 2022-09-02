@@ -24,7 +24,7 @@ description: |-
 
 ### Optional
 
-- `amazonprometheus_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#ams-prometheus-agent) (see [below for nested schema](#nestedblock--amazonprometheus_config))
+- `amazon_prometheus_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#ams-prometheus-agent) (see [below for nested schema](#nestedblock--amazon_prometheus_config))
 - `appdynamics_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-agent) (see [below for nested schema](#nestedblock--appdynamics_config))
 - `bigquery_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-agent) (see [below for nested schema](#nestedblock--bigquery_config))
 - `cloudwatch_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-agent) (see [below for nested schema](#nestedblock--cloudwatch_config))
@@ -54,8 +54,8 @@ description: |-
 - `id` (String) The ID of this resource.
 - `status` (Map of String) Status of created agent.
 
-<a id="nestedblock--amazonprometheus_config"></a>
-### Nested Schema for `amazonprometheus_config`
+<a id="nestedblock--amazon_prometheus_config"></a>
+### Nested Schema for `amazon_prometheus_config`
 
 Required:
 
