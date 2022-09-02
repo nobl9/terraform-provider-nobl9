@@ -562,28 +562,28 @@ func marshalCountMetrics(countMetricsTf map[string]interface{}) *n9api.CountMetr
 
 func marshalMetric(metric map[string]interface{}) *n9api.MetricSpec {
 	return &n9api.MetricSpec{
-		AmazonPrometheus:    marshalSLOAmazonPrometheus(metric[amazonPrometheusMetric].(*schema.Set)),
-		AppDynamics:         marshalSLOAppDynamics(metric[appDynamicsMetric].(*schema.Set)),
-		BigQuery:            marshalSLOBigQuery(metric[bigQueryMetric].(*schema.Set)),
-		CloudWatch:          marshalSLOCloudWatch(metric[cloudwatchMetric].(*schema.Set)),
-		Datadog:             marshalSLODatadog(metric[datadogMetric].(*schema.Set)),
-		Dynatrace:           marshalSLODynatrace(metric[dynatraceMetric].(*schema.Set)),
-		Elasticsearch:       marshalSLOElasticsearch(metric[elasticsearchMetric].(*schema.Set)),
-		GCM:                 marshalSLOGCM(metric[gcmMetric].(*schema.Set)),
-		GrafanaLoki:         marshalSLOGrafanaLoki(metric[grafanaLokiMetric].(*schema.Set)),
-		Graphite:            marshalSLOGraphite(metric[graphiteMetric].(*schema.Set)),
-		InfluxDB:            marshalSLOInfluxDB(metric[influxdbMetric].(*schema.Set)),
-		Instana:             marshalSLOInstana(metric[instanaMetric].(*schema.Set)),
-		Lightstep:           marshalSLOLightstep(metric[lightstepMetric].(*schema.Set)),
-		NewRelic:            marshalSLONewRelic(metric[newrelicMetric].(*schema.Set)),
-		OpenTSDB:            marshalSLOOpenTSDB(metric[opentsdbMetric].(*schema.Set)),
-		Pingdom:             marshalSLOPingdom(metric[opentsdbMetric].(*schema.Set)),
-		Prometheus:          marshalSLOPrometheus(metric[prometheusMetric].(*schema.Set)),
-		Redshift:            marshalSLORedshift(metric[redshiftMetric].(*schema.Set)),
-		Splunk:              marshalSLOSplunk(metric[splunkMetric].(*schema.Set)),
-		SplunkObservability: marshalSLOSplunkObservability(metric[splunkObservabilityMetric].(*schema.Set)),
-		SumoLogic:           marshalSLOSumologic(metric[sumologicMetric].(*schema.Set)),
-		ThousandEyes:        marshalSLOThousandEyes(metric[thousandeyesMetric].(*schema.Set)),
+		AmazonPrometheus:    marshalAmazonPrometheusMetric(metric[amazonPrometheusMetric].(*schema.Set)),
+		AppDynamics:         marshalAppDynamicsMetric(metric[appDynamicsMetric].(*schema.Set)),
+		BigQuery:            marshalBigQueryMetric(metric[bigQueryMetric].(*schema.Set)),
+		CloudWatch:          marshalCloudWatchMetric(metric[cloudwatchMetric].(*schema.Set)),
+		Datadog:             marshalDatadogMetric(metric[datadogMetric].(*schema.Set)),
+		Dynatrace:           marshalDynatraceMetric(metric[dynatraceMetric].(*schema.Set)),
+		Elasticsearch:       marshalElasticsearchMetric(metric[elasticsearchMetric].(*schema.Set)),
+		GCM:                 marshalGCMMetric(metric[gcmMetric].(*schema.Set)),
+		GrafanaLoki:         marshalGrafanaLokiMetric(metric[grafanaLokiMetric].(*schema.Set)),
+		Graphite:            marshalGraphiteMetric(metric[graphiteMetric].(*schema.Set)),
+		InfluxDB:            marshalInfluxDBMetric(metric[influxdbMetric].(*schema.Set)),
+		Instana:             marshalInstanaMetric(metric[instanaMetric].(*schema.Set)),
+		Lightstep:           marshalLightstepMetric(metric[lightstepMetric].(*schema.Set)),
+		NewRelic:            marshalNewRelicMetric(metric[newrelicMetric].(*schema.Set)),
+		OpenTSDB:            marshalOpenTSDBMetric(metric[opentsdbMetric].(*schema.Set)),
+		Pingdom:             marshalPingdomMetric(metric[opentsdbMetric].(*schema.Set)),
+		Prometheus:          marshalPrometheusMetric(metric[prometheusMetric].(*schema.Set)),
+		Redshift:            marshalRedshiftMetric(metric[redshiftMetric].(*schema.Set)),
+		Splunk:              marshalSplunkMetric(metric[splunkMetric].(*schema.Set)),
+		SplunkObservability: marshalSplunkObservabilityMetric(metric[splunkObservabilityMetric].(*schema.Set)),
+		SumoLogic:           marshalSumologicMetric(metric[sumologicMetric].(*schema.Set)),
+		ThousandEyes:        marshalThousandEyesMetric(metric[thousandeyesMetric].(*schema.Set)),
 	}
 }
 
@@ -848,7 +848,7 @@ func schemaMetricAmazonPrometheus() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOAmazonPrometheus(s *schema.Set) *n9api.AmazonPrometheusMetric {
+func marshalAmazonPrometheusMetric(s *schema.Set) *n9api.AmazonPrometheusMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -897,7 +897,7 @@ func schemaMetricAppDynamics() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOAppDynamics(s *schema.Set) *n9api.AppDynamicsMetric {
+func marshalAppDynamicsMetric(s *schema.Set) *n9api.AppDynamicsMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -955,7 +955,7 @@ func schemaMetricBigQuery() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOBigQuery(s *schema.Set) *n9api.BigQueryMetric {
+func marshalBigQueryMetric(s *schema.Set) *n9api.BigQueryMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1049,7 +1049,7 @@ func schemaMetricCloudwatch() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOCloudWatch(s *schema.Set) *n9api.CloudWatchMetric {
+func marshalCloudWatchMetric(s *schema.Set) *n9api.CloudWatchMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1146,7 +1146,7 @@ func schemaMetricDatadog() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLODatadog(s *schema.Set) *n9api.DatadogMetric {
+func marshalDatadogMetric(s *schema.Set) *n9api.DatadogMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1190,7 +1190,7 @@ func schemaMetricDynatrace() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLODynatrace(s *schema.Set) *n9api.DynatraceMetric {
+func marshalDynatraceMetric(s *schema.Set) *n9api.DynatraceMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1240,7 +1240,7 @@ func schemaMetricElasticsearch() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOElasticsearch(s *schema.Set) *n9api.ElasticsearchMetric {
+func marshalElasticsearchMetric(s *schema.Set) *n9api.ElasticsearchMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1293,7 +1293,7 @@ func schemaMetricGCM() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOGCM(s *schema.Set) *n9api.GCMMetric {
+func marshalGCMMetric(s *schema.Set) *n9api.GCMMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1339,7 +1339,7 @@ func schemaMetricGrafanaLoki() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOGrafanaLoki(s *schema.Set) *n9api.GrafanaLokiMetric {
+func marshalGrafanaLokiMetric(s *schema.Set) *n9api.GrafanaLokiMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1384,7 +1384,7 @@ func schemaMetricGraphite() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOGraphite(s *schema.Set) *n9api.GraphiteMetric {
+func marshalGraphiteMetric(s *schema.Set) *n9api.GraphiteMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1429,7 +1429,7 @@ func schemaMetricInfluxDB() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOInfluxDB(s *schema.Set) *n9api.InfluxDBMetric {
+func marshalInfluxDBMetric(s *schema.Set) *n9api.InfluxDBMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1578,7 +1578,7 @@ func schemaMetricInstana() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOInstana(s *schema.Set) *n9api.InstanaMetric {
+func marshalInstanaMetric(s *schema.Set) *n9api.InstanaMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1587,12 +1587,12 @@ func marshalSLOInstana(s *schema.Set) *n9api.InstanaMetric {
 
 	return &n9api.InstanaMetric{
 		MetricType:     metric["metric_type"].(string),
-		Infrastructure: marshalSLOInstanaInfrastructure(metric["infrastructure"].(*schema.Set)),
-		Application:    marshalSLOInstanaApplication(metric["application"].(*schema.Set)),
+		Infrastructure: marshalInstanaInfrastructureMetric(metric["infrastructure"].(*schema.Set)),
+		Application:    marshalInstanaApplicationMetric(metric["application"].(*schema.Set)),
 	}
 }
 
-func marshalSLOInstanaInfrastructure(s *schema.Set) *n9api.InstanaInfrastructureMetricType {
+func marshalInstanaInfrastructureMetric(s *schema.Set) *n9api.InstanaInfrastructureMetricType {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1616,7 +1616,7 @@ func marshalSLOInstanaInfrastructure(s *schema.Set) *n9api.InstanaInfrastructure
 	}
 }
 
-func marshalSLOInstanaApplication(s *schema.Set) *n9api.InstanaApplicationMetricType {
+func marshalInstanaApplicationMetric(s *schema.Set) *n9api.InstanaApplicationMetricType {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1730,7 +1730,7 @@ func schemaMetricLightstep() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOLightstep(s *schema.Set) *n9api.LightstepMetric {
+func marshalLightstepMetric(s *schema.Set) *n9api.LightstepMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1787,7 +1787,7 @@ func schemaMetricNewRelic() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLONewRelic(s *schema.Set) *n9api.NewRelicMetric {
+func marshalNewRelicMetric(s *schema.Set) *n9api.NewRelicMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1832,7 +1832,7 @@ func schemaMetricOpenTSDB() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOOpenTSDB(s *schema.Set) *n9api.OpenTSDBMetric {
+func marshalOpenTSDBMetric(s *schema.Set) *n9api.OpenTSDBMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1887,7 +1887,7 @@ func schemaMetricPingdom() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOPingdom(s *schema.Set) *n9api.PingdomMetric {
+func marshalPingdomMetric(s *schema.Set) *n9api.PingdomMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1945,7 +1945,7 @@ func schemaMetricPrometheus() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOPrometheus(s *schema.Set) *n9api.PrometheusMetric {
+func marshalPrometheusMetric(s *schema.Set) *n9api.PrometheusMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -2004,7 +2004,7 @@ func schemaMetricRedshift() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLORedshift(s *schema.Set) *n9api.RedshiftMetric {
+func marshalRedshiftMetric(s *schema.Set) *n9api.RedshiftMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -2055,7 +2055,7 @@ func schemaMetricSplunk() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOSplunk(s *schema.Set) *n9api.SplunkMetric {
+func marshalSplunkMetric(s *schema.Set) *n9api.SplunkMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -2100,7 +2100,7 @@ func schemaMetricSplunkObservability() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOSplunkObservability(s *schema.Set) *n9api.SplunkObservabilityMetric {
+func marshalSplunkObservabilityMetric(s *schema.Set) *n9api.SplunkObservabilityMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -2160,7 +2160,7 @@ func schemaMetricSumologic() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOSumologic(s *schema.Set) *n9api.SumoLogicMetric {
+func marshalSumologicMetric(s *schema.Set) *n9api.SumoLogicMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -2220,7 +2220,7 @@ func schemaMetricThousandEyes() map[string]*schema.Schema {
 	}
 }
 
-func marshalSLOThousandEyes(s *schema.Set) *n9api.ThousandEyesMetric {
+func marshalThousandEyesMetric(s *schema.Set) *n9api.ThousandEyesMetric {
 	if s.Len() == 0 {
 		return nil
 	}
