@@ -558,7 +558,7 @@ func marshalMetric(metric map[string]interface{}) *n9api.MetricSpec {
 		Lightstep:           marshalLightstepMetric(metric[lightstepMetric].(*schema.Set)),
 		NewRelic:            marshalNewRelicMetric(metric[newrelicMetric].(*schema.Set)),
 		OpenTSDB:            marshalOpenTSDBMetric(metric[opentsdbMetric].(*schema.Set)),
-		Pingdom:             marshalPingdomMetric(metric[opentsdbMetric].(*schema.Set)),
+		Pingdom:             marshalPingdomMetric(metric[pingdomMetric].(*schema.Set)),
 		Prometheus:          marshalPrometheusMetric(metric[prometheusMetric].(*schema.Set)),
 		Redshift:            marshalRedshiftMetric(metric[redshiftMetric].(*schema.Set)),
 		Splunk:              marshalSplunkMetric(metric[splunkMetric].(*schema.Set)),
@@ -1065,7 +1065,11 @@ func marshalCloudWatchMetric(s *schema.Set) *n9api.CloudWatchMetric {
 	}
 
 	dimensions := metric["dimensions"].(*schema.Set)
-	var metricDimensions = make([]n9api.CloudWatchMetricDimension, dimensions.Len())
+	var metricDimensions []n9api.CloudWatchMetricDimension
+
+	if dimensions.Len() > 0 {
+		metricDimensions = make([]n9api.CloudWatchMetricDimension, dimensions.Len())
+	}
 
 	for idx, dimension := range dimensions.List() {
 		n9Dimension := dimension.(map[string]interface{})
@@ -1877,8 +1881,10 @@ func marshalPingdomMetric(s *schema.Set) *n9api.PingdomMetric {
 
 	metric := s.List()[0].(map[string]interface{})
 
-	checkId := metric["check_id"].(string)
-
+	var checkId *string
+	if value, ok := metric["check_id"].(string); ok && value != "" {
+		checkId = &value
+	}
 	var checkType *string
 	if value, ok := metric["check_type"].(string); ok && value != "" {
 		checkType = &value
@@ -1888,7 +1894,7 @@ func marshalPingdomMetric(s *schema.Set) *n9api.PingdomMetric {
 		status = &value
 	}
 	return &n9api.PingdomMetric{
-		CheckID:   &checkId,
+		CheckID:   checkId,
 		CheckType: checkType,
 		Status:    status,
 	}

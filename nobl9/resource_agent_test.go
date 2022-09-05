@@ -14,28 +14,28 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 		name       string
 		configFunc func(string) string
 	}{
-		{"test-amazonprometheus", testAmazonPrometheusConfig},
-		{"test-appd", testAppDynamicsConfig},
-		{"test-bigquery", testBigQueryConfig},
-		{"test-cloudwatch", testCloudWatchConfig},
-		{"test-ddog", testDatadogConfig},
-		{"test-dynatrace", testDynatraceConfig},
-		{"test-elasticsearch", testElasticsearchConfig},
-		{"test-gcm", testGoogleCloudMonitoringConfig},
-		{"test-grafanaloki", testGrafanaLokiConfig},
-		{"test-graphite", testGraphiteConfig},
-		{"test-influxdb", testInfluxDBConfig},
-		{"test-instana", testInstanaConfig},
-		{"test-lightstep", testLightstepConfig},
-		{"test-newrelic", testNewrelicConfig},
-		{"test-opentsdb", testOpenTSDBConfig},
-		{"test-pingdom", testPingdomConfig},
-		{"test-prometheus", testPrometheusConfig},
-		{"test-redshift", testRedshiftConfig},
-		{"test-splunk", testSplunkConfig},
-		{"test-splunkobs", testSplunkObservabilityConfig},
-		{"test-sumologic", testSumoLogicConfig},
-		{"test-thousandeyes", testThousandEyesConfig},
+		{"test-amazonprometheus", testAmazonPrometheusAgent},
+		{"test-appd", testAppDynamicsAgent},
+		{"test-bigquery", testBigQueryAgent},
+		{"test-cloudwatch", testCloudWatchAgent},
+		{"test-ddog", testDatadogAgent},
+		{"test-dynatrace", testDynatraceAgent},
+		{"test-elasticsearch", testElasticsearchAgent},
+		{"test-gcm", testGoogleCloudMonitoringAgent},
+		{"test-grafanaloki", testGrafanaLokiAgent},
+		{"test-graphite", testGraphiteAgent},
+		{"test-influxdb", testInfluxDBAgent},
+		{"test-instana", testInstanaAgent},
+		{"test-lightstep", testLightstepAgent},
+		{"test-newrelic", testNewrelicAgent},
+		{"test-opentsdb", testOpenTSDBAgent},
+		{"test-pingdom", testPingdomAgent},
+		{"test-prometheus", testPrometheusAgent},
+		{"test-redshift", testRedshiftAgent},
+		{"test-splunk", testSplunkAgent},
+		{"test-splunkobs", testSplunkObservabilityAgent},
+		{"test-sumologic", testSumoLogicAgent},
+		{"test-thousandeyes", testThousandEyesAgent},
 	}
 
 	for _, tc := range cases {
@@ -55,14 +55,14 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 	}
 }
 
-func testAmazonPrometheusConfig(name string) string {
+func testAmazonPrometheusAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  agent_type = "amazonprometheus"
-  amazonprometheus_config {
+  agent_type = "amazon_prometheus"
+  amazon_prometheus_config {
 	url = "http://web.net"
 	region = "eu-central-1"
   }
@@ -71,7 +71,7 @@ resource "nobl9_agent" "%s" {
 
 }
 
-func testAppDynamicsConfig(name string) string {
+func testAppDynamicsAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -85,7 +85,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testBigQueryConfig(name string) string {
+func testBigQueryAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
  name      = "%s"
@@ -96,7 +96,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testCloudWatchConfig(name string) string {
+func testCloudWatchAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -107,7 +107,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testDatadogConfig(name string) string {
+func testDatadogAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -121,7 +121,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testDynatraceConfig(name string) string {
+func testDynatraceAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -135,7 +135,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testElasticsearchConfig(name string) string {
+func testElasticsearchAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -149,7 +149,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testGoogleCloudMonitoringConfig(name string) string {
+func testGoogleCloudMonitoringAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -160,21 +160,21 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testGrafanaLokiConfig(name string) string {
+func testGrafanaLokiAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  agent_type = "grafanaloki"
-  grafanaloki_config {
+  agent_type = "grafana_loki"
+  grafana_loki_config {
     url = "http://web.net"
   }
 }
 `, name, name, testProject)
 }
 
-func testGraphiteConfig(name string) string {
+func testGraphiteAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -188,7 +188,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testInfluxDBConfig(name string) string {
+func testInfluxDBAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -202,7 +202,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testInstanaConfig(name string) string {
+func testInstanaAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -216,7 +216,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testLightstepConfig(name string) string {
+func testLightstepAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -231,7 +231,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testNewrelicConfig(name string) string {
+func testNewrelicAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -245,7 +245,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testOpenTSDBConfig(name string) string {
+func testOpenTSDBAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -259,7 +259,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testPingdomConfig(name string) string {
+func testPingdomAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -270,7 +270,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testPrometheusConfig(name string) string {
+func testPrometheusAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -284,7 +284,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testRedshiftConfig(name string) string {
+func testRedshiftAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -295,7 +295,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testSplunkConfig(name string) string {
+func testSplunkAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -309,7 +309,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testSplunkObservabilityConfig(name string) string {
+func testSplunkObservabilityAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -323,7 +323,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testSumoLogicConfig(name string) string {
+func testSumoLogicAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
@@ -337,7 +337,7 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
-func testThousandEyesConfig(name string) string {
+func testThousandEyesAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {
   name      = "%s"
