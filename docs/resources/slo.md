@@ -274,9 +274,12 @@ Required:
 
 Required:
 
-- `application` (Block Set, Min: 1) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana--application))
-- `infrastructure` (Block Set, Min: 1) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana--infrastructure))
 - `metric_type` (String) Instana metric type 'application' or 'infrastructure'
+
+Optional:
+
+- `application` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana--application))
+- `infrastructure` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana--infrastructure))
 
 <a id="nestedblock--objective--count_metrics--good--instana--application"></a>
 ### Nested Schema for `objective.count_metrics.good.instana.application`
@@ -567,9 +570,12 @@ Required:
 
 Required:
 
-- `application` (Block Set, Min: 1) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana--application))
-- `infrastructure` (Block Set, Min: 1) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana--infrastructure))
 - `metric_type` (String) Instana metric type 'application' or 'infrastructure'
+
+Optional:
+
+- `application` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana--application))
+- `infrastructure` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana--infrastructure))
 
 <a id="nestedblock--objective--count_metrics--total--instana--application"></a>
 ### Nested Schema for `objective.count_metrics.total.instana.application`
@@ -868,9 +874,12 @@ Required:
 
 Required:
 
-- `application` (Block Set, Min: 1) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--application))
-- `infrastructure` (Block Set, Min: 1) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--infrastructure))
 - `metric_type` (String) Instana metric type 'application' or 'infrastructure'
+
+Optional:
+
+- `application` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--application))
+- `infrastructure` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--infrastructure))
 
 <a id="nestedblock--objective--raw_metric--query--instana--application"></a>
 ### Nested Schema for `objective.raw_metric.query.instana.application`
