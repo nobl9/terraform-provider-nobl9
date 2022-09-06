@@ -33,6 +33,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-multiple-ap", testMultipleAlertPolicies},
 		{"test-newrelic", testNewRelicSLO},
 		{"test-opentsdb", testOpenTSDBSLO},
+		{"test-pingdom", testPingdomSLO},
 		{"test-prom-full", testPrometheusSLOFULL},
 		{"test-prom-with-ap", testPrometheusSLOWithAlertPolicy},
 		{"test-prom-with-attachments", testPrometheusWithAttachments},
@@ -1145,6 +1146,57 @@ resource "nobl9_slo" ":name" {
         opentsdb {
           query = "m=none:{{.N9RESOLUTION}}-avg-zero:cpu{cpu.usage=core.1}"
         }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testPingdomSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testPingdomAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+    project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+	  	pingdom {
+		  check_id   = "100000"
+		  check_type = "uptime"
+		  status     = "up"
+		}
       }
     }
   }
