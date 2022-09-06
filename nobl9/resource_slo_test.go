@@ -14,6 +14,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		name       string
 		configFunc func(string) string
 	}{
+		{"test-amazonprometheus", testAmazonPrometheusSLO},
 		{"test-appdynamics", testAppdynamicsSLO},
 		{"test-bigquery", testBigQuerySLO},
 		{"test-cloudwatch-with-json", testCloudWatchWithJSON},
@@ -23,7 +24,11 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-composite-time-slices", testCompositeSLOTimeSlices},
 		{"test-datadog", testDatadogSLO},
 		{"test-dynatrace", testDynatraceSLO},
+		{"test-grafanaloki", testGrafanaLokiSLO},
 		{"test-graphite", testGraphiteSLO},
+		{"test-influxdb", testInfluxDBSLO},
+		{"test-instana-infra", testInstanaInfrastructureSLO},
+		{"test-instana-app", testInstanaApplicationSLO},
 		{"test-lightstep", testLightstepSLO},
 		{"test-multiple-ap", testMultipleAlertPolicies},
 		{"test-newrelic", testNewRelicSLO},
@@ -36,8 +41,10 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-prom-with-raw-metric-in-objective", testPrometheusSLOWithRawMetricInObjective},
 		{"test-prom-with-time-slices", testPrometheusSLOWithTimeSlices},
 		{"test-prometheus", testPrometheusSLO},
+		{"test-redshift", testRedshiftSLO},
 		{"test-splunk", testSplunkSLO},
 		{"test-splunk-observability", testSplunkObservabilitySLO},
+		{"test-sumologic", testSumoLogicSLO},
 		{"test-thousandeyes", testThousandeyesSLO},
 	}
 
@@ -56,6 +63,55 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 			})
 		})
 	}
+}
+
+func testAmazonPrometheusSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testAmazonPrometheusAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        amazon_prometheus {
+          promql = "1.0"
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
 }
 
 func testAppdynamicsSLO(name string) string {
@@ -108,7 +164,6 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-//nolint:lll
 func testBigQuerySLO(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
@@ -131,9 +186,13 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       query {
         bigquery {
-          project_id = "bdwtest-256112"
+          project_id = "project"
           location = "EU"
-          query = "SELECT response_time AS n9value, created AS n9date FROM 'bdwtest-256112.metrics.http_response' WHERE date_col BETWEEN DATETIME(@n9date_from) AND DATETIME(@n9date_to) "
+          query = <<-EOT
+			SELECT response_time AS n9value, created AS n9date
+			FROM 'project.metrics.http_response'
+			WHERE date_col BETWEEN DATETIME(@n9date_from) AND DATETIME(@n9date_to)
+			EOT
         }
       }
     }
@@ -552,7 +611,6 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-//nolint:lll
 func testDynatraceSLO(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
@@ -575,9 +633,12 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       query {
         dynatrace {
-          metric_selector = <<EOT
-builtin:synthetic.http.duration.geo:filter(and(in("dt.entity.http_check",entitySelector("type(http_check),entityName(~"API Sample~")")),in("dt.entity.synthetic_location",entitySelector("type(synthetic_location),entityName(~"N. California~")")))):splitBy("dt.entity.http_check","dt.entity.synthetic_location"):avg:auto:sort(value(avg,descending)):limit(20)
-EOT
+          metric_selector = <<-EOT
+			builtin:synthetic.http.duration.geo:filter(
+			and(in("dt.entity.http_check",entitySelector("type(http_check),entityName(~"API Sample~")")),
+				in("dt.entity.synthetic_location",entitySelector("type(synthetic_location),entityName(~"N. California~")")))
+			):splitBy("dt.entity.http_check","dt.entity.synthetic_location"):avg:auto:sort(value(avg,descending)):limit(20)
+			EOT
         }
       }
     }
@@ -593,6 +654,64 @@ EOT
     name    = nobl9_agent.:agentName.name
     project = ":project"
     kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testGrafanaLokiSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testGrafanaLokiAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+    project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        grafana_loki {
+          logql = <<-EOT
+			sum(
+				sum_over_time(
+					{topic="topic", consumergroup="group", cluster="main"} |= "kafka_consumergroup_lag" |
+					logfmt | 
+					line_format "{{.kafka_consumergroup_lag}}" | 
+					unwrap kafka_consumergroup_lag [1m]
+			)
+			)
+			EOT
+		}
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+      kind    = "Agent"
   }
 }
 `
@@ -627,6 +746,198 @@ resource "nobl9_slo" ":name" {
       query {
         graphite {
           metric_path = "TODO"
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+      kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testInfluxDBSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testInfluxDBAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+    project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+	  	influxdb {
+		  query = <<-EOT
+			from(bucket: "integrations")
+			|> range(start: time(v: params.n9time_start), stop: time(v: params.n9time_stop))
+			|> aggregateWindow(every: 15s, fn: mean, createEmpty: false)
+			|> filter(fn: (r) => r["_measurement"] == "internal_write")
+			|> filter(fn: (r) => r["_field"] == "write_time_ns")'
+		    EOT
+		}
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+      kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testInstanaInfrastructureSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testInstanaAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        instana {
+          metric_type = "infrastructure"
+		  infrastructure {
+		    metric_retrieval_method = "query"
+		    metric_id               = "outstanding_requests"
+		    plugin_id               = "zooKeeper"
+		    query                   = "entity.selfType:zookeeper"
+		  }
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+      kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testInstanaApplicationSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testInstanaAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        instana {
+          metric_type = "application"
+		  application {
+		    metric_id         = "latency"
+		    aggregation       = "p99"
+		    group_by {
+		  	  tag                  = "endpointname"
+			  tag_entity           = "DESTINATION"
+			  tag_second_level_key = ""
+		    }
+		    include_internal  = false
+		    include_synthetic = false
+		    api_query = <<-EOT
+			{
+				"type": "EXPRESSION",
+				"logicalOperator": "AND",
+				"elements": [
+					{
+						"type": "TAG_FILTER",
+						"name": "service.name",
+						"operator": "EQUALS",
+						"entity": "DESTINATION",
+						"value": "master"
+					},
+					{
+						"type": "TAG_FILTER",
+						"name": "call.type",
+						"operator": "EQUALS",
+						"entity": "NOT_APPLICABLE",
+						"value": "HTTP"
+					}
+				]
+			}
+			EOT
+		  }
         }
       }
     }
@@ -1298,7 +1609,58 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-//nolint:lll
+func testRedshiftSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testRedshiftAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+	    redshift {
+		  region        = "eu-central-1"
+		  cluster_id    = "redshift"
+		  database_name = "dev"
+		  query         = "SELECT value as n9value, timestamp as n9date FROM sinusoid WHERE timestamp BETWEEN :n9date_from AND :n9date_to"
+	    }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
 func testSplunkSLO(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
@@ -1321,8 +1683,12 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       query {
         splunk {
-          query = "search index=polakpotrafi-events source=udp:5072 sourcetype=syslog status<400 | bucket _time span=1m | stats avg(response_time) as n9value by _time | rename _time as n9time | fields n9time n9value"
-        }
+          query = <<-EOT
+			search index=events source=udp:5072 sourcetype=syslog status<400 | 
+			bucket _time span=1m | 
+			stats avg(response_time) as n9value by _time | rename _time as n9time | fields n9time n9value"
+            EOT
+		}
       }
     }
   }
@@ -1372,6 +1738,58 @@ resource "nobl9_slo" ":name" {
         splunk_observability {
           program = "TODO"
         }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testSumoLogicSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testSumoLogicAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+    project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+	    sumologic {
+   			type         = "metrics"
+            query        = "kube_node_status_condition | min"
+            rollup       = "Min"
+            quantization = "15s"
+		}
       }
     }
   }
