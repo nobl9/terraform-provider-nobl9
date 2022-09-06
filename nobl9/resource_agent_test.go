@@ -68,7 +68,6 @@ resource "nobl9_agent" "%s" {
   }
 }
 `, name, name, testProject)
-
 }
 
 func testAppDynamicsAgent(name string) string {

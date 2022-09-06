@@ -223,28 +223,28 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 		hclName  string
 		jsonName string
 	}{
-		{amazonPrometheusAgentConfigKey, agentSpecJsonName(spec.AmazonPrometheus, diags)},
-		{appDynamicsAgentConfigKey, agentSpecJsonName(spec.AppDynamics, diags)},
-		{bigqueryAgentConfigKey, agentSpecJsonName(spec.BigQuery, diags)},
-		{cloudWatchAgentConfigKey, agentSpecJsonName(spec.CloudWatch, diags)},
-		{datadogAgentConfigKey, agentSpecJsonName(spec.Datadog, diags)},
-		{dynatraceAgentConfigKey, agentSpecJsonName(spec.Dynatrace, diags)},
-		{elasticsearchAgentConfigKey, agentSpecJsonName(spec.Elasticsearch, diags)},
-		{gcmAgentConfigKey, agentSpecJsonName(spec.GCM, diags)},
-		{grafanalokiAgentConfigKey, agentSpecJsonName(spec.GrafanaLoki, diags)},
-		{graphiteAgentConfigKey, agentSpecJsonName(spec.Graphite, diags)},
-		{influxdbAgentConfigKey, agentSpecJsonName(spec.InfluxDB, diags)},
-		{instanaAgentConfigKey, agentSpecJsonName(spec.Instana, diags)},
-		{lightstepAgentConfigKey, agentSpecJsonName(spec.Lightstep, diags)},
-		{newRelicAgentConfigKey, agentSpecJsonName(spec.NewRelic, diags)},
-		{opentsdbAgentConfigKey, agentSpecJsonName(spec.OpenTSDB, diags)},
-		{pingdomAgentConfigKey, agentSpecJsonName(spec.Pingdom, diags)},
-		{prometheusAgentConfigKey, agentSpecJsonName(spec.Prometheus, diags)},
-		{redshiftAgentConfigKey, agentSpecJsonName(spec.Redshift, diags)},
-		{splunkAgentConfigKey, agentSpecJsonName(spec.Splunk, diags)},
-		{splunkObservabilityAgentConfigKey, agentSpecJsonName(spec.SplunkObservability, diags)},
-		{sumologicAgentConfigKey, agentSpecJsonName(spec.SumoLogic, diags)},
-		{thousandeyesAgentConfigKey, agentSpecJsonName(spec.ThousandEyes, diags)},
+		{amazonPrometheusAgentConfigKey, agentSpecJSONName(spec.AmazonPrometheus, diags)},
+		{appDynamicsAgentConfigKey, agentSpecJSONName(spec.AppDynamics, diags)},
+		{bigqueryAgentConfigKey, agentSpecJSONName(spec.BigQuery, diags)},
+		{cloudWatchAgentConfigKey, agentSpecJSONName(spec.CloudWatch, diags)},
+		{datadogAgentConfigKey, agentSpecJSONName(spec.Datadog, diags)},
+		{dynatraceAgentConfigKey, agentSpecJSONName(spec.Dynatrace, diags)},
+		{elasticsearchAgentConfigKey, agentSpecJSONName(spec.Elasticsearch, diags)},
+		{gcmAgentConfigKey, agentSpecJSONName(spec.GCM, diags)},
+		{grafanalokiAgentConfigKey, agentSpecJSONName(spec.GrafanaLoki, diags)},
+		{graphiteAgentConfigKey, agentSpecJSONName(spec.Graphite, diags)},
+		{influxdbAgentConfigKey, agentSpecJSONName(spec.InfluxDB, diags)},
+		{instanaAgentConfigKey, agentSpecJSONName(spec.Instana, diags)},
+		{lightstepAgentConfigKey, agentSpecJSONName(spec.Lightstep, diags)},
+		{newRelicAgentConfigKey, agentSpecJSONName(spec.NewRelic, diags)},
+		{opentsdbAgentConfigKey, agentSpecJSONName(spec.OpenTSDB, diags)},
+		{pingdomAgentConfigKey, agentSpecJSONName(spec.Pingdom, diags)},
+		{prometheusAgentConfigKey, agentSpecJSONName(spec.Prometheus, diags)},
+		{redshiftAgentConfigKey, agentSpecJSONName(spec.Redshift, diags)},
+		{splunkAgentConfigKey, agentSpecJSONName(spec.Splunk, diags)},
+		{splunkObservabilityAgentConfigKey, agentSpecJSONName(spec.SplunkObservability, diags)},
+		{sumologicAgentConfigKey, agentSpecJSONName(spec.SumoLogic, diags)},
+		{thousandeyesAgentConfigKey, agentSpecJSONName(spec.ThousandEyes, diags)},
 	}
 
 	for _, name := range supportedAgents {
@@ -260,7 +260,11 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 	return diags
 }
 
-func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclName, jsonName string) (bool, diag.Diagnostics) {
+func unmarshalAgentConfig(
+	d *schema.ResourceData,
+	object n9api.AnyJSONObj,
+	hclName,
+	jsonName string) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	spec := object["spec"].(map[string]interface{})
 	if spec[jsonName] == nil {
@@ -272,7 +276,7 @@ func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclNa
 	diags = appendError(diags, err)
 
 	switch jsonName {
-	case agentSpecJsonName(n9api.AgentSpec{}.NewRelic, diags):
+	case agentSpecJSONName(n9api.AgentSpec{}.NewRelic, diags):
 		unmarshalDiags := unmarshalNewRelicAgentSpec(d, object)
 		diags = append(diags, unmarshalDiags...)
 	default:
@@ -283,7 +287,7 @@ func unmarshalAgentConfig(d *schema.ResourceData, object n9api.AnyJSONObj, hclNa
 	return true, diags
 }
 
-func agentSpecJsonName(agentSpecField any, diags diag.Diagnostics) string {
+func agentSpecJSONName(agentSpecField any, diags diag.Diagnostics) string {
 	agentSpec := n9api.AgentSpec{}
 	getAgentSpecFieldName := func() string {
 		var name string
@@ -478,9 +482,11 @@ func schemaAgentDatadog() map[string]*schema.Schema {
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"site": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "`com` or `eu`, Datadog SaaS instance, which corresponds to one of their two locations (https://www.datadoghq.com/ in the U.S. or https://datadoghq.eu/ in the European Union)",
+					Type:     schema.TypeString,
+					Required: true,
+					Description: "`com` or `eu`, Datadog SaaS instance, which corresponds to one of their " +
+						"two locations (https://www.datadoghq.com/ in the U.S. " +
+						"or https://datadoghq.eu/ in the European Union)",
 				},
 			},
 		},
@@ -590,11 +596,12 @@ const gcmAgentConfigKey = "gcm_config"
 func schemaAgentGCM() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		gcmAgentConfigKey: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-agent)",
-			MinItems:    1,
-			MaxItems:    1,
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-agent)",
+			MinItems: 1,
+			MaxItems: 1,
 			Elem: &schema.Resource{
 				Description: "Agent configuration is not required.",
 			},
@@ -976,11 +983,12 @@ const redshiftAgentConfigKey = "redshift_config"
 func schemaAgentRedshift() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		redshiftAgentConfigKey: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-agent)",
-			MinItems:    1,
-			MaxItems:    1,
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-agent)",
+			MinItems: 1,
+			MaxItems: 1,
 			Elem: &schema.Resource{
 				Description: "Agent configuration is not required.",
 			},
@@ -1000,9 +1008,10 @@ func unmarshalNewRelicAgentSpec(d *schema.ResourceData, object n9api.AnyJSONObj)
 	var diags diag.Diagnostics
 	if spec, ok := object["spec"]; ok {
 		if newRelicSpec, ok := spec.(map[string]interface{})["newRelic"]; ok {
-			accountId := newRelicSpec.(map[string]interface{})["accountId"]
-			accountIdVal := map[string]interface{}{"account_id": fmt.Sprint(accountId)}
-			d.Set(newRelicAgentConfigKey, schema.NewSet(oneElementSet, []interface{}{accountIdVal}))
+			accountID := newRelicSpec.(map[string]interface{})["accountId"]
+			accountIDVal := map[string]interface{}{"account_id": fmt.Sprint(accountID)}
+			err := d.Set(newRelicAgentConfigKey, schema.NewSet(oneElementSet, []interface{}{accountIDVal}))
+			diags = appendError(diags, err)
 		}
 	}
 
@@ -1059,11 +1068,12 @@ const splunkObservabilityAgentConfigKey = "splunk_observability_config"
 func schemaAgentSplunkObservability() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		splunkObservabilityAgentConfigKey: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-agent)",
-			MinItems:    1,
-			MaxItems:    1,
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-agent)",
+			MinItems: 1,
+			MaxItems: 1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"realm": {
@@ -1077,7 +1087,9 @@ func schemaAgentSplunkObservability() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentSplunkObservability(d *schema.ResourceData, diags diag.Diagnostics) *n9api.SplunkObservabilityAgentConfig {
+func marshalAgentSplunkObservability(
+	d *schema.ResourceData,
+	diags diag.Diagnostics) *n9api.SplunkObservabilityAgentConfig {
 	data := getAgentResourceData(d, splunkObservabilityAgentType, splunkObservabilityAgentConfigKey, diags)
 
 	if data == nil {
@@ -1157,7 +1169,11 @@ func marshalAgentThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesAgentCo
 	return &n9api.ThousandEyesAgentConfig{}
 }
 
-func getAgentResourceData(d *schema.ResourceData, agentType, agentConfigKey string, diags diag.Diagnostics) map[string]interface{} {
+func getAgentResourceData(
+	d *schema.ResourceData,
+	agentType,
+	agentConfigKey string,
+	diags diag.Diagnostics) map[string]interface{} {
 	if !isAgentType(d, agentType) {
 		return nil
 	}

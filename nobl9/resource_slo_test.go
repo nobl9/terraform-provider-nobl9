@@ -1634,7 +1634,11 @@ resource "nobl9_slo" ":name" {
 		  region        = "eu-central-1"
 		  cluster_id    = "redshift"
 		  database_name = "dev"
-		  query         = "SELECT value as n9value, timestamp as n9date FROM sinusoid WHERE timestamp BETWEEN :n9date_from AND :n9date_to"
+		  query         = <<-EOT
+			SELECT value as n9value, timestamp as n9date 
+			FROM sinusoid 
+			WHERE timestamp BETWEEN :n9date_from AND :n9date_to
+		  EOT
 	    }
       }
     }

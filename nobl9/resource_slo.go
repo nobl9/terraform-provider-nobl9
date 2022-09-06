@@ -666,10 +666,7 @@ func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}) err
 	res["project"] = metricSource["project"]
 	res["kind"] = metricSource["kind"]
 	if rawMetric, ok := indicator["rawMetric"]; ok {
-		tfMetric, err := unmarshalSLOMetric(rawMetric.(map[string]interface{}))
-		if err != nil {
-			return err
-		}
+		tfMetric := unmarshalSLOMetric(rawMetric.(map[string]interface{}))
 		res["raw_metric"] = tfMetric
 	}
 	return d.Set("indicator", schema.NewSet(oneElementSet, []interface{}{res}))
@@ -710,25 +707,16 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) er
 			cm := countMetrics.(map[string]interface{})
 			countMetricsTF := make(map[string]interface{})
 			countMetricsTF["incremental"] = cm["incremental"]
-			good, err := unmarshalSLOMetric(cm["good"].(map[string]interface{}))
-			if err != nil {
-				return err
-			}
+			good := unmarshalSLOMetric(cm["good"].(map[string]interface{}))
 			countMetricsTF["good"] = good
-			total, err := unmarshalSLOMetric(cm["total"].(map[string]interface{}))
-			if err != nil {
-				return err
-			}
+			total := unmarshalSLOMetric(cm["total"].(map[string]interface{}))
 			countMetricsTF["total"] = total
 			objectiveTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
 		}
 
 		if rawMetric, isRawMetric := objective["rawMetric"]; isRawMetric {
 			rm := rawMetric.(map[string]interface{})
-			tfMetric, err := unmarshalSLORawMetric(rm)
-			if err != nil {
-				return err
-			}
+			tfMetric := unmarshalSLORawMetric(rm)
 			objectiveTF["raw_metric"] = tfMetric
 		}
 
@@ -769,19 +757,15 @@ func objectiveHash(objective interface{}) int {
 	return int(hash.Sum32())
 }
 
-func unmarshalSLORawMetric(rawMetricSource map[string]interface{}) (*schema.Set, error) {
+func unmarshalSLORawMetric(rawMetricSource map[string]interface{}) *schema.Set {
 	var rawMetricQuery *schema.Set
-	var err error
 	if rawMetricQuerySource, isRawMetric := rawMetricSource["query"]; isRawMetric {
-		rawMetricQuery, err = unmarshalSLOMetric(rawMetricQuerySource.(map[string]interface{}))
-		if err != nil {
-			return nil, err
-		}
+		rawMetricQuery = unmarshalSLOMetric(rawMetricQuerySource.(map[string]interface{}))
 	}
-	return schema.NewSet(oneElementSet, []interface{}{map[string]interface{}{"query": rawMetricQuery}}), nil
+	return schema.NewSet(oneElementSet, []interface{}{map[string]interface{}{"query": rawMetricQuery}})
 }
 
-func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
+func unmarshalSLOMetric(spec map[string]interface{}) *schema.Set {
 	supportedMetrics := []struct {
 		hclName       string
 		jsonName      string
@@ -820,7 +804,7 @@ func unmarshalSLOMetric(spec map[string]interface{}) (*schema.Set, error) {
 		}
 	}
 
-	return schema.NewSet(oneElementSet, []interface{}{res}), nil
+	return schema.NewSet(oneElementSet, []interface{}{res})
 }
 
 /**
@@ -832,9 +816,10 @@ const amazonPrometheusMetric = "amazon_prometheus"
 func schemaMetricAmazonPrometheus() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		amazonPrometheusMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus)",
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"promql": {
@@ -876,9 +861,10 @@ const appDynamicsMetric = "appdynamics"
 func schemaMetricAppDynamics() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		appDynamicsMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics)",
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"application_name": {
@@ -929,9 +915,10 @@ const bigQueryMetric = "bigquery"
 func schemaMetricBigQuery() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		bigQueryMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery)",
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"location": {
@@ -987,9 +974,10 @@ const cloudwatchMetric = "cloudwatch"
 func schemaMetricCloudwatch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		cloudwatchMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch)",
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"region": {
@@ -1223,9 +1211,10 @@ const elasticsearchMetric = "elasticsearch"
 func schemaMetricElasticsearch() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		elasticsearchMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch)",
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"index": {
@@ -1276,9 +1265,10 @@ const gcmMetric = "gcm"
 func schemaMetricGCM() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		gcmMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring)",
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"project_id": {
@@ -1327,9 +1317,10 @@ const grafanaLokiMetric = "grafana_loki"
 func schemaMetricGrafanaLoki() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		grafanaLokiMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki)",
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"logql": {
@@ -1900,9 +1891,9 @@ func marshalPingdomMetric(s *schema.Set) *n9api.PingdomMetric {
 
 	metric := s.List()[0].(map[string]interface{})
 
-	var checkId *string
+	var checkID *string
 	if value, ok := metric["check_id"].(string); ok && value != "" {
-		checkId = &value
+		checkID = &value
 	}
 	var checkType *string
 	if value, ok := metric["check_type"].(string); ok && value != "" {
@@ -1913,7 +1904,7 @@ func marshalPingdomMetric(s *schema.Set) *n9api.PingdomMetric {
 		status = &value
 	}
 	return &n9api.PingdomMetric{
-		CheckID:   checkId,
+		CheckID:   checkID,
 		CheckType: checkType,
 		Status:    status,
 	}
@@ -1937,9 +1928,10 @@ const prometheusMetric = "prometheus"
 func schemaMetricPrometheus() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		prometheusMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus)",
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"promql": {
@@ -1981,9 +1973,10 @@ const redshiftMetric = "redshift"
 func schemaMetricRedshift() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		redshiftMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift)",
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"region": {
@@ -2095,9 +2088,10 @@ const splunkObservabilityMetric = "splunk_observability"
 func schemaMetricSplunkObservability() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		splunkObservabilityMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability)",
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"program": {
@@ -2140,9 +2134,10 @@ const sumologicMetric = "sumologic"
 func schemaMetricSumologic() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		sumologicMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic)",
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"type": {
@@ -2215,9 +2210,10 @@ const thousandeyesMetric = "thousandeyes"
 func schemaMetricThousandEyes() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		thousandeyesMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes)",
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"test_id": {
