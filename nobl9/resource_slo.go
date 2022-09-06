@@ -1473,7 +1473,7 @@ func schemaMetricInstana() map[string]*schema.Schema {
 					},
 					"infrastructure": {
 						Type:        schema.TypeSet,
-						Required:    true,
+						Optional:    true,
 						Description: "Infrastructure metric type",
 						Elem: &schema.Resource{Schema: map[string]*schema.Schema{
 							"metric_retrieval_method": {
@@ -1505,7 +1505,7 @@ func schemaMetricInstana() map[string]*schema.Schema {
 					},
 					"application": {
 						Type:        schema.TypeSet,
-						Required:    true,
+						Optional:    true,
 						Description: "Infrastructure metric type",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -1648,35 +1648,35 @@ func unmarshalInstanaMetric(metric map[string]interface{}) map[string]interface{
 	return res
 }
 
-func unmarshalInstanaInfrastructureMetric(metric map[string]interface{}) map[string]interface{} {
-	res := make(map[string]interface{})
-
+func unmarshalInstanaInfrastructureMetric(metric map[string]interface{}) *schema.Set {
 	if infrastructure, ok := metric["infrastructure"].(map[string]interface{}); ok {
-		res["metric_retrieval_method"] = infrastructure["metricRetrievalMethod"]
-		res["query"] = infrastructure["query"]
-		res["snapshot_id"] = infrastructure["snapshotId"]
-		res["metric_id"] = infrastructure["metricId"]
-		res["plugin_id"] = infrastructure["pluginId"]
+		infrastructureTF := map[string]interface{}{
+			"metric_retrieval_method": infrastructure["metricRetrievalMethod"],
+			"query":                   infrastructure["query"],
+			"snapshot_id":             infrastructure["snapshotId"],
+			"metric_id":               infrastructure["metricId"],
+			"plugin_id":               infrastructure["pluginId"],
+		}
+		return schema.NewSet(oneElementSet, []interface{}{infrastructureTF})
 	}
 
 	return nil
 }
 
-func unmarshalInstanaApplicationMetric(metric map[string]interface{}) map[string]interface{} {
-	res := make(map[string]interface{})
-
+func unmarshalInstanaApplicationMetric(metric map[string]interface{}) *schema.Set {
 	if application, ok := metric["application"].(map[string]interface{}); ok {
-		groupBy := make(map[string]interface{})
-		groupBy["tag"] = application["groupBy"].(map[string]interface{})["tag"]
-		groupBy["tag_entity"] = application["groupBy"].(map[string]interface{})["tagEntity"]
-		groupBy["tag_second_level_key"] = application["groupBy"].(map[string]interface{})["tagSecondLevelKey"]
-
-		res["metric_id"] = application["metricId"]
-		res["aggregation"] = application["aggregation"]
-		res["group_by"] = groupBy
-		res["api_query"] = application["apiQuery"]
-		res["include_internal"] = application["includeInternal"]
-		res["include_synthetic"] = application["includeSynthetic"]
+		applicationTF := map[string]interface{}{
+			"metric_id":   application["metricId"],
+			"aggregation": application["aggregation"],
+			"group_by": schema.NewSet(oneElementSet, []interface{}{map[string]interface{}{
+				"tag":                  application["groupBy"].(map[string]interface{})["tag"],
+				"tag_entity":           application["groupBy"].(map[string]interface{})["tagEntity"],
+				"tag_second_level_key": application["groupBy"].(map[string]interface{})["tagSecondLevelKey"]}}),
+			"api_query":         application["apiQuery"],
+			"include_internal":  application["includeInternal"],
+			"include_synthetic": application["includeSynthetic"],
+		}
+		return schema.NewSet(oneElementSet, []interface{}{applicationTF})
 	}
 
 	return nil
@@ -2014,7 +2014,10 @@ func marshalRedshiftMetric(s *schema.Set) *n9api.RedshiftMetric {
 
 func unmarshalRedshiftMetric(metric map[string]interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
-	res["promql"] = metric["promql"]
+	res["region"] = metric["region"]
+	res["cluster_id"] = metric["clusterId"]
+	res["database_name"] = metric["databaseName"]
+	res["query"] = metric["query"]
 
 	return res
 }
