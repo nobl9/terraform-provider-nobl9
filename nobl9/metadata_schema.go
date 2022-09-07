@@ -37,13 +37,14 @@ func schemaLabels() *schema.Schema {
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"key": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "One key for the label, unique within the associated resource.",
+					Type:         schema.TypeString,
+					Required:     true,
+					ValidateFunc: validateNotEmptyString,
+					Description:  "One key for the label, unique within the associated resource.",
 				},
 				"values": {
 					Type:        schema.TypeList,
-					Optional:    true,
+					Required:    true,
 					MinItems:    1,
 					Description: "A list of unique values for a single key.",
 					Elem:        &schema.Schema{Type: schema.TypeString},
@@ -53,7 +54,19 @@ func schemaLabels() *schema.Schema {
 	}
 }
 
-func diffSuppressLabels(_, _, _ string, d *schema.ResourceData) bool {
+func validateNotEmptyString(valueRaw interface{}, _ string) ([]string, []error) {
+	valueStr := valueRaw.(string)
+	if valueStr == "" {
+		return nil, []error{fmt.Errorf("label key must not be empty")}
+	}
+	return nil, nil
+}
+
+func exactlyOneStringEmpty(str1, str2 string) bool {
+	return (str1 == "" && str2 != "") || (str1 != "" && str2 == "")
+}
+
+func diffSuppressLabels(_, oldValueStr, newValueStr string, d *schema.ResourceData) bool {
 	// the N9 API will return the labels in alphabetical by name order, however users
 	// can have them in any order.  So we want to flatten the list into a 2D map and do a DeepEqual
 	// comparison to see if we have any actual changes
@@ -63,6 +76,13 @@ func diffSuppressLabels(_, _, _ string, d *schema.ResourceData) bool {
 
 	oldMap := transformLabelsTo2DMap(labelsOld)
 	newMap := transformLabelsTo2DMap(labelsNew)
+
+	// Terraform's GetChange function will fail to notice if user reapplied the resource
+	// with all the labels removed from the file.
+	// This is the situation in which one of the values in the label's schema is set and the other one isn't.
+	if exactlyOneStringEmpty(oldValueStr, newValueStr) {
+		return false
+	}
 
 	return reflect.DeepEqual(oldMap, newMap)
 }
@@ -130,7 +150,7 @@ func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Dia
 	err = d.Set("project", metadata["project"])
 	diags = appendError(diags, err)
 
-	err = unmarshalLabels(d, metadata)
+	err = d.Set("label", unmarshalLabels(metadata["labels"]))
 	diags = appendError(diags, err)
 
 	return diags
@@ -138,14 +158,17 @@ func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Dia
 
 func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	labelsResult := make(n9api.Labels, 0)
+	labelsResult := make(n9api.Labels, len(labels))
 
 	for _, labelRaw := range labels {
 		labelMap := labelRaw.(map[string]interface{})
 
 		labelKey := labelMap["key"].(string)
 		if labelKey == "" {
-			diags = appendError(diags, fmt.Errorf("error creating label because the key is empty"))
+			// This continue is needed because a label with empty key will be applied
+			// as a result of deleting all labels in .tf file and reapplying it.
+			// This does not break the validation because of the validation schema of label resource.
+			continue
 		}
 		if _, exist := labelsResult[labelKey]; exist {
 			diags = appendError(diags, fmt.Errorf(
@@ -169,27 +192,25 @@ func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
 	return labelsResult, diags
 }
 
-func unmarshalLabels(d *schema.ResourceData, metadata map[string]interface{}) error {
-	labelsRaw, exist := metadata["labels"].(map[string]interface{})
-	if !exist {
-		return nil
-	}
-
+func unmarshalLabels(labelsRaw interface{}) interface{} {
 	resultLabels := make([]map[string]interface{}, 0)
 
-	for labelKey, labelValuesRaw := range labelsRaw {
-		var labelValuesStr []string
-		for _, labelValueRaw := range labelValuesRaw.([]interface{}) {
-			labelValuesStr = append(labelValuesStr, labelValueRaw.(string))
-		}
-		labelKeyWithValues := make(map[string]interface{})
-		labelKeyWithValues["key"] = labelKey
-		labelKeyWithValues["values"] = labelValuesStr
+	if labelsRaw != nil {
+		labelsMap := labelsRaw.(map[string]interface{})
+		for labelKey, labelValuesRaw := range labelsMap {
+			var labelValuesStr []string
+			for _, labelValueRaw := range labelValuesRaw.([]interface{}) {
+				labelValuesStr = append(labelValuesStr, labelValueRaw.(string))
+			}
+			labelKeyWithValues := make(map[string]interface{})
+			labelKeyWithValues["key"] = labelKey
+			labelKeyWithValues["values"] = labelValuesStr
 
-		resultLabels = append(resultLabels, labelKeyWithValues)
+			resultLabels = append(resultLabels, labelKeyWithValues)
+		}
 	}
 
-	return d.Set("label", resultLabels)
+	return resultLabels
 }
 
 // oneElementSet implements schema.SchemaSetFunc and created only one element set.

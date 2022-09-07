@@ -2,7 +2,6 @@ package nobl9
 
 import (
 	"context"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
@@ -27,18 +26,28 @@ func resourceProject() *schema.Resource {
 	}
 }
 
-func marshalProject(d *schema.ResourceData) *n9api.Project {
+func marshalProject(d *schema.ResourceData) (*n9api.Project, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var labels []interface{}
+	if labelsData := d.Get("label"); labelsData != nil {
+		labels = labelsData.([]interface{})
+	}
+	var labelsMarshalled n9api.Labels
+	labelsMarshalled, diags = marshalLabels(labels)
+
 	return &n9api.Project{
 		APIVersion: n9api.APIVersion,
 		Kind:       n9api.KindProject,
 		Metadata: n9api.ProjectMetadata{
 			Name:        d.Get("name").(string),
 			DisplayName: d.Get("display_name").(string),
+			Labels:      labelsMarshalled,
 		},
 		Spec: n9api.ProjectSpec{
 			Description: d.Get("description").(string),
 		},
-	}
+	}, diags
 }
 
 func unmarshalProject(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
@@ -53,6 +62,8 @@ func unmarshalProject(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.D
 	err := d.Set("name", metadata["name"])
 	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata["displayName"])
+	diags = appendError(diags, err)
+	err = d.Set("label", unmarshalLabels(metadata["labels"]))
 	diags = appendError(diags, err)
 
 	spec := object["spec"].(map[string]interface{})
@@ -69,7 +80,10 @@ func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta inte
 		return ds
 	}
 
-	ap := marshalProject(d)
+	ap, diags := marshalProject(d)
+	if diags.HasError() {
+		return diags
+	}
 
 	var p n9api.Payload
 	p.AddObject(ap)
