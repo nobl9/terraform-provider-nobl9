@@ -1,11 +1,11 @@
 package nobl9
 
 import (
-	n9api "github.com/nobl9/nobl9-go"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	n9api "github.com/nobl9/nobl9-go"
 )
 
 func TestAcc_Nobl9SLO(t *testing.T) {

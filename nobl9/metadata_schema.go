@@ -55,8 +55,7 @@ func schemaLabels() *schema.Schema {
 }
 
 func validateNotEmptyString(valueRaw interface{}, _ string) ([]string, []error) {
-	valueStr := valueRaw.(string)
-	if valueStr == "" {
+	if valueRaw.(string) == "" {
 		return nil, []error{fmt.Errorf("label key must not be empty")}
 	}
 	return nil, nil
