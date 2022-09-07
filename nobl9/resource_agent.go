@@ -287,7 +287,7 @@ func marshalAgent(d *schema.ResourceData) (*n9api.Agent, diag.Diagnostics) {
 	}, diags
 }
 
-func marshalAgentPrometheus(d *schema.ResourceData) *n9api.PrometheusConfig {
+func marshalAgentPrometheus(d *schema.ResourceData) *n9api.PrometheusAgentConfig {
 	agentType := d.Get("agent_type").(string)
 	if agentType != "prometheus" {
 		return nil
@@ -299,7 +299,7 @@ func marshalAgentPrometheus(d *schema.ResourceData) *n9api.PrometheusConfig {
 	prom := p[0].(map[string]interface{})
 
 	url := prom["url"].(string)
-	return &n9api.PrometheusConfig{
+	return &n9api.PrometheusAgentConfig{
 		URL: &url,
 	}
 }
