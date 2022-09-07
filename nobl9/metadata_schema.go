@@ -149,8 +149,11 @@ func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Dia
 	err = d.Set("project", metadata["project"])
 	diags = appendError(diags, err)
 
-	err = d.Set("label", unmarshalLabels(metadata["labels"]))
-	diags = appendError(diags, err)
+	labelsRaw, exist := metadata["labels"]
+	if exist {
+		err = d.Set("label", unmarshalLabels(labelsRaw))
+		diags = appendError(diags, err)
+	}
 
 	return diags
 }
