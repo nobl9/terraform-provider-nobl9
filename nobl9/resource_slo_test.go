@@ -66,15 +66,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  label {
-    key = "env"
-    values = ["green","sapphire"]
-  }
-
-  label {
-    key = "prod"
-    values = ["dev", "staging", "prod"]
-  }
+  //label {
+  //  key = "team"
+  //  values = ["green","sapphire"]
+  //}
+  //
+  //label {
+  //  key = "env"
+  //  values = ["dev", "staging", "prod"]
+  //}
 
   budgeting_method = "Occurrences"
 
@@ -83,6 +83,7 @@ resource "nobl9_slo" ":name" {
     target       = 0.7
     value        = 1
     op           = "lt"
+
     raw_metric {
       query {
         prometheus {
@@ -122,12 +123,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -178,12 +179,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -237,12 +238,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -305,12 +306,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -376,12 +377,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -431,12 +432,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -486,12 +487,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -547,12 +548,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -601,12 +602,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -655,12 +656,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -711,12 +712,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -765,12 +766,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -821,12 +822,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -876,12 +877,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -932,12 +933,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -986,12 +987,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -1041,12 +1042,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -1097,12 +1098,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -1153,12 +1154,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -1212,12 +1213,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -1288,12 +1289,12 @@ func testCompositeSLOTimeSlices(name string) string {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -1363,12 +1364,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -1429,12 +1430,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 
@@ -1483,12 +1484,12 @@ resource "nobl9_slo" ":name" {
   service      = nobl9_service.:name-service.name
 
   label {
-    key = "env"
+    key = "team"
     values = ["green","sapphire"]
   }
 
   label {
-    key = "prod"
+    key = "env"
     values = ["dev", "staging", "prod"]
   }
 

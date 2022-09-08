@@ -2,11 +2,18 @@ package nobl9
 
 import (
 	"fmt"
-	"reflect"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
+	"reflect"
+	"sort"
+	"strings"
+)
+
+const (
+	fieldLabel       = "label"
+	fieldLabelKey    = "key"
+	fieldLabelValues = "values"
 )
 
 //nolint:lll
@@ -36,54 +43,103 @@ func schemaLabels() *schema.Schema {
 		DiffSuppressFunc: diffSuppressLabels,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"key": {
+				fieldLabelKey: {
 					Type:         schema.TypeString,
 					Required:     true,
-					ValidateFunc: validateNotEmptyString,
+					ValidateFunc: validateNotEmptyString(fieldLabelKey),
 					Description:  "One key for the label, unique within the associated resource.",
 				},
-				"values": {
+				fieldLabelValues: {
 					Type:        schema.TypeList,
 					Required:    true,
 					MinItems:    1,
 					Description: "A list of unique values for a single key.",
-					Elem:        &schema.Schema{Type: schema.TypeString},
+					Elem: &schema.Schema{
+						Type:         schema.TypeString,
+						ValidateFunc: validateNotEmptyString(fieldLabelValues),
+					},
 				},
 			},
 		},
 	}
 }
 
-func validateNotEmptyString(valueRaw interface{}, _ string) ([]string, []error) {
-	if valueRaw.(string) == "" {
-		return nil, []error{fmt.Errorf("label key must not be empty")}
+func validateNotEmptyString(variableName string) func(interface{}, string) ([]string, []error) {
+	return func(valueRaw interface{}, _ string) ([]string, []error) {
+		if valueRaw.(string) == "" {
+			return nil, []error{fmt.Errorf("%s must not be empty", variableName)}
+		}
+		return nil, nil
 	}
-	return nil, nil
 }
 
 func exactlyOneStringEmpty(str1, str2 string) bool {
 	return (str1 == "" && str2 != "") || (str1 != "" && str2 == "")
 }
 
-func diffSuppressLabels(_, oldValueStr, newValueStr string, d *schema.ResourceData) bool {
-	// the N9 API will return the labels in alphabetical by name order, however users
-	// can have them in any order.  So we want to flatten the list into a 2D map and do a DeepEqual
-	// comparison to see if we have any actual changes
-	oldValue, newValue := d.GetChange("label")
+func diffSuppressLabels(fieldPath, oldValueStr, newValueStr string, d *schema.ResourceData) bool {
+	fieldPathSegments := strings.Split(fieldPath, ".")
+	if len(fieldPathSegments) > 1 {
+		fieldName := fieldPathSegments[len(fieldPathSegments)-1]
+		if fieldName == fieldLabelKey {
+			// Terraform's GetChange function will fail to notice if user reapplied the resource
+			// with all the labels removed from the file.
+			// This is the situation in which one of the values in the label's schema is set and the other one isn't.
+			if exactlyOneStringEmpty(oldValueStr, newValueStr) {
+				return false
+			}
+		}
+	}
+
+	// the N9 API will return the labels in alphabetical order for keys and values.
+	// Users should be able to declare label keys and values in any order
+	// and changing order should force recreating the resource.
+	// In order to achieve that, we're flattening the initial label struct to 2D map
+	// and check if the label values inside that 2D map are deeply equal.
+	// A simple reflect.DeepEqual change is not enough for the whole 2D map
+	// because it omits the values order inside the array.
+	// ---------------------------------
+	// Example of (deeply) equal labels:
+	//   label {
+	//    key    = "team"
+	//    values = ["sapphire", "green"]
+	//  }
+	//  label {
+	//    key    = "team"
+	//    values = ["green", "sapphire"]
+	//  }
+	oldValue, newValue := d.GetChange(fieldLabel)
 	labelsOld := oldValue.([]interface{})
 	labelsNew := newValue.([]interface{})
+	if len(labelsOld) != len(labelsNew) {
+		return false
+	}
 
 	oldMap := transformLabelsTo2DMap(labelsOld)
 	newMap := transformLabelsTo2DMap(labelsNew)
 
-	// Terraform's GetChange function will fail to notice if user reapplied the resource
-	// with all the labels removed from the file.
-	// This is the situation in which one of the values in the label's schema is set and the other one isn't.
-	if exactlyOneStringEmpty(oldValueStr, newValueStr) {
-		return false
+	isDeepEqual := true
+	for labelKey := range newMap {
+		if _, exist := oldMap[labelKey][fieldLabelValues]; !exist {
+			return false
+		}
+
+		var oldValues = oldMap[labelKey][fieldLabelValues].([]interface{})
+		var newValues = newMap[labelKey][fieldLabelValues].([]interface{})
+
+		sort.Slice(oldValues, func(i, j int) bool {
+			return oldValues[i].(string) < oldValues[j].(string)
+		})
+		sort.Slice(newValues, func(i, j int) bool {
+			return newValues[i].(string) < newValues[j].(string)
+		})
+
+		if !reflect.DeepEqual(oldValues, newValues) {
+			isDeepEqual = false
+		}
 	}
 
-	return reflect.DeepEqual(oldMap, newMap)
+	return isDeepEqual
 }
 
 func transformLabelsTo2DMap(labels []interface{}) map[string]map[string]interface{} {
@@ -162,6 +218,7 @@ func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	labelsResult := make(n9api.Labels, len(labels))
 
+labelsLoop:
 	for _, labelRaw := range labels {
 		labelMap := labelRaw.(map[string]interface{})
 
@@ -170,7 +227,7 @@ func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
 			// This continue is needed because a label with empty key will be applied
 			// as a result of deleting all labels in .tf file and reapplying it.
 			// This does not break the validation because of the validation schema of label resource.
-			continue
+			continue labelsLoop
 		}
 		if _, exist := labelsResult[labelKey]; exist {
 			diags = appendError(diags, fmt.Errorf(
@@ -185,6 +242,12 @@ func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
 			diags = appendError(diags, fmt.Errorf("error creating label because there was no value specified"))
 		}
 		for i, labelValueRaw := range labelValuesRaw {
+			if labelValueRaw.(string) == "" {
+				// This continue is needed because a label with empty value will be applied
+				// as a result of deleting all labels in .tf file and reapplying it.
+				// This does not break the validation because of the validation schema of label resource.
+				continue labelsLoop
+			}
 			labelValuesStr[i] = labelValueRaw.(string)
 		}
 

@@ -37,8 +37,13 @@ resource "nobl9_project" "%s" {
   description  = "A terraform project"
 
   label {
-    key = "team"
-    values = ["sapphire"]
+    key    = "team"
+    values = ["green", "sapphire"]
+  }
+
+  label {
+    key    = "env"
+    values = ["dev", "staging", "prod"]
   }
 }
 `, name, name, name)
