@@ -14,8 +14,8 @@ description: |-
 
 ```terraform
 resource "nobl9_project" "this" {
-  display_name = "foo-project"
-  name         = "Foo Project"
+  display_name = "Foo Project"
+  name         = "foo-project"
   description  = "An example terraform project"
 }
 
@@ -24,6 +24,16 @@ resource "nobl9_service" "this" {
   project      = nobl9_project.this.name
   display_name = "${nobl9_project.this.display_name} Front Page"
   description  = "Front page service"
+
+  label {
+    key    = "env"
+    values = ["dev", "prod"]
+  }
+
+  label {
+    key    = "team"
+    values = ["red"]
+  }
 }
 ```
 
@@ -39,10 +49,19 @@ resource "nobl9_service" "this" {
 
 - `description` (String) Optional description of the resource.
 - `display_name` (String) Display name of the resource.
+- `label` (Block List) Labels containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 - `status` (Map of Number) Status of created service.
+
+<a id="nestedblock--label"></a>
+### Nested Schema for `label`
+
+Required:
+
+- `key` (String) One key for the label, unique within the associated resource.
+- `values` (List of String) A list of unique values for a single key.
 
 

@@ -9,4 +9,14 @@ resource "nobl9_service" "this" {
   project      = nobl9_project.this.name
   display_name = "${nobl9_project.this.display_name} Front Page"
   description  = "Front page service"
+
+  label {
+    key    = "env"
+    values = ["dev", "prod"]
+  }
+
+  label {
+    key    = "team"
+    values = ["red"]
+  }
 }
