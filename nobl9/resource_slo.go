@@ -18,6 +18,7 @@ func resourceSLO() *schema.Resource {
 			"display_name": schemaDisplayName(),
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
+			"label":        schemaLabels(),
 			"composite": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -206,7 +207,7 @@ func resourceSLO() *schema.Resource {
 					Type:        schema.TypeString,
 					Description: "Alert Policy",
 				},
-				DiffSuppressFunc: diffSuppressAlertPolicyNames,
+				DiffSuppressFunc: diffSuppressListStringOrder("alert_policies"),
 			},
 			"attachments": {
 				Type:        schema.TypeList,
@@ -241,23 +242,28 @@ func resourceSLO() *schema.Resource {
 	}
 }
 
-func diffSuppressAlertPolicyNames(_, _, _ string, d *schema.ResourceData) bool {
-	// Ignore the order of elements on alert_policy list
-	oldValue, newValue := d.GetChange("alert_policies")
-	if oldValue == nil && newValue == nil {
-		return true
+func diffSuppressListStringOrder(attribute string) func(
+	_, _, _ string,
+	d *schema.ResourceData,
+) bool {
+	return func(_, _, _ string, d *schema.ResourceData) bool {
+		// Ignore the order of elements on alert_policy list
+		oldValue, newValue := d.GetChange(attribute)
+		if oldValue == nil && newValue == nil {
+			return true
+		}
+		apOld := oldValue.([]interface{})
+		apNew := newValue.([]interface{})
+
+		sort.Slice(apOld, func(i, j int) bool {
+			return apOld[i].(string) < apOld[j].(string)
+		})
+		sort.Slice(apNew, func(i, j int) bool {
+			return apNew[i].(string) < apNew[j].(string)
+		})
+
+		return equalSlices(apOld, apNew)
 	}
-	apOld := oldValue.([]interface{})
-	apNew := newValue.([]interface{})
-
-	sort.Slice(apOld, func(i, j int) bool {
-		return apOld[i].(string) < apOld[j].(string)
-	})
-	sort.Slice(apNew, func(i, j int) bool {
-		return apNew[i].(string) < apNew[j].(string)
-	})
-
-	return equalSlices(apOld, apNew)
 }
 
 func equalSlices(a, b []interface{}) bool {
@@ -272,13 +278,18 @@ func equalSlices(a, b []interface{}) bool {
 	return true
 }
 
-func marshalSLO(d *schema.ResourceData) *n9api.SLO {
+func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
+	metadataHolder, diags := marshalMetadata(d)
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	indicator := marshalIndicator(d)
 	return &n9api.SLO{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
 			Kind:           n9api.KindSLO,
-			MetadataHolder: marshalMetadata(d),
+			MetadataHolder: metadataHolder,
 		},
 		Spec: n9api.SLOSpec{
 			Description:     d.Get("description").(string),
@@ -291,7 +302,7 @@ func marshalSLO(d *schema.ResourceData) *n9api.SLO {
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
 			Attachments:     marshalAttachments(d.Get("attachments").([]interface{})),
 		},
-	}
+	}, diags
 }
 
 func marshalComposite(d *schema.ResourceData) *n9api.Composite {
@@ -672,7 +683,11 @@ func marshalSLOCloudWatch(s *schema.Set) *n9api.CloudWatchMetric {
 	}
 
 	dimensions := metric["dimensions"].(*schema.Set)
-	var metricDimensions = make([]n9api.CloudWatchMetricDimension, dimensions.Len())
+	var metricDimensions []n9api.CloudWatchMetricDimension
+
+	if dimensions.Len() > 0 {
+		metricDimensions = make([]n9api.CloudWatchMetricDimension, dimensions.Len())
+	}
 
 	for idx, dimension := range dimensions.List() {
 		n9Dimension := dimension.(map[string]interface{})
@@ -1064,7 +1079,10 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 		return ds
 	}
 
-	slo := marshalSLO(d)
+	slo, diags := marshalSLO(d)
+	if diags.HasError() {
+		return diags
+	}
 
 	var p n9api.Payload
 	p.AddObject(slo)

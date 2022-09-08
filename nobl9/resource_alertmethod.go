@@ -45,15 +45,20 @@ type alertMethod struct {
 	alertMethodProvider
 }
 
-func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) *n9api.AlertMethod {
+func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) (*n9api.AlertMethod, diag.Diagnostics) {
+	metadataHolder, diags := marshalMetadata(d)
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	return &n9api.AlertMethod{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
 			Kind:           n9api.KindAlertMethod,
-			MetadataHolder: marshalMetadata(d),
+			MetadataHolder: metadataHolder,
 		},
 		Spec: a.MarshalSpec(d),
-	}
+	}, diags
 }
 
 func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
@@ -86,7 +91,10 @@ func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.Res
 		return ds
 	}
 
-	service := a.marshalAlertMethod(d)
+	service, diags := a.marshalAlertMethod(d)
+	if diags.HasError() {
+		return diags
+	}
 
 	var p n9api.Payload
 	p.AddObject(service)

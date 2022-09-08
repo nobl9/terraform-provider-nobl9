@@ -250,7 +250,12 @@ func resourceAgent() *schema.Resource {
 	}
 }
 
-func marshalAgent(d *schema.ResourceData) *n9api.Agent {
+func marshalAgent(d *schema.ResourceData) (*n9api.Agent, diag.Diagnostics) {
+	metadataHolder, diags := marshalMetadata(d)
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	sourceOf := d.Get("source_of").([]interface{})
 	sourceOfStr := make([]string, len(sourceOf))
 	for i, s := range sourceOf {
@@ -261,7 +266,7 @@ func marshalAgent(d *schema.ResourceData) *n9api.Agent {
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
 			Kind:           n9api.KindAgent,
-			MetadataHolder: marshalMetadata(d),
+			MetadataHolder: metadataHolder,
 		},
 		Spec: n9api.AgentSpec{
 			Description:         d.Get("description").(string),
@@ -279,10 +284,10 @@ func marshalAgent(d *schema.ResourceData) *n9api.Agent {
 			BigQuery:            marshalAgentBigQuery(d),
 			OpenTSDB:            marshalAgentOpenTSDB(d),
 		},
-	}
+	}, diags
 }
 
-func marshalAgentPrometheus(d *schema.ResourceData) *n9api.PrometheusConfig {
+func marshalAgentPrometheus(d *schema.ResourceData) *n9api.PrometheusAgentConfig {
 	agentType := d.Get("agent_type").(string)
 	if agentType != "prometheus" {
 		return nil
@@ -294,7 +299,7 @@ func marshalAgentPrometheus(d *schema.ResourceData) *n9api.PrometheusConfig {
 	prom := p[0].(map[string]interface{})
 
 	url := prom["url"].(string)
-	return &n9api.PrometheusConfig{
+	return &n9api.PrometheusAgentConfig{
 		URL: &url,
 	}
 }
@@ -531,7 +536,10 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 		return ds
 	}
 
-	service := marshalAgent(d)
+	service, diags := marshalAgent(d)
+	if diags.HasError() {
+		return diags
+	}
 
 	var p n9api.Payload
 	p.AddObject(service)

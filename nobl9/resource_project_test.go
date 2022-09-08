@@ -16,8 +16,13 @@ func TestAcc_Nobl9Project(t *testing.T) {
 		ProviderFactories: ProviderFactory(),
 		CheckDestroy:      CheckDestory("nobl9_project", n9api.ObjectProject),
 		Steps: []resource.TestStep{
+
 			{
 				Config: testProjectConfig(name),
+				Check:  CheckObjectCreated("nobl9_project." + name),
+			},
+			{
+				Config: testProjectConfigNoLabels(name),
 				Check:  CheckObjectCreated("nobl9_project." + name),
 			},
 		},
@@ -31,6 +36,25 @@ resource "nobl9_project" "%s" {
   display_name = "%s"
   description  = "A terraform project"
 
+  label {
+    key    = "team"
+    values = ["green", "sapphire"]
+  }
+
+  label {
+    key    = "env"
+    values = ["dev", "staging", "prod"]
+  }
+}
+`, name, name, name)
+}
+
+func testProjectConfigNoLabels(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_project" "%s" {
+  name         = "%s"
+  display_name = "%s"
+  description  = "A terraform project"
 }
 `, name, name, name)
 }

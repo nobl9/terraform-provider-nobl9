@@ -15,6 +15,7 @@ func resourceService() *schema.Resource {
 			"display_name": schemaDisplayName(),
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
+			"label":        schemaLabels(),
 			"status": {
 				Type:        schema.TypeMap,
 				Computed:    true,
@@ -35,17 +36,21 @@ func resourceService() *schema.Resource {
 	}
 }
 
-func marshalService(d *schema.ResourceData) *n9api.Service {
+func marshalService(d *schema.ResourceData) (*n9api.Service, diag.Diagnostics) {
+	metadataHolder, diags := marshalMetadata(d)
+	if diags.HasError() {
+		return nil, diags
+	}
 	return &n9api.Service{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
 			Kind:           n9api.KindService,
-			MetadataHolder: marshalMetadata(d),
+			MetadataHolder: metadataHolder,
 		},
 		Spec: n9api.ServiceSpec{
 			Description: d.Get("description").(string),
 		},
-	}
+	}, diags
 }
 
 func unmarshalService(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
@@ -79,7 +84,10 @@ func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta inte
 		return ds
 	}
 
-	service := marshalService(d)
+	service, diags := marshalService(d)
+	if diags.HasError() {
+		return diags
+	}
 
 	var p n9api.Payload
 	p.AddObject(service)

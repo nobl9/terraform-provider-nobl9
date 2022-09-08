@@ -30,6 +30,16 @@ resource "nobl9_service" "%s" {
   display_name = "%s"
   project             = "%s"
   description       = "Test of service"
+  
+  label {
+   key = "env"
+   values = ["green","sapphire"]
+  }
+  
+  label {
+   key = "dev"
+   values = ["dev", "staging", "prod"]
+  }
 }
 `, name, name, name, testProject)
 }

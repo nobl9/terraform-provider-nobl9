@@ -17,7 +17,6 @@ func resourceAlertPolicy() *schema.Resource {
 			"display_name": schemaDisplayName(),
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
-
 			"severity": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -116,12 +115,17 @@ func transformAlertMethodsTo2DMap(alertMethods []interface{}) map[string]map[str
 	return result
 }
 
-func marshalAlertPolicy(d *schema.ResourceData) *n9api.AlertPolicy {
+func marshalAlertPolicy(d *schema.ResourceData) (*n9api.AlertPolicy, diag.Diagnostics) {
+	metadataHolder, diags := marshalMetadata(d)
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	return &n9api.AlertPolicy{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
 			Kind:           n9api.KindAlertPolicy,
-			MetadataHolder: marshalMetadata(d),
+			MetadataHolder: metadataHolder,
 		},
 		Spec: n9api.AlertPolicySpec{
 			Description:  d.Get("description").(string),
@@ -129,7 +133,7 @@ func marshalAlertPolicy(d *schema.ResourceData) *n9api.AlertPolicy {
 			Conditions:   marshalAlertConditions(d),
 			AlertMethods: marshalAlertMethods(d),
 		},
-	}
+	}, diags
 }
 
 func marshalAlertMethods(d *schema.ResourceData) []n9api.PublicAlertMethod {
@@ -257,7 +261,10 @@ func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta 
 		return ds
 	}
 
-	ap := marshalAlertPolicy(d)
+	ap, diags := marshalAlertPolicy(d)
+	if diags.HasError() {
+		return diags
+	}
 
 	var p n9api.Payload
 	p.AddObject(ap)
