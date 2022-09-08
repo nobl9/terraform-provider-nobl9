@@ -7,6 +7,11 @@ import (
 	"github.com/nobl9/terraform-provider-nobl9/nobl9"
 )
 
+// Run the docs generation tool, check its repository for more information on how it works and how docs
+// can be customized.
+//
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+
 func main() {
 	var debugMode bool
 	flag.BoolVar(&debugMode, "debug", false, "set to true to run the provider with support for debuggers like delve")
