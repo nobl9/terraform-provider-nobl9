@@ -3,12 +3,12 @@
 page_title: "nobl9_agent Resource - terraform-provider-nobl9"
 subcategory: ""
 description: |-
-  Agent configuration documentation https://docs.nobl9.com/the-nobl9-agent
+  Agent configuration documentation https://docs.nobl9.com/nobl9_agent
 ---
 
 # nobl9_agent (Resource)
 
-[Agent configuration documentation](https://docs.nobl9.com/the-nobl9-agent)
+[Agent configuration documentation](https://docs.nobl9.com/nobl9_agent)
 
 
 
@@ -17,7 +17,7 @@ description: |-
 
 ### Required
 
-- `agent_type` (String) Type of an agent. [Supported agent types](https://docs.nobl9.com/the-nobl9-agent)
+- `agent_type` (String) Type of an agent. [Supported agent types](https://docs.nobl9.com/Sources/)
 - `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `source_of` (List of String) Source of Metrics and/or Services

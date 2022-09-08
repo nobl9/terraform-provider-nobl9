@@ -25,7 +25,7 @@ func resourceAgent() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[Agent configuration documentation](https://docs.nobl9.com/the-nobl9-agent)",
+		Description: "[Agent configuration documentation](https://docs.nobl9.com/nobl9_agent)",
 	}
 }
 
@@ -49,7 +49,7 @@ func agentSchema() map[string]*schema.Schema {
 		agentTypeKey: {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Type of an agent. [Supported agent types](https://docs.nobl9.com/the-nobl9-agent)",
+			Description: "Type of an agent. [Supported agent types](https://docs.nobl9.com/Sources/)",
 		},
 		"status": {
 			Type:        schema.TypeMap,

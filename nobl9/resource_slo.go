@@ -62,6 +62,7 @@ func schemaSLO() map[string]*schema.Schema {
 		"display_name": schemaDisplayName(),
 		"project":      schemaProject(),
 		"description":  schemaDescription(),
+		"label":        schemaLabels(),
 		"composite": {
 			Type:        schema.TypeSet,
 			Optional:    true,

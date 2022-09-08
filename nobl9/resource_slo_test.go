@@ -78,6 +78,16 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -126,6 +136,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -176,6 +196,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
     project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -231,6 +261,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
     project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -325,6 +365,16 @@ resource "nobl9_slo" ":name" {
     project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -374,6 +424,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
     project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -434,6 +494,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -575,6 +645,16 @@ resource "nobl9_slo" ":name" {
     project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -623,6 +703,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
     project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -677,6 +767,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
     project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -736,6 +836,16 @@ resource "nobl9_slo" ":name" {
     project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -784,6 +894,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
     project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -840,6 +960,16 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -894,6 +1024,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -977,6 +1117,16 @@ resource "nobl9_slo" ":name" {
     project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -1029,6 +1179,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
     project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -1084,6 +1244,16 @@ resource "nobl9_slo" ":name" {
     project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -1134,6 +1304,16 @@ resource "nobl9_slo" ":name" {
     project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -1182,6 +1362,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
     project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -1233,6 +1423,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -1301,6 +1501,16 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -1351,6 +1561,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -1407,6 +1627,16 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -1460,6 +1690,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -1624,6 +1864,16 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -1672,6 +1922,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
   project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -1729,6 +1989,16 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -1782,6 +2052,16 @@ resource "nobl9_slo" ":name" {
     project      = ":project"
   service      = nobl9_service.:serviceName.name
 
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
   budgeting_method = "Occurrences"
 
   objective {
@@ -1830,6 +2110,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
     project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
@@ -1882,6 +2172,16 @@ resource "nobl9_slo" ":name" {
   display_name = ":name"
     project      = ":project"
   service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
