@@ -252,9 +252,10 @@ func schemaMetricSpec() *schema.Schema {
 					},
 				},
 				"cloudwatch": {
-					Type:        schema.TypeSet,
-					Optional:    true,
-					Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch)",
+					Type:     schema.TypeSet,
+					Optional: true,
+					Description: "[Configuration documentation]" +
+						"(https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch)",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"region": {

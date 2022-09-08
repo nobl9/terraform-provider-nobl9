@@ -683,7 +683,11 @@ func marshalSLOCloudWatch(s *schema.Set) *n9api.CloudWatchMetric {
 	}
 
 	dimensions := metric["dimensions"].(*schema.Set)
-	var metricDimensions = make([]n9api.CloudWatchMetricDimension, dimensions.Len())
+	var metricDimensions []n9api.CloudWatchMetricDimension
+
+	if dimensions.Len() > 0 {
+		metricDimensions = make([]n9api.CloudWatchMetricDimension, dimensions.Len())
+	}
 
 	for idx, dimension := range dimensions.List() {
 		n9Dimension := dimension.(map[string]interface{})

@@ -66,15 +66,15 @@ resource "nobl9_slo" ":name" {
   project      = ":project"
   service      = nobl9_service.:name-service.name
 
-  //label {
-  //  key = "team"
-  //  values = ["green","sapphire"]
-  //}
-  //
-  //label {
-  //  key = "env"
-  //  values = ["dev", "staging", "prod"]
-  //}
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+  
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
 
   budgeting_method = "Occurrences"
 
