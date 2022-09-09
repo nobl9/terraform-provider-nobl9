@@ -17,6 +17,16 @@ resource "nobl9_slo" "this" {
   budgeting_method = "Occurrences"
   project          = nobl9_project.this.name
 
+  label {
+    key    = "env"
+    values = ["dev", "prod"]
+  }
+
+  label {
+    key    = "team"
+    values = ["red"]
+  }
+
   alert_policies = [
     "foo-front-page-latency"
   ]

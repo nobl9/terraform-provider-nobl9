@@ -32,6 +32,16 @@ resource "nobl9_slo" "this" {
   budgeting_method = "Occurrences"
   project          = nobl9_project.this.name
 
+  label {
+    key    = "env"
+    values = ["dev", "prod"]
+  }
+
+  label {
+    key    = "team"
+    values = ["red"]
+  }
+
   alert_policies = [
     "foo-front-page-latency"
   ]
@@ -84,6 +94,7 @@ resource "nobl9_slo" "this" {
 - `composite` (Block Set, Max: 1) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
 - `description` (String) Optional description of the resource.
 - `display_name` (String) Display name of the resource.
+- `label` (Block List) Labels containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 
 ### Read-Only
 
@@ -683,7 +694,7 @@ Required:
 
 Optional:
 
-- `display_name` (String) Name which is dispalyed for the attachment
+- `display_name` (String) Name which is displayed for the attachment
 
 
 <a id="nestedblock--composite"></a>
@@ -704,5 +715,15 @@ Required:
 
 - `op` (String) Type of logical operation
 - `value` (Number) Burn rate value.
+
+
+
+<a id="nestedblock--label"></a>
+### Nested Schema for `label`
+
+Required:
+
+- `key` (String) One key for the label, unique within the associated resource.
+- `values` (List of String) A list of unique values for a single key.
 
 
