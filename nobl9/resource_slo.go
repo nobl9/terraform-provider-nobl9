@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"sort"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -207,7 +208,7 @@ func resourceSLO() *schema.Resource {
 					Type:        schema.TypeString,
 					Description: "Alert Policy",
 				},
-				DiffSuppressFunc: diffSuppressListStringOrder("alert_policies"),
+				DiffSuppressFunc: diffSuppressAlertPolicies,
 			},
 			"attachments": {
 				Type:        schema.TypeList,
@@ -242,28 +243,30 @@ func resourceSLO() *schema.Resource {
 	}
 }
 
-func diffSuppressListStringOrder(attribute string) func(
-	_, _, _ string,
-	d *schema.ResourceData,
-) bool {
-	return func(_, _, _ string, d *schema.ResourceData) bool {
-		// Ignore the order of elements on alert_policy list
-		oldValue, newValue := d.GetChange(attribute)
-		if oldValue == nil && newValue == nil {
-			return true
-		}
-		apOld := oldValue.([]interface{})
-		apNew := newValue.([]interface{})
-
-		sort.Slice(apOld, func(i, j int) bool {
-			return apOld[i].(string) < apOld[j].(string)
-		})
-		sort.Slice(apNew, func(i, j int) bool {
-			return apNew[i].(string) < apNew[j].(string)
-		})
-
-		return equalSlices(apOld, apNew)
+func diffSuppressAlertPolicies(fieldPath, oldValueStr, newValueStr string, d *schema.ResourceData) bool {
+	// Terraform's GetChange function will fail to notice if user reapplied the resource
+	// with all the alert policies removed from the slo.
+	// This check is forcing to check the length of both arrays (old and new).
+	// When user deletes the whole alert_policies array, those strings provide meaningful information
+	// about the object's actual state, unlike d.GetChange.
+	const currentFieldCursorMarker = "#"
+	fieldPathSegments := strings.Split(fieldPath, ".")
+	if fieldPathSegments[1] == currentFieldCursorMarker {
+		return oldValueStr == newValueStr
 	}
+
+	oldValue, newValue := d.GetChange("alert_policies")
+	apOld := oldValue.([]interface{})
+	apNew := newValue.([]interface{})
+
+	sort.Slice(apOld, func(i, j int) bool {
+		return apOld[i].(string) < apOld[j].(string)
+	})
+	sort.Slice(apNew, func(i, j int) bool {
+		return apNew[i].(string) < apNew[j].(string)
+	})
+
+	return equalSlices(apOld, apNew)
 }
 
 func equalSlices(a, b []interface{}) bool {
