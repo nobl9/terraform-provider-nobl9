@@ -1,23 +1,23 @@
 ---
-page_title: "nobl9_alert_method_discord Resource - terraform-provider-nobl9"
+page_title: "nobl9_alert_method_pagerduty Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/discord
+  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/pagerduty
 ---
 
-# nobl9_alert_method_discord (Resource)
+# nobl9_alert_method_pagerduty (Resource)
 
-[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/discord)
+[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/pagerduty)
 
 ## Example Usage
 
 ```terraform
-resource "nobl9_alert_method_discord" "this" {
+resource "nobl9_alert_method_webhook" "this" {
   name         = "foo-alert"
   display_name = "Foo Alert"
   project      = "Foo Project"
-  description = "discord"
-  url         = "https://discord.webhook.url"
+  description     = "paderduty"
+  integration_key = "84dfcdf19dad8f6c82b7e22afa024065"
 }
 ```
 
@@ -33,7 +33,7 @@ resource "nobl9_alert_method_discord" "this" {
 
 - `description` (String) Optional description of the resource.
 - `display_name` (String) Display name of the resource.
-- `url` (String, Sensitive) Discord webhook endpoint URL.
+- `integration_key` (String, Sensitive) PagerDuty Integration Key, found on Integrations tab.
 
 ### Read-Only
 
@@ -41,4 +41,4 @@ resource "nobl9_alert_method_discord" "this" {
 
 ## Nobl9 Official Documentation
 
-https://docs.nobl9.com/Alert_Methods/discord/
+https://docs.nobl9.com/Alert_Methods/pagerduty/

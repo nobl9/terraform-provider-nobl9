@@ -1,23 +1,23 @@
 ---
-page_title: "nobl9_alert_method_discord Resource - terraform-provider-nobl9"
+page_title: "nobl9_alert_method_slack Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/discord
+  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/slack
 ---
 
-# nobl9_alert_method_discord (Resource)
+# nobl9_alert_method_slack (Resource)
 
-[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/discord)
+[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/slack)
 
 ## Example Usage
 
 ```terraform
-resource "nobl9_alert_method_discord" "this" {
+resource "nobl9_alert_method_webhook" "this" {
   name         = "foo-alert"
   display_name = "Foo Alert"
   project      = "Foo Project"
-  description = "discord"
-  url         = "https://discord.webhook.url"
+  description = "slack"
+  url         = "https://slack.com"
 }
 ```
 
@@ -33,7 +33,7 @@ resource "nobl9_alert_method_discord" "this" {
 
 - `description` (String) Optional description of the resource.
 - `display_name` (String) Display name of the resource.
-- `url` (String, Sensitive) Discord webhook endpoint URL.
+- `url` (String, Sensitive) Slack webhook endpoint URL.
 
 ### Read-Only
 
@@ -41,4 +41,4 @@ resource "nobl9_alert_method_discord" "this" {
 
 ## Nobl9 Official Documentation
 
-https://docs.nobl9.com/Alert_Methods/discord/
+https://docs.nobl9.com/Alert_Methods/slack/

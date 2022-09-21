@@ -1,23 +1,25 @@
 ---
-page_title: "nobl9_alert_method_discord Resource - terraform-provider-nobl9"
+page_title: "nobl9_alert_method_servicenow Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/discord
+  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/servicenow
 ---
 
-# nobl9_alert_method_discord (Resource)
+# nobl9_alert_method_servicenow (Resource)
 
-[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/discord)
+[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/servicenow)
 
 ## Example Usage
 
 ```terraform
-resource "nobl9_alert_method_discord" "this" {
+resource "nobl9_alert_method_webhook" "this" {
   name         = "foo-alert"
   display_name = "Foo Alert"
   project      = "Foo Project"
-  description = "discord"
-  url         = "https://discord.webhook.url"
+  description    = "servicenow"
+  username       = "nobleUser"
+  password       = "very sercret"
+  instance_name  = "name"
 }
 ```
 
@@ -26,14 +28,16 @@ resource "nobl9_alert_method_discord" "this" {
 
 ### Required
 
+- `instance_name` (String) ServiceNow InstanceName. For details see documentation.
 - `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `username` (String) ServiceNow username.
 
 ### Optional
 
 - `description` (String) Optional description of the resource.
 - `display_name` (String) Display name of the resource.
-- `url` (String, Sensitive) Discord webhook endpoint URL.
+- `password` (String, Sensitive) ServiceNow password.
 
 ### Read-Only
 
@@ -41,4 +45,4 @@ resource "nobl9_alert_method_discord" "this" {
 
 ## Nobl9 Official Documentation
 
-https://docs.nobl9.com/Alert_Methods/discord/
+https://docs.nobl9.com/Alert_Methods/servicenow/

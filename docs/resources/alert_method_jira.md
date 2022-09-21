@@ -1,23 +1,26 @@
 ---
-page_title: "nobl9_alert_method_discord Resource - terraform-provider-nobl9"
+page_title: "nobl9_alert_method_jira Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/discord
+  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/jira
 ---
 
-# nobl9_alert_method_discord (Resource)
+# nobl9_alert_method_jira (Resource)
 
-[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/discord)
+[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/jira)
 
 ## Example Usage
 
 ```terraform
-resource "nobl9_alert_method_discord" "this" {
+resource "nobl9_alert_method_webhook" "this" {
   name         = "foo-alert"
   display_name = "Foo Alert"
   project      = "Foo Project"
-  description = "discord"
-  url         = "https://discord.webhook.url"
+  description = "jira"
+  url		  = "https://jira.com"
+  username    = "nobleUser"
+  apitoken    = "very sercret"
+  project_key = "PC"
 }
 ```
 
@@ -28,12 +31,15 @@ resource "nobl9_alert_method_discord" "this" {
 
 - `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project_key` (String) The code of the project.
+- `url` (String) Jira instance URL.
+- `username` (String) Jira username for the owner of the API Token.
 
 ### Optional
 
+- `apitoken` (String, Sensitive) API Token with access rights to the project.
 - `description` (String) Optional description of the resource.
 - `display_name` (String) Display name of the resource.
-- `url` (String, Sensitive) Discord webhook endpoint URL.
 
 ### Read-Only
 
@@ -41,4 +47,4 @@ resource "nobl9_alert_method_discord" "this" {
 
 ## Nobl9 Official Documentation
 
-https://docs.nobl9.com/Alert_Methods/discord/
+https://docs.nobl9.com/Alert_Methods/jira/
