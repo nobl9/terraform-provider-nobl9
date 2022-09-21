@@ -24,7 +24,7 @@ This provider can be used as an alternative to [sloctl](https://docs.nobl9.com/s
 terraform {
   required_providers {
     nobl9 = {
-      source  = "nobl9.com/nobl9/nobl9"
+      source  = "nobl9/nobl9"
       version = "0.5.0"
     }
   }
