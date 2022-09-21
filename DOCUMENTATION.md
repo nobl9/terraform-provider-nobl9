@@ -35,5 +35,3 @@ You need to have [Go](https://go.dev/) installed on your machine, then run:
 ```
 go generate
 ```
-
-
