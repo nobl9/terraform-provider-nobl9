@@ -1,6 +1,19 @@
-# Alert Policy
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
 
-{{$a := .HasExample}}
-{{$a}}
+# {{.Name}} ({{.Type}})
 
-# no elo
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Nobl9 Official Documentation
+
+https://docs.nobl9.com/Alert_Methods/?_highlight=alert&_highlight=policy#alert-policy--alert-method-lifecycle
