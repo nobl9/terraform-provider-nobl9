@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -93,7 +92,6 @@ func agentSchema() map[string]*schema.Schema {
 }
 
 func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	config := meta.(ProviderConfig)
 	client, ds := newClient(config, d.Get("project").(string))
 	if ds != nil {
