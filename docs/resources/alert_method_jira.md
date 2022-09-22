@@ -30,7 +30,7 @@ resource "nobl9_alert_method_webhook" "this" {
 ### Required
 
 - `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project_key` (String) The code of the project.
 - `url` (String) Jira instance URL.
 - `username` (String) Jira username for the owner of the API Token.

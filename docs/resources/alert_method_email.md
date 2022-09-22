@@ -32,7 +32,7 @@ resource "nobl9_alert_method_email" "this" {
 
 - `body` (String) Body of the email. For format and samples see documentation and nobl9 application.
 - `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `subject` (String) Subject of the email.
 - `to` (List of String) Recipients.
 

@@ -2,21 +2,21 @@
 page_title: "nobl9_alert_method_discord Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/discord
+  Discord configuration documentation | Nobl9 documentation https://docs.nobl9.com/Alert_Methods/discord
 ---
 
 # nobl9_alert_method_discord (Resource)
 
-[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/discord)
+[Discord configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/discord)
 
 ## Example Usage
 
 ```terraform
 resource "nobl9_alert_method_discord" "this" {
-  name         = "foo-alert"
-  display_name = "Foo Alert"
-  project      = "Foo Project"
-  description = "discord"
+  name         = "discord-alert"
+  display_name = "Discord Alert"
+  project      = "Discord Alert"
+  description = "My Discord alert method"
   url         = "https://discord.webhook.url"
 }
 ```
@@ -27,7 +27,7 @@ resource "nobl9_alert_method_discord" "this" {
 ### Required
 
 - `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 

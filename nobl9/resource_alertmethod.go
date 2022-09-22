@@ -280,7 +280,7 @@ func (i alertMethodSlack) UnmarshalSpec(d *schema.ResourceData, spec map[string]
 type alertMethodDiscord struct{}
 
 func (i alertMethodDiscord) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/discord)"
+	return "[Discord configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/discord)"
 }
 
 func (i alertMethodDiscord) GetSchema() map[string]*schema.Schema {

@@ -162,7 +162,7 @@ func schemaProject() *schema.Schema {
 		Type:        schema.TypeString,
 		Required:    true,
 		ForceNew:    true,
-		Description: "Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names)."}
+		Description: "Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names)."}
 }
 
 func schemaDescription() *schema.Schema {
