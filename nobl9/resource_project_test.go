@@ -16,7 +16,6 @@ func TestAcc_Nobl9Project(t *testing.T) {
 		ProviderFactories: ProviderFactory(),
 		CheckDestroy:      CheckDestory("nobl9_project", n9api.ObjectProject),
 		Steps: []resource.TestStep{
-
 			{
 				Config: testProjectConfig(name),
 				Check:  CheckObjectCreated("nobl9_project." + name),
