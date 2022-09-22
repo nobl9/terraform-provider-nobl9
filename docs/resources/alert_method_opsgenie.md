@@ -34,8 +34,8 @@ resource "nobl9_alert_method_webhook" "this" {
 ### Optional
 
 - `auth` (String, Sensitive) Opsgenie authentication credentials. See documentation for supported formats.
-- `description` (String) Optional description of the resource.
-- `display_name` (String) Display name of the resource.
+- `description` (String) Optional description of the resource. you can add details such as who is responsible for the integration (team/owner) and the purpose of creating it.
+- `display_name` (String) User-friendly display name of the resource.
 
 ### Read-Only
 

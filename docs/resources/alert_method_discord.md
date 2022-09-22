@@ -7,15 +7,19 @@ description: |-
 
 # nobl9_alert_method_discord (Resource)
 
-[Discord configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/discord)
+The Discord Alert Method enables sending alerts through Discord to notify Nobl9 users whenever an incident is triggered.
+
+For more details,refer to [Discord configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/discord)
 
 ## Example Usage
 
+Here's an example of Discord Terraform resource configuration:
+
 ```terraform
 resource "nobl9_alert_method_discord" "this" {
-  name         = "discord-alert"
-  display_name = "Discord Alert"
-  project      = "Discord Alert"
+  name         = "my-discord-alert"
+  display_name = "My Discord alert"
+  project      = "My Discord alert"
   description = "My Discord alert method"
   url         = "https://discord.webhook.url"
 }
@@ -31,14 +35,15 @@ resource "nobl9_alert_method_discord" "this" {
 
 ### Optional
 
-- `description` (String) Optional description of the resource.
-- `display_name` (String) Display name of the resource.
-- `url` (String, Sensitive) Discord webhook endpoint URL.
+- `description` (String) Optional description of the resource. you can add details such as who is responsible for the integration (team/owner) and the purpose of creating it.
+- `display_name` (String) User-friendly display name of the resource.
+- `url` (String, Sensitive) Discord webhook endpoint URL. Refer to [Intro to webhooks | Discord documentation](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) for more details.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/Alert_Methods/discord/
+[Discord Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/discord/)
+[Intro to webhooks | Discord documentation](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)

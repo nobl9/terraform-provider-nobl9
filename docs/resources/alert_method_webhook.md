@@ -49,8 +49,8 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ### Optional
 
-- `description` (String) Optional description of the resource.
-- `display_name` (String) Display name of the resource.
+- `description` (String) Optional description of the resource. you can add details such as who is responsible for the integration (team/owner) and the purpose of creating it.
+- `display_name` (String) User-friendly display name of the resource.
 - `template` (String) Webhook message template. See documentation for template format and samples.
 - `template_fields` (List of String) Webhook meesage fields. The message will contain json payload with specified fields. See documentation for allowed fields.
 - `url` (String, Sensitive) URL of the webhook endpoint.

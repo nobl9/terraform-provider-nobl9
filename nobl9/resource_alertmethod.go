@@ -288,7 +288,7 @@ func (i alertMethodDiscord) GetSchema() map[string]*schema.Schema {
 		"url": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Discord webhook endpoint URL.",
+			Description: "Discord webhook endpoint URL. Refer to [Intro to webhooks | Discord documentation](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) for more details.",
 			Sensitive:   true,
 			Computed:    true,
 		},

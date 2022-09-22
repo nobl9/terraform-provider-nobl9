@@ -56,8 +56,8 @@ resource "nobl9_alert_policy" "this" {
 ### Optional
 
 - `alert_method` (Block List) (see [below for nested schema](#nestedblock--alert_method))
-- `description` (String) Optional description of the resource.
-- `display_name` (String) Display name of the resource.
+- `description` (String) Optional description of the resource. you can add details such as who is responsible for the integration (team/owner) and the purpose of creating it.
+- `display_name` (String) User-friendly display name of the resource.
 
 ### Read-Only
 

@@ -31,7 +31,7 @@ func schemaDisplayName() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "Display name of the resource.",
+		Description: "User-friendly display name of the resource.",
 	}
 }
 
@@ -169,7 +169,7 @@ func schemaDescription() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "Optional description of the resource.",
+		Description: "Optional description of the resource. you can add details such as who is responsible for the integration (team/owner) and the purpose of creating it.",
 	}
 }
 
