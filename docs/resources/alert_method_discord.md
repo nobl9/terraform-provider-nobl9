@@ -9,7 +9,7 @@ description: |-
 
 The Discord Alert Method enables sending alerts through Discord to notify Nobl9 users whenever an incident is triggered.
 
-For more details,refer to [Discord configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/discord)
+For more details, refer to [Discord configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/discord)
 
 ## Example Usage
 
