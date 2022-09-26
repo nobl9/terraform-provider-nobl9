@@ -6,7 +6,14 @@ description: |-
 
 # NOBL9 Provider
 
-The Nobl9 provider provides utilities for working with Nobl9 API to create and manage resources such as:
+There are many types of [resources](https://docs.nobl9.com/#using-resources-in-nobl9) in the Nobl9 platform. You can configure them via:
+- UI (https://app.nobl9.com)
+- [sloctl](https://docs.nobl9.com/sloctl-user-guide/)
+- Nobl9 Terraform Provider
+
+## Scope of Support
+
+The Nobl9 Provider delivers tools working with the Nobl9 API to create and manage the following resources:
 - SLOs
 - Services
 - Projects
@@ -15,11 +22,13 @@ The Nobl9 provider provides utilities for working with Nobl9 API to create and m
 - Data Sources
 - Role Bindings
 
-You can use the Nobl9 provider as an alternative to [sloctl](https://docs.nobl9.com/sloctl-user-guide/).
+The Nobl9 Terraform Provider does not support the configuration of the following resources:
+- [SLO Annotations](https://docs.nobl9.com/Features/SLO_Annotations/)
+- [Alert Silence](https://docs.nobl9.com/Alert_Methods/Alert_silence/)
 
 ## Configuration
 
-First, you must configure the provider with the proper credentials. Then, use the navigation on the left to learn more about the available resources.
+To start using Nobl9 Terraform Provider, you must configure the provider with the proper credentials. Then, use the navigation on the left to learn more about the available resources.
 
 The following is an exemplary configuration:
 
