@@ -2,24 +2,26 @@
 page_title: "nobl9_alert_method_jira Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/jira
+  Jira alerts configuration documentation | Nobl9 documentation https://docs.nobl9.com/Alert_Methods/jira
 ---
 
 # nobl9_alert_method_jira (Resource)
 
-[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/jira)
+The Jira Alert Method automatically opens a Jira issue to notify you whenever an incident is triggered.
+
+For more details, refer to [Jira alerts configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/jira)
 
 ## Example Usage
 
 ```terraform
 resource "nobl9_alert_method_webhook" "this" {
-  name         = "foo-alert"
-  display_name = "Foo Alert"
-  project      = "Foo Project"
-  description = "jira"
+  name         = "my-jira-alert"
+  display_name = "My Jira Alert"
+  project      = "My Jira Project"
+  description = "My jira alert"
   url		  = "https://jira.com"
-  username    = "nobleUser"
-  apitoken    = "very sercret"
+  username    = "nobl9User"
+  apitoken    = "secret_api_token"
   project_key = "PC"
 }
 ```
@@ -31,8 +33,8 @@ resource "nobl9_alert_method_webhook" "this" {
 
 - `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project_key` (String) The code of the project.
-- `url` (String) Jira instance URL.
+- `project_key` (String) The code of the Jira project.
+- `url` (String) Jira instance URL. The `https://` prefix is required.
 - `username` (String) Jira username for the owner of the API Token.
 
 ### Optional
@@ -45,6 +47,7 @@ resource "nobl9_alert_method_webhook" "this" {
 
 - `id` (String) The ID of this resource.
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/Alert_Methods/jira/
+[Jira alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/jira/)
+[Atlassian accounts documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)

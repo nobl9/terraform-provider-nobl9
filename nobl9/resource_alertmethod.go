@@ -406,7 +406,7 @@ func (i alertMethodServiceNow) UnmarshalSpec(d *schema.ResourceData, spec map[st
 type alertMethodJira struct{}
 
 func (i alertMethodJira) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/jira)"
+	return "[Jira alerts configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/jira)"
 }
 
 func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
@@ -414,7 +414,7 @@ func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Jira instance URL.",
+			Description: "Jira instance URL. The `https://` prefix is required.",
 		},
 		"username": {
 			Type:        schema.TypeString,
@@ -431,7 +431,7 @@ func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
 		"project_key": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "The code of the project.",
+			Description: "The code of the Jira project.",
 		},
 	}
 }

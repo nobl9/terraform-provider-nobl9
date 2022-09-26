@@ -81,7 +81,7 @@ resource "nobl9_slo" "this" {
 - `indicator` (Block Set, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--indicator))
 - `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `objective` (Block Set, Min: 1) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
-- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `service` (String) Name of the service
 - `time_window` (Block Set, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--time_window))
 
@@ -90,8 +90,8 @@ resource "nobl9_slo" "this" {
 - `alert_policies` (List of String) Alert Policies attached to SLO
 - `attachments` (Block List, Max: 1) (see [below for nested schema](#nestedblock--attachments))
 - `composite` (Block Set, Max: 1) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
-- `description` (String) Optional description of the resource.
-- `display_name` (String) Display name of the resource.
+- `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
+- `display_name` (String) User-friendly display name of the resource.
 - `label` (Block List) Labels containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 
 ### Read-Only
@@ -1105,5 +1105,6 @@ Required:
 - `key` (String) One key for the label, unique within the associated resource.
 - `values` (List of String) A list of unique values for a single key.
 
+## Nobl9 Official Documentation
 
 https://docs.nobl9.com/SLOs_as_code/?_highlight=slo
