@@ -169,7 +169,7 @@ func schemaDescription() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "Optional description of the resource. you can add details such as who is responsible for the integration (team/owner) and the purpose of creating it.",
+		Description: "Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.",
 	}
 }
 

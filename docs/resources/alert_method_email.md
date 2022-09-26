@@ -2,25 +2,27 @@
 page_title: "nobl9_alert_method_email Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/email-alert
+  Email alerts configuration documentation | Nobl9 documentation https://docs.nobl9.com/Alert_Methods/email-alert
 ---
 
 # nobl9_alert_method_email (Resource)
 
-[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/email-alert)
+The Email Alert Method enables sending automated and customized alert messages to up to 30 different inboxes per alert to notify Nobl9 users whenever an incident is triggered.
+
+For more details, refer to [Email alerts configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/email-alert)
 
 ## Example Usage
 
 ```terraform
 resource "nobl9_alert_method_email" "this" {
-  name         = "foo-alert"
-  display_name = "Foo Alert"
-  project      = "Foo Project"
+  name         = "my-email-alert"
+  display_name = "My Email Alert"
+  project      = "My Project"
   description = "teams"
   to		  = [ "testUser@nobl9.com" ]
   cc		  = [ "testUser@nobl9.com" ]
   bcc		  = [ "testUser@nobl9.com" ]
-  subject     = "Test email please ignore"
+  subject     = "Test email, please ignore"
   body        = "This is just a test email"
 }
 ```
@@ -30,23 +32,23 @@ resource "nobl9_alert_method_email" "this" {
 
 ### Required
 
-- `body` (String) Body of the email. For format and samples see documentation and nobl9 application.
+- `body` (String) The Body of the email alert. For the format of the body and the list of variables that you can define, refer to the [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/email-alert#yaml-configuration).
 - `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `subject` (String) Subject of the email.
-- `to` (List of String) Recipients.
+- `subject` (String) The Subject of the email alert.
+- `to` (List of String) Recipients. The maximum number of recipients is 10.
 
 ### Optional
 
-- `bcc` (List of String) Blind carbon copy recipients.
-- `cc` (List of String) Carbon copy recipients.
-- `description` (String) Optional description of the resource. you can add details such as who is responsible for the integration (team/owner) and the purpose of creating it.
+- `bcc` (List of String) Blind carbon copy recipients. The maximum number of recipients is 10.
+- `cc` (List of String) Carbon copy recipients. The maximum number of recipients is 10.
+- `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 
-## Nobl9 Official Documentation
+## Useful links
 
-https://docs.nobl9.com/Alert_Methods/email/
+[Email alerts configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/email-alert)

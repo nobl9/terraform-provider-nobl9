@@ -497,7 +497,7 @@ func (i alertMethodTeams) UnmarshalSpec(d *schema.ResourceData, spec map[string]
 type alertMethodEmail struct{}
 
 func (i alertMethodEmail) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/email-alert)"
+	return "[Email alerts configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/email-alert)"
 }
 
 func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
@@ -505,7 +505,7 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 		"to": {
 			Type:        schema.TypeList,
 			Required:    true,
-			Description: "Recipients.",
+			Description: "Recipients. The maximum number of recipients is 10.",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -513,7 +513,7 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 		"cc": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: "Carbon copy recipients.",
+			Description: "Carbon copy recipients. The maximum number of recipients is 10.",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -521,7 +521,7 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 		"bcc": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: "Blind carbon copy recipients.",
+			Description: "Blind carbon copy recipients. The maximum number of recipients is 10.",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -529,12 +529,12 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 		"subject": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Subject of the email.",
+			Description: "The Subject of the email alert.",
 		},
 		"body": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Body of the email. For format and samples see documentation and nobl9 application.",
+			Description: "The Body of the email alert. For the format of the body and the list of variables that you can define, refer to the [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/email-alert#yaml-configuration).",
 		},
 	}
 }
