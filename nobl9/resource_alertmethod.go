@@ -465,7 +465,7 @@ func (i alertMethodJira) UnmarshalSpec(d *schema.ResourceData, spec map[string]i
 type alertMethodTeams struct{}
 
 func (i alertMethodTeams) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/ms-teams)"
+	return "[MS Teams alerts configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/ms-teams)"
 }
 
 func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
