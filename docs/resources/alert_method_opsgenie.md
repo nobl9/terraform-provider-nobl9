@@ -2,21 +2,23 @@
 page_title: "nobl9_alert_method_opsgenie Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/opsgenie
+  Opsgenie alerts configuration | Nobl9 documentation https://docs.nobl9.com/Alert_Methods/opsgenie
 ---
 
 # nobl9_alert_method_opsgenie (Resource)
 
-[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/opsgenie)
+The OpsGenie Alert Method enables triggering alerts through Opsgenie to notify whenever an incident is triggered.
+
+For more details, refer to [Opsgenie alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie)
 
 ## Example Usage
 
 ```terraform
 resource "nobl9_alert_method_webhook" "this" {
-  name         = "foo-alert"
-  display_name = "Foo Alert"
-  project      = "Foo Project"
-  description = "opsgenie"
+  name         = "my-opsgenie-alert"
+  display_name = "My Opsgenie Alert"
+  project      = "Test Project"
+  description = "My Opsgenie Alert"
   url         = "https://discord.com"
   auth		  = "GenieKey 12345"
 }
@@ -29,11 +31,11 @@ resource "nobl9_alert_method_webhook" "this" {
 
 - `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `url` (String) Opsgenie API URL.
+- `url` (String) Opsgenie API URL. See [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie#creating-opsgenie-api-key) for more details.
 
 ### Optional
 
-- `auth` (String, Sensitive) Opsgenie authentication credentials. See documentation for supported formats.
+- `auth` (String, Sensitive) Opsgenie authentication credentials. See [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie#authentication) for supported formats.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 
@@ -41,6 +43,6 @@ resource "nobl9_alert_method_webhook" "this" {
 
 - `id` (String) The ID of this resource.
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/Alert_Methods/opsgenie/
+[Opsgenie alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie/)

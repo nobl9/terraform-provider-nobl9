@@ -2,21 +2,23 @@
 page_title: "nobl9_alert_method_pagerduty Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/pagerduty
+  PagerDuty Alerts configuration | Nobl9 Documentation https://docs.nobl9.com/Alert_Methods/pagerduty
 ---
 
 # nobl9_alert_method_pagerduty (Resource)
 
-[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/pagerduty)
+The PagerDuty Alert Method enables triggering alerts through PagerDuty to notify Nobl9 users whenever an incident is triggered.
+
+For more details, refer to [PagerDuty Alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/pagerduty)
 
 ## Example Usage
 
 ```terraform
 resource "nobl9_alert_method_webhook" "this" {
-  name         = "foo-alert"
-  display_name = "Foo Alert"
-  project      = "Foo Project"
-  description     = "paderduty"
+  name         = "my-pagerduty-alert"
+  display_name = "My PagerDuty Alert"
+  project      = "Test Project"
+  description     = "My PaderDuty Alert"
   integration_key = "84dfcdf19dad8f6c82b7e22afa024065"
 }
 ```
@@ -33,12 +35,12 @@ resource "nobl9_alert_method_webhook" "this" {
 
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `integration_key` (String, Sensitive) PagerDuty Integration Key, found on Integrations tab.
+- `integration_key` (String, Sensitive) PagerDuty Integration Key. For more details, check [Services and integrations](https://support.pagerduty.com/docs/services-and-integrations).
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/Alert_Methods/pagerduty/
+[PagerDuty alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/pagerduty/)

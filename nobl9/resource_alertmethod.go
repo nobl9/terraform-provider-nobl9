@@ -216,7 +216,7 @@ func (i alertMethodWebhook) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 type alertMethodPagerDuty struct{}
 
 func (i alertMethodPagerDuty) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/pagerduty)"
+	return "[PagerDuty Alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/pagerduty)"
 }
 
 func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
@@ -224,7 +224,7 @@ func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
 		"integration_key": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "PagerDuty Integration Key, found on Integrations tab.",
+			Description: "PagerDuty Integration Key. For more details, check [Services and integrations](https://support.pagerduty.com/docs/services-and-integrations).",
 			Sensitive:   true,
 			Computed:    true,
 		},
@@ -312,7 +312,7 @@ func (i alertMethodDiscord) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 type alertMethodOpsgenie struct{}
 
 func (i alertMethodOpsgenie) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/opsgenie)"
+	return "[Opsgenie alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie)"
 }
 
 func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
@@ -320,14 +320,14 @@ func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
 		"auth": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Opsgenie authentication credentials. See documentation for supported formats.",
+			Description: "Opsgenie authentication credentials. See [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie#authentication) for supported formats.",
 			Sensitive:   true,
 			Computed:    true,
 		},
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Opsgenie API URL.",
+			Description: "Opsgenie API URL. See [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie#creating-opsgenie-api-key) for more details.",
 		},
 	}
 }
