@@ -2,7 +2,7 @@
 page_title: "nobl9_alert_method_webhook Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Webhook alerts configuration | Nobl9 documentation https://docs.nobl9.com/Alert_Methods/webhook
+  Webhook Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alert_Methods/webhook
 ---
 
 # nobl9_alert_method_webhook (Resource)
@@ -11,7 +11,7 @@ The Webhook Alert Method enables sending alerts through an HTTP callback handler
 
 ->**NOTE** For details on how to use Webhook message templates, check to [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/webhook#creating-webhook-custom-templates-through-yaml).
 
-For more details, refer to [Webhook alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/webhook).
+For more details, refer to [Webhook Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/webhook).
 
 ## Example Usage
 
@@ -50,8 +50,8 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ### Required
 
-- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 

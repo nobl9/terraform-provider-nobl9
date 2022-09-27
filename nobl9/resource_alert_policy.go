@@ -83,7 +83,7 @@ func resourceAlertPolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[AlertPolicy configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#alertpolicy)",
+		Description: "[Alert Policy configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#alertpolicy)",
 	}
 }
 

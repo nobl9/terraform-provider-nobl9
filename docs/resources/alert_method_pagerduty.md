@@ -2,14 +2,14 @@
 page_title: "nobl9_alert_method_pagerduty Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  PagerDuty Alerts configuration | Nobl9 Documentation https://docs.nobl9.com/Alert_Methods/pagerduty
+  PagerDuty Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alert_Methods/pagerduty
 ---
 
 # nobl9_alert_method_pagerduty (Resource)
 
 The PagerDuty Alert Method enables triggering alerts through PagerDuty to notify Nobl9 users whenever an incident is triggered.
 
-For more details, refer to [PagerDuty Alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/pagerduty).
+For more details, refer to [PagerDuty Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/pagerduty).
 
 ## Example Usage
 
@@ -30,8 +30,8 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ### Required
 
-- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 

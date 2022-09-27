@@ -2,14 +2,14 @@
 page_title: "nobl9_alert_method_msteams Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  MS Teams alerts configuration documentation | Nobl9 documentation https://docs.nobl9.com/Alert_Methods/ms-teams
+  MS Teams Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alert_Methods/ms-teams
 ---
 
 # nobl9_alert_method_msteams (Resource)
 
 The MS Teams Alert Method enables sending alerts through MS Teams to notify Nobl9 users whenever an incident is triggered.
 
-For more details, refer to [MS Teams alerts configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/ms-teams).
+For more details, refer to [MS Teams Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/ms-teams).
 
 ## Example Usage
 
@@ -30,8 +30,8 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ### Required
 
-- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 

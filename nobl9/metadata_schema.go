@@ -23,7 +23,7 @@ func schemaName() *schema.Schema {
 		Type:        schema.TypeString,
 		Required:    true,
 		ForceNew:    true,
-		Description: "Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
+		Description: "Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
 	}
 }
 
@@ -40,7 +40,7 @@ func schemaLabels() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeList,
 		Optional:         true,
-		Description:      "Labels containing a single key and a list of values.",
+		Description:      "[Labels](https://docs.nobl9.com/Features/labels/) containing a single key and a list of values.",
 		DiffSuppressFunc: diffSuppressLabels,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -162,7 +162,7 @@ func schemaProject() *schema.Schema {
 		Type:        schema.TypeString,
 		Required:    true,
 		ForceNew:    true,
-		Description: "Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names)."}
+		Description: "Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names)."}
 }
 
 func schemaDescription() *schema.Schema {

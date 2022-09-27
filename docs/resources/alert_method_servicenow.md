@@ -2,7 +2,7 @@
 page_title: "nobl9_alert_method_servicenow Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  ServiceNow alerts configuration | Nobl9 documentation https://docs.nobl9.com/Alert_Methods/servicenow
+  ServiceNow Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alert_Methods/servicenow
 ---
 
 # nobl9_alert_method_servicenow (Resource)
@@ -11,7 +11,7 @@ The ServiceNow Alert Method automatically opens an issue in your ServiceNow work
 
 -> **NOTE** To allow ServiceNow alerts to integrate with Nobl9, you need to set up an Access Control List (ACL) for your ServiceNow users. Refer to [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow) for more details.
 
-For more details, refer to [ServiceNow alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow).
+For more details, refer to [ServiceNow Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/servicenow).
 
 ## Example Usage
 
@@ -35,8 +35,8 @@ resource "nobl9_alert_method_webhook" "this" {
 ### Required
 
 - `instance_name` (String) ServiceNow InstanceName. For details see [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow#servicenow-credentials).
-- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `username` (String) ServiceNow username.
 
 ### Optional

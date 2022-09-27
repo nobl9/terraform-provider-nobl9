@@ -1,14 +1,14 @@
 ---
 page_title: "nobl9_alert_policy Resource - terraform-provider-nobl9"
 description: |-
-  AlertPolicy configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#alertpolicy
+  Alert Policy configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#alertpolicy
 ---
 
 # nobl9_alert_policy (Resource)
 
 Alert policies define when to trigger an alert via the configured alert method. A Nobl9 AlertPolicy accepts up to 7 conditions. All the specified conditions must be satisfied to trigger an alert.
 
-For more details, refer to the [AlertPolicy configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#alertpolicy).
+For more details, refer to the [Alert Policy configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#alertpolicy).
 
 ## Example Usage
 
@@ -53,8 +53,8 @@ resource "nobl9_alert_policy" "this" {
 ### Required
 
 - `condition` (Block List, Min: 1) Configuration of an [alert condition](https://docs.nobl9.com/yaml-guide/#alertpolicy). (see [below for nested schema](#nestedblock--condition))
-- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `severity` (String) Alert severity. One of Low | Medium | High.
 
 ### Optional

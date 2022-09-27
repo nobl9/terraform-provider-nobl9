@@ -2,14 +2,14 @@
 page_title: "nobl9_alert_method_opsgenie Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Opsgenie alerts configuration | Nobl9 documentation https://docs.nobl9.com/Alert_Methods/opsgenie
+  OpsGenie Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alert_Methods/opsgenie
 ---
 
 # nobl9_alert_method_opsgenie (Resource)
 
 The OpsGenie Alert Method enables triggering alerts through Opsgenie to notify whenever an incident is triggered.
 
-For more details, refer to [Opsgenie alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie).
+For more details, refer to [OpsGenie Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/opsgenie).
 
 ## Example Usage
 
@@ -31,8 +31,8 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ### Required
 
-- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `url` (String) Opsgenie API URL. See [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie#creating-opsgenie-api-key) for more details.
 
 ### Optional
