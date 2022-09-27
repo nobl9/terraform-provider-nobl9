@@ -26,17 +26,17 @@ func resourceRoleBinding() *schema.Resource {
 			"user": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "ID of the user.",
+				Description: "Okta User ID that can be retrieved from the Nobl9 UI (Settings > Users).",
 			},
 			"role_ref": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Role name.",
+				Description: "Role name; the role that we want the user to assume.",
 			},
 			"project_ref": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Project name. When empty, `role_ref` has to be Organization Role.",
+				Description: "Project name, the project in which we want the user to assume the specified role. When project_ref is empty, role_ref has to contain an Organization Role.",
 			},
 		},
 		CreateContext: resourceRoleBindingApply,
@@ -46,7 +46,7 @@ func resourceRoleBinding() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[RoleBinding configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#rolebinding)",
+		Description: "[Role Binding configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#rolebinding)",
 	}
 }
 

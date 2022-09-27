@@ -1,14 +1,30 @@
 ---
 page_title: "nobl9_role_binding Resource - terraform-provider-nobl9"
 description: |-
-  RoleBinding configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#rolebinding
+  Role Binding configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#rolebinding
 ---
 
 # nobl9_role_binding (Resource)
 
-[RoleBinding configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#rolebinding)
+Nobl9 supports **Role-Based Access Control (RBAC)** to enable granular user permissions and access to resources in the Nobl9 platform.
+
+There are two levels of permissions, the organization level and the project level:
+
+- **Organization** roles enable access across the Nobl9 platform.
+
+- **Project** roles enable users to access a project and its underlying resources, such as services or SLOs.
+
+For more details, refer to the [Role Binding configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#rolebinding).
+
+-> **NOTE** To configure RBAC through Terraform, you must provide role_ref and user values:
+
+- user is a User ID from Okta. You can retrieve it from Settings > Account and Settings > Users in the Nobl9 UI.
+
+- role_ref must be an existing role name that we want the user to assume. If you don't specify the project_ref value, role_ref has to contain an Organization Role.
 
 ## Example Usage
+
+Here's an example of RBAC resource configuration:
 
 ```terraform
 resource "nobl9_role_binding" "this" {
@@ -24,14 +40,14 @@ resource "nobl9_role_binding" "this" {
 
 ### Required
 
-- `role_ref` (String) Role name.
-- `user` (String) ID of the user.
+- `role_ref` (String) Role name; the role that we want the user to assume.
+- `user` (String) Okta User ID that can be retrieved from the Nobl9 UI (Settings > Users).
 
 ### Optional
 
 - `display_name` (String) User-friendly display name of the resource.
 - `name` (String) Automatically generated, unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project_ref` (String) Project name. When empty, `role_ref` has to be Organization Role.
+- `project_ref` (String) Project name, the project in which we want the user to assume the specified role. When project_ref is empty, role_ref has to contain an Organization Role.
 
 ### Read-Only
 
@@ -39,4 +55,5 @@ resource "nobl9_role_binding" "this" {
 
 ## Nobl9 Official Documentation
 
-https://docs.nobl9.com/Features/RBAC/role-binding-yaml
+[Role Based Access Control](https://docs.nobl9.com/Features/RBAC/)
+[Role Binding- YAML](https://docs.nobl9.com/Features/RBAC/role-binding-yaml)
