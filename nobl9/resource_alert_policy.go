@@ -27,7 +27,7 @@ func resourceAlertPolicy() *schema.Resource {
 				Type:        schema.TypeList,
 				Required:    true,
 				MinItems:    1,
-				Description: "Configuration of an alert condition.",
+				Description: "Configuration of an [alert condition](https://docs.nobl9.com/yaml-guide/#alertpolicy).",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"measurement": {
@@ -38,17 +38,17 @@ func resourceAlertPolicy() *schema.Resource {
 						"value": {
 							Type:        schema.TypeFloat,
 							Optional:    true,
-							Description: "For averageBurnRate it tells how fast the error budget is burning. For burnedBudget it tells how much error budget is already burned.",
+							Description: "For averageBurnRate, it indicates how fast the error budget is burning. For burnedBudget, it tells how much error budget is already burned.",
 						},
 						"value_string": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Used with timeToBurnBudget. When the budget would be exhausted. Expected value is a string in time duration string format.",
+							Description: "Used with timeToBurnBudget, indicates when the budget would be exhausted. The expected value is a string in time duration string format.",
 						},
 						"lasts_for": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "How long a given condition needs to be valid to mark a condition as true. Time duration string.",
+							Description: "Indicates how long a given condition needs to be valid to mark the condition as true.",
 							Default:     "0m",
 						},
 					},
@@ -65,12 +65,12 @@ func resourceAlertPolicy() *schema.Resource {
 						"project": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Optional, if not defined project is the same as an Alert Policy.",
+							Description: "Project name the Alert Method is in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names). If not defined, Nobl9 returns a default value for this field.",
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Name of the alertMethod defined earlier.",
+							Description: "The name of the previously defined alert method.",
 						},
 					},
 				},
@@ -83,7 +83,7 @@ func resourceAlertPolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[AlertPolicy configuration documentation](https://docs.nobl9.com/yaml-guide#alertpolicy)",
+		Description: "[AlertPolicy configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#alertpolicy)",
 	}
 }
 

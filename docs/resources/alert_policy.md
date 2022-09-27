@@ -1,14 +1,18 @@
 ---
 page_title: "nobl9_alert_policy Resource - terraform-provider-nobl9"
 description: |-
-  AlertPolicy configuration documentation https://docs.nobl9.com/yaml-guide#alertpolicy
+  AlertPolicy configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#alertpolicy
 ---
 
 # nobl9_alert_policy (Resource)
 
-[AlertPolicy configuration documentation](https://docs.nobl9.com/yaml-guide#alertpolicy)
+Alert policies define when to trigger an alert via the configured alert method. A Nobl9 AlertPolicy accepts up to 7 conditions. All the specified conditions must be satisfied to trigger an alert.
+
+For more details, refer to the [AlertPolicy configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#alertpolicy).
 
 ## Example Usage
+
+Here's an example of Alert Policy resource configuration:
 
 ```terraform
 resource "nobl9_project" "this" {
@@ -48,7 +52,7 @@ resource "nobl9_alert_policy" "this" {
 
 ### Required
 
-- `condition` (Block List, Min: 1) Configuration of an alert condition. (see [below for nested schema](#nestedblock--condition))
+- `condition` (Block List, Min: 1) Configuration of an [alert condition](https://docs.nobl9.com/yaml-guide/#alertpolicy). (see [below for nested schema](#nestedblock--condition))
 - `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in. The name must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `severity` (String) Alert severity. One of Low | Medium | High.
@@ -72,9 +76,9 @@ Required:
 
 Optional:
 
-- `lasts_for` (String) How long a given condition needs to be valid to mark a condition as true. Time duration string.
-- `value` (Number) For averageBurnRate it tells how fast the error budget is burning. For burnedBudget it tells how much error budget is already burned.
-- `value_string` (String) Used with timeToBurnBudget. When the budget would be exhausted. Expected value is a string in time duration string format.
+- `lasts_for` (String) Indicates how long a given condition needs to be valid to mark the condition as true.
+- `value` (Number) For averageBurnRate, it indicates how fast the error budget is burning. For burnedBudget, it tells how much error budget is already burned.
+- `value_string` (String) Used with timeToBurnBudget, indicates when the budget would be exhausted. The expected value is a string in time duration string format.
 
 
 <a id="nestedblock--alert_method"></a>
@@ -82,12 +86,12 @@ Optional:
 
 Required:
 
-- `name` (String) Name of the alertMethod defined earlier.
+- `name` (String) The name of the previously defined alert method.
 
 Optional:
 
-- `project` (String) Optional, if not defined project is the same as an Alert Policy.
+- `project` (String) Project name the Alert Method is in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names). If not defined, Nobl9 returns a default value for this field.
 
 ## Nobl9 Official Documentation
 
-https://docs.nobl9.com/Alert_Methods/?_highlight=alert&_highlight=policy#alert-policy--alert-method-lifecycle
+[Alert Policy configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#alertpolicy)
