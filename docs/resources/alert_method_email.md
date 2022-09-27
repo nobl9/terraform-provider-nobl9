@@ -7,7 +7,7 @@ description: |-
 
 # nobl9_alert_method_email (Resource)
 
-The Email Alert Method enables sending automated and customized alert messages to up to 30 different inboxes per alert to notify Nobl9 users whenever an incident is triggered.
+The **Email Alert Method** enables sending automated and customized alert messages to up to 30 different inboxes per alert to notify Nobl9 users whenever an incident is triggered.
 
 For more details, refer to [Email Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/email-alert).
 
@@ -36,7 +36,7 @@ resource "nobl9_alert_method_email" "this" {
 
 - `body` (String) The Body of the email alert. For the format of the body and the list of variables that you can define, refer to the [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/email-alert#yaml-configuration).
 - `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `subject` (String) The Subject of the email alert.
 - `to` (List of String) Recipients. The maximum number of recipients is 10.
 

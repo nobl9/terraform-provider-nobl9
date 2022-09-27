@@ -7,7 +7,7 @@ description: |-
 
 # nobl9_alert_method_servicenow (Resource)
 
-The ServiceNow Alert Method automatically opens an issue in your ServiceNow workflow to notify you whenever an incident is triggered.
+The **ServiceNow Alert Method** automatically opens an issue in your ServiceNow workflow to notify you whenever an incident is triggered.
 
 -> **NOTE** To allow ServiceNow alerts to integrate with Nobl9, you need to set up an Access Control List (ACL) for your ServiceNow users. Refer to [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow) for more details.
 
@@ -36,7 +36,7 @@ resource "nobl9_alert_method_webhook" "this" {
 
 - `instance_name` (String) ServiceNow InstanceName. For details see [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow#servicenow-credentials).
 - `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `username` (String) ServiceNow username.
 
 ### Optional

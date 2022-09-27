@@ -7,7 +7,7 @@ description: |-
 
 # nobl9_alert_method_webhook (Resource)
 
-The Webhook Alert Method enables sending alerts through an HTTP callback handler that is triggered by an event. You can create webhooks and configure them to handle different incident notifications, using either custom or predefined notification templates.
+The **Webhook Alert Method** enables sending alerts through an HTTP callback handler that is triggered by an event. You can create webhooks and configure them to handle different incident notifications, using either custom or predefined notification templates.
 
 ->**NOTE** For details on how to use Webhook message templates, check to [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/webhook#creating-webhook-custom-templates-through-yaml).
 
@@ -51,7 +51,7 @@ resource "nobl9_alert_method_webhook" "this" {
 ### Required
 
 - `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 

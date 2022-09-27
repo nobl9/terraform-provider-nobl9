@@ -42,7 +42,7 @@ resource "nobl9_service" "this" {
 ### Required
 
 - `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 
@@ -63,6 +63,6 @@ Required:
 - `key` (String) A key for the label, unique within the associated resource.
 - `values` (List of String) A list of unique values for a single key.
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/yaml-guide/#service
+[Service | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide/#service)

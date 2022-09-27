@@ -6,7 +6,9 @@ description: |-
 
 # {{.Name}} ({{.Type}})
 
-Alert policies define when to trigger an alert via the configured alert method. A Nobl9 AlertPolicy accepts up to 7 conditions. All the specified conditions must be satisfied to trigger an alert.
+An **Alert Policy** expresses a set of conditions you want to track or monitor. The conditions for an Alert Policy define what is monitored and when to activate an alert: when the performance of your service is declining, Nobl9 will send a notification to a predefined channel.
+
+A Nobl9 AlertPolicy accepts up to 7 conditions. All the specified conditions must be satisfied to trigger an alert.
 
 For more details, refer to the {{ .Description | trimspace }}.
 
@@ -18,6 +20,6 @@ Here's an example of Alert Policy resource configuration:
 
 {{ .SchemaMarkdown | trimspace }}
 
-## Nobl9 Official Documentation
+## Useful Links
 
 [Alert Policy configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#alertpolicy)

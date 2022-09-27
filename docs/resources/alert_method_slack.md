@@ -7,7 +7,7 @@ description: |-
 
 # nobl9_alert_method_slack (Resource)
 
-The Slack Alert Method allows sending a predefined notification through Slack to notify Nobl9 users whenever an incident is triggered.
+The **Slack Alert Method** allows sending a predefined notification through Slack to notify Nobl9 users whenever an incident is triggered.
 
 ->**NOTE** To set up the Slack integration, you'll need to provide an Incoming Webhook URL. This allows Slack to send an automated notification to a channel of your choice. For details, see the [Slack documentation](https://slack.com/help/articles/115005265063-Incoming-webhooks-for-Slack%22).
 
@@ -33,7 +33,7 @@ resource "nobl9_alert_method_webhook" "this" {
 ### Required
 
 - `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 

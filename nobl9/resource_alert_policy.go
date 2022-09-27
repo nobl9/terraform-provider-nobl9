@@ -20,7 +20,7 @@ func resourceAlertPolicy() *schema.Resource {
 			"severity": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Alert severity. One of Low | Medium | High.",
+				Description: "Alert severity. One of `Low` | `Medium` | `High`.",
 			},
 			//nolint:lll
 			"condition": {
@@ -33,17 +33,17 @@ func resourceAlertPolicy() *schema.Resource {
 						"measurement": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "One of timeToBurnBudget | burnRate | burnedBudget.",
+							Description: "One of `timeToBurnBudget` | `burnRate` | `burnedBudget`.",
 						},
 						"value": {
 							Type:        schema.TypeFloat,
 							Optional:    true,
-							Description: "For averageBurnRate, it indicates how fast the error budget is burning. For burnedBudget, it tells how much error budget is already burned.",
+							Description: "For `averageBurnRate`, it indicates how fast the error budget is burning. For `burnedBudget`, it tells how much error budget is already burned.",
 						},
 						"value_string": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Used with timeToBurnBudget, indicates when the budget would be exhausted. The expected value is a string in time duration string format.",
+							Description: "Used with `timeToBurnBudget`, indicates when the budget would be exhausted. The expected value is a string in time duration string format.",
 						},
 						"lasts_for": {
 							Type:        schema.TypeString,

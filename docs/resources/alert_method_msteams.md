@@ -7,7 +7,7 @@ description: |-
 
 # nobl9_alert_method_msteams (Resource)
 
-The MS Teams Alert Method enables sending alerts through MS Teams to notify Nobl9 users whenever an incident is triggered.
+The **MS Teams Alert Method** enables sending alerts through MS Teams to notify Nobl9 users whenever an incident is triggered.
 
 For more details, refer to [MS Teams Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/ms-teams).
 
@@ -31,7 +31,7 @@ resource "nobl9_alert_method_webhook" "this" {
 ### Required
 
 - `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in, , convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 

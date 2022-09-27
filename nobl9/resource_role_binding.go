@@ -31,7 +31,7 @@ func resourceRoleBinding() *schema.Resource {
 			"role_ref": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Role name; the role that we want the user to assume.",
+				Description: "Role name; the role that you want the user to assume.",
 			},
 			"project_ref": {
 				Type:        schema.TypeString,

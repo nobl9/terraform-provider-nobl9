@@ -16,11 +16,11 @@ There are two levels of permissions, the organization level and the project leve
 
 For more details, refer to the [Role Binding configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#rolebinding).
 
--> **NOTE** To configure RBAC through Terraform, you must provide role_ref and user values:
+-> **NOTE** To configure RBAC through Terraform, you must provide `role_ref` and `user` values:
 
-- user is a User ID from Okta. You can retrieve it from Settings > Account and Settings > Users in the Nobl9 UI.
+- `user` is a User ID from Okta. You can retrieve it from **Settings** > **Account and Settings** > **Users** in the Nobl9 UI.
 
-- role_ref must be an existing role name that we want the user to assume. If you don't specify the project_ref value, role_ref has to contain an Organization Role.
+- `role_ref` must be an existing role name that you want the user to assume. If you don't specify the optional `project_ref` value, `role_ref` has to contain an Organization Role.
 
 ## Example Usage
 
@@ -40,7 +40,7 @@ resource "nobl9_role_binding" "this" {
 
 ### Required
 
-- `role_ref` (String) Role name; the role that we want the user to assume.
+- `role_ref` (String) Role name; the role that you want the user to assume.
 - `user` (String) Okta User ID that can be retrieved from the Nobl9 UI (Settings > Users).
 
 ### Optional
@@ -53,7 +53,7 @@ resource "nobl9_role_binding" "this" {
 
 - `id` (String) The ID of this resource.
 
-## Nobl9 Official Documentation
+## Useful Links
 
-[Role Based Access Control](https://docs.nobl9.com/Features/RBAC/)
-[Role Binding- YAML](https://docs.nobl9.com/Features/RBAC/role-binding-yaml)
+[Role Based Access Control | Nobl9 Documentation](https://docs.nobl9.com/Features/RBAC/)
+[Role Binding- YAML | Documentation](https://docs.nobl9.com/Features/RBAC/role-binding-yaml)
