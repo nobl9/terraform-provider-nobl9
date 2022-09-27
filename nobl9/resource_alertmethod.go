@@ -256,7 +256,7 @@ func (i alertMethodSlack) GetSchema() map[string]*schema.Schema {
 		"url": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Slack webhook endpoint URL.",
+			Description: "Slack [webhook endpoint URL](https://slack.com/help/articles/115005265063-Incoming-webhooks-for-Slack%22).",
 			Sensitive:   true,
 			Computed:    true,
 		},
@@ -424,7 +424,7 @@ func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
 		"apitoken": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "API Token with access rights to the project.",
+			Description: "[API Token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) with access rights to the project.",
 			Sensitive:   true,
 			Computed:    true,
 		},
@@ -473,7 +473,7 @@ func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
 		"url": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "MSTeams webhook endpoint URL.",
+			Description: "MSTeams [webhook endpoint URL](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook).",
 			Sensitive:   true,
 			Computed:    true,
 		},

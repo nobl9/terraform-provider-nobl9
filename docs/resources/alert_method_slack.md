@@ -39,7 +39,7 @@ resource "nobl9_alert_method_webhook" "this" {
 
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `url` (String, Sensitive) Slack webhook endpoint URL.
+- `url` (String, Sensitive) Slack [webhook endpoint URL](https://slack.com/help/articles/115005265063-Incoming-webhooks-for-Slack%22).
 
 ### Read-Only
 

@@ -37,7 +37,7 @@ resource "nobl9_alert_method_webhook" "this" {
 
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `url` (String, Sensitive) MSTeams webhook endpoint URL.
+- `url` (String, Sensitive) MSTeams [webhook endpoint URL](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook).
 
 ### Read-Only
 
@@ -46,4 +46,5 @@ resource "nobl9_alert_method_webhook" "this" {
 ## Useful Links
 
 [MS Teams alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/msteams/)
+
 [MS Teams webhooks | MS Teams documentation](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook)

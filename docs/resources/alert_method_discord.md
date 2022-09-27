@@ -46,4 +46,5 @@ resource "nobl9_alert_method_discord" "this" {
 ## Useful Links
 
 [Discord alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/discord/)
+
 [Intro to webhooks | Discord documentation](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)

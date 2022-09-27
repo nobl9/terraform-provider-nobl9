@@ -63,4 +63,5 @@ Required:
 ## Useful Links
 
 [Projects in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/#projects)
-[Projects YAML configuration | Nobl9 Documentation](https://docs.nobl9.dev/yaml-guide#project)
+
+[Projects YAML Configuration | Nobl9 Documentation](https://docs.nobl9.dev/yaml-guide#project)

@@ -7,15 +7,19 @@ description: |-
 
 # nobl9_service (Resource)
 
-* [Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service)
+A **service** in Nobl9 is a high-level grouping of Service Level Objectives (SLOs). A service can represent a logical service endpoint like an API, a database, an application, or anything else you care about setting an SLO for. Every SLO in Nobl9 is tied to a service, and the service can have one or more SLOs.
+
+For more details, refer to the [Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service).
 
 ## Example Usage
 
+Here's an example of Service resource configuration:
+
 ```terraform
 resource "nobl9_project" "this" {
-  display_name = "Foo Project"
-  name         = "foo-project"
-  description  = "An example terraform project"
+  display_name = "My Project"
+  name         = "my-project"
+  description  = "An example N9 Terraform project"
 }
 
 resource "nobl9_service" "this" {
@@ -65,4 +69,6 @@ Required:
 
 ## Useful Links
 
-[Service | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide/#service)
+[Services in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/#services)
+
+[Service YAML Configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide/#service)

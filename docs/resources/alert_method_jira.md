@@ -41,7 +41,7 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ### Optional
 
-- `apitoken` (String, Sensitive) API Token with access rights to the project.
+- `apitoken` (String, Sensitive) [API Token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) with access rights to the project.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 
@@ -52,4 +52,5 @@ resource "nobl9_alert_method_webhook" "this" {
 ## Useful Links
 
 [Jira alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/jira/)
+
 [Atlassian accounts documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)

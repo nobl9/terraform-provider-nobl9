@@ -20,7 +20,7 @@ For more details, refer to the [Role Binding configuration | Nobl9 Documentation
 
 - `user` is a User ID from Okta. You can retrieve it from **Settings** > **Account and Settings** > **Users** in the Nobl9 UI.
 
-- `role_ref` must be an existing role name that you want the user to assume. If you don't specify the optional `project_ref` value, `role_ref` has to contain an Organization Role.
+- `role_ref` must be an existing role name that you want the user to assume. If you don't specify the optional `project_ref` value, `role_ref` must contain an Organization Role.
 
 ## Example Usage
 
@@ -28,7 +28,7 @@ Here's an example of RBAC resource configuration:
 
 ```terraform
 resource "nobl9_role_binding" "this" {
-  name        = "foo-role-binding"
+  name        = "my-role-binding"
   user        = "1234567890asdfghjkl"
   role_ref    = "project-owner"
   project_ref = "1234567890asdfghjkl"
@@ -41,13 +41,13 @@ resource "nobl9_role_binding" "this" {
 ### Required
 
 - `role_ref` (String) Role name; the role that you want the user to assume.
-- `user` (String) Okta User ID that can be retrieved from the Nobl9 UI (Settings > Users).
+- `user` (String) Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Users**).
 
 ### Optional
 
 - `display_name` (String) User-friendly display name of the resource.
 - `name` (String) Automatically generated, unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project_ref` (String) Project name, the project in which we want the user to assume the specified role. When project_ref is empty, role_ref has to contain an Organization Role.
+- `project_ref` (String) Project name, the project in which we want the user to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.
 
 ### Read-Only
 
@@ -55,5 +55,6 @@ resource "nobl9_role_binding" "this" {
 
 ## Useful Links
 
-[Role Based Access Control | Nobl9 Documentation](https://docs.nobl9.com/Features/RBAC/)
-[Role Binding- YAML | Documentation](https://docs.nobl9.com/Features/RBAC/role-binding-yaml)
+[Role Based Access Control in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/Features/RBAC/)
+
+[Role Binding YAML Configuration | Nobl9 Documentation](https://docs.nobl9.com/Features/RBAC/role-binding-yaml)

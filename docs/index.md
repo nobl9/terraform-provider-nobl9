@@ -55,7 +55,7 @@ provider "nobl9" {
 
 ### Required
 
-- `client_id` (String) the [Client ID](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9
+- `client_id` (String) the [Client ID](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.
 - `client_secret` (String, Sensitive) the [Client Secret](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.
 - `organization` (String) Nobl9 [Organization ID](https://docs.nobl9.com/API_Documentation/api-endpoints-for-slo-annotations/#common-headers) that contains resources managed by the Nobl9 Terraform provider.
 - `project` (String) Nobl9 project used when importing resources.

@@ -18,9 +18,9 @@ Here's an example of Alert Policy resource configuration:
 
 ```terraform
 resource "nobl9_project" "this" {
-  display_name = "Foo Project"
-  name         = "foo-project"
-  description  = "An example terraform project"
+  display_name = "My Project"
+  name         = "my-project"
+  description  = "An example N9 Terraform project"
 }
 
 resource "nobl9_service" "this" {
