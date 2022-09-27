@@ -2,12 +2,12 @@
 page_title: "nobl9_service Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Service configuration documentation https://docs.nobl9.com/yaml-guide#service
+  Service configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#service
 ---
 
 # nobl9_service (Resource)
 
-* [Service configuration documentation](https://docs.nobl9.com/yaml-guide#service)
+* [Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service)
 
 ## Example Usage
 

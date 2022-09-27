@@ -1,12 +1,12 @@
 ---
 page_title: "nobl9_agent Resource - terraform-provider-nobl9"
 description: |-
-  Agent configuration documentation https://docs.nobl9.com/nobl9_agent
+  Agent configuration | Nobl9 Documentation https://docs.nobl9.com/nobl9_agent
 ---
 
 # nobl9_agent (Resource)
 
-[Agent configuration documentation](https://docs.nobl9.com/nobl9_agent)
+[Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9_agent)
 
 ## Example Usage
 

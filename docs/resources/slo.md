@@ -1,12 +1,12 @@
 ---
 page_title: "nobl9_slo Resource - terraform-provider-nobl9"
 description: |-
-  SLO configuration documentation https://docs.nobl9.com/yaml-guide#slo
+  SLO configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#slo
 ---
 
 # nobl9_slo (Resource)
 
-[SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)
+[SLO configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#slo)
 
 ## Example Usage
 

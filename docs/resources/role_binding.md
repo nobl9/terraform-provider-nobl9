@@ -1,12 +1,12 @@
 ---
 page_title: "nobl9_role_binding Resource - terraform-provider-nobl9"
 description: |-
-  RoleBinding configuration documentation https://docs.nobl9.com/yaml-guide#rolebinding
+  RoleBinding configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#rolebinding
 ---
 
 # nobl9_role_binding (Resource)
 
-[RoleBinding configuration documentation](https://docs.nobl9.com/yaml-guide#rolebinding)
+[RoleBinding configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#rolebinding)
 
 ## Example Usage
 
@@ -30,7 +30,7 @@ resource "nobl9_role_binding" "this" {
 ### Optional
 
 - `display_name` (String) User-friendly display name of the resource.
-- `name` (String) Automatically generated, unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Automatically generated, unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project_ref` (String) Project name. When empty, `role_ref` has to be Organization Role.
 
 ### Read-Only
