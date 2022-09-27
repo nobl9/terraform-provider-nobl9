@@ -45,4 +45,4 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ## Useful Links
 
-[PagerDuty alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/pagerduty/)
+[PagerDuty alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/pagerduty/)

@@ -51,6 +51,6 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ## Useful Links
 
-[Jira alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/jira/)
+[Jira alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/jira/)
 
-[Atlassian accounts documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
+[Atlassian Accounts Documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)

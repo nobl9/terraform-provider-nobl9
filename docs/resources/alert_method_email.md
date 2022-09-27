@@ -53,4 +53,4 @@ resource "nobl9_alert_method_email" "this" {
 
 ## Useful links
 
-[Email alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/email-alert)
+[Email alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/email-alert)

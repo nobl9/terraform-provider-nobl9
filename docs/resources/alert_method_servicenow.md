@@ -51,4 +51,4 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ## Useful Links
 
-[ServiceNow alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow/)
+[ServiceNow alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/servicenow/)

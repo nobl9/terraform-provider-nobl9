@@ -65,3 +65,9 @@ provider "nobl9" {
 - `ingest_url` (String) Nobl9 API URL.
 - `okta_auth_server` (String) Authorization service configuration.
 - `okta_org_url` (String) Authorization service URL.
+
+## Useful Links
+
+[Nobl9 Documentation](https://docs.nobl9.com/)
+
+[Nobl9 Terraform Provider Release Notes](https://github.com/nobl9/terraform-provider-nobl9/releases)

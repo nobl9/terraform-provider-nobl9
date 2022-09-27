@@ -47,4 +47,4 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ## Useful Links
 
-[OpsGenie alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie/)
+[OpsGenie alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/opsgenie/)
