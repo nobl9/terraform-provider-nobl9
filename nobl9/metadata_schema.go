@@ -48,7 +48,7 @@ func schemaLabels() *schema.Schema {
 					Type:         schema.TypeString,
 					Required:     true,
 					ValidateFunc: validateNotEmptyString(fieldLabelKey),
-					Description:  "One key for the label, unique within the associated resource.",
+					Description:  "A key for the label, unique within the associated resource.",
 				},
 				fieldLabelValues: {
 					Type:        schema.TypeList,

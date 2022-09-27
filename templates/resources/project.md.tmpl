@@ -1,11 +1,15 @@
 ---
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
-subcategory: "Alert Methods"
+subcategory: "Groupings and Utilities"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
 
 # {{.Name}} ({{.Type}})
+
+Projects are the primary logical grouping of resources in the Nobl9 platform. All Nobl9 resources, such as data sources, SLOs, and alerts, are created within a project.
+
+Access controls at the project level enable users to control who can see and change these resources. For example, you can allow all of your users to view the SLOs in a given project, but only a few users to make changes.
 
 {{ .Description | trimspace }}
 
@@ -15,6 +19,7 @@ description: |-
 
 {{ .SchemaMarkdown | trimspace }}
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/Features/search-and-filter/#project
+[Projects in Nobl9](https://docs.nobl9.com/#projects)
+[Projects YAML configuration](https://docs.nobl9.dev/yaml-guide#project)
