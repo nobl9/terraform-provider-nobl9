@@ -7,7 +7,11 @@ description: |-
 
 # {{.Name}} ({{.Type}})
 
-{{ .Description | trimspace }}
+The ServiceNow Alert Method automatically opens an issue in your ServiceNow workflow to notify you whenever an incident is triggered.
+
+-> **NOTE** To allow ServiceNow alerts to integrate with Nobl9, you need to set up an Access Control List (ACL) for your ServiceNow users. Refer to [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow) for more details.
+
+For more details, refer to {{ .Description | trimspace }}
 
 ## Example Usage
 
@@ -15,6 +19,6 @@ description: |-
 
 {{ .SchemaMarkdown | trimspace }}
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/Alert_Methods/servicenow/
+[Service now alerts configuration | Nobl9 documnetation](https://docs.nobl9.com/Alert_Methods/servicenow/)

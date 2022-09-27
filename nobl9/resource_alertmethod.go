@@ -355,7 +355,7 @@ func (i alertMethodOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec map[stri
 type alertMethodServiceNow struct{}
 
 func (i alertMethodServiceNow) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/servicenow)"
+	return "[ServiceNow alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow)"
 }
 
 func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
@@ -375,7 +375,7 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 		"instance_name": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "ServiceNow InstanceName. For details see documentation.",
+			Description: "ServiceNow InstanceName. For details see [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow#servicenow-credentials).",
 		},
 	}
 }
