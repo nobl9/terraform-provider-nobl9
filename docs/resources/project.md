@@ -1,21 +1,25 @@
 ---
 page_title: "nobl9_project Resource - terraform-provider-nobl9"
-subcategory: "Alert Methods"
+subcategory: "Groupings and Utilities"
 description: |-
-  [Project configuration documentation]()
+  Project configuration documentation https://docs.nobl9.dev/yaml-guide#project
 ---
 
 # nobl9_project (Resource)
 
-[Project configuration documentation]()
+Projects are the primary logical grouping of resources in the Nobl9 platform. All Nobl9 resources, such as data sources, SLOs, and alerts, are created within a project.
+
+Access controls at the project level enable users to control who can see and change these resources. For example, you can allow all of your users to view the SLOs in a given project, but only a few users to make changes.
+
+[Project configuration documentation](https://docs.nobl9.dev/yaml-guide#project)
 
 ## Example Usage
 
 ```terraform
 resource "nobl9_project" "this" {
-  display_name = "Foo Project"
-  name         = "foo-project"
-  description  = "An example terraform project"
+  display_name = "My Project"
+  name         = "my-project"
+  description  = "An example N9 Terraform project"
 
   label {
     key    = "env"
@@ -51,9 +55,10 @@ resource "nobl9_project" "this" {
 
 Required:
 
-- `key` (String) One key for the label, unique within the associated resource.
+- `key` (String) A key for the label, unique within the associated resource.
 - `values` (List of String) A list of unique values for a single key.
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/Features/search-and-filter/#project
+[Projects in Nobl9](https://docs.nobl9.com/#projects)
+[Projects YAML configuration](https://docs.nobl9.dev/yaml-guide#project)

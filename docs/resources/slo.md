@@ -1102,7 +1102,7 @@ Required:
 
 Required:
 
-- `key` (String) One key for the label, unique within the associated resource.
+- `key` (String) A key for the label, unique within the associated resource.
 - `values` (List of String) A list of unique values for a single key.
 
 ## Nobl9 Official Documentation
