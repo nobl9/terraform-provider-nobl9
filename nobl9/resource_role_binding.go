@@ -20,7 +20,7 @@ func resourceRoleBinding() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Computed:    true,
-				Description: "Automatically generated, unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
+				Description: "Automatically generated, unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
 			},
 			"display_name": schemaDisplayName(),
 			"user": {
@@ -46,7 +46,7 @@ func resourceRoleBinding() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[RoleBinding configuration documentation](https://docs.nobl9.com/yaml-guide#rolebinding)",
+		Description: "[RoleBinding configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#rolebinding)",
 	}
 }
 

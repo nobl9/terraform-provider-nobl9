@@ -22,7 +22,7 @@ func resourceSLO() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)",
+		Description: "[SLO configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#slo)",
 	}
 }
 

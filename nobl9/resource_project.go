@@ -23,7 +23,7 @@ func resourceProject() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[Project configuration documentation](https://docs.nobl9.dev/yaml-guide#project)",
+		Description: "[Project configuration | Nobl9 Documentation](https://docs.nobl9.dev/yaml-guide#project)",
 	}
 }
 
