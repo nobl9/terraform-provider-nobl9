@@ -148,7 +148,7 @@ func resourceAlertMethodDelete(_ context.Context, d *schema.ResourceData, meta i
 type alertMethodWebhook struct{}
 
 func (i alertMethodWebhook) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/webhook)"
+	return "[Webhook alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/webhook)"
 }
 
 //nolint:lll
@@ -170,7 +170,7 @@ func (i alertMethodWebhook) GetSchema() map[string]*schema.Schema {
 		"template_fields": {
 			Type:          schema.TypeList,
 			Optional:      true,
-			Description:   "Webhook meesage fields. The message will contain json payload with specified fields. See documentation for allowed fields.",
+			Description:   "Webhook message fields. The message contains JSON payload with specified fields. See documentation for allowed fields.",
 			ConflictsWith: []string{"template"},
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
