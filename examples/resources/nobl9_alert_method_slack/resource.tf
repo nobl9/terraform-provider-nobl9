@@ -1,7 +1,7 @@
 resource "nobl9_alert_method_webhook" "this" {
-  name         = "foo-alert"
-  display_name = "Foo Alert"
-  project      = "Foo Project"
+  name         = "my-slack-alert"
+  display_name = "My Slack Alert"
+  project      = "Test Project"
   description = "slack"
   url         = "https://slack.com"
 }

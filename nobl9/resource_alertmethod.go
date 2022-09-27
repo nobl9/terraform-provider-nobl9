@@ -248,7 +248,7 @@ func (i alertMethodPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec map[str
 type alertMethodSlack struct{}
 
 func (i alertMethodSlack) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/slack)"
+	return "[Slack alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/slack)"
 }
 
 func (i alertMethodSlack) GetSchema() map[string]*schema.Schema {
