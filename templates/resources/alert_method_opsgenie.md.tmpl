@@ -9,9 +9,11 @@ description: |-
 
 The OpsGenie Alert Method enables triggering alerts through Opsgenie to notify whenever an incident is triggered.
 
-For more details, refer to {{ .Description | trimspace }}
+For more details, refer to {{ .Description | trimspace }}.
 
 ## Example Usage
+
+Here's an example of OpsGenie Terraform resource configuration:
 
 {{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
 
@@ -19,4 +21,4 @@ For more details, refer to {{ .Description | trimspace }}
 
 ## Useful Links
 
-[Opsgenie alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie/)
+[OpsGenie alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie/)

@@ -9,9 +9,11 @@ description: |-
 
 The OpsGenie Alert Method enables triggering alerts through Opsgenie to notify whenever an incident is triggered.
 
-For more details, refer to [Opsgenie alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie)
+For more details, refer to [Opsgenie alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie).
 
 ## Example Usage
+
+Here's an example of OpsGenie Terraform resource configuration:
 
 ```terraform
 resource "nobl9_alert_method_webhook" "this" {
@@ -45,4 +47,4 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ## Useful Links
 
-[Opsgenie alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie/)
+[OpsGenie alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie/)

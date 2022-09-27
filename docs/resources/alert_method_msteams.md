@@ -9,9 +9,11 @@ description: |-
 
 The MS Teams Alert Method enables sending alerts through MS Teams to notify Nobl9 users whenever an incident is triggered.
 
-For more details, refer to [MS Teams alerts configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/ms-teams)
+For more details, refer to [MS Teams alerts configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/ms-teams).
 
 ## Example Usage
+
+Here's an example of MS Teams Terraform resource configuration:
 
 ```terraform
 resource "nobl9_alert_method_webhook" "this" {

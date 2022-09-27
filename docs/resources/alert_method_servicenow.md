@@ -11,9 +11,11 @@ The ServiceNow Alert Method automatically opens an issue in your ServiceNow work
 
 -> **NOTE** To allow ServiceNow alerts to integrate with Nobl9, you need to set up an Access Control List (ACL) for your ServiceNow users. Refer to [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow) for more details.
 
-For more details, refer to [ServiceNow alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow)
+For more details, refer to [ServiceNow alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow).
 
 ## Example Usage
+
+Here's an example of ServiceNow Terraform resource configuration:
 
 ```terraform
 resource "nobl9_alert_method_webhook" "this" {
@@ -49,4 +51,4 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ## Useful Links
 
-[Service now alerts configuration | Nobl9 documnetation](https://docs.nobl9.com/Alert_Methods/servicenow/)
+[ServiceNow alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow/)

@@ -9,9 +9,11 @@ description: |-
 
 The Jira Alert Method automatically opens a Jira issue to notify you whenever an incident is triggered.
 
-For more details, refer to [Jira alerts configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/jira)
+For more details, refer to [Jira alerts configuration documentation | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/jira).
 
 ## Example Usage
+
+Here's an example of Jira Terraform resource configuration:
 
 ```terraform
 resource "nobl9_alert_method_webhook" "this" {

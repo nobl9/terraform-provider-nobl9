@@ -9,11 +9,13 @@ description: |-
 
 The Webhook Alert Method enables sending alerts through an HTTP callback handler that is triggered by an event. You can create webhooks and configure them to handle different incident notifications, using either custom or predefined notification templates.
 
-->**NOTE** For details on how to use Webhook message templates, check to [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/webhook#creating-webhook-custom-templates-through-yaml)
+->**NOTE** For details on how to use Webhook message templates, check to [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/webhook#creating-webhook-custom-templates-through-yaml).
 
-For more details, refer to [Webhook alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/webhook)
+For more details, refer to [Webhook alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/webhook).
 
 ## Example Usage
+
+Here's an example of Webhook Terraform resource configuration:
 
 ```terraform
 resource "nobl9_alert_method_webhook" "this" {

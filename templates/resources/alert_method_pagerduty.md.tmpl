@@ -9,9 +9,11 @@ description: |-
 
 The PagerDuty Alert Method enables triggering alerts through PagerDuty to notify Nobl9 users whenever an incident is triggered.
 
-For more details, refer to {{ .Description | trimspace }}
+For more details, refer to {{ .Description | trimspace }}.
 
 ## Example Usage
+
+Here's an example of PagerDuty Terraform resource configuration:
 
 {{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
 

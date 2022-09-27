@@ -9,9 +9,11 @@ description: |-
 
 The PagerDuty Alert Method enables triggering alerts through PagerDuty to notify Nobl9 users whenever an incident is triggered.
 
-For more details, refer to [PagerDuty Alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/pagerduty)
+For more details, refer to [PagerDuty Alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/pagerduty).
 
 ## Example Usage
+
+Here's an example of PagerDuty Terraform resource configuration:
 
 ```terraform
 resource "nobl9_alert_method_webhook" "this" {

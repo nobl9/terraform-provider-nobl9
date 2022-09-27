@@ -11,9 +11,11 @@ The Slack Alert Method allows sending a predefined notification through Slack to
 
 ->**NOTE** To set up the Slack integration, you'll need to provide an Incoming Webhook URL. This allows Slack to send an automated notification to a channel of your choice. For details, see the [Slack documentation](https://slack.com/help/articles/115005265063-Incoming-webhooks-for-Slack%22).
 
-For more details, refer to [Slack alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/slack)
+For more details, refer to [Slack alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/slack).
 
 ## Example Usage
+
+Here's an example of Slack Terraform resource configuration:
 
 ```terraform
 resource "nobl9_alert_method_webhook" "this" {
@@ -45,4 +47,4 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ## Useful links
 
-[Slack alerts configuration | Nobl9 documnetation(https://docs.nobl9.com/Alert_Methods/slack/)
+[Slack alerts configuration | Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/slack/)
