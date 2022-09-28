@@ -31,7 +31,7 @@ linters-settings:
     # Report about shadowed variables.
     check-shadowing: true
   lll:
-    line-length: 120
+    line-length: 250
   gocritic:
     enabled-tags:
       # - diagnostic
