@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"sync"
 
 	"github.com/nobl9/nobl9-go"
 
@@ -114,26 +115,35 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 	return config, nil
 }
 
-func newClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
-	c, err := nobl9.NewClient(
-		config.IngestURL,
-		config.Organization,
-		project,
-		"terraform-"+Version,
-		config.ClientID,
-		config.ClientSecret,
-		config.OktaOrgURL,
-		config.OktaAuthServer,
-	)
-	if err != nil {
+//nolint:gochecknoglobals
+var (
+	client    *nobl9.Client
+	clientErr error
+	once      sync.Once
+)
+
+func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
+	once.Do(func() {
+		client, clientErr = nobl9.NewClient(
+			config.IngestURL,
+			config.Organization,
+			project,
+			"terraform-"+Version,
+			config.ClientID,
+			config.ClientSecret,
+			config.OktaOrgURL,
+			config.OktaAuthServer,
+		)
+	})
+	if clientErr != nil {
 		return nil, diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  "Unable to create Nobl9 client",
-				Detail:   err.Error(),
+				Detail:   clientErr.Error(),
 			},
 		}
 	}
 
-	return c, nil
+	return client, nil
 }

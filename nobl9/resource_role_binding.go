@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -95,7 +96,7 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, wildcardProject)
+	client, ds := getClient(config, wildcardProject)
 	if ds != nil {
 		return ds
 	}
@@ -117,7 +118,7 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 
 func resourceRoleBindingRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, wildcardProject)
+	client, ds := getClient(config, wildcardProject)
 	if ds.HasError() {
 		return ds
 	}
@@ -136,7 +137,7 @@ func resourceRoleBindingDelete(_ context.Context, d *schema.ResourceData, meta i
 	if project == "" {
 		project = wildcardProject
 	}
-	client, ds := newClient(config, project)
+	client, ds := getClient(config, project)
 	if ds.HasError() {
 		return ds
 	}
