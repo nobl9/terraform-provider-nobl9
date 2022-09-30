@@ -115,9 +115,12 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 	return config, nil
 }
 
-var client *nobl9.Client //nolint:gochecknoglobals
-var clientErr error      //nolint:gochecknoglobals
-var once sync.Once       //nolint:gochecknoglobals
+//nolint:gochecknoglobals
+var (
+	client    *nobl9.Client
+	clientErr error
+	once      sync.Once
+)
 
 func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
 	once.Do(func() {
