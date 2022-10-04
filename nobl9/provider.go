@@ -124,7 +124,6 @@ var (
 	clients   = make(map[string]*nobl9.Client)
 	clientErr error
 	mu        sync.Mutex
-	once      sync.Once
 )
 
 func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
