@@ -117,11 +117,11 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 
 //nolint:gochecknoglobals
 var (
-	// The N9 TF Provider supports the creation of project types. This means that the project can be different (or even
+	// The N9 TF Provider supports the creation of project kind. This means that the project can be different (or even
 	// missing during TF import) between requests to the N9 API. The N9 SDK requires a project to be passed when
 	// creating a new API client, and reuses this project for each call. To avoid breaking the current SDK interface,
 	// provider creates the client per project.
-	clients   map[string]*nobl9.Client
+	clients   = make(map[string]*nobl9.Client)
 	clientErr error
 	mu        sync.Mutex
 	once      sync.Once
@@ -142,11 +142,6 @@ func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagn
 	}
 	mu.Lock()
 	defer mu.Unlock()
-
-	once.Do(func() {
-		clients = make(map[string]*nobl9.Client)
-		clients[project], clientErr = newClient()
-	})
 
 	client, clientInitialized := clients[project]
 	if !clientInitialized {
