@@ -119,6 +119,7 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 var (
 	clients   map[string]*nobl9.Client
 	clientErr error
+	mu        sync.Mutex
 	once      sync.Once
 )
 
@@ -135,6 +136,8 @@ func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagn
 			config.OktaAuthServer,
 		)
 	}
+	mu.Lock()
+	defer mu.Unlock()
 
 	once.Do(func() {
 		clients = make(map[string]*nobl9.Client)
