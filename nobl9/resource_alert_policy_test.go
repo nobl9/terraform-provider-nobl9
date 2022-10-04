@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -53,7 +54,7 @@ func destroyMultiple(rsTypes []string, objectTypes []n9api.Object) resource.Test
 			return fmt.Errorf("resource_types (%v) must match objectTypes (%v)", rsTypes, objectTypes)
 		}
 		for i := 0; i < len(rsTypes); i++ {
-			CheckDestory(rsTypes[i], objectTypes[i])
+			CheckDestroy(rsTypes[i], objectTypes[i])
 		}
 		return nil
 	}

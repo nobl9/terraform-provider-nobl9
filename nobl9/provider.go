@@ -120,11 +120,12 @@ var (
 	client    *nobl9.Client
 	clientErr error
 	once      sync.Once
+	clients   map[string]*nobl9.Client
 )
 
 func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
-	once.Do(func() {
-		client, clientErr = nobl9.NewClient(
+	var newClient = func() (*nobl9.Client, error) {
+		return nobl9.NewClient(
 			config.IngestURL,
 			config.Organization,
 			project,
@@ -134,7 +135,19 @@ func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagn
 			config.OktaOrgURL,
 			config.OktaAuthServer,
 		)
+	}
+
+	once.Do(func() {
+		clients = make(map[string]*nobl9.Client)
+		clients[project], clientErr = newClient()
 	})
+
+	client, clientInitialized := clients[project]
+	if !clientInitialized {
+		client, clientErr = newClient()
+		clients[project] = client
+	}
+
 	if clientErr != nil {
 		return nil, diag.Diagnostics{
 			diag.Diagnostic{

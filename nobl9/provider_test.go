@@ -75,7 +75,7 @@ func CheckObjectCreated(name string) resource.TestCheckFunc {
 	}
 }
 
-func CheckDestory(rsType string, objectType n9api.Object) func(s *terraform.State) error {
+func CheckDestroy(rsType string, objectType n9api.Object) func(s *terraform.State) error {
 	return func(s *terraform.State) error {
 		config, ok := testProvider.Meta().(ProviderConfig)
 		if !ok {

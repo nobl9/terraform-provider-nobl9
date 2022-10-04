@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -54,7 +55,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestory("nobl9_slo", n9api.ObjectSLO),
+				CheckDestroy:      CheckDestroy("nobl9_slo", n9api.ObjectSLO),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),

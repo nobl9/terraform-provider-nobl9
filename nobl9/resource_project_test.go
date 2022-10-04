@@ -15,7 +15,7 @@ func TestAcc_Nobl9Project(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: ProviderFactory(),
-		CheckDestroy:      CheckDestory("nobl9_project", n9api.ObjectProject),
+		CheckDestroy:      CheckDestroy("nobl9_project", n9api.ObjectProject),
 		Steps: []resource.TestStep{
 			{
 				Config: testProjectConfig(name),
@@ -24,6 +24,40 @@ func TestAcc_Nobl9Project(t *testing.T) {
 			{
 				Config: testProjectConfigNoLabels(name),
 				Check:  CheckObjectCreated("nobl9_project." + name),
+			},
+		},
+	})
+}
+
+func TestAcc_NewNobl9ProjectReference(t *testing.T) {
+	name := "test-project"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: ProviderFactory(),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			CheckDestroy("nobl9_agent", n9api.ObjectAgent),
+			CheckDestroy("nobl9_project", n9api.ObjectProject),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "nobl9_project" "%s" {
+					  display_name = "%s"
+					  name         = "%s"
+					  description  = "A terraform project"
+					}
+					resource "nobl9_agent" "%s" {
+					 name      = "%s"
+					 project   = nobl9_project.%s.name
+					 source_of = ["Metrics", "Services"]
+					 agent_type = "bigquery"
+					}
+				`, name, name, name, name, name, name),
+				Check: resource.ComposeTestCheckFunc(
+					CheckObjectCreated("nobl9_project."+name),
+					CheckObjectCreated("nobl9_agent."+name),
+				),
 			},
 		},
 	})
