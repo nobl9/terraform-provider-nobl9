@@ -117,10 +117,9 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 
 //nolint:gochecknoglobals
 var (
-	client    *nobl9.Client
+	clients   map[string]*nobl9.Client
 	clientErr error
 	once      sync.Once
-	clients   map[string]*nobl9.Client
 )
 
 func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
