@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -31,7 +32,7 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 			resource.ParallelTest(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestory("nobl9_alert_method_"+tc.resourceSuffix, n9api.ObjectAlertMethod),
+				CheckDestroy:      CheckDestroy("nobl9_alert_method_"+tc.resourceSuffix, n9api.ObjectAlertMethod),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
