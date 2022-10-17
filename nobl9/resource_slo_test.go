@@ -92,7 +92,6 @@ resource "nobl9_slo" ":name" {
   budgeting_method = "Occurrences"
 
   objective {
-    name         = "tf-objective-1"
     display_name = "obj1"
     target       = 0.7
     value        = 1
