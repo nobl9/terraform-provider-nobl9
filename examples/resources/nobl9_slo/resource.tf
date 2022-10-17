@@ -38,6 +38,7 @@ resource "nobl9_slo" "this" {
   }
 
   objective {
+    name         = "tf-objective-1"
     target       = 0.99
     display_name = "OK"
     value        = 2000

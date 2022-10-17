@@ -191,6 +191,11 @@ func schemaSLO() map[string]*schema.Schema {
 						Required:    true,
 						Description: "Value",
 					},
+					"name": {
+						Type:        schema.TypeString,
+						Description: "Objective's name",
+						Optional:    true,
+					},
 				},
 			},
 		},
