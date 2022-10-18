@@ -53,6 +53,7 @@ resource "nobl9_slo" "this" {
   }
 
   objective {
+    name         = "tf-objective-1"
     target       = 0.99
     display_name = "OK"
     value        = 2000
@@ -125,6 +126,7 @@ Required:
 Optional:
 
 - `count_metrics` (Block Set) Compares two time series, indicating the ratio of the count of good values to total values. (see [below for nested schema](#nestedblock--objective--count_metrics))
+- `name` (String) Objective's name
 - `op` (String) Type of logical operation
 - `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
 - `time_slice_target` (Number) Designated value for slice

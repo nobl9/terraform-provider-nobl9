@@ -519,6 +519,7 @@ func marshalThresholds(d *schema.ResourceData) []n9api.Threshold {
 			ThresholdBase: n9api.ThresholdBase{
 				DisplayName: objective["display_name"].(string),
 				Value:       objective["value"].(float64),
+				Name:        objective["name"].(string),
 			},
 			BudgetTarget:    &target,
 			TimeSliceTarget: timeSliceTargetPtr,
