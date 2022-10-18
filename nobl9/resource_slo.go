@@ -705,6 +705,7 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) er
 	for i, o := range objectives {
 		objective := o.(map[string]interface{})
 		objectiveTF := make(map[string]interface{})
+		objectiveTF["name"] = objective["name"]
 		objectiveTF["display_name"] = objective["displayName"]
 		objectiveTF["op"] = objective["op"]
 		objectiveTF["value"] = objective["value"]
