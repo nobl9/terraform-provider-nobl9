@@ -57,6 +57,80 @@ func diffSuppressListStringOrder(attribute string) func(
 	}
 }
 
+func resourceObjective() *schema.Resource {
+	res := &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"count_metrics": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Compares two time series, indicating the ratio of the count of good values to total values.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"good":  schemaMetricSpec(),
+						"total": schemaMetricSpec(),
+						"incremental": {
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "Should the metrics be incrementing or not",
+						},
+					},
+				},
+			},
+			"raw_metric": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Raw data is used to compare objective values.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"query": schemaMetricSpec(),
+					},
+				},
+			},
+			"display_name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name to be displayed",
+			},
+			"op": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Type of logical operation",
+			},
+			"target": {
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "Designated value",
+			},
+			"time_slice_target": {
+				Type:        schema.TypeFloat,
+				Optional:    true,
+				Description: "Designated value for slice",
+			},
+			"value": {
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "Value",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Description: "Objective's name. This field is computed if not provided.",
+				Computed:    true,
+				Optional:    true,
+			},
+		},
+	}
+	return res
+}
+
+func schemaObjective() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeSet,
+		Required:    true,
+		Description: "[Objectives documentation](https://docs.nobl9.com/yaml-guide#objective)",
+		Elem:        resourceObjective(),
+	}
+}
+
 func schemaSLO() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"name":         schemaName(),
@@ -134,71 +208,7 @@ func schemaSLO() map[string]*schema.Schema {
 				},
 			},
 		},
-		"objective": {
-			Type:        schema.TypeSet,
-			Required:    true,
-			Description: "[Objectives documentation](https://docs.nobl9.com/yaml-guide#objective)",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"count_metrics": {
-						Type:        schema.TypeSet,
-						Optional:    true,
-						Description: "Compares two time series, indicating the ratio of the count of good values to total values.",
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"good":  schemaMetricSpec(),
-								"total": schemaMetricSpec(),
-								"incremental": {
-									Type:        schema.TypeBool,
-									Required:    true,
-									Description: "Should the metrics be incrementing or not",
-								},
-							},
-						},
-					},
-					"raw_metric": {
-						Type:        schema.TypeSet,
-						Optional:    true,
-						Description: "Raw data is used to compare objective values.",
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"query": schemaMetricSpec(),
-							},
-						},
-					},
-					"display_name": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Name to be displayed",
-					},
-					"op": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "Type of logical operation",
-					},
-					"target": {
-						Type:        schema.TypeFloat,
-						Required:    true,
-						Description: "Designated value",
-					},
-					"time_slice_target": {
-						Type:        schema.TypeFloat,
-						Optional:    true,
-						Description: "Designated value for slice",
-					},
-					"value": {
-						Type:        schema.TypeFloat,
-						Required:    true,
-						Description: "Value",
-					},
-					"name": {
-						Type:        schema.TypeString,
-						Description: "Objective's name",
-						Optional:    true,
-					},
-				},
-			},
-		},
+		"objective": schemaObjective(),
 		"time_window": {
 			Type:        schema.TypeSet,
 			Required:    true,
@@ -403,7 +413,6 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 		return nil, diags
 	}
 
-	indicator := marshalIndicator(d)
 	return &n9api.SLO{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
@@ -414,7 +423,7 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 			Description:     d.Get("description").(string),
 			Service:         d.Get("service").(string),
 			BudgetingMethod: d.Get("budgeting_method").(string),
-			Indicator:       indicator,
+			Indicator:       marshalIndicator(d),
 			Composite:       marshalComposite(d),
 			Thresholds:      marshalThresholds(d),
 			TimeWindows:     marshalTimeWindows(d),
@@ -644,6 +653,15 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	err = d.Set("alert_policies", spec["alertPolicies"].([]interface{}))
 	diags = appendError(diags, err)
 
+	// Remove this warning once SLO objective unique identifier grace period ends.
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "SLO objective unique identifier warning",
+		Detail: "Nobl9 is introducing an SLO objective unique identifier to support the same value for different " +
+			"SLIs in the same SLO. As such, Nobl9 is adding a name identifier to each SLO objective. " +
+			"For more detailed information, refer to: https://docs.nobl9.com/Features/SLO-objective-unique-identifier",
+	})
+
 	return diags
 }
 
@@ -731,7 +749,7 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) er
 
 		objectivesTF[i] = objectiveTF
 	}
-	return d.Set("objective", schema.NewSet(objectiveHash, objectivesTF))
+	return d.Set("objective", schema.NewSet(schema.HashResource(resourceObjective()), objectivesTF))
 }
 
 func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) error {

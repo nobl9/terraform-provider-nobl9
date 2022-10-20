@@ -126,7 +126,7 @@ Required:
 Optional:
 
 - `count_metrics` (Block Set) Compares two time series, indicating the ratio of the count of good values to total values. (see [below for nested schema](#nestedblock--objective--count_metrics))
-- `name` (String) Objective's name
+- `name` (String) Objective's name. This field is computed if not provided.
 - `op` (String) Type of logical operation
 - `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
 - `time_slice_target` (Number) Designated value for slice
