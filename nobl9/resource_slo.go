@@ -3,7 +3,6 @@ package nobl9
 import (
 	"context"
 	"fmt"
-	"hash/fnv"
 	"sort"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -771,17 +770,6 @@ func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) err
 	}
 
 	return nil
-}
-
-func objectiveHash(objective interface{}) int {
-	o := objective.(map[string]interface{})
-	hash := fnv.New32()
-	indicator := fmt.Sprintf("%s_%s_%f_%f", o["display_name"], o["op"], o["target"], o["value"])
-	_, err := hash.Write([]byte(indicator))
-	if err != nil {
-		panic(err)
-	}
-	return int(hash.Sum32())
 }
 
 func unmarshalSLORawMetric(rawMetricSource map[string]interface{}) *schema.Set {
