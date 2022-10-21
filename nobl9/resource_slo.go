@@ -3,7 +3,6 @@ package nobl9
 import (
 	"context"
 	"fmt"
-	"hash/fnv"
 	"sort"
 
 	"github.com/hashicorp/go-cty/cty"
