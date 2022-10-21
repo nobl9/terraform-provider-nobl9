@@ -659,6 +659,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 		Summary:  "SLO objective unique identifier warning",
 		Detail: "Nobl9 is introducing an SLO objective unique identifier to support the same value for different " +
 			"SLIs in the same SLO. As such, Nobl9 is adding a name identifier to each SLO objective. " +
+			"Objective names can be set now, and they'll be required once grace period ends. " +
 			"For more detailed information, refer to: https://docs.nobl9.com/Features/SLO-objective-unique-identifier",
 	})
 
