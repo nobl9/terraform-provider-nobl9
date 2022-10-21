@@ -754,7 +754,6 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) er
 
 func objectiveHash(objective interface{}) int {
 	o := objective.(map[string]interface{})
-	hash := fnv.New32()
 	indicator := fmt.Sprintf("%s_%s_%s_%f_%f_%f",
 		o["name"],
 		o["display_name"],
@@ -763,13 +762,8 @@ func objectiveHash(objective interface{}) int {
 		o["target"],
 		o["time_slice_target"],
 	)
-	_, err := hash.Write([]byte(indicator))
-	if err != nil {
-		panic(err)
-	}
-	return int(hash.Sum32())
+	return schema.HashString(indicator)
 }
-
 func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) error {
 	if compositeSpec, isCompositeSLO := spec["composite"]; isCompositeSLO {
 		composite := compositeSpec.(map[string]interface{})
