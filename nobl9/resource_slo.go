@@ -3,6 +3,7 @@ package nobl9
 import (
 	"context"
 	"fmt"
+	"hash/fnv"
 	"sort"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -748,7 +749,25 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) er
 
 		objectivesTF[i] = objectiveTF
 	}
-	return d.Set("objective", schema.NewSet(schema.HashResource(resourceObjective()), objectivesTF))
+	return d.Set("objective", schema.NewSet(objectiveHash, objectivesTF))
+}
+
+func objectiveHash(objective interface{}) int {
+	o := objective.(map[string]interface{})
+	hash := fnv.New32()
+	indicator := fmt.Sprintf("%s_%s_%s_%f_%f_%f",
+		o["name"],
+		o["display_name"],
+		o["op"],
+		o["value"],
+		o["target"],
+		o["time_slice_target"],
+	)
+	_, err := hash.Write([]byte(indicator))
+	if err != nil {
+		panic(err)
+	}
+	return int(hash.Sum32())
 }
 
 func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) error {
