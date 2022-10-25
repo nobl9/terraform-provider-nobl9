@@ -3,7 +3,6 @@ package nobl9
 import (
 	"context"
 	"fmt"
-	"hash/fnv"
 	"sort"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -54,6 +53,80 @@ func diffSuppressListStringOrder(attribute string) func(
 		})
 
 		return equalSlices(apOld, apNew)
+	}
+}
+
+func resourceObjective() *schema.Resource {
+	res := &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"count_metrics": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Compares two time series, indicating the ratio of the count of good values to total values.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"good":  schemaMetricSpec(),
+						"total": schemaMetricSpec(),
+						"incremental": {
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "Should the metrics be incrementing or not",
+						},
+					},
+				},
+			},
+			"raw_metric": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Raw data is used to compare objective values.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"query": schemaMetricSpec(),
+					},
+				},
+			},
+			"display_name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name to be displayed",
+			},
+			"op": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Type of logical operation",
+			},
+			"target": {
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "Designated value",
+			},
+			"time_slice_target": {
+				Type:        schema.TypeFloat,
+				Optional:    true,
+				Description: "Designated value for slice",
+			},
+			"value": {
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "Value",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Description: "Objective's name. This field is computed if not provided.",
+				Computed:    true,
+				Optional:    true,
+			},
+		},
+	}
+	return res
+}
+
+func schemaObjective() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeSet,
+		Required:    true,
+		Description: "[Objectives documentation](https://docs.nobl9.com/yaml-guide#objective)",
+		Elem:        resourceObjective(),
 	}
 }
 
@@ -134,66 +207,7 @@ func schemaSLO() map[string]*schema.Schema {
 				},
 			},
 		},
-		"objective": {
-			Type:        schema.TypeSet,
-			Required:    true,
-			Description: "[Objectives documentation](https://docs.nobl9.com/yaml-guide#objective)",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"count_metrics": {
-						Type:        schema.TypeSet,
-						Optional:    true,
-						Description: "Compares two time series, indicating the ratio of the count of good values to total values.",
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"good":  schemaMetricSpec(),
-								"total": schemaMetricSpec(),
-								"incremental": {
-									Type:        schema.TypeBool,
-									Required:    true,
-									Description: "Should the metrics be incrementing or not",
-								},
-							},
-						},
-					},
-					"raw_metric": {
-						Type:        schema.TypeSet,
-						Optional:    true,
-						Description: "Raw data is used to compare objective values.",
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"query": schemaMetricSpec(),
-							},
-						},
-					},
-					"display_name": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Name to be displayed",
-					},
-					"op": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "Type of logical operation",
-					},
-					"target": {
-						Type:        schema.TypeFloat,
-						Required:    true,
-						Description: "Designated value",
-					},
-					"time_slice_target": {
-						Type:        schema.TypeFloat,
-						Optional:    true,
-						Description: "Designated value for slice",
-					},
-					"value": {
-						Type:        schema.TypeFloat,
-						Required:    true,
-						Description: "Value",
-					},
-				},
-			},
-		},
+		"objective": schemaObjective(),
 		"time_window": {
 			Type:        schema.TypeSet,
 			Required:    true,
@@ -398,7 +412,6 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 		return nil, diags
 	}
 
-	indicator := marshalIndicator(d)
 	return &n9api.SLO{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
@@ -409,7 +422,7 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 			Description:     d.Get("description").(string),
 			Service:         d.Get("service").(string),
 			BudgetingMethod: d.Get("budgeting_method").(string),
-			Indicator:       indicator,
+			Indicator:       marshalIndicator(d),
 			Composite:       marshalComposite(d),
 			Thresholds:      marshalThresholds(d),
 			TimeWindows:     marshalTimeWindows(d),
@@ -514,6 +527,7 @@ func marshalThresholds(d *schema.ResourceData) []n9api.Threshold {
 			ThresholdBase: n9api.ThresholdBase{
 				DisplayName: objective["display_name"].(string),
 				Value:       objective["value"].(float64),
+				Name:        objective["name"].(string),
 			},
 			BudgetTarget:    &target,
 			TimeSliceTarget: timeSliceTargetPtr,
@@ -638,6 +652,16 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	err = d.Set("alert_policies", spec["alertPolicies"].([]interface{}))
 	diags = appendError(diags, err)
 
+	// Remove this warning once SLO objective unique identifier grace period ends.
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "SLO objective unique identifier warning",
+		Detail: "Nobl9 is introducing an SLO objective unique identifier to support the same value for different " +
+			"SLIs in the same SLO. As such, Nobl9 is adding a name identifier to each SLO objective. " +
+			"Objective names can be set now, and they'll be required once grace period ends. " +
+			"For more detailed information, refer to: https://docs.nobl9.com/Features/SLO-objective-unique-identifier",
+	})
+
 	return diags
 }
 
@@ -699,6 +723,7 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) er
 	for i, o := range objectives {
 		objective := o.(map[string]interface{})
 		objectiveTF := make(map[string]interface{})
+		objectiveTF["name"] = objective["name"]
 		objectiveTF["display_name"] = objective["displayName"]
 		objectiveTF["op"] = objective["op"]
 		objectiveTF["value"] = objective["value"]
@@ -727,6 +752,18 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) er
 	return d.Set("objective", schema.NewSet(objectiveHash, objectivesTF))
 }
 
+func objectiveHash(objective interface{}) int {
+	o := objective.(map[string]interface{})
+	indicator := fmt.Sprintf("%s_%s_%s_%f_%f_%f",
+		o["name"],
+		o["display_name"],
+		o["op"],
+		o["value"],
+		o["target"],
+		o["time_slice_target"],
+	)
+	return schema.HashString(indicator)
+}
 func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) error {
 	if compositeSpec, isCompositeSLO := spec["composite"]; isCompositeSLO {
 		composite := compositeSpec.(map[string]interface{})
@@ -746,17 +783,6 @@ func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) err
 	}
 
 	return nil
-}
-
-func objectiveHash(objective interface{}) int {
-	o := objective.(map[string]interface{})
-	hash := fnv.New32()
-	indicator := fmt.Sprintf("%s_%s_%f_%f", o["display_name"], o["op"], o["target"], o["value"])
-	_, err := hash.Write([]byte(indicator))
-	if err != nil {
-		panic(err)
-	}
-	return int(hash.Sum32())
 }
 
 func unmarshalSLORawMetric(rawMetricSource map[string]interface{}) *schema.Set {

@@ -93,6 +93,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -152,6 +153,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -212,6 +214,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -277,6 +280,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -380,6 +384,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -440,6 +445,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -518,6 +524,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -532,6 +539,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj2"
+    name         = "tf-objective-2"
     target       = 0.8
     value        = 1.5
     op           = "lt"
@@ -585,6 +593,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 15
     time_slice_target = 0.7
@@ -600,6 +609,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name      = "obj2"
+    name              = "tf-objective-2"
     target            = 0.5
 	value             = 10
 	time_slice_target = 0.5
@@ -660,6 +670,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -719,6 +730,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -783,6 +795,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -793,8 +806,8 @@ resource "nobl9_slo" ":name" {
 			sum(
 				sum_over_time(
 					{topic="topic", consumergroup="group", cluster="main"} |= "kafka_consumergroup_lag" |
-					logfmt | 
-					line_format "{{.kafka_consumergroup_lag}}" | 
+					logfmt |
+					line_format "{{.kafka_consumergroup_lag}}" |
 					unwrap kafka_consumergroup_lag [1m]
 			)
 			)
@@ -851,6 +864,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -910,6 +924,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -975,6 +990,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1040,6 +1056,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1132,6 +1149,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1195,6 +1213,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1259,6 +1278,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1319,6 +1339,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1378,6 +1399,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1439,6 +1461,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1453,6 +1476,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj2"
+    name         = "tf-objective-2"
     target       = 0.5
     value        = 10
     op           = "lt"
@@ -1516,6 +1540,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1577,6 +1602,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1642,6 +1668,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     count_metrics {
@@ -1706,6 +1733,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1720,6 +1748,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj2"
+    name         = "tf-objective-2"
     target       = 0.5
     value        = 10
     op           = "lt"
@@ -1769,6 +1798,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name      = "obj2"
+    name              = "tf-objective-2"
     target            = 0.5
     value             = 10
     time_slice_target = 0.5
@@ -1819,6 +1849,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name      = "obj2"
+    name              = "tf-objective-2"
     target            = 0.5
     value             = 10
     time_slice_target = 0.5
@@ -1879,6 +1910,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1938,6 +1970,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1948,8 +1981,8 @@ resource "nobl9_slo" ":name" {
 		  cluster_id    = "redshift"
 		  database_name = "dev"
 		  query         = <<-EOT
-			SELECT value as n9value, timestamp as n9date 
-			FROM sinusoid 
+			SELECT value as n9value, timestamp as n9date
+			FROM sinusoid
 			WHERE timestamp BETWEEN :n9date_from AND :n9date_to
 		  EOT
 	    }
@@ -2004,6 +2037,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -2011,8 +2045,8 @@ resource "nobl9_slo" ":name" {
       query {
         splunk {
           query = <<-EOT
-			search index=events source=udp:5072 sourcetype=syslog status<400 | 
-			bucket _time span=1m | 
+			search index=events source=udp:5072 sourcetype=syslog status<400 |
+			bucket _time span=1m |
 			stats avg(response_time) as n9value by _time | rename _time as n9time | fields n9time n9value"
             EOT
 		}
@@ -2067,6 +2101,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -2126,6 +2161,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -2188,6 +2224,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
