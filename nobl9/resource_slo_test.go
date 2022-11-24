@@ -1628,7 +1628,7 @@ resource "nobl9_slo" ":name" {
 
   }
 
-  attachments {
+  attachment {
     display_name = "test"
     url          = "https://google.com"
   }
