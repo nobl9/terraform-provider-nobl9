@@ -269,11 +269,11 @@ func schemaSLO() map[string]*schema.Schema {
 			DiffSuppressFunc: diffSuppressListStringOrder("alert_policies"),
 		},
 		"attachments": {
-			Type:         schema.TypeList,
-			Optional:     true,
-			Description:  "",
-			Deprecated:   "\"attachments\" argument is deprecated use \"attachment\" instead",
-			ExactlyOneOf: []string{"attachment"},
+			Type:          schema.TypeList,
+			Optional:      true,
+			Description:   "",
+			Deprecated:    "\"attachments\" argument is deprecated use \"attachment\" instead",
+			ConflictsWith: []string{"attachment"},
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"display_name": {
