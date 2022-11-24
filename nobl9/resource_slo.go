@@ -712,7 +712,7 @@ func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) e
 // getExistingAttachmentTag check if used tag was deprecated or not and return one that was used.
 func getExistingAttachmentTag(spec map[string]interface{}) string {
 	if _, ok := spec["attachment"]; !ok {
-		if _, ok = spec["attachments"]; ok {
+		if _, ok = spec["attachments"]; !ok {
 			return ""
 		}
 		return "attachments"
