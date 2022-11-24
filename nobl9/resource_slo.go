@@ -269,6 +269,27 @@ func schemaSLO() map[string]*schema.Schema {
 			DiffSuppressFunc: diffSuppressListStringOrder("alert_policies"),
 		},
 		"attachments": {
+			Type:         schema.TypeList,
+			Optional:     true,
+			Description:  "",
+			Deprecated:   "\"attachments\" argument is deprecated use \"attachment\" instead",
+			ExactlyOneOf: []string{"attachment"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"display_name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Name which is displayed for the attachment",
+					},
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Url to the attachment",
+					},
+				},
+			},
+		},
+		"attachment": {
 			Type:        schema.TypeList,
 			Optional:    true,
 			Description: "",
@@ -410,6 +431,10 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 	if diags.HasError() {
 		return nil, diags
 	}
+	attachments, ok := d.GetOk("attachment")
+	if !ok {
+		attachments = d.Get("attachments")
+	}
 
 	return &n9api.SLO{
 		ObjectHeader: n9api.ObjectHeader{
@@ -426,7 +451,7 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 			Thresholds:      marshalThresholds(d),
 			TimeWindows:     marshalTimeWindows(d),
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
-			Attachments:     marshalAttachments(d.Get("attachments").([]interface{})),
+			Attachments:     marshalAttachments(attachments.([]interface{})),
 		},
 	}, diags
 }
@@ -665,11 +690,12 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 }
 
 func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) error {
-	if _, ok := spec["attachments"]; !ok {
+	tagName := getExistingAttachmentTag(spec)
+	if tagName == "" {
 		return nil
 	}
 
-	attachments := spec["attachments"].([]interface{})
+	attachments := spec[tagName].([]interface{})
 	res := make([]interface{}, len(attachments))
 	for i, v := range attachments {
 		m := v.(map[string]interface{})
@@ -680,7 +706,18 @@ func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) e
 		res[i] = attachment
 	}
 
-	return d.Set("attachments", res)
+	return d.Set("attachment", res)
+}
+
+// getExistingAttachmentTag check if used tag was deprecated or not and return one that was used.
+func getExistingAttachmentTag(spec map[string]interface{}) string {
+	if _, ok := spec["attachment"]; !ok {
+		if _, ok = spec["attachments"]; ok {
+			return ""
+		}
+		return "attachments"
+	}
+	return "attachment"
 }
 
 func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}) error {
