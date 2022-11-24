@@ -690,12 +690,12 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 }
 
 func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) error {
-	tagName := getExistingAttachmentTag(spec)
-	if tagName == "" {
+	attachmentTagName := getExistingAttachmentTag(spec)
+	if attachmentTagName == "" {
 		return nil
 	}
 
-	attachments := spec[tagName].([]interface{})
+	attachments := spec[attachmentTagName].([]interface{})
 	res := make([]interface{}, len(attachments))
 	for i, v := range attachments {
 		m := v.(map[string]interface{})
