@@ -431,10 +431,6 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 	if diags.HasError() {
 		return nil, diags
 	}
-	attachments, ok := d.GetOk("attachment")
-	if !ok {
-		attachments = d.Get("attachments")
-	}
 
 	return &n9api.SLO{
 		ObjectHeader: n9api.ObjectHeader{
@@ -451,7 +447,7 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 			Thresholds:      marshalThresholds(d),
 			TimeWindows:     marshalTimeWindows(d),
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
-			Attachments:     marshalAttachments(attachments.([]interface{})),
+			Attachments:     marshalAttachments(d.Get("attachments").([]interface{})),
 		},
 	}, diags
 }
@@ -690,7 +686,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 }
 
 func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) error {
-	attachmentTagName := getExistingAttachmentTag(spec)
+	attachmentTagName := getExistingAttachmentTagName(spec)
 	if attachmentTagName == "" {
 		return nil
 	}
@@ -706,11 +702,11 @@ func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) e
 		res[i] = attachment
 	}
 
-	return d.Set("attachment", res)
+	return d.Set(attachmentTagName, res)
 }
 
 // getExistingAttachmentTag check if used tag was deprecated or not and return one that was used.
-func getExistingAttachmentTag(spec map[string]interface{}) string {
+func getExistingAttachmentTagName(spec map[string]interface{}) string {
 	if _, ok := spec["attachment"]; !ok {
 		if _, ok = spec["attachments"]; !ok {
 			return ""
