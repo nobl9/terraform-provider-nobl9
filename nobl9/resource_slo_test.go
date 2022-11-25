@@ -1,6 +1,7 @@
 package nobl9
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 
@@ -66,6 +67,112 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestAcc_Nobl9SLOErrors(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name         string
+		configFunc   func(string) string
+		errorMessage string
+	}{
+		{"test-prom-with-conflict-attachments",
+			testPrometheusWithAttachmentsConflict,
+			"\"attachments\": conflicts with attachment",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			resource.Test(t, resource.TestCase{
+				PreCheck:          func() { testAccPreCheck(t) },
+				ProviderFactories: ProviderFactory(),
+				CheckDestroy:      CheckDestroy("nobl9_slo.", n9api.ObjectSLO),
+				Steps: []resource.TestStep{
+					{
+						Config:      tc.configFunc(tc.name),
+						ExpectError: regexp.MustCompile(tc.errorMessage),
+					},
+				},
+			})
+		})
+	}
+}
+
+func testPrometheusWithAttachmentsConflict(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testPrometheusAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+
+  }
+
+  attachment {
+    display_name = "test1"
+    url          = "https://google.com"
+  }
+
+  attachment {
+    display_name = "test1"
+    url          = "https://google.com"
+  }
+
+  attachments {
+    display_name = "test2"
+    url          = "https://google.com"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
 }
 
 func testAmazonPrometheusSLO(name string) string {
