@@ -431,6 +431,10 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 	if diags.HasError() {
 		return nil, diags
 	}
+	attachments, ok := d.GetOk("attachment")
+	if !ok {
+		attachments = d.Get("attachments")
+	}
 
 	return &n9api.SLO{
 		ObjectHeader: n9api.ObjectHeader{
@@ -447,7 +451,7 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 			Thresholds:      marshalThresholds(d),
 			TimeWindows:     marshalTimeWindows(d),
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
-			Attachments:     marshalAttachments(d.Get("attachments").([]interface{})),
+			Attachments:     marshalAttachments(attachments.([]interface{})),
 		},
 	}, diags
 }
@@ -686,12 +690,13 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 }
 
 func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) error {
-	attachmentTagName := getExistingAttachmentTagName(spec)
-	if attachmentTagName == "" {
+	if _, ok := spec["attachments"]; !ok {
 		return nil
 	}
 
-	attachments := spec[attachmentTagName].([]interface{})
+	declaredAttachmentTag := getDeclaredAttachmentTag(d)
+
+	attachments := spec["attachments"].([]interface{})
 	res := make([]interface{}, len(attachments))
 	for i, v := range attachments {
 		m := v.(map[string]interface{})
@@ -701,16 +706,13 @@ func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) e
 		}
 		res[i] = attachment
 	}
-
-	return d.Set(attachmentTagName, res)
+	return d.Set(declaredAttachmentTag, res)
 }
 
-// getExistingAttachmentTag check if used tag was deprecated or not and return one that was used.
-func getExistingAttachmentTagName(spec map[string]interface{}) string {
-	if _, ok := spec["attachment"]; !ok {
-		if _, ok = spec["attachments"]; !ok {
-			return ""
-		}
+// getDeclaredAttachmentTag return name of attachments object declared in .tf file
+func getDeclaredAttachmentTag(d *schema.ResourceData) string {
+	_, newAttachments := d.GetChange("attachments")
+	if len(newAttachments.([]interface{})) > 0 {
 		return "attachments"
 	}
 	return "attachment"
