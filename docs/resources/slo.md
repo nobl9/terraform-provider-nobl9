@@ -91,7 +91,8 @@ resource "nobl9_slo" "this" {
 ### Optional
 
 - `alert_policies` (List of String) Alert Policies attached to SLO
-- `attachments` (Block List, Max: 1) (see [below for nested schema](#nestedblock--attachments))
+- `attachment` (Block List) (see [below for nested schema](#nestedblock--attachment))
+- `attachments` (Block List, Deprecated) (see [below for nested schema](#nestedblock--attachments))
 - `composite` (Block Set, Max: 1) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
 - `description` (String) Optional description of the resource.
 - `display_name` (String) Display name of the resource.
@@ -1066,6 +1067,18 @@ Required:
 - `start_time` (String) Date of the start
 - `time_zone` (String) Timezone name in IANA Time Zone Database
 
+
+
+<a id="nestedblock--attachment"></a>
+### Nested Schema for `attachment`
+
+Required:
+
+- `url` (String) Url to the attachment
+
+Optional:
+
+- `display_name` (String) Name which is displayed for the attachment
 
 
 <a id="nestedblock--attachments"></a>
