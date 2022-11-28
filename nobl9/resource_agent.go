@@ -51,6 +51,16 @@ func agentSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Type of an agent. [Supported agent types](https://docs.nobl9.com/Sources/)",
 		},
+		"client_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "client_id of created agent.",
+		},
+		"client_secret": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "client_secret of created agent.",
+		},
 		"status": {
 			Type:        schema.TypeMap,
 			Computed:    true,
@@ -106,11 +116,18 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	var p n9api.Payload
 	p.AddObject(service)
 
-	err := client.ApplyObjects(p.GetObjects())
+	credentials, err := client.ApplyAgents(p.GetObjects())
 	if err != nil {
 		return diag.Errorf("could not add agent: %s", err.Error())
 	}
 
+	if credentials != nil {
+		err = d.Set("client_id", credentials.ClientID)
+		diags = appendError(diags, err)
+		err = d.Set("client_secret", credentials.ClientSecret)
+		diags = appendError(diags, err)
+	}
+	
 	d.SetId(service.Metadata.Name)
 
 	readAgentDiags := resourceAgentRead(ctx, d, meta)
