@@ -315,15 +315,6 @@ func schemaSLO() map[string]*schema.Schema {
 	}
 }
 
-func validateLengthLessThanMax(variableName string, max int) func(interface{}, string) ([]string, []error) {
-	return func(valueRaw interface{}, _ string) ([]string, []error) {
-		if len(valueRaw.(string)) > max {
-			return nil, []error{fmt.Errorf("%s must be less than %d characters", variableName, max)}
-		}
-		return nil, nil
-	}
-}
-
 func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config, d.Get("project").(string))
