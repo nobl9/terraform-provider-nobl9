@@ -272,14 +272,16 @@ func schemaSLO() map[string]*schema.Schema {
 			Type:          schema.TypeList,
 			Optional:      true,
 			Description:   "",
+			MaxItems:      10,
 			Deprecated:    "\"attachments\" argument is deprecated use \"attachment\" instead",
 			ConflictsWith: []string{"attachment"},
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"display_name": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "Name which is displayed for the attachment",
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: validateMaxLength("display_name", 63),
+						Description:      "Name which is displayed for the attachment",
 					},
 					"url": {
 						Type:        schema.TypeString,
@@ -293,12 +295,14 @@ func schemaSLO() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Optional:    true,
 			Description: "",
+			MaxItems:    10,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"display_name": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "Name which is displayed for the attachment",
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: validateMaxLength("display_name", 63),
+						Description:      "Name which is displayed for the attachment",
 					},
 					"url": {
 						Type:        schema.TypeString,
@@ -308,6 +312,15 @@ func schemaSLO() map[string]*schema.Schema {
 				},
 			},
 		},
+	}
+}
+
+func validateLengthLessThanMax(variableName string, max int) func(interface{}, string) ([]string, []error) {
+	return func(valueRaw interface{}, _ string) ([]string, []error) {
+		if len(valueRaw.(string)) > max {
+			return nil, []error{fmt.Errorf("%s must be less than %d characters", variableName, max)}
+		}
+		return nil, nil
 	}
 }
 
@@ -2307,4 +2320,19 @@ func unmarshalThousandeyesMetric(metric map[string]interface{}) map[string]inter
 	res["test_id"] = metric["testID"]
 
 	return res
+}
+
+func validateMaxLength(fieldName string, maxLength int) func(interface{}, cty.Path) diag.Diagnostics {
+	return func(v any, _ cty.Path) diag.Diagnostics {
+		var diags diag.Diagnostics
+		if len(v.(string)) > 63 {
+			diagnostic := diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("%s is too long", fieldName),
+				Detail:   fmt.Sprintf("%s cannot be longer than %d characters", fieldName, maxLength),
+			}
+			diags = append(diags, diagnostic)
+		}
+		return diags
+	}
 }
