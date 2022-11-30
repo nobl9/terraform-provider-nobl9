@@ -28,13 +28,13 @@ resource "nobl9_slo" "this" {
   }
 
   attachment {
-    utl = "https://google.com"
-    display_name = attachment1
+    utl = "https://www.nobl9.com/"
+    display_name = "SLO provider"
   }
 
   attachment {
-    utl = "https://google.com"
-    display_name = attachment2
+    utl = "https://duckduckgo.com/"
+    display_name = "Nice search engine"
   }
 
   alert_policies = [
