@@ -27,6 +27,16 @@ resource "nobl9_slo" "this" {
     values = ["red"]
   }
 
+  attachment {
+    utl = "https://google.com"
+    display_name = attachment1
+  }
+
+  attachment {
+    utl = "https://google.com"
+    display_name = attachment2
+  }
+
   alert_policies = [
     "foo-front-page-latency"
   ]
