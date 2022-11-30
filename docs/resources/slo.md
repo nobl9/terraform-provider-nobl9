@@ -91,8 +91,8 @@ resource "nobl9_slo" "this" {
 ### Optional
 
 - `alert_policies` (List of String) Alert Policies attached to SLO
-- `attachment` (Block List) (see [below for nested schema](#nestedblock--attachment))
-- `attachments` (Block List, Deprecated) (see [below for nested schema](#nestedblock--attachments))
+- `attachment` (Block List, Max: 10) (see [below for nested schema](#nestedblock--attachment))
+- `attachments` (Block List, Max: 10, Deprecated) (see [below for nested schema](#nestedblock--attachments))
 - `composite` (Block Set, Max: 1) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
 - `description` (String) Optional description of the resource.
 - `display_name` (String) Display name of the resource.
