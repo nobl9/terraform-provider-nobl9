@@ -42,6 +42,16 @@ resource "nobl9_slo" "this" {
     values = ["red"]
   }
 
+  attachment {
+    utl = "https://www.nobl9.com/"
+    display_name = "SLO provider"
+  }
+
+  attachment {
+    utl = "https://duckduckgo.com/"
+    display_name = "Nice search engine"
+  }
+
   alert_policies = [
     "foo-front-page-latency"
   ]
@@ -1074,11 +1084,11 @@ Required:
 
 Required:
 
-- `url` (String) Url to the attachment
+- `url` (String) URL to the attachment
 
 Optional:
 
-- `display_name` (String) Name which is displayed for the attachment
+- `display_name` (String) Name displayed for the attachment. Max. length: 63 characters.
 
 
 <a id="nestedblock--attachments"></a>
@@ -1086,11 +1096,11 @@ Optional:
 
 Required:
 
-- `url` (String) Url to the attachment
+- `url` (String) URL to the attachment
 
 Optional:
 
-- `display_name` (String) Name which is displayed for the attachment
+- `display_name` (String) Name displayed for the attachment. Max. length: 63 characters.
 
 
 <a id="nestedblock--composite"></a>
