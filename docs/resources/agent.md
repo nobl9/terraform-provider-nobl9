@@ -173,7 +173,7 @@ Required:
 
 Required:
 
-- `account_id` (String) ID number assigned to the New Relic user account
+- `account_id` (String) ID number assigned to the New Relic user account.
 
 
 <a id="nestedblock--opentsdb_config"></a>

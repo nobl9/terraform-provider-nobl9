@@ -48,7 +48,7 @@ func agentSchema() map[string]*schema.Schema {
 		agentTypeKey: {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Type of an agent. [Supported agent types](https://docs.nobl9.com/Sources/)",
+			Description: "The type of the Agent. Check [Supported Agent types | Nobl9 Documentation](https://docs.nobl9.com/Sources/)",
 		},
 		"status": {
 			Type:        schema.TypeMap,
@@ -842,7 +842,7 @@ func schemaAgentNewRelic() map[string]*schema.Schema {
 					"account_id": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "ID number assigned to the New Relic user account",
+						Description: "ID number assigned to the New Relic user account.",
 					},
 				},
 			},
