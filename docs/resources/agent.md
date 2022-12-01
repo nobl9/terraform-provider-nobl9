@@ -79,7 +79,7 @@ resource "nobl9_agent" "this" {
 
 Required:
 
-- `region` (String) AWS region ex. eu-central-1
+- `region` (String) AWS region e.g., eu-central-1
 - `url` (String) Base URL to Amazon Prometheus server.
 
 
@@ -88,7 +88,7 @@ Required:
 
 Required:
 
-- `url` (String) Base URL to a AppDynamics Controller.
+- `url` (String) Base URL to the AppDynamics Controller.
 
 
 <a id="nestedblock--bigquery_config"></a>
@@ -104,7 +104,7 @@ Required:
 
 Required:
 
-- `site` (String) `com` or `eu`, Datadog SaaS instance, which corresponds to one of their two locations (https://www.datadoghq.com/ in the U.S. or https://datadoghq.eu/ in the European Union)
+- `site` (String) `com` or `eu`, Datadog SaaS instance, which corresponds to one of Datadog's two locations (https://www.datadoghq.com/ in the U.S. or https://datadoghq.eu/ in the European Union)
 
 
 <a id="nestedblock--dynatrace_config"></a>
@@ -120,7 +120,7 @@ Required:
 
 Required:
 
-- `url` (String) API URL endpoint of Elasticsearch's instance.
+- `url` (String) API URL endpoint to the Elasticsearch's instance.
 
 
 <a id="nestedblock--gcm_config"></a>
@@ -132,7 +132,7 @@ Required:
 
 Required:
 
-- `url` (String) API URL endpoint of Grafana Loki instance.
+- `url` (String) API URL endpoint to the Grafana Loki instance.
 
 
 <a id="nestedblock--graphite_config"></a>
@@ -140,7 +140,7 @@ Required:
 
 Required:
 
-- `url` (String) API URL endpoint of Graphite's instance.
+- `url` (String) API URL endpoint to the Graphite's instance.
 
 
 <a id="nestedblock--influxdb_config"></a>
@@ -148,7 +148,7 @@ Required:
 
 Required:
 
-- `url` (String) API URL endpoint of InfluxDB's instance.
+- `url` (String) API URL endpoint to the InfluxDB's instance.
 
 
 <a id="nestedblock--instana_config"></a>
@@ -156,7 +156,7 @@ Required:
 
 Required:
 
-- `url` (String) API URL endpoint of InfluxDB's instance.
+- `url` (String) API URL endpoint to the InfluxDB's instance.
 
 
 <a id="nestedblock--lightstep_config"></a>
@@ -205,7 +205,7 @@ Required:
 
 Required:
 
-- `url` (String) Base API URL of the Splunk Search app.
+- `url` (String) Base API URL to the Splunk Search app.
 
 
 <a id="nestedblock--splunk_observability_config"></a>
@@ -221,7 +221,7 @@ Required:
 
 Required:
 
-- `url` (String) Base API URL of the Splunk Search app.
+- `url` (String) Base API URL to the Splunk Search app.
 
 
 <a id="nestedblock--thousandeyes_config"></a>
