@@ -7,14 +7,20 @@ description: |-
 
 # {{.Name}} ({{.Type}})
 
-{{ .Description | trimspace }}
+The **Jira Alert Method** automatically opens a Jira issue to notify you whenever an incident is triggered.
+
+For more details, refer to {{ .Description | trimspace }}.
 
 ## Example Usage
+
+Here's an example of Jira Terraform resource configuration:
 
 {{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
 
 {{ .SchemaMarkdown | trimspace }}
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/Alert_Methods/jira/
+[Jira alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/jira/)
+
+[Atlassian Accounts Documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)

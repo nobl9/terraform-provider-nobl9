@@ -2,20 +2,24 @@
 page_title: "nobl9_service Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Service configuration documentation https://docs.nobl9.com/yaml-guide#service
+  Service configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#service
 ---
 
 # nobl9_service (Resource)
 
-* [Service configuration documentation](https://docs.nobl9.com/yaml-guide#service)
+A **service** in Nobl9 is a high-level grouping of Service Level Objectives (SLOs). A service can represent a logical service endpoint like an API, a database, an application, or anything else you care about setting an SLO for. Every SLO in Nobl9 is tied to a service, and the service can have one or more SLOs.
+
+For more details, refer to the [Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service).
 
 ## Example Usage
 
+Here's an example of Service resource configuration:
+
 ```terraform
 resource "nobl9_project" "this" {
-  display_name = "Foo Project"
-  name         = "foo-project"
-  description  = "An example terraform project"
+  display_name = "My Project"
+  name         = "my-project"
+  description  = "An example N9 Terraform project"
 }
 
 resource "nobl9_service" "this" {
@@ -41,14 +45,14 @@ resource "nobl9_service" "this" {
 
 ### Required
 
-- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 
-- `description` (String) Optional description of the resource.
-- `display_name` (String) Display name of the resource.
-- `label` (Block List) Labels containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
+- `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
+- `display_name` (String) User-friendly display name of the resource.
+- `label` (Block List) [Labels](https://docs.nobl9.com/Features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 
 ### Read-Only
 
@@ -60,9 +64,11 @@ resource "nobl9_service" "this" {
 
 Required:
 
-- `key` (String) One key for the label, unique within the associated resource.
+- `key` (String) A key for the label, unique within the associated resource.
 - `values` (List of String) A list of unique values for a single key.
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/yaml-guide/#service
+[Services in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/#services)
+
+[Service YAML Configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide/#service)

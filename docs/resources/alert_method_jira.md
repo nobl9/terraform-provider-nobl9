@@ -2,24 +2,28 @@
 page_title: "nobl9_alert_method_jira Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/jira
+  Jira Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alert_Methods/jira
 ---
 
 # nobl9_alert_method_jira (Resource)
 
-[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/jira)
+The **Jira Alert Method** automatically opens a Jira issue to notify you whenever an incident is triggered.
+
+For more details, refer to [Jira Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/jira).
 
 ## Example Usage
 
+Here's an example of Jira Terraform resource configuration:
+
 ```terraform
 resource "nobl9_alert_method_webhook" "this" {
-  name         = "foo-alert"
-  display_name = "Foo Alert"
-  project      = "Foo Project"
-  description = "jira"
+  name         = "my-jira-alert"
+  display_name = "My Jira Alert"
+  project      = "My Jira Project"
+  description = "My jira alert"
   url		  = "https://jira.com"
-  username    = "nobleUser"
-  apitoken    = "very sercret"
+  username    = "nobl9User"
+  apitoken    = "secret_api_token"
   project_key = "PC"
 }
 ```
@@ -29,22 +33,24 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ### Required
 
-- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project_key` (String) The code of the project.
-- `url` (String) Jira instance URL.
+- `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project_key` (String) The code of the Jira project.
+- `url` (String) Jira instance URL. The `https://` prefix is required.
 - `username` (String) Jira username for the owner of the API Token.
 
 ### Optional
 
-- `apitoken` (String, Sensitive) API Token with access rights to the project.
-- `description` (String) Optional description of the resource.
-- `display_name` (String) Display name of the resource.
+- `apitoken` (String, Sensitive) [API Token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) with access rights to the project.
+- `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
+- `display_name` (String) User-friendly display name of the resource.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/Alert_Methods/jira/
+[Jira alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/jira/)
+
+[Atlassian Accounts Documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)

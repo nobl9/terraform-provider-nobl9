@@ -2,20 +2,26 @@
 page_title: "nobl9_alert_method_webhook Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Integration configuration documentation https://docs.nobl9.com/Alert_Methods/webhook
+  Webhook Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alert_Methods/webhook
 ---
 
 # nobl9_alert_method_webhook (Resource)
 
-[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/webhook)
+The **Webhook Alert Method** enables sending alerts through an HTTP callback handler that is triggered by an event. You can create webhooks and configure them to handle different incident notifications, using either custom or predefined notification templates.
+
+-> **NOTE** For details on how to use Webhook message templates, check the [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/webhook#creating-webhook-custom-templates-through-yaml).
+
+For more details, refer to [Webhook Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/webhook).
 
 ## Example Usage
 
+Here's an example of Webhook Terraform resource configuration:
+
 ```terraform
 resource "nobl9_alert_method_webhook" "this" {
-  name         = "foo-alert"
-  display_name = "Foo Alert"
-  project      = "Foo Project"
+  name         = "my-webhook-alert"
+  display_name = "Webhook Alert"
+  project      = "Test Project"
   url          = "https://webhook.com/12345"
 
   template_fields = [
@@ -44,21 +50,21 @@ resource "nobl9_alert_method_webhook" "this" {
 
 ### Required
 
-- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 
-- `description` (String) Optional description of the resource.
-- `display_name` (String) Display name of the resource.
+- `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
+- `display_name` (String) User-friendly display name of the resource.
 - `template` (String) Webhook message template. See documentation for template format and samples.
-- `template_fields` (List of String) Webhook meesage fields. The message will contain json payload with specified fields. See documentation for allowed fields.
+- `template_fields` (List of String) Webhook message fields. The message contains JSON payload with specified fields. See documentation for allowed fields.
 - `url` (String, Sensitive) URL of the webhook endpoint.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/Alert_Methods/webhook/
+[Webhook alerts documentation | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/webhook/)

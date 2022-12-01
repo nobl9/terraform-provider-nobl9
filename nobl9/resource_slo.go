@@ -22,7 +22,7 @@ func resourceSLO() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)",
+		Description: "[SLO configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#slo)",
 	}
 }
 
@@ -150,7 +150,7 @@ func schemaSLO() map[string]*schema.Schema {
 								"incremental": {
 									Type:        schema.TypeBool,
 									Required:    true,
-									Description: "Should the metrics be incrementing or not",
+									Description: "Set to true if your metrics data should be incrementing.",
 								},
 							},
 						},
@@ -158,7 +158,7 @@ func schemaSLO() map[string]*schema.Schema {
 					"raw_metric": {
 						Type:        schema.TypeSet,
 						Optional:    true,
-						Description: "Raw data is used to compare objective values.",
+						Description: "Raw data received from the metric source is compared with the value set for objective.",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"query": schemaMetricSpec(),
@@ -168,27 +168,27 @@ func schemaSLO() map[string]*schema.Schema {
 					"display_name": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Name to be displayed",
+						Description: "User-friendly display name of the resource.",
 					},
 					"op": {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "Type of logical operation",
+						Description: "Mathematical inequality operator. Possible values are: lte, gte, lt, gt.",
 					},
 					"target": {
 						Type:        schema.TypeFloat,
 						Required:    true,
-						Description: "Designated value",
+						Description: "Target objective defined for the SLO.",
 					},
 					"time_slice_target": {
 						Type:        schema.TypeFloat,
 						Optional:    true,
-						Description: "Designated value for slice",
+						Description: "Designated value for the time slice.",
 					},
 					"value": {
 						Type:        schema.TypeFloat,
 						Required:    true,
-						Description: "Value",
+						Description: "Target value gathered from the metric source.",
 					},
 				},
 			},
@@ -209,7 +209,7 @@ func schemaSLO() map[string]*schema.Schema {
 								"start_time": {
 									Type:        schema.TypeString,
 									Required:    true,
-									Description: "Date of the start",
+									Description: "Start date of the calendar time window",
 								},
 								"time_zone": {
 									Type:        schema.TypeString,
@@ -222,7 +222,7 @@ func schemaSLO() map[string]*schema.Schema {
 					"count": {
 						Type:        schema.TypeInt,
 						Required:    true,
-						Description: "Count of the time unit",
+						Description: "Count of time units. For example, count: 7 and unit: Day means 7-day window",
 					},
 					"is_rolling": {
 						Type:        schema.TypeBool,
@@ -238,7 +238,7 @@ func schemaSLO() map[string]*schema.Schema {
 					"unit": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Unit of time",
+						Description: "Unit of time.  One of: Day | Hour | Minute",
 					},
 				},
 			},

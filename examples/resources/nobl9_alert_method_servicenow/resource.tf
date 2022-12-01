@@ -1,10 +1,10 @@
 resource "nobl9_alert_method_webhook" "this" {
-  name         = "foo-alert"
-  display_name = "Foo Alert"
-  project      = "Foo Project"
-  description    = "servicenow"
-  username       = "nobleUser"
-  password       = "very sercret"
-  instance_name  = "name"
+  name         = "my-servicenow-alert"
+  display_name = "My ServiceNow Alert"
+  project      = "Test Project"
+  description    = "ServiceNow alert"
+  username       = "nobl9User"
+  password       = "secret"
+  instance_name  = "my_snow_instance_name"
 }
 

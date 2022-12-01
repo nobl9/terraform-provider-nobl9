@@ -1,7 +1,7 @@
 resource "nobl9_alert_method_webhook" "this" {
-  name         = "foo-alert"
-  display_name = "Foo Alert"
-  project      = "Foo Project"
+  name         = "my-webhook-alert"
+  display_name = "Webhook Alert"
+  project      = "Test Project"
   url          = "https://webhook.com/12345"
 
   template_fields = [

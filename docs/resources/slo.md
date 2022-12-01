@@ -1,24 +1,26 @@
 ---
 page_title: "nobl9_slo Resource - terraform-provider-nobl9"
 description: |-
-  SLO configuration documentation https://docs.nobl9.com/yaml-guide#slo
+  SLO configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#slo
 ---
 
 # nobl9_slo (Resource)
 
-[SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)
+An SLO is a target value or range of values for a service that is measured by a service level indicator (SLI). SLOs allows you to define the reliability of your products and services in terms of customer expectations. You can create SLOs for user journeys, internal services, or even infrastructure.
+
+For more information, refer to [SLO configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#slo)
 
 ## Example Usage
 
 ```terraform
 resource "nobl9_project" "this" {
-  display_name = "Test Terraform"
-  name         = "test-terraform"
-  description  = "An example terraform project"
+  display_name = "Test N9 Terraform"
+  name         = "test-n9-terraform"
+  description  = "An example N9 Terraform project"
 }
 
 resource "nobl9_service" "this" {
-  name         = "foo-front-page"
+  name         = "my-front-page"
   project      = nobl9_project.this.name
   display_name = "${nobl9_project.this.display_name} Front Page"
   description  = "Front page service"
@@ -79,9 +81,9 @@ resource "nobl9_slo" "this" {
 
 - `budgeting_method` (String) Method which will be use to calculate budget
 - `indicator` (Block Set, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--indicator))
-- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `objective` (Block Set, Min: 1) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
-- `project` (String) Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `service` (String) Name of the service
 - `time_window` (Block Set, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--time_window))
 
@@ -90,9 +92,9 @@ resource "nobl9_slo" "this" {
 - `alert_policies` (List of String) Alert Policies attached to SLO
 - `attachments` (Block List, Max: 1) (see [below for nested schema](#nestedblock--attachments))
 - `composite` (Block Set, Max: 1) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
-- `description` (String) Optional description of the resource.
-- `display_name` (String) Display name of the resource.
-- `label` (Block List) Labels containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
+- `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
+- `display_name` (String) User-friendly display name of the resource.
+- `label` (Block List) [Labels](https://docs.nobl9.com/Features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 
 ### Read-Only
 
@@ -116,23 +118,23 @@ Optional:
 
 Required:
 
-- `display_name` (String) Name to be displayed
-- `target` (Number) Designated value
-- `value` (Number) Value
+- `display_name` (String) User-friendly display name of the resource.
+- `target` (Number) Target objective defined for the SLO.
+- `value` (Number) Target value gathered from the metric source.
 
 Optional:
 
 - `count_metrics` (Block Set) Compares two time series, indicating the ratio of the count of good values to total values. (see [below for nested schema](#nestedblock--objective--count_metrics))
-- `op` (String) Type of logical operation
-- `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
-- `time_slice_target` (Number) Designated value for slice
+- `op` (String) Mathematical inequality operator. Possible values are: lte, gte, lt, gt.
+- `raw_metric` (Block Set) Raw data received from the metric source is compared with the value set for objective. (see [below for nested schema](#nestedblock--objective--raw_metric))
+- `time_slice_target` (Number) Designated value for the time slice.
 
 <a id="nestedblock--objective--count_metrics"></a>
 ### Nested Schema for `objective.count_metrics`
 
 Required:
 
-- `incremental` (Boolean) Should the metrics be incrementing or not
+- `incremental` (Boolean) Set to true if your metrics data should be incrementing.
 
 Optional:
 
@@ -1042,8 +1044,8 @@ Required:
 
 Required:
 
-- `count` (Number) Count of the time unit
-- `unit` (String) Unit of time
+- `count` (Number) Count of time units. For example, count: 7 and unit: Day means 7-day window
+- `unit` (String) Unit of time.  One of: Day | Hour | Minute
 
 Optional:
 
@@ -1059,7 +1061,7 @@ Read-Only:
 
 Required:
 
-- `start_time` (String) Date of the start
+- `start_time` (String) Start date of the calendar time window
 - `time_zone` (String) Timezone name in IANA Time Zone Database
 
 
@@ -1102,8 +1104,9 @@ Required:
 
 Required:
 
-- `key` (String) One key for the label, unique within the associated resource.
+- `key` (String) A key for the label, unique within the associated resource.
 - `values` (List of String) A list of unique values for a single key.
 
+## Nobl9 Official Documentation
 
 https://docs.nobl9.com/SLOs_as_code/?_highlight=slo

@@ -6,14 +6,32 @@ description: |-
 
 # {{.Name}} ({{.Type}})
 
-{{ .Description | trimspace }}
+Nobl9 supports **Role-Based Access Control (RBAC)** to enable granular user permissions and access to resources in the Nobl9 platform.
+
+There are two levels of permissions, the organization level and the project level:
+
+- **Organization** roles enable access across the Nobl9 platform.
+
+- **Project** roles enable users to access a project and its underlying resources, such as services or SLOs.
+
+For more details, refer to the {{ .Description | trimspace }}.
+
+-> **NOTE** To configure RBAC through Terraform, you must provide `role_ref` and `user` values:
+
+- `user` is a User ID from Okta. You can retrieve it from **Settings** > **Account and Settings** > **Users** in the Nobl9 UI.
+
+- `role_ref` must be an existing role name that you want the user to assume. If you don't specify the optional `project_ref` value, `role_ref` must contain an Organization Role.
 
 ## Example Usage
+
+Here's an example of RBAC resource configuration:
 
 {{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
 
 {{ .SchemaMarkdown | trimspace }}
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/Features/RBAC/role-binding-yaml
+[Role Based Access Control in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/Features/RBAC/)
+
+[Role Binding YAML Configuration | Nobl9 Documentation](https://docs.nobl9.com/Features/RBAC/role-binding-yaml)

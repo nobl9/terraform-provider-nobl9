@@ -1,21 +1,27 @@
 ---
 page_title: "nobl9_project Resource - terraform-provider-nobl9"
-subcategory: "Alert Methods"
+subcategory: "Groupings and Utilities"
 description: |-
-  [Project configuration documentation]()
+  Project configuration | Nobl9 Documentation https://docs.nobl9.dev/yaml-guide#project
 ---
 
 # nobl9_project (Resource)
 
-[Project configuration documentation]()
+**Projects** are the primary logical grouping of resources in the Nobl9 platform. All Nobl9 resources, such as data sources, SLOs, and alerts, are created within a project.
+
+Access controls at the project level enable users to control who can see and change these resources. For example, you can allow all of your users to view the SLOs in a given project, but only a few users to make changes.
+
+For more details, refer to [Project configuration | Nobl9 Documentation](https://docs.nobl9.dev/yaml-guide#project).
 
 ## Example Usage
 
+Here's an example of Project resource configuration:
+
 ```terraform
 resource "nobl9_project" "this" {
-  display_name = "Foo Project"
-  name         = "foo-project"
-  description  = "An example terraform project"
+  display_name = "My Project"
+  name         = "my-project"
+  description  = "An example N9 Terraform project"
 
   label {
     key    = "env"
@@ -34,13 +40,13 @@ resource "nobl9_project" "this" {
 
 ### Required
 
-- `name` (String) Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional
 
-- `description` (String) Optional description of the resource.
-- `display_name` (String) Display name of the resource.
-- `label` (Block List) Labels containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
+- `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
+- `display_name` (String) User-friendly display name of the resource.
+- `label` (Block List) [Labels](https://docs.nobl9.com/Features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 
 ### Read-Only
 
@@ -51,9 +57,11 @@ resource "nobl9_project" "this" {
 
 Required:
 
-- `key` (String) One key for the label, unique within the associated resource.
+- `key` (String) A key for the label, unique within the associated resource.
 - `values` (List of String) A list of unique values for a single key.
 
-## Nobl9 Official Documentation
+## Useful Links
 
-https://docs.nobl9.com/Features/search-and-filter/#project
+[Projects in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/#projects)
+
+[Projects YAML Configuration | Nobl9 Documentation](https://docs.nobl9.dev/yaml-guide#project)

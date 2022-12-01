@@ -6,7 +6,9 @@ description: |-
 
 # {{.Name}} ({{.Type}})
 
-An SLO is a target value or range of values for a service that is measured by a service level indicator (SLI). SLOs allows you to define the reliability of your products and services in terms of customer expectations. You can create SLOs for user journeys, internal services, or even infrastructure.
+The Agent is a lightweight application that executes the queries defined for your Nobl9 SLOs. Queries are written in the language supported by the data source in question and executed via native APIs.
+
+The Agent then sends your SLI metrics back to Nobl9 for processing and error budget calculation.
 
 For more information, refer to {{ .Description | trimspace }}
 
@@ -18,4 +20,4 @@ For more information, refer to {{ .Description | trimspace }}
 
 ## Nobl9 Official Documentation
 
-https://docs.nobl9.com/SLOs_as_code/?_highlight=slo
+https://docs.nobl9.com/
