@@ -65,7 +65,7 @@ func resourceAlertPolicy() *schema.Resource {
 						"project": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Project name the Alert Method is in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names). If not defined, Nobl9 returns a default value for this field.",
+							Description: "Project name the Alert Method is in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names). If not defined, Nobl9 returns a default value for this field.",
 						},
 						"name": {
 							Type:        schema.TypeString,

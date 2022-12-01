@@ -46,7 +46,7 @@ resource "nobl9_role_binding" "this" {
 ### Optional
 
 - `display_name` (String) User-friendly display name of the resource.
-- `name` (String) Automatically generated, unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Automatically generated, unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project_ref` (String) Project name, the project in which we want the user to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.
 
 ### Read-Only

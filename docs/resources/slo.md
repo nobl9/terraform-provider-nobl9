@@ -83,7 +83,7 @@ resource "nobl9_slo" "this" {
 - `indicator` (Block Set, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--indicator))
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `objective` (Block Set, Min: 1) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
-- `project` (String) Name of the Nobl9 project the resource sits in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `service` (String) Name of the service
 - `time_window` (Block Set, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--time_window))
 

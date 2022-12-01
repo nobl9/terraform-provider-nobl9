@@ -473,7 +473,7 @@ func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
 		"url": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "MSTeams [webhook endpoint URL](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook).",
+			Description: "MS Teams [webhook endpoint URL](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook).",
 			Sensitive:   true,
 			Computed:    true,
 		},

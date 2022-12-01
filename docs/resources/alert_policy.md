@@ -56,7 +56,7 @@ resource "nobl9_alert_policy" "this" {
 
 - `condition` (Block List, Min: 1) Configuration of an [alert condition](https://docs.nobl9.com/yaml-guide/#alertpolicy). (see [below for nested schema](#nestedblock--condition))
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `severity` (String) Alert severity. One of `Low` | `Medium` | `High`.
 
 ### Optional
@@ -92,7 +92,7 @@ Required:
 
 Optional:
 
-- `project` (String) Project name the Alert Method is in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names). If not defined, Nobl9 returns a default value for this field.
+- `project` (String) Project name the Alert Method is in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names). If not defined, Nobl9 returns a default value for this field.
 
 ## Useful Links
 
