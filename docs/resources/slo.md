@@ -42,6 +42,16 @@ resource "nobl9_slo" "this" {
     values = ["red"]
   }
 
+  attachment {
+    utl = "https://www.nobl9.com/"
+    display_name = "SLO provider"
+  }
+
+  attachment {
+    utl = "https://duckduckgo.com/"
+    display_name = "Nice search engine"
+  }
+
   alert_policies = [
     "foo-front-page-latency"
   ]
@@ -91,7 +101,8 @@ resource "nobl9_slo" "this" {
 ### Optional
 
 - `alert_policies` (List of String) Alert Policies attached to SLO
-- `attachments` (Block List, Max: 1) (see [below for nested schema](#nestedblock--attachments))
+- `attachment` (Block List, Max: 20) (see [below for nested schema](#nestedblock--attachment))
+- `attachments` (Block List, Max: 20, Deprecated) (see [below for nested schema](#nestedblock--attachments))
 - `composite` (Block Set, Max: 1) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
 - `description` (String) Optional description of the resource.
 - `display_name` (String) Display name of the resource.
@@ -1068,16 +1079,28 @@ Required:
 
 
 
+<a id="nestedblock--attachment"></a>
+### Nested Schema for `attachment`
+
+Required:
+
+- `url` (String) URL to the attachment
+
+Optional:
+
+- `display_name` (String) Name displayed for the attachment. Max. length: 63 characters.
+
+
 <a id="nestedblock--attachments"></a>
 ### Nested Schema for `attachments`
 
 Required:
 
-- `url` (String) Url to the attachment
+- `url` (String) URL to the attachment
 
 Optional:
 
-- `display_name` (String) Name which is displayed for the attachment
+- `display_name` (String) Name displayed for the attachment. Max. length: 63 characters.
 
 
 <a id="nestedblock--composite"></a>

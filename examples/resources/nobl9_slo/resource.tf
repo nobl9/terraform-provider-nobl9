@@ -27,6 +27,16 @@ resource "nobl9_slo" "this" {
     values = ["red"]
   }
 
+  attachment {
+    utl = "https://www.nobl9.com/"
+    display_name = "SLO provider"
+  }
+
+  attachment {
+    utl = "https://duckduckgo.com/"
+    display_name = "Nice search engine"
+  }
+
   alert_policies = [
     "foo-front-page-latency"
   ]

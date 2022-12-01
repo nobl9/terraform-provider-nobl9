@@ -269,21 +269,45 @@ func schemaSLO() map[string]*schema.Schema {
 			DiffSuppressFunc: diffSuppressListStringOrder("alert_policies"),
 		},
 		"attachments": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "",
-			MaxItems:    1,
+			Type:          schema.TypeList,
+			Optional:      true,
+			Description:   "",
+			MaxItems:      20,
+			Deprecated:    "\"attachments\" argument is deprecated use \"attachment\" instead",
+			ConflictsWith: []string{"attachment"},
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"display_name": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "Name which is displayed for the attachment",
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: validateMaxLength("display_name", 63),
+						Description:      "Name displayed for the attachment. Max. length: 63 characters.",
 					},
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Url to the attachment",
+						Description: "URL to the attachment",
+					},
+				},
+			},
+		},
+		"attachment": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "",
+			MaxItems:    20,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"display_name": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: validateMaxLength("display_name", 63),
+						Description:      "Name displayed for the attachment. Max. length: 63 characters.",
+					},
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "URL to the attachment",
 					},
 				},
 			},
@@ -411,6 +435,10 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 	if diags.HasError() {
 		return nil, diags
 	}
+	attachments, ok := d.GetOk("attachment")
+	if !ok {
+		attachments = d.Get("attachments")
+	}
 
 	return &n9api.SLO{
 		ObjectHeader: n9api.ObjectHeader{
@@ -427,7 +455,7 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 			Thresholds:      marshalThresholds(d),
 			TimeWindows:     marshalTimeWindows(d),
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
-			Attachments:     marshalAttachments(d.Get("attachments").([]interface{})),
+			Attachments:     marshalAttachments(attachments.([]interface{})),
 		},
 	}, diags
 }
@@ -670,6 +698,8 @@ func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) e
 		return nil
 	}
 
+	declaredAttachmentTag := getDeclaredAttachmentTag(d)
+
 	attachments := spec["attachments"].([]interface{})
 	res := make([]interface{}, len(attachments))
 	for i, v := range attachments {
@@ -680,8 +710,16 @@ func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) e
 		}
 		res[i] = attachment
 	}
+	return d.Set(declaredAttachmentTag, res)
+}
 
-	return d.Set("attachments", res)
+// getDeclaredAttachmentTag return name of attachments object declared in .tf file
+func getDeclaredAttachmentTag(d *schema.ResourceData) string {
+	_, newAttachments := d.GetChange("attachments")
+	if len(newAttachments.([]interface{})) > 0 {
+		return "attachments"
+	}
+	return "attachment"
 }
 
 func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}) error {
@@ -2273,4 +2311,19 @@ func unmarshalThousandeyesMetric(metric map[string]interface{}) map[string]inter
 	res["test_id"] = metric["testID"]
 
 	return res
+}
+
+func validateMaxLength(fieldName string, maxLength int) func(interface{}, cty.Path) diag.Diagnostics {
+	return func(v any, _ cty.Path) diag.Diagnostics {
+		var diags diag.Diagnostics
+		if len(v.(string)) > 63 {
+			diagnostic := diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("%s is too long", fieldName),
+				Detail:   fmt.Sprintf("%s cannot be longer than %d characters", fieldName, maxLength),
+			}
+			diags = append(diags, diagnostic)
+		}
+		return diags
+	}
 }
