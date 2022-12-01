@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_slo (Resource)
 
-Nobl9 SLOs allow you to define the reliability of your products and services in terms of customer expectations. You can create SLOs for user journeys, internal services, or even infrastructure.
+An SLO is a target value or range of values for a service that is measured by a service level indicator (SLI). SLOs allows you to define the reliability of your products and services in terms of customer expectations. You can create SLOs for user journeys, internal services, or even infrastructure.
 
 For more information, refer to [SLO configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#slo)
 
