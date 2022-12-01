@@ -6,7 +6,11 @@ description: |-
 
 # nobl9_agent (Resource)
 
-[Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9_agent)
+The Agent is a lightweight application that executes the queries defined for your Nobl9 SLOs. Queries are written in the language supported by the data source in question and executed via native APIs.
+
+The Agent then sends your SLI metrics back to Nobl9 for processing and error budget calculation.
+
+For more information, refer to [Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9_agent)
 
 ## Example Usage
 
@@ -34,7 +38,7 @@ resource "nobl9_agent" "this" {
 ### Required
 
 - `agent_type` (String) Type of an agent. [Supported agent types](https://docs.nobl9.com/Sources/)
-- `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `source_of` (List of String) Source of Metrics and/or Services
 
@@ -68,7 +72,7 @@ resource "nobl9_agent" "this" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `status` (Map of String) Status of created agent.
+- `status` (Map of String) Status of the created agent.
 
 <a id="nestedblock--amazon_prometheus_config"></a>
 ### Nested Schema for `amazon_prometheus_config`

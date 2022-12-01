@@ -23,7 +23,7 @@ func schemaName() *schema.Schema {
 		Type:        schema.TypeString,
 		Required:    true,
 		ForceNew:    true,
-		Description: "Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
+		Description: "Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
 	}
 }
 

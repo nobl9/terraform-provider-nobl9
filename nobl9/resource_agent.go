@@ -53,7 +53,7 @@ func agentSchema() map[string]*schema.Schema {
 		"status": {
 			Type:        schema.TypeMap,
 			Computed:    true,
-			Description: "Status of created agent.",
+			Description: "Status of the created agent.",
 		},
 	}
 

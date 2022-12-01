@@ -79,7 +79,7 @@ resource "nobl9_slo" "this" {
 
 - `budgeting_method` (String) Method which will be use to calculate budget
 - `indicator` (Block Set, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--indicator))
-- `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `objective` (Block Set, Min: 1) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
 - `project` (String) Name of the Nobl9 project the resource sits in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `service` (String) Name of the service
@@ -116,23 +116,23 @@ Optional:
 
 Required:
 
-- `display_name` (String) Name to be displayed
-- `target` (Number) Designated value
-- `value` (Number) Value
+- `display_name` (String) User-friendly display name of the resource.
+- `target` (Number) Target objective defined for the SLO.
+- `value` (Number) Target value gathered from the metric source.
 
 Optional:
 
 - `count_metrics` (Block Set) Compares two time series, indicating the ratio of the count of good values to total values. (see [below for nested schema](#nestedblock--objective--count_metrics))
-- `op` (String) Type of logical operation
-- `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
-- `time_slice_target` (Number) Designated value for slice
+- `op` (String) Mathematical inequality operator. Possible values are: lte, gte, lt, gt.
+- `raw_metric` (Block Set) Raw data received from the metric source is compared with the value set for objective. (see [below for nested schema](#nestedblock--objective--raw_metric))
+- `time_slice_target` (Number) Designated value for the time slice.
 
 <a id="nestedblock--objective--count_metrics"></a>
 ### Nested Schema for `objective.count_metrics`
 
 Required:
 
-- `incremental` (Boolean) Should the metrics be incrementing or not
+- `incremental` (Boolean) Set to true if your metrics data should be incrementing.
 
 Optional:
 
@@ -1042,8 +1042,8 @@ Required:
 
 Required:
 
-- `count` (Number) Count of the time unit
-- `unit` (String) Unit of time
+- `count` (Number) Count of time units. For example, count: 7 and unit: Day means 7-day window
+- `unit` (String) Unit of time.  One of: Day | Hour | Minute
 
 Optional:
 
@@ -1059,7 +1059,7 @@ Read-Only:
 
 Required:
 
-- `start_time` (String) Date of the start
+- `start_time` (String) Start date of the calendar time window
 - `time_zone` (String) Timezone name in IANA Time Zone Database
 
 

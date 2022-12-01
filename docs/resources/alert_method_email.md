@@ -35,7 +35,7 @@ resource "nobl9_alert_method_email" "this" {
 ### Required
 
 - `body` (String) The Body of the email alert. For the format of the body and the list of variables that you can define, refer to the [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/email-alert#yaml-configuration).
-- `name` (String) Unique name of the resource, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, convention for naming object from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `subject` (String) The Subject of the email alert.
 - `to` (List of String) Recipients. The maximum number of recipients is 10.
