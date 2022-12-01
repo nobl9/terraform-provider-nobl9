@@ -272,7 +272,7 @@ func schemaSLO() map[string]*schema.Schema {
 			Type:          schema.TypeList,
 			Optional:      true,
 			Description:   "",
-			MaxItems:      10,
+			MaxItems:      20,
 			Deprecated:    "\"attachments\" argument is deprecated use \"attachment\" instead",
 			ConflictsWith: []string{"attachment"},
 			Elem: &schema.Resource{
@@ -295,7 +295,7 @@ func schemaSLO() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Optional:    true,
 			Description: "",
-			MaxItems:    10,
+			MaxItems:    20,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"display_name": {
