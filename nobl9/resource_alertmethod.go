@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -86,7 +87,7 @@ func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []n9ap
 //nolint:lll
 func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, d.Get("project").(string))
+	client, ds := getClient(config, d.Get("project").(string))
 	if ds != nil {
 		return ds
 	}
@@ -117,7 +118,7 @@ func (a alertMethod) resourceAlertMethodRead(_ context.Context, d *schema.Resour
 		// project is empty when importing
 		project = config.Project
 	}
-	client, ds := newClient(config, project)
+	client, ds := getClient(config, project)
 	if ds.HasError() {
 		return ds
 	}
@@ -132,7 +133,7 @@ func (a alertMethod) resourceAlertMethodRead(_ context.Context, d *schema.Resour
 
 func resourceAlertMethodDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, d.Get("project").(string))
+	client, ds := getClient(config, d.Get("project").(string))
 	if ds.HasError() {
 		return ds
 	}

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -25,7 +26,7 @@ func TestAcc_Nobl9RoleBinding(t *testing.T) {
 			resource.ParallelTest(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestory("nobl9_role_binding", n9api.ObjectRoleBinding),
+				CheckDestroy:      CheckDestroy("nobl9_role_binding", n9api.ObjectRoleBinding),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),

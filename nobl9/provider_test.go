@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -74,13 +75,13 @@ func CheckObjectCreated(name string) resource.TestCheckFunc {
 	}
 }
 
-func CheckDestory(rsType string, objectType n9api.Object) func(s *terraform.State) error {
+func CheckDestroy(rsType string, objectType n9api.Object) func(s *terraform.State) error {
 	return func(s *terraform.State) error {
 		config, ok := testProvider.Meta().(ProviderConfig)
 		if !ok {
 			return fmt.Errorf("could not cast data to ProviderConfig")
 		}
-		client, ds := newClient(config, testProject)
+		client, ds := getClient(config, testProject)
 		if ds.HasError() {
 			return fmt.Errorf("unable create client when deleting objects")
 		}

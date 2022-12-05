@@ -32,7 +32,7 @@ resource "nobl9_alert_method_webhook" "this" {
     "service_name",
     "slo_name",
     "organization",
-    "experience_name",
+    "objective_name",
     "severity",
     "timestamp",
     "slo_details_link",

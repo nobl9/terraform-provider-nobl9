@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -79,7 +80,7 @@ func unmarshalService(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.D
 
 func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, d.Get("project").(string))
+	client, ds := getClient(config, d.Get("project").(string))
 	if ds != nil {
 		return ds
 	}
@@ -109,7 +110,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 		// project is empty when importing
 		project = config.Project
 	}
-	client, ds := newClient(config, project)
+	client, ds := getClient(config, project)
 	if ds.HasError() {
 		return ds
 	}
@@ -124,7 +125,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, d.Get("project").(string))
+	client, ds := getClient(config, d.Get("project").(string))
 	if ds.HasError() {
 		return ds
 	}

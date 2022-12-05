@@ -1,10 +1,12 @@
 package nobl9
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -36,7 +38,8 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-pingdom", testPingdomSLO},
 		{"test-prom-full", testPrometheusSLOFULL},
 		{"test-prom-with-ap", testPrometheusSLOWithAlertPolicy},
-		{"test-prom-with-attachments", testPrometheusWithAttachments},
+		{"test-prom-with-attachments-deprecated", testPrometheusWithAttachmentsDeprecated},
+		{"test-prom-with-attachment", testPrometheusWithAttachment},
 		{"test-prom-with-countmetrics", testPrometheusSLOWithCountMetrics},
 		{"test-prom-with-multiple-objectives", testPrometheusSLOWithMultipleObjectives},
 		{"test-prom-with-raw-metric-in-objective", testPrometheusSLOWithRawMetricInObjective},
@@ -54,11 +57,41 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestory("nobl9_slo", n9api.ObjectSLO),
+				CheckDestroy:      CheckDestroy("nobl9_slo", n9api.ObjectSLO),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
 						Check:  CheckObjectCreated("nobl9_slo." + tc.name),
+					},
+				},
+			})
+		})
+	}
+}
+
+func TestAcc_Nobl9SLOErrors(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name         string
+		configFunc   func(string) string
+		errorMessage string
+	}{
+		{"test-prom-with-conflict-attachments",
+			testPrometheusWithAttachmentsConflict,
+			"\"attachments\": conflicts with attachment",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			resource.Test(t, resource.TestCase{
+				PreCheck:          func() { testAccPreCheck(t) },
+				ProviderFactories: ProviderFactory(),
+				CheckDestroy:      CheckDestroy("nobl9_slo.", n9api.ObjectSLO),
+				Steps: []resource.TestStep{
+					{
+						Config:      tc.configFunc(tc.name),
+						ExpectError: regexp.MustCompile(tc.errorMessage),
 					},
 				},
 			})
@@ -92,6 +125,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -151,6 +185,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -211,6 +246,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -276,6 +312,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -379,6 +416,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -439,6 +477,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -517,6 +556,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -531,6 +571,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj2"
+    name         = "tf-objective-2"
     target       = 0.8
     value        = 1.5
     op           = "lt"
@@ -584,6 +625,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 15
     time_slice_target = 0.7
@@ -599,6 +641,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name      = "obj2"
+    name              = "tf-objective-2"
     target            = 0.5
 	value             = 10
 	time_slice_target = 0.5
@@ -659,6 +702,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -718,6 +762,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -782,6 +827,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -792,8 +838,8 @@ resource "nobl9_slo" ":name" {
 			sum(
 				sum_over_time(
 					{topic="topic", consumergroup="group", cluster="main"} |= "kafka_consumergroup_lag" |
-					logfmt | 
-					line_format "{{.kafka_consumergroup_lag}}" | 
+					logfmt |
+					line_format "{{.kafka_consumergroup_lag}}" |
 					unwrap kafka_consumergroup_lag [1m]
 			)
 			)
@@ -850,6 +896,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -909,6 +956,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -974,6 +1022,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1039,6 +1088,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1131,6 +1181,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1194,6 +1245,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1258,6 +1310,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1318,6 +1371,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1377,6 +1431,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1438,6 +1493,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1452,6 +1508,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj2"
+    name         = "tf-objective-2"
     target       = 0.5
     value        = 10
     op           = "lt"
@@ -1515,6 +1572,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1550,7 +1608,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testPrometheusWithAttachments(name string) string {
+func testPrometheusWithAttachmentsDeprecated(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	config :=
@@ -1576,6 +1634,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1615,6 +1674,148 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
+func testPrometheusWithAttachment(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testPrometheusAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+
+  }
+
+  attachment {
+    display_name = "test"
+    url          = "https://google.com"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testPrometheusWithAttachmentsConflict(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testPrometheusAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+
+  }
+
+  attachment {
+    display_name = "test1"
+    url          = "https://google.com"
+  }
+
+  attachment {
+    display_name = "test1"
+    url          = "https://google.com"
+  }
+
+  attachments {
+    display_name = "test2"
+    url          = "https://google.com"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
 func testPrometheusSLOWithCountMetrics(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
@@ -1641,6 +1842,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     count_metrics {
@@ -1705,6 +1907,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1719,6 +1922,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj2"
+    name         = "tf-objective-2"
     target       = 0.5
     value        = 10
     op           = "lt"
@@ -1768,6 +1972,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name      = "obj2"
+    name              = "tf-objective-2"
     target            = 0.5
     value             = 10
     time_slice_target = 0.5
@@ -1818,6 +2023,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name      = "obj2"
+    name              = "tf-objective-2"
     target            = 0.5
     value             = 10
     time_slice_target = 0.5
@@ -1878,6 +2084,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1937,6 +2144,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -1947,8 +2155,8 @@ resource "nobl9_slo" ":name" {
 		  cluster_id    = "redshift"
 		  database_name = "dev"
 		  query         = <<-EOT
-			SELECT value as n9value, timestamp as n9date 
-			FROM sinusoid 
+			SELECT value as n9value, timestamp as n9date
+			FROM sinusoid
 			WHERE timestamp BETWEEN :n9date_from AND :n9date_to
 		  EOT
 	    }
@@ -2003,6 +2211,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -2010,8 +2219,8 @@ resource "nobl9_slo" ":name" {
       query {
         splunk {
           query = <<-EOT
-			search index=events source=udp:5072 sourcetype=syslog status<400 | 
-			bucket _time span=1m | 
+			search index=events source=udp:5072 sourcetype=syslog status<400 |
+			bucket _time span=1m |
 			stats avg(response_time) as n9value by _time | rename _time as n9time | fields n9time n9value"
             EOT
 		}
@@ -2066,6 +2275,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -2125,6 +2335,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"
@@ -2187,6 +2398,7 @@ resource "nobl9_slo" ":name" {
 
   objective {
     display_name = "obj1"
+    name         = "tf-objective-1"
     target       = 0.7
     value        = 1
     op           = "lt"

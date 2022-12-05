@@ -3,12 +3,12 @@ package nobl9
 import (
 	"context"
 	"fmt"
-	"hash/fnv"
 	"sort"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -22,7 +22,7 @@ func resourceSLO() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[SLO configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#slo)",
+		Description: "[SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)",
 	}
 }
 
@@ -53,6 +53,80 @@ func diffSuppressListStringOrder(attribute string) func(
 		})
 
 		return equalSlices(apOld, apNew)
+	}
+}
+
+func resourceObjective() *schema.Resource {
+	res := &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"count_metrics": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Compares two time series, indicating the ratio of the count of good values to total values.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"good":  schemaMetricSpec(),
+						"total": schemaMetricSpec(),
+						"incremental": {
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "Should the metrics be incrementing or not",
+						},
+					},
+				},
+			},
+			"raw_metric": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Raw data is used to compare objective values.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"query": schemaMetricSpec(),
+					},
+				},
+			},
+			"display_name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name to be displayed",
+			},
+			"op": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Type of logical operation",
+			},
+			"target": {
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "Designated value",
+			},
+			"time_slice_target": {
+				Type:        schema.TypeFloat,
+				Optional:    true,
+				Description: "Designated value for slice",
+			},
+			"value": {
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "Value",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Description: "Objective's name. This field is computed if not provided.",
+				Computed:    true,
+				Optional:    true,
+			},
+		},
+	}
+	return res
+}
+
+func schemaObjective() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeSet,
+		Required:    true,
+		Description: "[Objectives documentation](https://docs.nobl9.com/yaml-guide#objective)",
+		Elem:        resourceObjective(),
 	}
 }
 
@@ -133,66 +207,7 @@ func schemaSLO() map[string]*schema.Schema {
 				},
 			},
 		},
-		"objective": {
-			Type:        schema.TypeSet,
-			Required:    true,
-			Description: "[Objectives documentation](https://docs.nobl9.com/yaml-guide#objective)",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"count_metrics": {
-						Type:        schema.TypeSet,
-						Optional:    true,
-						Description: "Compares two time series, indicating the ratio of the count of good values to total values.",
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"good":  schemaMetricSpec(),
-								"total": schemaMetricSpec(),
-								"incremental": {
-									Type:        schema.TypeBool,
-									Required:    true,
-									Description: "Set to true if your metrics data should be incrementing.",
-								},
-							},
-						},
-					},
-					"raw_metric": {
-						Type:        schema.TypeSet,
-						Optional:    true,
-						Description: "Raw data received from the metric source is compared with the value set for objective.",
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"query": schemaMetricSpec(),
-							},
-						},
-					},
-					"display_name": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "User-friendly display name of the resource.",
-					},
-					"op": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "Mathematical inequality operator. Possible values are: lte, gte, lt, gt.",
-					},
-					"target": {
-						Type:        schema.TypeFloat,
-						Required:    true,
-						Description: "Target objective defined for the SLO.",
-					},
-					"time_slice_target": {
-						Type:        schema.TypeFloat,
-						Optional:    true,
-						Description: "Designated value for the time slice.",
-					},
-					"value": {
-						Type:        schema.TypeFloat,
-						Required:    true,
-						Description: "Target value gathered from the metric source.",
-					},
-				},
-			},
-		},
+		"objective": schemaObjective(),
 		"time_window": {
 			Type:        schema.TypeSet,
 			Required:    true,
@@ -209,7 +224,7 @@ func schemaSLO() map[string]*schema.Schema {
 								"start_time": {
 									Type:        schema.TypeString,
 									Required:    true,
-									Description: "Start date of the calendar time window",
+									Description: "Date of the start",
 								},
 								"time_zone": {
 									Type:        schema.TypeString,
@@ -222,7 +237,7 @@ func schemaSLO() map[string]*schema.Schema {
 					"count": {
 						Type:        schema.TypeInt,
 						Required:    true,
-						Description: "Count of time units. For example, count: 7 and unit: Day means 7-day window",
+						Description: "Count of the time unit",
 					},
 					"is_rolling": {
 						Type:        schema.TypeBool,
@@ -238,7 +253,7 @@ func schemaSLO() map[string]*schema.Schema {
 					"unit": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Unit of time.  One of: Day | Hour | Minute",
+						Description: "Unit of time",
 					},
 				},
 			},
@@ -254,21 +269,45 @@ func schemaSLO() map[string]*schema.Schema {
 			DiffSuppressFunc: diffSuppressListStringOrder("alert_policies"),
 		},
 		"attachments": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "",
-			MaxItems:    1,
+			Type:          schema.TypeList,
+			Optional:      true,
+			Description:   "",
+			MaxItems:      20,
+			Deprecated:    "\"attachments\" argument is deprecated use \"attachment\" instead",
+			ConflictsWith: []string{"attachment"},
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"display_name": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "Name which is displayed for the attachment",
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: validateMaxLength("display_name", 63),
+						Description:      "Name displayed for the attachment. Max. length: 63 characters.",
 					},
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Url to the attachment",
+						Description: "URL to the attachment",
+					},
+				},
+			},
+		},
+		"attachment": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "",
+			MaxItems:    20,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"display_name": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: validateMaxLength("display_name", 63),
+						Description:      "Name displayed for the attachment. Max. length: 63 characters.",
+					},
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "URL to the attachment",
 					},
 				},
 			},
@@ -278,7 +317,7 @@ func schemaSLO() map[string]*schema.Schema {
 
 func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, d.Get("project").(string))
+	client, ds := getClient(config, d.Get("project").(string))
 	if ds != nil {
 		return ds
 	}
@@ -308,7 +347,7 @@ func resourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}
 		// project is empty when importing
 		project = config.Project
 	}
-	client, ds := newClient(config, project)
+	client, ds := getClient(config, project)
 	if ds.HasError() {
 		return ds
 	}
@@ -323,7 +362,7 @@ func resourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}
 
 func resourceSLODelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := newClient(config, d.Get("project").(string))
+	client, ds := getClient(config, d.Get("project").(string))
 	if ds.HasError() {
 		return ds
 	}
@@ -396,8 +435,11 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 	if diags.HasError() {
 		return nil, diags
 	}
+	attachments, ok := d.GetOk("attachment")
+	if !ok {
+		attachments = d.Get("attachments")
+	}
 
-	indicator := marshalIndicator(d)
 	return &n9api.SLO{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
@@ -408,12 +450,12 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 			Description:     d.Get("description").(string),
 			Service:         d.Get("service").(string),
 			BudgetingMethod: d.Get("budgeting_method").(string),
-			Indicator:       indicator,
+			Indicator:       marshalIndicator(d),
 			Composite:       marshalComposite(d),
 			Thresholds:      marshalThresholds(d),
 			TimeWindows:     marshalTimeWindows(d),
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
-			Attachments:     marshalAttachments(d.Get("attachments").([]interface{})),
+			Attachments:     marshalAttachments(attachments.([]interface{})),
 		},
 	}, diags
 }
@@ -513,6 +555,7 @@ func marshalThresholds(d *schema.ResourceData) []n9api.Threshold {
 			ThresholdBase: n9api.ThresholdBase{
 				DisplayName: objective["display_name"].(string),
 				Value:       objective["value"].(float64),
+				Name:        objective["name"].(string),
 			},
 			BudgetTarget:    &target,
 			TimeSliceTarget: timeSliceTargetPtr,
@@ -637,6 +680,16 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	err = d.Set("alert_policies", spec["alertPolicies"].([]interface{}))
 	diags = appendError(diags, err)
 
+	// Remove this warning once SLO objective unique identifier grace period ends.
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "SLO objective unique identifier warning",
+		Detail: "Nobl9 is introducing an SLO objective unique identifier to support the same value for different " +
+			"SLIs in the same SLO. As such, Nobl9 is adding a name identifier to each SLO objective. " +
+			"Objective names can be set now, and they'll be required once grace period ends. " +
+			"For more detailed information, refer to: https://docs.nobl9.com/Features/SLO-objective-unique-identifier",
+	})
+
 	return diags
 }
 
@@ -644,6 +697,8 @@ func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) e
 	if _, ok := spec["attachments"]; !ok {
 		return nil
 	}
+
+	declaredAttachmentTag := getDeclaredAttachmentTag(d)
 
 	attachments := spec["attachments"].([]interface{})
 	res := make([]interface{}, len(attachments))
@@ -655,8 +710,16 @@ func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) e
 		}
 		res[i] = attachment
 	}
+	return d.Set(declaredAttachmentTag, res)
+}
 
-	return d.Set("attachments", res)
+// getDeclaredAttachmentTag return name of attachments object declared in .tf file
+func getDeclaredAttachmentTag(d *schema.ResourceData) string {
+	_, newAttachments := d.GetChange("attachments")
+	if len(newAttachments.([]interface{})) > 0 {
+		return "attachments"
+	}
+	return "attachment"
 }
 
 func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}) error {
@@ -698,6 +761,7 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) er
 	for i, o := range objectives {
 		objective := o.(map[string]interface{})
 		objectiveTF := make(map[string]interface{})
+		objectiveTF["name"] = objective["name"]
 		objectiveTF["display_name"] = objective["displayName"]
 		objectiveTF["op"] = objective["op"]
 		objectiveTF["value"] = objective["value"]
@@ -726,6 +790,18 @@ func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) er
 	return d.Set("objective", schema.NewSet(objectiveHash, objectivesTF))
 }
 
+func objectiveHash(objective interface{}) int {
+	o := objective.(map[string]interface{})
+	indicator := fmt.Sprintf("%s_%s_%s_%f_%f_%f",
+		o["name"],
+		o["display_name"],
+		o["op"],
+		o["value"],
+		o["target"],
+		o["time_slice_target"],
+	)
+	return schema.HashString(indicator)
+}
 func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) error {
 	if compositeSpec, isCompositeSLO := spec["composite"]; isCompositeSLO {
 		composite := compositeSpec.(map[string]interface{})
@@ -745,17 +821,6 @@ func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) err
 	}
 
 	return nil
-}
-
-func objectiveHash(objective interface{}) int {
-	o := objective.(map[string]interface{})
-	hash := fnv.New32()
-	indicator := fmt.Sprintf("%s_%s_%f_%f", o["display_name"], o["op"], o["target"], o["value"])
-	_, err := hash.Write([]byte(indicator))
-	if err != nil {
-		panic(err)
-	}
-	return int(hash.Sum32())
 }
 
 func unmarshalSLORawMetric(rawMetricSource map[string]interface{}) *schema.Set {
@@ -2246,4 +2311,19 @@ func unmarshalThousandeyesMetric(metric map[string]interface{}) map[string]inter
 	res["test_id"] = metric["testID"]
 
 	return res
+}
+
+func validateMaxLength(fieldName string, maxLength int) func(interface{}, cty.Path) diag.Diagnostics {
+	return func(v any, _ cty.Path) diag.Diagnostics {
+		var diags diag.Diagnostics
+		if len(v.(string)) > 63 {
+			diagnostic := diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("%s is too long", fieldName),
+				Detail:   fmt.Sprintf("%s cannot be longer than %d characters", fieldName, maxLength),
+			}
+			diags = append(diags, diagnostic)
+		}
+		return diags
+	}
 }
