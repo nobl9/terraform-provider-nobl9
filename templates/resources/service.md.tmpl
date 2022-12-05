@@ -1,0 +1,26 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Alert Methods"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+A **service** in Nobl9 is a high-level grouping of Service Level Objectives (SLOs). A service can represent a logical service endpoint like an API, a database, an application, or anything else you care about setting an SLO for. Every SLO in Nobl9 is tied to a service, and the service can have one or more SLOs.
+
+For more details, refer to the {{ .Description | trimspace }}.
+
+## Example Usage
+
+Here's an example of Service resource configuration:
+
+{{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Useful Links
+
+[Services in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/#services)
+
+[Service YAML Configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide/#service)

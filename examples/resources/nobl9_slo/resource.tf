@@ -1,11 +1,11 @@
 resource "nobl9_project" "this" {
-  display_name = "Test Terraform"
-  name         = "test-terraform"
-  description  = "An example terraform project"
+  display_name = "Test N9 Terraform"
+  name         = "test-n9-terraform"
+  description  = "An example N9 Terraform project"
 }
 
 resource "nobl9_service" "this" {
-  name         = "foo-front-page"
+  name         = "my-front-page"
   project      = nobl9_project.this.name
   display_name = "${nobl9_project.this.display_name} Front Page"
   description  = "Front page service"

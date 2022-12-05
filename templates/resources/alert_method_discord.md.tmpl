@@ -1,0 +1,26 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Alert Methods"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+The **Discord Alert Method** enables sending alerts through Discord to notify Nobl9 users whenever an incident is triggered.
+
+For more details, refer to {{ .Description | trimspace }}.
+
+## Example Usage
+
+Here's an example of Discord Terraform resource configuration:
+
+{{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Useful Links
+
+[Discord alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/discord/)
+
+[Intro to webhooks | Discord Documentation](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)
