@@ -108,27 +108,27 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	if ds != nil {
 		return ds
 	}
-	service, diags := marshalAgent(d)
+	agent, diags := marshalAgent(d)
 	if diags.HasError() {
 		return diags
 	}
 
 	var p n9api.Payload
-	p.AddObject(service)
+	p.AddObject(agent)
 
 	agentsData, err := client.ApplyAgents(p.GetObjects())
 	if err != nil {
 		return diag.Errorf("could not add agent: %s", err.Error())
 	}
 
-	if agentsData != nil {
-		err = d.Set("client_id", agentsData[len(agentsData)-1].ClientID)
+	if agentsData != nil && len(agentsData) == 1 {
+		err = d.Set("client_id", agentsData[0].ClientID)
 		diags = appendError(diags, err)
-		err = d.Set("client_secret", agentsData[len(agentsData)-1].ClientSecret)
+		err = d.Set("client_secret", agentsData[0].ClientSecret)
 		diags = appendError(diags, err)
 	}
 
-	d.SetId(service.Metadata.Name)
+	d.SetId(agent.Metadata.Name)
 
 	readAgentDiags := resourceAgentRead(ctx, d, meta)
 
