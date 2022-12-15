@@ -121,7 +121,7 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 		return diag.Errorf("could not add agent: %s", err.Error())
 	}
 
-	if agentsData != nil && len(agentsData) == 1 {
+	if len(agentsData) == 1 {
 		err = d.Set("client_id", agentsData[0].ClientID)
 		diags = appendError(diags, err)
 		err = d.Set("client_secret", agentsData[0].ClientSecret)
