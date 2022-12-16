@@ -149,7 +149,7 @@ func resourceAlertMethodDelete(_ context.Context, d *schema.ResourceData, meta i
 type alertMethodWebhook struct{}
 
 func (i alertMethodWebhook) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/webhook)"
+	return "[Webhook Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/webhook)"
 }
 
 //nolint:lll
@@ -171,7 +171,7 @@ func (i alertMethodWebhook) GetSchema() map[string]*schema.Schema {
 		"template_fields": {
 			Type:          schema.TypeList,
 			Optional:      true,
-			Description:   "Webhook meesage fields. The message will contain json payload with specified fields. See documentation for allowed fields.",
+			Description:   "Webhook message fields. The message contains JSON payload with specified fields. See documentation for allowed fields.",
 			ConflictsWith: []string{"template"},
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
@@ -217,7 +217,7 @@ func (i alertMethodWebhook) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 type alertMethodPagerDuty struct{}
 
 func (i alertMethodPagerDuty) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/pagerduty)"
+	return "[PagerDuty Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/pagerduty)"
 }
 
 func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
@@ -225,7 +225,7 @@ func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
 		"integration_key": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "PagerDuty Integration Key, found on Integrations tab.",
+			Description: "PagerDuty Integration Key. For more details, check [Services and integrations](https://support.pagerduty.com/docs/services-and-integrations).",
 			Sensitive:   true,
 			Computed:    true,
 		},
@@ -249,7 +249,7 @@ func (i alertMethodPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec map[str
 type alertMethodSlack struct{}
 
 func (i alertMethodSlack) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/slack)"
+	return "[Slack Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/slack)"
 }
 
 func (i alertMethodSlack) GetSchema() map[string]*schema.Schema {
@@ -257,7 +257,7 @@ func (i alertMethodSlack) GetSchema() map[string]*schema.Schema {
 		"url": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Slack webhook endpoint URL.",
+			Description: "Slack [webhook endpoint URL](https://slack.com/help/articles/115005265063-Incoming-webhooks-for-Slack%22).",
 			Sensitive:   true,
 			Computed:    true,
 		},
@@ -281,7 +281,7 @@ func (i alertMethodSlack) UnmarshalSpec(d *schema.ResourceData, spec map[string]
 type alertMethodDiscord struct{}
 
 func (i alertMethodDiscord) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/discord)"
+	return "[Discord Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/discord)"
 }
 
 func (i alertMethodDiscord) GetSchema() map[string]*schema.Schema {
@@ -289,7 +289,7 @@ func (i alertMethodDiscord) GetSchema() map[string]*schema.Schema {
 		"url": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Discord webhook endpoint URL.",
+			Description: "Discord webhook endpoint URL. Refer to [Intro to webhooks | Discord documentation](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) for more details.",
 			Sensitive:   true,
 			Computed:    true,
 		},
@@ -313,7 +313,7 @@ func (i alertMethodDiscord) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 type alertMethodOpsgenie struct{}
 
 func (i alertMethodOpsgenie) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/opsgenie)"
+	return "[OpsGenie Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/opsgenie)"
 }
 
 func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
@@ -321,14 +321,14 @@ func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
 		"auth": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Opsgenie authentication credentials. See documentation for supported formats.",
+			Description: "Opsgenie authentication credentials. See [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie#authentication) for supported formats.",
 			Sensitive:   true,
 			Computed:    true,
 		},
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Opsgenie API URL.",
+			Description: "Opsgenie API URL. See [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie#creating-opsgenie-api-key) for more details.",
 		},
 	}
 }
@@ -356,7 +356,7 @@ func (i alertMethodOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec map[stri
 type alertMethodServiceNow struct{}
 
 func (i alertMethodServiceNow) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/servicenow)"
+	return "[ServiceNow Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/servicenow)"
 }
 
 func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
@@ -376,7 +376,7 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 		"instance_name": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "ServiceNow InstanceName. For details see documentation.",
+			Description: "ServiceNow InstanceName. For details see [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow#servicenow-credentials).",
 		},
 	}
 }
@@ -407,7 +407,7 @@ func (i alertMethodServiceNow) UnmarshalSpec(d *schema.ResourceData, spec map[st
 type alertMethodJira struct{}
 
 func (i alertMethodJira) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/jira)"
+	return "[Jira Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/jira)"
 }
 
 func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
@@ -415,7 +415,7 @@ func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Jira instance URL.",
+			Description: "Jira instance URL. The `https://` prefix is required.",
 		},
 		"username": {
 			Type:        schema.TypeString,
@@ -425,14 +425,14 @@ func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
 		"apitoken": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "API Token with access rights to the project.",
+			Description: "[API Token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) with access rights to the project.",
 			Sensitive:   true,
 			Computed:    true,
 		},
 		"project_key": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "The code of the project.",
+			Description: "The code of the Jira project.",
 		},
 	}
 }
@@ -466,7 +466,7 @@ func (i alertMethodJira) UnmarshalSpec(d *schema.ResourceData, spec map[string]i
 type alertMethodTeams struct{}
 
 func (i alertMethodTeams) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/ms-teams)"
+	return "[MS Teams Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/ms-teams)"
 }
 
 func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
@@ -474,7 +474,7 @@ func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
 		"url": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "MSTeams webhook endpoint URL.",
+			Description: "MS Teams [webhook endpoint URL](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook).",
 			Sensitive:   true,
 			Computed:    true,
 		},
@@ -498,7 +498,7 @@ func (i alertMethodTeams) UnmarshalSpec(d *schema.ResourceData, spec map[string]
 type alertMethodEmail struct{}
 
 func (i alertMethodEmail) GetDescription() string {
-	return "[Integration configuration documentation](https://docs.nobl9.com/Alert_Methods/email-alert)"
+	return "[Email Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/email-alert)"
 }
 
 func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
@@ -506,7 +506,7 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 		"to": {
 			Type:        schema.TypeList,
 			Required:    true,
-			Description: "Recipients.",
+			Description: "Recipients. The maximum number of recipients is 10.",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -514,7 +514,7 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 		"cc": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: "Carbon copy recipients.",
+			Description: "Carbon copy recipients. The maximum number of recipients is 10.",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -522,7 +522,7 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 		"bcc": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: "Blind carbon copy recipients.",
+			Description: "Blind carbon copy recipients. The maximum number of recipients is 10.",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -530,12 +530,12 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 		"subject": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Subject of the email.",
+			Description: "The Subject of the email alert.",
 		},
 		"body": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Body of the email. For format and samples see documentation and nobl9 application.",
+			Description: "The Body of the email alert. For the format of the body and the list of variables that you can define, refer to the [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/email-alert#yaml-configuration).",
 		},
 	}
 }

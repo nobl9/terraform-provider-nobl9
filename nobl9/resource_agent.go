@@ -25,7 +25,7 @@ func resourceAgent() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[Agent configuration documentation](https://docs.nobl9.com/nobl9_agent)",
+		Description: "[Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9_agent)",
 	}
 }
 
@@ -49,7 +49,7 @@ func agentSchema() map[string]*schema.Schema {
 		agentTypeKey: {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Type of an agent. [Supported agent types](https://docs.nobl9.com/Sources/)",
+			Description: "The type of the Agent. Check [Supported Agent types | Nobl9 Documentation](https://docs.nobl9.com/Sources/)",
 		},
 		"client_id": {
 			Type:        schema.TypeString,
@@ -64,7 +64,7 @@ func agentSchema() map[string]*schema.Schema {
 		"status": {
 			Type:        schema.TypeMap,
 			Computed:    true,
-			Description: "Status of created agent.",
+			Description: "Status of the created agent.",
 		},
 	}
 
@@ -359,7 +359,7 @@ func schemaAgentAmazonPrometheus() map[string]*schema.Schema {
 					"region": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "AWS region ex. eu-central-1",
+						Description: "AWS region e.g., eu-central-1",
 					},
 				},
 			},
@@ -400,7 +400,7 @@ func schemaAgentAppDynamics() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Base URL to a AppDynamics Controller.",
+						Description: "Base URL to the AppDynamics Controller.",
 					},
 				},
 			},
@@ -500,7 +500,7 @@ func schemaAgentDatadog() map[string]*schema.Schema {
 				"site": {
 					Type:     schema.TypeString,
 					Required: true,
-					Description: "`com` or `eu`, Datadog SaaS instance, which corresponds to one of their " +
+					Description: "`com` or `eu`, Datadog SaaS instance, which corresponds to one of Datadog's " +
 						"two locations (https://www.datadoghq.com/ in the U.S. " +
 						"or https://datadoghq.eu/ in the European Union)",
 				},
@@ -582,7 +582,7 @@ func schemaAgentElasticsearch() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "API URL endpoint of Elasticsearch's instance.",
+						Description: "API URL endpoint to the Elasticsearch's instance.",
 					},
 				},
 			},
@@ -653,7 +653,7 @@ func schemaAgentGrafanaLoki() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "API URL endpoint of Grafana Loki instance.",
+						Description: "API URL endpoint to the Grafana Loki instance.",
 					},
 				},
 			},
@@ -693,7 +693,7 @@ func schemaAgentGraphite() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "API URL endpoint of Graphite's instance.",
+						Description: "API URL endpoint to the Graphite's instance.",
 					},
 				},
 			},
@@ -733,7 +733,7 @@ func schemaAgentInfluxDB() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "API URL endpoint of InfluxDB's instance.",
+						Description: "API URL endpoint to the InfluxDB's instance.",
 					},
 				},
 			},
@@ -773,7 +773,7 @@ func schemaAgentInstana() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "API URL endpoint of InfluxDB's instance.",
+						Description: "API URL endpoint to the InfluxDB's instance.",
 					},
 				},
 			},
@@ -860,7 +860,7 @@ func schemaAgentNewRelic() map[string]*schema.Schema {
 					"account_id": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "ID number assigned to the New Relic user account",
+						Description: "ID number assigned to the New Relic user account.",
 					},
 				},
 			},
@@ -1054,7 +1054,7 @@ func schemaAgentSplunk() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Base API URL of the Splunk Search app.",
+						Description: "Base API URL to the Splunk Search app.",
 					},
 				},
 			},
@@ -1137,7 +1137,7 @@ func schemaAgentSumoLogic() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Base API URL of the Splunk Search app.",
+						Description: "Base API URL to the Splunk Search app.",
 					},
 				},
 			},

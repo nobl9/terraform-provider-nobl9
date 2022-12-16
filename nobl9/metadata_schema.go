@@ -23,7 +23,7 @@ func schemaName() *schema.Schema {
 		Type:        schema.TypeString,
 		Required:    true,
 		ForceNew:    true,
-		Description: "Unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
+		Description: "Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
 	}
 }
 
@@ -31,7 +31,7 @@ func schemaDisplayName() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "Display name of the resource.",
+		Description: "User-friendly display name of the resource.",
 	}
 }
 
@@ -40,7 +40,7 @@ func schemaLabels() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeList,
 		Optional:         true,
-		Description:      "Labels containing a single key and a list of values.",
+		Description:      "[Labels](https://docs.nobl9.com/Features/labels/) containing a single key and a list of values.",
 		DiffSuppressFunc: diffSuppressLabels,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -48,7 +48,7 @@ func schemaLabels() *schema.Schema {
 					Type:         schema.TypeString,
 					Required:     true,
 					ValidateFunc: validateNotEmptyString(fieldLabelKey),
-					Description:  "One key for the label, unique within the associated resource.",
+					Description:  "A key for the label, unique within the associated resource.",
 				},
 				fieldLabelValues: {
 					Type:        schema.TypeList,
@@ -162,14 +162,14 @@ func schemaProject() *schema.Schema {
 		Type:        schema.TypeString,
 		Required:    true,
 		ForceNew:    true,
-		Description: "Name of the project the resource is in. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names)."}
+		Description: "Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names)."}
 }
 
 func schemaDescription() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "Optional description of the resource.",
+		Description: "Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.",
 	}
 }
 

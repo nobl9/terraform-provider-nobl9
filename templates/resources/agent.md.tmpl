@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+The Agent is a lightweight application that executes the queries defined for your Nobl9 SLOs. Queries are written in the language supported by the data source in question and executed via native APIs.
+
+The Agent then sends your SLI metrics back to Nobl9 for processing and error budget calculation.
+
+For more information, refer to {{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Nobl9 Official Documentation
+
+https://docs.nobl9.com/

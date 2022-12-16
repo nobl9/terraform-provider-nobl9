@@ -21,23 +21,23 @@ func resourceRoleBinding() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Computed:    true,
-				Description: "Automatically generated, unique name of the resource. Must match [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
+				Description: "Automatically generated, unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
 			},
 			"display_name": schemaDisplayName(),
 			"user": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "ID of the user.",
+				Description: "Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Users**).",
 			},
 			"role_ref": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Role name.",
+				Description: "Role name; the role that you want the user to assume.",
 			},
 			"project_ref": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Project name. When empty, `role_ref` has to be Organization Role.",
+				Description: "Project name, the project in which we want the user to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.",
 			},
 		},
 		CreateContext: resourceRoleBindingApply,
@@ -47,7 +47,7 @@ func resourceRoleBinding() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[RoleBinding configuration documentation](https://docs.nobl9.com/yaml-guide#rolebinding)",
+		Description: "[Role Binding configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#rolebinding)",
 	}
 }
 
