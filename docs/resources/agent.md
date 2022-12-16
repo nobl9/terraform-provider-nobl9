@@ -71,6 +71,8 @@ resource "nobl9_agent" "this" {
 
 ### Read-Only
 
+- `client_id` (String) client_id of created agent.
+- `client_secret` (String) client_secret of created agent.
 - `id` (String) The ID of this resource.
 - `status` (Map of String) Status of the created agent.
 
