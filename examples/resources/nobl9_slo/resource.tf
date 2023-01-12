@@ -28,12 +28,12 @@ resource "nobl9_slo" "this" {
   }
 
   attachment {
-    utl = "https://www.nobl9.com/"
+    utl          = "https://www.nobl9.com/"
     display_name = "SLO provider"
   }
 
   attachment {
-    utl = "https://duckduckgo.com/"
+    utl          = "https://duckduckgo.com/"
     display_name = "Nice search engine"
   }
 
@@ -53,6 +53,7 @@ resource "nobl9_slo" "this" {
     display_name = "OK"
     value        = 2000
     op           = "gte"
+    
     raw_metric {
       query {
         prometheus {
@@ -69,3 +70,40 @@ resource "nobl9_slo" "this" {
   }
 }
 
+resource "nobl9_slo" "this" {
+  name             = "${nobl9_project.this.name}-ratio"
+  service          = nobl9_service.this.name
+  budgeting_method = "Occurrences"
+  project          = nobl9_project.this.name
+
+  time_window {
+    unit       = "Day"
+    count      = 30
+    is_rolling = true
+  }
+
+  objective {
+    name         = "tf-objective-1"
+    target       = 0.99
+    display_name = "OK"
+    value        = 1
+
+    count_metrics {
+      incremental = true
+      good {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+      total {
+        prometheus {
+          promql = "1.0"
+        }
+      }
+    }
+  }
+
+  indicator {
+    name = "test-terraform-prom-agent"
+  }
+}
