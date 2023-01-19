@@ -2,7 +2,7 @@
 page_title: "nobl9_project Resource - terraform-provider-nobl9"
 subcategory: "Groupings and Utilities"
 description: |-
-  Project configuration | Nobl9 Documentation https://docs.nobl9.dev/yaml-guide#project
+  Project configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#project
 ---
 
 # nobl9_project (Resource)
@@ -11,7 +11,7 @@ description: |-
 
 Access controls at the project level enable users to control who can see and change these resources. For example, you can allow all of your users to view the SLOs in a given project, but only a few users to make changes.
 
-For more details, refer to [Project configuration | Nobl9 Documentation](https://docs.nobl9.dev/yaml-guide#project).
+For more details, refer to [Project configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#project).
 
 ## Example Usage
 
@@ -64,4 +64,4 @@ Required:
 
 [Projects in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/#projects)
 
-[Projects YAML Configuration | Nobl9 Documentation](https://docs.nobl9.dev/yaml-guide#project)
+[Projects YAML Configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#project)
