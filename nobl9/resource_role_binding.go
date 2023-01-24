@@ -2,12 +2,10 @@ package nobl9
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -54,7 +52,6 @@ func resourceRoleBinding() *schema.Resource {
 
 func marshalRoleBinding(d *schema.ResourceData) *n9api.RoleBinding {
 	name := d.Get("name").(string)
-	project := d.Get("project_ref").(string)
 	if name == "" {
 		id, _ := uuid.NewUUID() // NewUUID returns always nil error
 		name = id.String()
@@ -63,29 +60,22 @@ func marshalRoleBinding(d *schema.ResourceData) *n9api.RoleBinding {
 		APIVersion: n9api.APIVersion,
 		Kind:       n9api.KindRoleBinding,
 		Metadata: n9api.RoleBindingMetadata{
-			Name: createName(name, project),
+			Name: name,
 		},
 		Spec: n9api.RoleBindingSpec{
 			User:       d.Get("user").(string),
 			RoleRef:    d.Get("role_ref").(string),
-			ProjectRef: project,
+			ProjectRef: d.Get("project_ref").(string),
 		},
 	}
 }
 
-func createName(name, project string) string {
-	if project != "" {
-		return fmt.Sprintf("%s-%s", name, project)
-	}
-	return name
-}
-
 func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
-	if len(objects) != 1 {
+	if len(objects) < 1 {
 		d.SetId("")
 		return nil
 	}
-	object := objects[0]
+	object := getCorrectObject(d, objects)
 	var diags diag.Diagnostics
 
 	metadata := object["metadata"].(map[string]interface{})
@@ -101,6 +91,19 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 	diags = appendError(diags, err)
 
 	return diags
+}
+
+// getCorrectObject check if this is organization role or project role by checking if project_ref was defined
+// and returns correct one. Check happens only if we have two role bindings with same name for organization role and
+// project role
+func getCorrectObject(d *schema.ResourceData, objects []n9api.AnyJSONObj) n9api.AnyJSONObj {
+	if len(objects) == 1 {
+		return objects[0]
+	}
+	if d.Get("project_ref") != "" && objects[0]["project_id"] == nil {
+		return objects[1]
+	}
+	return objects[0]
 }
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
