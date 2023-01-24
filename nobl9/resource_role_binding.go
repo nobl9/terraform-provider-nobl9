@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -53,6 +54,7 @@ func resourceRoleBinding() *schema.Resource {
 
 func marshalRoleBinding(d *schema.ResourceData) *n9api.RoleBinding {
 	name := d.Get("name").(string)
+	project := d.Get("project_ref").(string)
 	if name == "" {
 		id, _ := uuid.NewUUID() // NewUUID returns always nil error
 		name = id.String()
@@ -61,14 +63,21 @@ func marshalRoleBinding(d *schema.ResourceData) *n9api.RoleBinding {
 		APIVersion: n9api.APIVersion,
 		Kind:       n9api.KindRoleBinding,
 		Metadata: n9api.RoleBindingMetadata{
-			Name: name,
+			Name: createName(name, project),
 		},
 		Spec: n9api.RoleBindingSpec{
 			User:       d.Get("user").(string),
 			RoleRef:    d.Get("role_ref").(string),
-			ProjectRef: d.Get("project_ref").(string),
+			ProjectRef: project,
 		},
 	}
+}
+
+func createName(name, project string) string {
+	if project != "" {
+		return fmt.Sprintf("%s-%s", name, project)
+	}
+	return name
 }
 
 func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
