@@ -71,11 +71,10 @@ func marshalRoleBinding(d *schema.ResourceData) *n9api.RoleBinding {
 }
 
 func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
-	if len(objects) < 1 {
-		d.SetId("")
+	roleBinding := getRoleBindingByType(d, objects)
+	if roleBinding == nil {
 		return nil
 	}
-	roleBinding := getRoleBindingByType(d, objects)
 	var diags diag.Diagnostics
 
 	metadata := roleBinding["metadata"].(map[string]interface{})
@@ -99,11 +98,13 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 // If api return to us more than one role binding (when there are two roles bindings with same name)
 // we specify which one should be processed by checking if project is not empty.
 func getRoleBindingByType(d *schema.ResourceData, objects []n9api.AnyJSONObj) n9api.AnyJSONObj {
-	if len(objects) == 1 {
-		return objects[0]
-	}
 	if d.Get("project_ref") != "" && objects[0]["project_id"] == nil {
-		return objects[1]
+		if len(objects) == 2 {
+			return objects[1]
+		} else if len(objects) <= 1 {
+			d.SetId("")
+			return nil
+		}
 	}
 	return objects[0]
 }
