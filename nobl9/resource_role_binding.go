@@ -75,14 +75,14 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 		d.SetId("")
 		return nil
 	}
-	object := getCorrectObject(d, objects)
+	roleBinding := getRoleBindingByType(d, objects)
 	var diags diag.Diagnostics
 
-	metadata := object["metadata"].(map[string]interface{})
+	metadata := roleBinding["metadata"].(map[string]interface{})
 	err := d.Set("name", metadata["name"])
 	diags = appendError(diags, err)
 
-	spec := object["spec"].(map[string]interface{})
+	spec := roleBinding["spec"].(map[string]interface{})
 	err = d.Set("user", spec["user"])
 	diags = appendError(diags, err)
 	err = d.Set("role_ref", spec["roleRef"])
@@ -93,10 +93,12 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 	return diags
 }
 
-// getCorrectObject check if this is organization role or project role by checking if project_ref was defined
-// and returns correct one. Check happens only if we have two role bindings with same name for organization role and
-// project role
-func getCorrectObject(d *schema.ResourceData, objects []n9api.AnyJSONObj) n9api.AnyJSONObj {
+// getRoleBindingByType returns role binding depending on type that was applied
+//
+// Role bindings have two types, organization role and project role, both can have same name.
+// If api return to us more than one role binding (when there are two roles bindings with same name)
+// we specify which one should be processed by checking if project is not empty.
+func getRoleBindingByType(d *schema.ResourceData, objects []n9api.AnyJSONObj) n9api.AnyJSONObj {
 	if len(objects) == 1 {
 		return objects[0]
 	}
