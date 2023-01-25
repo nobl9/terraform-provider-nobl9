@@ -98,7 +98,7 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 // If api return to us more than one role binding (when there are two roles bindings with same name)
 // we specify which one should be processed by checking if project is not empty.
 func getRoleBindingByType(d *schema.ResourceData, objects []n9api.AnyJSONObj) n9api.AnyJSONObj {
-	if d.Get("project_ref") != "" && objects[0]["project_id"] == nil {
+	if !resourceAndObjectAreProjectRole(d, objects[0]) {
 		if len(objects) == 2 {
 			return objects[1]
 		} else if len(objects) <= 1 {
@@ -107,6 +107,10 @@ func getRoleBindingByType(d *schema.ResourceData, objects []n9api.AnyJSONObj) n9
 		}
 	}
 	return objects[0]
+}
+
+func resourceAndObjectAreProjectRole(d *schema.ResourceData, object n9api.AnyJSONObj) bool {
+	return d.Get("project_ref") != "" && object["project_id"] != nil
 }
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
