@@ -122,7 +122,7 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
 		agentsData, err := client.ApplyAgents(p.GetObjects())
 		if err != nil {
-			if errors.Is(err, ErrConcurrencyIssue) {
+			if errors.As(err, &ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -175,7 +175,7 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.DeleteObjectsByName(n9api.ObjectAgent, d.Id())
 		if err != nil {
-			if errors.Is(err, ErrConcurrencyIssue) {
+			if errors.As(err, &ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)

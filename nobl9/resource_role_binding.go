@@ -112,7 +112,7 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
 		err := client.ApplyObjects(p.GetObjects())
 		if err != nil {
-			if errors.Is(err, ErrConcurrencyIssue) {
+			if errors.As(err, &ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -156,7 +156,7 @@ func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.DeleteObjectsByName(n9api.ObjectRoleBinding, d.Id())
 		if err != nil {
-			if errors.Is(err, ErrConcurrencyIssue) {
+			if errors.As(err, &ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)

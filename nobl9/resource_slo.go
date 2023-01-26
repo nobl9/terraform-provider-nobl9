@@ -15,8 +15,6 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-var ErrConcurrencyIssue = errors.New("operation failed due to concurrency issue but can be retried")
-
 func resourceSLO() *schema.Resource {
 	return &schema.Resource{
 		Schema:        schemaSLO(),
@@ -338,7 +336,7 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
 		err := client.ApplyObjects(p.GetObjects())
 		if err != nil {
-			if errors.Is(err, ErrConcurrencyIssue) {
+			if errors.As(err, &ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -380,10 +378,10 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 		return ds
 	}
 
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
+	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.DeleteObjectsByName(n9api.ObjectSLO, d.Id())
 		if err != nil {
-			if errors.Is(err, ErrConcurrencyIssue) {
+			if errors.As(err, &ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)

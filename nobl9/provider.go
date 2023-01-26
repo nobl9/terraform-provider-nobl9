@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"github.com/nobl9/nobl9-go"
@@ -12,6 +13,7 @@ import (
 
 //nolint:gochecknoglobals,revive
 var Version string
+var ErrConcurrencyIssue = errors.New("operation failed due to concurrency issue but can be retried")
 
 func Provider() *schema.Provider {
 	return &schema.Provider{
