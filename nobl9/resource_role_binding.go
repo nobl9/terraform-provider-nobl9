@@ -96,13 +96,18 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 
 func findRoleBindingByType(projectRole bool, objects []n9api.AnyJSONObj) n9api.AnyJSONObj {
 	for _, object := range objects {
-		if projectRole && object["project_id"] != nil {
+		if projectRole && containsProjectRef(object) {
 			return object
-		} else if !projectRole && object["project_id"] == nil {
+		} else if !projectRole && containsProjectRef(object) {
 			return object
 		}
 	}
 	return nil
+}
+
+func containsProjectRef(obj n9api.AnyJSONObj) bool {
+	spec := obj["spec"].(map[string]interface{})
+	return spec["projectRef"] != nil
 }
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
