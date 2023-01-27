@@ -98,7 +98,7 @@ func findRoleBindingByType(projectRole bool, objects []n9api.AnyJSONObj) n9api.A
 	for _, object := range objects {
 		if projectRole && containsProjectRef(object) {
 			return object
-		} else if !projectRole && containsProjectRef(object) {
+		} else if !projectRole && !containsProjectRef(object) {
 			return object
 		}
 	}
