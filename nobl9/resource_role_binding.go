@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -72,18 +71,19 @@ func marshalRoleBinding(d *schema.ResourceData) *n9api.RoleBinding {
 }
 
 func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
-	if len(objects) != 1 {
+	_, isProjectRole := d.GetOk("project_ref")
+	roleBinding := findRoleBindingByType(isProjectRole, objects)
+	if roleBinding == nil {
 		d.SetId("")
 		return nil
 	}
-	object := objects[0]
-	var diags diag.Diagnostics
 
-	metadata := object["metadata"].(map[string]interface{})
+	var diags diag.Diagnostics
+	metadata := roleBinding["metadata"].(map[string]interface{})
 	err := d.Set("name", metadata["name"])
 	diags = appendError(diags, err)
 
-	spec := object["spec"].(map[string]interface{})
+	spec := roleBinding["spec"].(map[string]interface{})
 	err = d.Set("user", spec["user"])
 	diags = appendError(diags, err)
 	err = d.Set("role_ref", spec["roleRef"])
@@ -92,6 +92,22 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 	diags = appendError(diags, err)
 
 	return diags
+}
+
+func findRoleBindingByType(projectRole bool, objects []n9api.AnyJSONObj) n9api.AnyJSONObj {
+	for _, object := range objects {
+		if projectRole && containsProjectRef(object) {
+			return object
+		} else if !projectRole && !containsProjectRef(object) {
+			return object
+		}
+	}
+	return nil
+}
+
+func containsProjectRef(obj n9api.AnyJSONObj) bool {
+	spec := obj["spec"].(map[string]interface{})
+	return spec["projectRef"] != nil
 }
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
