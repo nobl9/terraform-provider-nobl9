@@ -336,7 +336,7 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
 		err := client.ApplyObjects(p.GetObjects())
 		if err != nil {
-			if errors.As(err, &ErrConcurrencyIssue) {
+			if errors.Is(err, n9api.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -381,7 +381,7 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.DeleteObjectsByName(n9api.ObjectSLO, d.Id())
 		if err != nil {
-			if errors.As(err, &ErrConcurrencyIssue) {
+			if errors.Is(err, n9api.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
