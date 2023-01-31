@@ -3,7 +3,7 @@ resource "nobl9_alert_method_opsgenie" "this" {
   display_name = "My Opsgenie Alert"
   project      = "Test Project"
   description = "My Opsgenie Alert"
-  url         = "https://discord.com"
+  url         = "https://spi.opsgenie.com.com"
   auth		  = "GenieKey 12345"
 }
 
