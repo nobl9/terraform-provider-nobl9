@@ -16,7 +16,7 @@ For more details, refer to [PagerDuty Alert Method | Nobl9 Documentation](https:
 Here's an example of PagerDuty Terraform resource configuration:
 
 ```terraform
-resource "nobl9_alert_method_webhook" "this" {
+resource "nobl9_alert_method_pagerduty" "this" {
   name         = "my-pagerduty-alert"
   display_name = "My PagerDuty Alert"
   project      = "Test Project"

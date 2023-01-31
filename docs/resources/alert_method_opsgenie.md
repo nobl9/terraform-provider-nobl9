@@ -16,7 +16,7 @@ For more details, refer to [OpsGenie Alert Method | Nobl9 Documentation](https:/
 Here's an example of OpsGenie Terraform resource configuration:
 
 ```terraform
-resource "nobl9_alert_method_webhook" "this" {
+resource "nobl9_alert_method_opsgenie" "this" {
   name         = "my-opsgenie-alert"
   display_name = "My Opsgenie Alert"
   project      = "Test Project"

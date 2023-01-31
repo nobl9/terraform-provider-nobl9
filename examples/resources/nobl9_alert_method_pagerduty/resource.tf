@@ -1,4 +1,4 @@
-resource "nobl9_alert_method_webhook" "this" {
+resource "nobl9_alert_method_pagerduty" "this" {
   name         = "my-pagerduty-alert"
   display_name = "My PagerDuty Alert"
   project      = "Test Project"

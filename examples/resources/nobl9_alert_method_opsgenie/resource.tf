@@ -1,4 +1,4 @@
-resource "nobl9_alert_method_webhook" "this" {
+resource "nobl9_alert_method_opsgenie" "this" {
   name         = "my-opsgenie-alert"
   display_name = "My Opsgenie Alert"
   project      = "Test Project"
