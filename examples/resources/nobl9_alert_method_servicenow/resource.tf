@@ -1,4 +1,4 @@
-resource "nobl9_alert_method_webhook" "this" {
+resource "nobl9_alert_method_servicenow" "this" {
   name         = "my-servicenow-alert"
   display_name = "My ServiceNow Alert"
   project      = "Test Project"

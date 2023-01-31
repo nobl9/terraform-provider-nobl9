@@ -18,7 +18,7 @@ For more details, refer to [Slack Alert Method | Nobl9 Documentation](https://do
 Here's an example of Slack Terraform resource configuration:
 
 ```terraform
-resource "nobl9_alert_method_webhook" "this" {
+resource "nobl9_alert_method_slack" "this" {
   name         = "my-slack-alert"
   display_name = "My Slack Alert"
   project      = "Test Project"

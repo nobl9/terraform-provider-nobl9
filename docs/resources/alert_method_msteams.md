@@ -16,7 +16,7 @@ For more details, refer to [MS Teams Alert Method | Nobl9 Documentation](https:/
 Here's an example of MS Teams Terraform resource configuration:
 
 ```terraform
-resource "nobl9_alert_method_webhook" "this" {
+resource "nobl9_alert_method_msteams" "this" {
   name         = "ms-teams-alert"
   display_name = "MS Teams Alert"
   project      = "Test Project"

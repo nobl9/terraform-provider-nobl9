@@ -16,7 +16,7 @@ For more details, refer to [Jira Alert Method | Nobl9 Documentation](https://doc
 Here's an example of Jira Terraform resource configuration:
 
 ```terraform
-resource "nobl9_alert_method_webhook" "this" {
+resource "nobl9_alert_method_jira" "this" {
   name         = "my-jira-alert"
   display_name = "My Jira Alert"
   project      = "My Jira Project"
