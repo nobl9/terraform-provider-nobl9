@@ -3,11 +3,14 @@ package nobl9
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	n9api "github.com/nobl9/nobl9-go"
@@ -116,16 +119,23 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	var p n9api.Payload
 	p.AddObject(agent)
 
-	agentsData, err := client.ApplyAgents(p.GetObjects())
-	if err != nil {
+	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
+		agentsData, err := client.ApplyAgents(p.GetObjects())
+		if err != nil {
+			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		if len(agentsData) == 1 {
+			err = d.Set("client_id", agentsData[0].ClientID)
+			diags = appendError(diags, err)
+			err = d.Set("client_secret", agentsData[0].ClientSecret)
+			diags = appendError(diags, err)
+		}
+		return nil
+	}); err != nil {
 		return diag.Errorf("could not add agent: %s", err.Error())
-	}
-
-	if len(agentsData) == 1 {
-		err = d.Set("client_id", agentsData[0].ClientID)
-		diags = appendError(diags, err)
-		err = d.Set("client_secret", agentsData[0].ClientSecret)
-		diags = appendError(diags, err)
 	}
 
 	d.SetId(agent.Metadata.Name)
@@ -155,15 +165,23 @@ func resourceAgentRead(_ context.Context, d *schema.ResourceData, meta interface
 	return unmarshalAgent(d, objects)
 }
 
-func resourceAgentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config, d.Get("project").(string))
 	if ds.HasError() {
 		return ds
 	}
 
-	err := client.DeleteObjectsByName(n9api.ObjectAgent, d.Id())
-	if err != nil {
+	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
+		err := client.DeleteObjectsByName(n9api.ObjectAgent, d.Id())
+		if err != nil {
+			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	}); err != nil {
 		return diag.FromErr(err)
 	}
 

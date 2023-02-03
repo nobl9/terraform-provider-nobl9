@@ -2,11 +2,14 @@ package nobl9
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	n9api "github.com/nobl9/nobl9-go"
@@ -330,9 +333,17 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	var p n9api.Payload
 	p.AddObject(slo)
 
-	err := client.ApplyObjects(p.GetObjects())
-	if err != nil {
-		return diag.Errorf("could not add SLO: %s", err.Error())
+	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
+		err := client.ApplyObjects(p.GetObjects())
+		if err != nil {
+			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	}); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(slo.Metadata.Name)
@@ -360,15 +371,23 @@ func resourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}
 	return unmarshalSLO(d, objects)
 }
 
-func resourceSLODelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config, d.Get("project").(string))
 	if ds.HasError() {
 		return ds
 	}
 
-	err := client.DeleteObjectsByName(n9api.ObjectSLO, d.Id())
-	if err != nil {
+	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
+		err := client.DeleteObjectsByName(n9api.ObjectSLO, d.Id())
+		if err != nil {
+			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	}); err != nil {
 		return diag.FromErr(err)
 	}
 

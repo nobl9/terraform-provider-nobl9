@@ -2,9 +2,12 @@ package nobl9
 
 import (
 	"context"
+	"errors"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
 )
@@ -122,8 +125,16 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 	var p n9api.Payload
 	p.AddObject(ap)
 
-	err := client.ApplyObjects(p.GetObjects())
-	if err != nil {
+	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
+		err := client.ApplyObjects(p.GetObjects())
+		if err != nil {
+			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	}); err != nil {
 		return diag.Errorf("could not add project: %s", err.Error())
 	}
 
@@ -147,7 +158,7 @@ func resourceRoleBindingRead(_ context.Context, d *schema.ResourceData, meta int
 	return unmarshalRoleBinding(d, objects)
 }
 
-func resourceRoleBindingDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	project := d.Get("project_ref").(string)
 	if project == "" {
@@ -158,8 +169,16 @@ func resourceRoleBindingDelete(_ context.Context, d *schema.ResourceData, meta i
 		return ds
 	}
 
-	err := client.DeleteObjectsByName(n9api.ObjectRoleBinding, d.Id())
-	if err != nil {
+	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
+		err := client.DeleteObjectsByName(n9api.ObjectRoleBinding, d.Id())
+		if err != nil {
+			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	}); err != nil {
 		return diag.FromErr(err)
 	}
 
