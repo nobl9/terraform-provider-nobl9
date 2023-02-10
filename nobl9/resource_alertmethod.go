@@ -70,7 +70,7 @@ func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []n9ap
 	object := objects[0]
 	var diags diag.Diagnostics
 
-	if ds := unmarshalMetadata(object, d); ds.HasError() {
+	if ds := unmarshalGenericMetadata(object, d); ds.HasError() {
 		diags = append(diags, ds...)
 	}
 

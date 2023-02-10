@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	n9api "github.com/nobl9/nobl9-go"
 )
 
@@ -193,7 +194,7 @@ func marshalMetadata(d *schema.ResourceData) (n9api.MetadataHolder, diag.Diagnos
 	}, diags
 }
 
-func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Diagnostics {
+func unmarshalGenericMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	metadata := object["metadata"].(map[string]interface{})
@@ -202,7 +203,6 @@ func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Dia
 	err = d.Set("display_name", metadata["displayName"])
 	diags = appendError(diags, err)
 
-	diags = appendError(diags, err)
 	err = d.Set("project", metadata["project"])
 	diags = appendError(diags, err)
 
@@ -210,6 +210,19 @@ func unmarshalMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Dia
 	if exist {
 		err = d.Set("label", unmarshalLabels(labelsRaw))
 		diags = appendError(diags, err)
+	}
+
+	return diags
+}
+
+func unmarshalMetadata(metadataHolder n9api.MetadataHolder, d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	set(d, "name", metadataHolder.Metadata.Name, &diags)
+	set(d, "display_name", metadataHolder.Metadata.DisplayName, &diags)
+	set(d, "project", metadataHolder.Metadata.Project, &diags)
+	if metadataHolder.Metadata.Labels != nil {
+		set(d, "label", metadataHolder.Metadata.Labels, &diags)
 	}
 
 	return diags
@@ -283,6 +296,10 @@ func unmarshalLabels(labelsRaw interface{}) interface{} {
 // Never use it for sets with more elements as new elements will override the old ones.
 func oneElementSet(_ interface{}) int {
 	return 0
+}
+
+func set(d *schema.ResourceData, key string, value interface{}, diags *diag.Diagnostics) {
+	appendError(*diags, d.Set(key, value))
 }
 
 func appendError(d diag.Diagnostics, err error) diag.Diagnostics {

@@ -82,6 +82,7 @@ func Provider() *schema.Provider {
 			"nobl9_alert_method_jira":       resourceAlertMethodFactory(alertMethodJira{}),
 			"nobl9_alert_method_msteams":    resourceAlertMethodFactory(alertMethodTeams{}),
 			"nobl9_alert_method_email":      resourceAlertMethodFactory(alertMethodEmail{}),
+			"nobl9_direct":                  resourceDirect(),
 			"nobl9_project":                 resourceProject(),
 			"nobl9_role_binding":            resourceRoleBinding(),
 			"nobl9_slo":                     resourceSLO(),

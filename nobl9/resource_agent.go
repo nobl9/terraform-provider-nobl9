@@ -245,7 +245,7 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 	}
 	object := objects[0]
 
-	if ds := unmarshalMetadata(object, d); ds.HasError() {
+	if ds := unmarshalGenericMetadata(object, d); ds.HasError() {
 		diags = append(diags, ds...)
 	}
 
@@ -501,7 +501,7 @@ func marshalAgentCloudWatch(d *schema.ResourceData) *n9api.CloudWatchAgentConfig
 
 /**
  * Datadog Agent
- * https://docs.nobl9.com/Sources/prometheus#prometheus-agent
+ * https://docs.nobl9.com/Sources/datadog#datadog-agent
  */
 const datadogAgentType = "datadog"
 const datadogAgentConfigKey = "datadog_config"
