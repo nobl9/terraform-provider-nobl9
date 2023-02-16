@@ -1155,11 +1155,12 @@ func schemaAgentSumoLogic() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Base API URL to the Splunk Search app.",
+						Description: "Sumo Logic API URL.",
 					},
 				},
 			},
-		}}
+		},
+	}
 }
 
 func marshalAgentSumoLogic(d *schema.ResourceData, diags diag.Diagnostics) *n9api.SumoLogicAgentConfig {
@@ -1192,7 +1193,8 @@ func schemaAgentThousandEyes() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Description: "Agent configuration is not required.",
 			},
-		}}
+		},
+	}
 }
 
 func marshalAgentThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesAgentConfig {

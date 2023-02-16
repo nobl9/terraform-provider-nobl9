@@ -2,8 +2,8 @@ package nobl9
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,92 +13,80 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-const directTypeKey = "direct_type"
+const (
+	directDescription = "[Direct configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9_direct)"
+)
 
-func resourceDirect() *schema.Resource {
-	return &schema.Resource{
-		Schema:        directSchema(),
-		CreateContext: resourceDirectApply,
-		UpdateContext: resourceDirectApply,
-		DeleteContext: resourceDirectDelete,
-		ReadContext:   resourceDirectRead,
+type directResource struct {
+	directSpecResource
+}
+
+type directSpecResource interface {
+	GetSchema() map[string]*schema.Schema
+	GetDescription() string
+	MarshalSpec(d *schema.ResourceData) n9api.DirectSpec
+	UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics)
+}
+
+func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
+	i := directResource{directSpecResource: directSpec}
+	resource := &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"name":         schemaName(),
+			"display_name": schemaDisplayName(),
+			"project":      schemaProject(),
+			"description":  schemaDescription(),
+			"source_of": {
+				Type:        schema.TypeList,
+				Required:    true,
+				MinItems:    1,
+				MaxItems:    2,
+				Description: "Source of Metrics and/or Services",
+				Elem: &schema.Schema{
+					Type:        schema.TypeString,
+					Description: "Source of Metrics or Services",
+				},
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the created direct.",
+			},
+		},
+		CreateContext: i.resourceDirectApply,
+		UpdateContext: i.resourceDirectApply,
+		DeleteContext: i.resourceDirectDelete,
+		ReadContext:   i.resourceDirectRead,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[Direct configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9_direct)",
+		Description: directSpec.GetDescription(),
 	}
+
+	for k, v := range directSpec.GetSchema() {
+		resource.Schema[k] = v
+	}
+
+	return resource
 }
 
-func directSchema() map[string]*schema.Schema {
-	s := map[string]*schema.Schema{
-		"name":         schemaName(),
-		"display_name": schemaDisplayName(),
-		"project":      schemaProject(),
-		"description":  schemaDescription(),
-		"source_of": {
-			Type:        schema.TypeList,
-			Required:    true,
-			MinItems:    1,
-			MaxItems:    2,
-			Description: "Source of Metrics and/or Services",
-			Elem: &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "Source of Metrics or Services",
-			},
-		},
-		directTypeKey: {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "The type of the Direct. Check [Supported Direct types | Nobl9 Documentation](https://docs.nobl9.com/Sources/)",
-		},
-		"status": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Status of the created direct.",
-		},
-	}
-
-	directSchemaDefinitions := []map[string]*schema.Schema{
-		schemaDirectAppDynamics(),
-		schemaDirectBigQuery(),
-		schemaDirectCloudWatch(),
-		schemaDirectDatadog(),
-		schemaDirectDynatrace(),
-		schemaDirectGCM(),
-		schemaDirectInfluxDB(),
-		schemaDirectInstana(),
-		schemaDirectLightstep(),
-		schemaDirectNewRelic(),
-		schemaDirectPingdom(),
-		schemaDirectRedshift(),
-		schemaDirectSplunk(),
-		schemaDirectSplunkObservability(),
-		schemaDirectSumoLogic(),
-		schemaDirectThousandEyes(),
-	}
-
-	for _, directSchemaDef := range directSchemaDefinitions {
-		for directKey, schema := range directSchemaDef {
-			s[directKey] = schema
-		}
-	}
-
-	return s
-}
-
-func resourceDirectApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (dr directResource) resourceDirectApply(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config, d.Get("project").(string))
 	if ds != nil {
 		return ds
 	}
-	direct, diags := marshalDirect(d)
+	n9Direct, diags := dr.marshalDirect(d)
 	if diags.HasError() {
 		return diags
 	}
 
 	var p n9api.Payload
-	p.AddObject(direct)
+	p.AddObject(n9Direct)
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
 		err := client.ApplyObjects(p.GetObjects())
@@ -110,17 +98,22 @@ func resourceDirectApply(ctx context.Context, d *schema.ResourceData, meta inter
 		}
 		return nil
 	}); err != nil {
+
 		return diag.Errorf("could not add direct: %s", err.Error())
 	}
 
-	d.SetId(direct.Metadata.Name)
+	d.SetId(n9Direct.Metadata.Name)
 
-	readDirectDiags := resourceDirectRead(ctx, d, meta)
+	readDirectDiags := dr.resourceDirectRead(ctx, d, meta)
 
 	return append(diags, readDirectDiags...)
 }
 
-func resourceDirectRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (dr directResource) resourceDirectRead(
+	_ context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	project := d.Get("project").(string)
 	if project == "" {
@@ -137,10 +130,14 @@ func resourceDirectRead(_ context.Context, d *schema.ResourceData, meta interfac
 		return diag.FromErr(err)
 	}
 
-	return unmarshalDirect(d, objects)
+	return dr.unmarshalDirect(d, objects)
 }
 
-func resourceDirectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (dr directResource) resourceDirectDelete(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config, d.Get("project").(string))
 	if ds.HasError() {
@@ -163,7 +160,7 @@ func resourceDirectDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	return nil
 }
 
-func marshalDirect(d *schema.ResourceData) (*n9api.Direct, diag.Diagnostics) {
+func (dr directResource) marshalDirect(d *schema.ResourceData) (*n9api.Direct, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	metadataHolder, diags := marshalMetadata(d)
 	if diags.HasError() {
@@ -176,36 +173,21 @@ func marshalDirect(d *schema.ResourceData) (*n9api.Direct, diag.Diagnostics) {
 		sourceOfStr[i] = s.(string)
 	}
 
+	spec := dr.MarshalSpec(d)
+	spec.SourceOf = sourceOfStr
+	spec.Description = d.Get("description").(string)
+
 	return &n9api.Direct{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
 			Kind:           n9api.KindDirect,
 			MetadataHolder: metadataHolder,
 		},
-		Spec: n9api.DirectSpec{
-			Description:         d.Get("description").(string),
-			SourceOf:            sourceOfStr,
-			AppDynamics:         marshalDirectAppDynamics(d, diags),
-			BigQuery:            marshalDirectBigQuery(d, diags),
-			CloudWatch:          marshalDirectCloudWatch(d, diags),
-			Datadog:             marshalDirectDatadog(d, diags),
-			Dynatrace:           marshalDirectDynatrace(d, diags),
-			GCM:                 marshalDirectGCM(d, diags),
-			InfluxDB:            marshalDirectInfluxDB(d, diags),
-			Instana:             marshalDirectInstana(d, diags),
-			Lightstep:           marshalDirectLightstep(d, diags),
-			NewRelic:            marshalDirectNewRelic(d, diags),
-			Pingdom:             marshalDirectPingdom(d, diags),
-			Redshift:            marshalDirectRedshift(d, diags),
-			Splunk:              marshalDirectSplunk(d, diags),
-			SplunkObservability: marshalDirectSplunkObservability(d, diags),
-			SumoLogic:           marshalDirectSumoLogic(d, diags),
-			ThousandEyes:        marshalDirectThousandEyes(d, diags),
-		},
+		Spec: spec,
 	}, diags
 }
 
-func unmarshalDirect(d *schema.ResourceData, directs []n9api.Direct) diag.Diagnostics {
+func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []n9api.Direct) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if len(directs) != 1 {
@@ -220,711 +202,710 @@ func unmarshalDirect(d *schema.ResourceData, directs []n9api.Direct) diag.Diagno
 
 	set(d, "status", direct.Status.DirectType, &diags)
 
-	return diags
+	specDiags := dr.UnmarshalSpec(d, direct.Spec)
+
+	return append(diags, specDiags...)
 }
 
-/**
- * AppDynamics Direct
- * https://docs.nobl9.com/Sources/appdynamics#appdynamics-direct
- */
+//AppDynamics Direct
+//https://docs.nobl9.com/Sources/appdynamics#appdynamics-direct
 const appDynamicsDirectType = "appdynamics"
-const appDynamicsDirectConfigKey = "appdynamics_config"
 
-func schemaDirectAppDynamics() map[string]*schema.Schema {
+type appDynamicsDirectSpec struct{}
+
+func (s appDynamicsDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		appDynamicsDirectConfigKey: {
-			Type:        schema.TypeSet,
+		"url": {
+			Type:        schema.TypeString,
+			Description: "Base URL to the AppDynamics Controller.",
+			Required:    true,
+		},
+		"account_name": {
+			Type:        schema.TypeString,
+			Description: "AppDynamics account name.",
+			Required:    true,
+		},
+		"client_id": {
+			Type:        schema.TypeString,
+			Description: "AppDynamics client ID.",
+			Computed:    true,
+		},
+		"client_secret": {
+			Type:        schema.TypeString,
+			Description: "[required] | AppDynamics client secret.",
 			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-direct)",
-			MinItems:    1,
-			MaxItems:    1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"url": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Base URL to the AppDynamics Controller.",
-					},
-					"account_name": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "AppDynamics account name.",
-					},
-					"client_id": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "AppDynamics client ID.",
-					},
-					"client_secret": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Sensitive:   true,
-						Description: "AppDynamics client secret.",
-					},
-					"client_name": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "AppDynamics client name.",
-					},
-				},
-			},
+			Computed:    true,
+			Sensitive:   true,
+		},
+		"client_name": {
+			Type:        schema.TypeString,
+			Description: "AppDynamics client name.",
+			Required:    true,
 		},
 	}
 }
 
-func marshalDirectAppDynamics(d *schema.ResourceData, diags diag.Diagnostics) *n9api.AppDynamicsDirectConfig {
-	data := getDirectResourceData(d, appDynamicsDirectType, appDynamicsDirectConfigKey, diags)
+func (s appDynamicsDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-direct)"
+}
 
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.AppDynamicsDirectConfig{
-		URL:          data["url"].(string),
-		AccountName:  data["account_name"].(string),
-		ClientID:     data["client_id"].(string),
-		ClientSecret: data["client_secret"].(string),
-		ClientName:   data["client_name"].(string),
+func (s appDynamicsDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{
+		AppDynamics: &n9api.AppDynamicsDirectConfig{
+			URL:          d.Get("url").(string),
+			AccountName:  d.Get("account_name").(string),
+			ClientID:     d.Get("client_id").(string),
+			ClientSecret: d.Get("client_secret").(string),
+			ClientName:   d.Get("client_name").(string),
+		},
 	}
 }
 
-/**
- * BigQuery Direct
- * https://docs.nobl9.com/Sources/bigquery#bigquery-direct
- */
+func (s appDynamicsDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "url", spec.AppDynamics.URL, &diags)
+	set(d, "account_name", spec.AppDynamics.AccountName, &diags)
+	set(d, "client_id", spec.AppDynamics.ClientID, &diags)
+	set(d, "client_name", spec.AppDynamics.ClientName, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//BigQuery Direct
+//https://docs.nobl9.com/Sources/bigquery#bigquery-direct
 const bigqueryDirectType = "bigquery"
-const bigqueryDirectConfigKey = "bigquery_config"
 
-func schemaDirectBigQuery() map[string]*schema.Schema {
+type bigqueryDirectSpec struct{}
+
+func (s bigqueryDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		bigqueryDirectConfigKey: {
-			Type:        schema.TypeSet,
+		"service_account_key": {
+			Type:        schema.TypeString,
+			Description: "Service account key.",
 			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-direct)",
-			MinItems:    1,
-			MaxItems:    1,
-			Elem: &schema.Resource{
-				Description: "Direct configuration is not required.",
-			},
+			Computed:    true,
+			Sensitive:   true,
 		},
 	}
 }
 
-func marshalDirectBigQuery(d *schema.ResourceData, diags diag.Diagnostics) *n9api.BigQueryDirectConfig {
-	data := getDirectResourceData(d, bigqueryDirectType, bigqueryDirectConfigKey, diags)
+func (s bigqueryDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-direct)"
+}
 
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.BigQueryDirectConfig{
-		ServiceAccountKey: "",
+func (s bigqueryDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{
+		BigQuery: &n9api.BigQueryDirectConfig{
+			ServiceAccountKey: d.Get("service_account_key").(string),
+		},
 	}
 }
 
-/**
- * Amazon CloudWatch Direct
- * https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct
- */
+func (s bigqueryDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//Amazon CloudWatch Direct
+//https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct
 const cloudWatchDirectType = "cloudwatch"
-const cloudWatchDirectConfigKey = "cloudwatch_config"
 
-func schemaDirectCloudWatch() map[string]*schema.Schema {
+type cloudWatchDirectSpec struct{}
+
+func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		cloudWatchDirectConfigKey: {
-			Type:        schema.TypeSet,
+		"access_key_id": {
+			Type:        schema.TypeString,
+			Description: "[required] | AWS access key id.",
 			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct)",
-			MinItems:    1,
-			MaxItems:    1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"access_key_id": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "",
-						Sensitive:   true,
-					},
-					"secret_access_key": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "",
-						Sensitive:   true,
-					},
-				},
-			},
+			Computed:    true,
+			Sensitive:   true,
+		},
+		"secret_access_key": {
+			Type:        schema.TypeString,
+			Description: "[required] | AWS secret access key.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
 		},
 	}
 }
 
-func marshalDirectCloudWatch(d *schema.ResourceData, diags diag.Diagnostics) *n9api.CloudWatchDirectConfig {
-	data := getDirectResourceData(d, cloudWatchDirectType, cloudWatchDirectConfigKey, diags)
+func (s cloudWatchDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct)"
+}
 
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.CloudWatchDirectConfig{
-		AccessKeyID:     "",
-		SecretAccessKey: "",
+func (s cloudWatchDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{
+		CloudWatch: &n9api.CloudWatchDirectConfig{
+			AccessKeyID:     d.Get("access_key_id").(string),
+			SecretAccessKey: d.Get("secret_access_key").(string),
+		},
 	}
 }
 
-/**
- * Datadog Direct
- * https://docs.nobl9.com/Sources/datadog#datadog-direct
- */
+func (s cloudWatchDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//Datadog Direct
+//https://docs.nobl9.com/Sources/datadog#datadog-direct
 const datadogDirectType = "datadog"
-const datadogDirectConfigKey = "datadog_config"
 
-func schemaDirectDatadog() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		datadogDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/datadog#datadog-direct). " +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			Elem: &schema.Resource{
-				ReadContext: resourceDirectRead,
-				Schema: map[string]*schema.Schema{
-					"site": {
-						Type:     schema.TypeString,
-						Required: true,
-						Description: "`com` or `eu`, Datadog SaaS instance, which corresponds to one of Datadog's " +
-							"two locations (https://www.datadoghq.com/ in the U.S. " +
-							"or https://datadoghq.eu/ in the European Union).",
-					},
-					"api_key": {
-						Type:        schema.TypeString,
-						Description: "Datadog API key.",
-						Required:    true,
-						Sensitive:   true,
-					},
-					"application_key": {
-						Type:        schema.TypeString,
-						Description: "Datadog Application key.",
-						Required:    true,
-						Sensitive:   true,
-					},
-				},
-			},
+type datadogDirectSpec struct{}
+
+func (s datadogDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/datadog#datadog-direct)."
+}
+
+func (s datadogDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{
+		Datadog: &n9api.DatadogDirectConfig{
+			Site:           d.Get("site").(string),
+			APIKey:         d.Get("api_key").(string),
+			ApplicationKey: d.Get("application_key").(string),
 		},
 	}
 }
 
-func marshalDirectDatadog(d *schema.ResourceData, diags diag.Diagnostics) *n9api.DatadogDirectConfig {
-	data := getDirectResourceData(d, datadogDirectType, datadogDirectConfigKey, diags)
+func (s datadogDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "site", spec.Datadog.Site, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
 
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.DatadogDirectConfig{
-		Site:           data["site"].(string),
-		APIKey:         data["api_key"].(string),
-		ApplicationKey: data["application_key"].(string),
+func (s datadogDirectSpec) GetSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"site": {
+			Type: schema.TypeString,
+			Description: "`com` or `eu`, Datadog SaaS instance, which corresponds to one of Datadog's " +
+				"two locations (https://www.datadoghq.com/ in the U.S. " +
+				"or https://datadoghq.eu/ in the European Union).",
+			Required: true,
+		},
+		"api_key": {
+			Type:        schema.TypeString,
+			Description: "[required] | Datadog API key.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+		},
+		"application_key": {
+			Type:        schema.TypeString,
+			Description: "[required] | Datadog Application key.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+		},
 	}
 }
 
-/**
- * Dynatrace Direct
- * https://docs.nobl9.com/Sources/dynatrace#dynatrace-direct
- */
+//Dynatrace Direct
+//https://docs.nobl9.com/Sources/dynatrace#dynatrace-direct
 const dynatraceDirectType = "dynatrace"
-const dynatraceDirectConfigKey = "dynatrace_config"
 
-func schemaDirectDynatrace() map[string]*schema.Schema {
+type dynatraceDirectSpec struct{}
+
+func (s dynatraceDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#dynatrace-direct)."
+}
+
+func (s dynatraceDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		dynatraceDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#dynatrace-direct). " +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"url": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Dynatrace API URL.",
-					},
-				},
-			},
+		"url": {
+			Type:        schema.TypeString,
+			Description: "Dynatrace API URL.",
+			Required:    true,
+		},
+		"dynatrace_token": {
+			Type:        schema.TypeString,
+			Description: "[required] | Dynatrace token.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
 		},
 	}
 }
 
-func marshalDirectDynatrace(d *schema.ResourceData, diags diag.Diagnostics) *n9api.DynatraceDirectConfig {
-	data := getDirectResourceData(d, dynatraceDirectType, dynatraceDirectConfigKey, diags)
-
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.DynatraceDirectConfig{
-		URL:            data["url"].(string),
-		DynatraceToken: "",
+func (s dynatraceDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{
+		Dynatrace: &n9api.DynatraceDirectConfig{
+			URL:            d.Get("url").(string),
+			DynatraceToken: d.Get("dynatrace_token").(string),
+		},
 	}
 }
 
-/**
- * Google Cloud Monitoring (GCM) Direct
- * https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-direct
- */
+func (s dynatraceDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "url", spec.Dynatrace.URL, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//Google Cloud Monitoring (GCM) Direct
+//https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-direct
 const gcmDirectType = "gcm"
-const gcmDirectConfigKey = "gcm_config"
 
-func schemaDirectGCM() map[string]*schema.Schema {
+type gcmDirectSpec struct{}
+
+func (s gcmDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		gcmDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation]" +
-				"(https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-direct). " +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Description: "Direct configuration is not required.",
-			},
+		"service_account_key": {
+			Type:        schema.TypeString,
+			Description: "[required] | Service account key.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
 		},
 	}
 }
 
-func marshalDirectGCM(d *schema.ResourceData, diags diag.Diagnostics) *n9api.GCMDirectConfig {
-	data := getDirectResourceData(d, gcmDirectType, gcmDirectConfigKey, diags)
-
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.GCMDirectConfig{}
+func (s gcmDirectSpec) GetDescription() string {
+	return "[Configuration documentation]" +
+		"(https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-direct)."
 }
 
-/**
- * InfluxDB Direct
- * https://docs.nobl9.com/Sources/influxdb#influxdb-direct
- */
+func (s gcmDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{
+		GCM: &n9api.GCMDirectConfig{
+			ServiceAccountKey: d.Get("service_account_key").(string),
+		},
+	}
+}
+
+func (s gcmDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//InfluxDB Direct
+//https://docs.nobl9.com/Sources/influxdb#influxdb-direct
 const influxdbDirectType = "influxdb"
-const influxdbDirectConfigKey = "influxdb_config"
 
-func schemaDirectInfluxDB() map[string]*schema.Schema {
+type influxdbDirectSpec struct{}
+
+func (s influxdbDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/influxdb#influxdb-direct)."
+}
+
+func (s influxdbDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		influxdbDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/influxdb#influxdb-direct). " +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"url": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "API URL endpoint to the InfluxDB's instance.",
-					},
-				},
-			},
+		"url": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "API URL endpoint to the InfluxDB's instance.",
+		},
+		"api_token": {
+			Type:        schema.TypeString,
+			Description: "[required] | InfluxDB API token.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+		},
+		"organization_id": {
+			Type:        schema.TypeString,
+			Description: "[required] | InfluxDB organization ID.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
 		},
 	}
 }
 
-func marshalDirectInfluxDB(d *schema.ResourceData, diags diag.Diagnostics) *n9api.InfluxDBDirectConfig {
-	data := getDirectResourceData(d, influxdbDirectType, influxdbDirectConfigKey, diags)
-
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.InfluxDBDirectConfig{
-		URL:            data["url"].(string),
-		APIToken:       data[""],
-		OrganizationID: "",
+func (s influxdbDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{
+		InfluxDB: &n9api.InfluxDBDirectConfig{
+			URL:            d.Get("url").(string),
+			APIToken:       d.Get("api_token").(string),
+			OrganizationID: d.Get("organization_id").(string),
+		},
 	}
 }
 
-/**
- * Instana Direct
- * https://docs.nobl9.com/Sources/instana#instana-direct
- */
+func (s influxdbDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "url", spec.InfluxDB.URL, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//Instana Direct
+//https://docs.nobl9.com/Sources/instana#instana-direct
 const instanaDirectType = "instana"
-const instanaDirectConfigKey = "instana_config"
 
-func schemaDirectInstana() map[string]*schema.Schema {
+type instanaDirectSpec struct{}
+
+func (s instanaDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/instana#instana-direct)."
+}
+
+func (s instanaDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		instanaDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/instana#instana-direct)." +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"url": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "API URL endpoint to the InfluxDB's instance.",
-					},
-					"api_token": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Sensitive:   true,
-						Description: "API URL endpoint to the InfluxDB's instance.",
-					},
-				},
-			},
+		"url": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Instana API URL.",
+		},
+		"api_token": {
+			Type:        schema.TypeString,
+			Description: "[required] | Instana API token.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
 		},
 	}
 }
 
-func marshalDirectInstana(d *schema.ResourceData, diags diag.Diagnostics) *n9api.InstanaDirectConfig {
-	data := getDirectResourceData(d, instanaDirectType, instanaDirectConfigKey, diags)
-
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.InstanaDirectConfig{
-		URL:      data["url"].(string),
-		APIToken: data["api_token"].(string),
+func (s instanaDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{
+		Instana: &n9api.InstanaDirectConfig{
+			URL:      d.Get("url").(string),
+			APIToken: d.Get("api_token").(string),
+		},
 	}
 }
 
-/**
- * Lightstep Direct
- * https://docs.nobl9.com/Sources/lightstep#lightstep-direct
- */
+func (s instanaDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "url", spec.Instana.URL, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//Lightstep Direct
+//https://docs.nobl9.com/Sources/lightstep#lightstep-direct
 const lightstepDirectType = "lightstep"
-const lightstepDirectConfigKey = "lightstep_config"
 
-func schemaDirectLightstep() map[string]*schema.Schema {
+type lightstepDirectSpec struct{}
+
+func (s lightstepDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-direct)."
+}
+
+func (s lightstepDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		lightstepDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-direct)." +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"organization": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Organization name registered in Lightstep.",
-					},
-					"project": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Name of the Lightstep project.",
-					},
-				},
-			},
+		"lightstep_organization": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Organization name registered in Lightstep.",
+		},
+		"lightstep_project": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Name of the Lightstep project.",
+		},
+		"app_token": {
+			Type:        schema.TypeString,
+			Description: "[required] | Lightstep app token.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
 		},
 	}
 }
 
-func marshalDirectLightstep(d *schema.ResourceData, diags diag.Diagnostics) *n9api.LightstepDirectConfig {
-	data := getDirectResourceData(d, lightstepDirectType, lightstepDirectConfigKey, diags)
-
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.LightstepDirectConfig{
-		Organization: data["organization"].(string),
-		Project:      data["project"].(string),
+func (s lightstepDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{
+		Lightstep: &n9api.LightstepDirectConfig{
+			AppToken:     d.Get("app_token").(string),
+			Organization: d.Get("lightstep_organization").(string),
+			Project:      d.Get("lightstep_project").(string),
+		},
 	}
 }
 
-/**
- * New Relic Direct
- * https://docs.nobl9.com/Sources/new-relic#new-relic-direct
- */
+func (s lightstepDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "lightstep_organization", spec.Lightstep.Organization, &diags)
+	set(d, "lightstep_project", spec.Lightstep.Project, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//New Relic Direct
+//https://docs.nobl9.com/Sources/new-relic#new-relic-direct
 const newRelicDirectType = "newrelic"
-const newRelicDirectConfigKey = "newrelic_config"
 
-func schemaDirectNewRelic() map[string]*schema.Schema {
+type newRelicDirectSpec struct{}
+
+func (s newRelicDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		newRelicDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/new-relic#new-relic-direct)." +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"account_id": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "ID number assigned to the New Relic user account.",
-					},
-				},
-			},
+		"account_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "ID number assigned to the New Relic user account.",
+		},
+		"insights_query_key": {
+			Type:        schema.TypeString,
+			Description: "[required] | New Relic insights query key.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
 		},
 	}
 }
 
-func marshalDirectNewRelic(d *schema.ResourceData, diags diag.Diagnostics) *n9api.NewRelicDirectConfig {
-	data := getDirectResourceData(d, newRelicDirectType, newRelicDirectConfigKey, diags)
-
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.NewRelicDirectConfig{
-		AccountID: data["account_id"].(string),
-	}
+func (s newRelicDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/new-relic#new-relic-direct)."
 }
 
-/**
- * Pingdom Direct
- * https://docs.nobl9.com/Sources/pingdom#pingdom-direct
- */
+func (s newRelicDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{NewRelic: &n9api.NewRelicDirectConfig{
+		AccountID:        json.Number(d.Get("account_id").(string)),
+		InsightsQueryKey: d.Get("insights_query_key").(string),
+	}}
+}
+
+func (s newRelicDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "account_id", spec.NewRelic.AccountID, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//Pingdom Direct
+//https://docs.nobl9.com/Sources/pingdom#pingdom-direct
 const pingdomDirectType = "pingdom"
-const pingdomDirectConfigKey = "pingdom_config"
 
-func schemaDirectPingdom() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		pingdomDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/pingdom#pingdom-direct)." +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Description: "Direct configuration is not required.",
-			},
-		}}
+type pingdomDirectSpec struct{}
+
+func (s pingdomDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/pingdom#pingdom-direct)."
 }
 
-func marshalDirectPingdom(d *schema.ResourceData, diags diag.Diagnostics) *n9api.PingdomDirectConfig {
-	data := getDirectResourceData(d, pingdomDirectType, pingdomDirectConfigKey, diags)
-
-	if data == nil {
-		return nil
+func (s pingdomDirectSpec) GetSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"api_token": {
+			Type:        schema.TypeString,
+			Description: "[required] | Pingdom API token.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+		},
 	}
 
-	return &n9api.PingdomDirectConfig{}
 }
 
-/**
- * Amazon Redshift Direct
- * https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-direct
- */
+func (s pingdomDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{
+		Pingdom: &n9api.PingdomDirectConfig{
+			APIToken: d.Get("api_token").(string),
+		},
+	}
+}
+
+func (s pingdomDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//Amazon Redshift Direct
+//https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-direct
 const redshiftDirectType = "redshift"
-const redshiftDirectConfigKey = "redshift_config"
 
-func schemaDirectRedshift() map[string]*schema.Schema {
+type redshiftDirectSpec struct{}
+
+func (s redshiftDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		redshiftDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation]" +
-				"(https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-direct)." +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Description: "Direct configuration is not required.",
-			},
+		"secret_arn": {
+			Type:        schema.TypeString,
+			Description: "AWS secret ARN.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+		},
+		"access_key_id": {
+			Type:        schema.TypeString,
+			Description: "[required] | AWS access key id.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+		},
+		"secret_access_key": {
+			Type:        schema.TypeString,
+			Description: "[required] | AWS secret access key.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
 		},
 	}
 }
 
-func marshalDirectRedshift(d *schema.ResourceData, diags diag.Diagnostics) *n9api.RedshiftDirectConfig {
-	data := getDirectResourceData(d, redshiftDirectType, redshiftDirectConfigKey, diags)
-
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.RedshiftDirectConfig{}
+func (s redshiftDirectSpec) GetDescription() string {
+	return "[Configuration documentation]" +
+		"(https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-direct)."
 }
 
-/**
- * Splunk Direct
- * https://docs.nobl9.com/Sources/splunk#splunk-direct
- */
+func (s redshiftDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{
+		Redshift: &n9api.RedshiftDirectConfig{
+			AccessKeyID:     d.Get("access_key_id").(string),
+			SecretAccessKey: d.Get("secret_access_key").(string),
+			SecretARN:       d.Get("secret_arn").(string),
+		},
+	}
+}
+
+func (s redshiftDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "secret_arn", spec.Redshift.SecretARN, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//Splunk Direct
+//https://docs.nobl9.com/Sources/splunk#splunk-direct
 const splunkDirectType = "splunk"
-const splunkDirectConfigKey = "splunk_config"
 
-func schemaDirectSplunk() map[string]*schema.Schema {
+type splunkDirectSpec struct{}
+
+func (s splunkDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-direct)."
+}
+
+func (s splunkDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		splunkDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-direct)." +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"url": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Base API URL to the Splunk Search app.",
-					},
-				},
-			},
+		"url": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Base API URL to the Splunk Search app.",
+		},
+		"access_token": {
+			Type:        schema.TypeString,
+			Description: "[required] | Splunk API access token.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
 		},
 	}
 }
 
-func marshalDirectSplunk(d *schema.ResourceData, diags diag.Diagnostics) *n9api.SplunkDirectConfig {
-	data := getDirectResourceData(d, splunkDirectType, splunkDirectConfigKey, diags)
-
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.SplunkDirectConfig{
-		URL: data["url"].(string),
-	}
+func (s splunkDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{Splunk: &n9api.SplunkDirectConfig{
+		URL:         d.Get("url").(string),
+		AccessToken: d.Get("access_token").(string),
+	}}
 }
 
-/**
- * Splunk Observability Direct
- * https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-direct
- */
+func (s splunkDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "url", spec.Splunk.URL, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//Splunk Observability Direct
+//https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-direct
 const splunkObservabilityDirectType = "splunk_observability"
-const splunkObservabilityDirectConfigKey = "splunk_observability_config"
 
-func schemaDirectSplunkObservability() map[string]*schema.Schema {
+type splunkObservabilityDirectSpec struct{}
+
+func (s splunkObservabilityDirectSpec) GetDescription() string {
+	return "[Configuration documentation]" +
+		"(https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-direct)."
+}
+
+func (s splunkObservabilityDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		splunkObservabilityDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation]" +
-				"(https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-direct)." +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"realm": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "SplunkObservability Realm.",
-					},
-				},
-			},
+		"realm": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "SplunkObservability Realm.",
+		},
+		"access_token": {
+			Type:        schema.TypeString,
+			Description: "[required] | Splunk API access token.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
 		},
 	}
 }
 
-func marshalDirectSplunkObservability(
-	d *schema.ResourceData,
-	diags diag.Diagnostics,
-) *n9api.SplunkObservabilityDirectConfig {
-	data := getDirectResourceData(d, splunkObservabilityDirectType, splunkObservabilityDirectConfigKey, diags)
-
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.SplunkObservabilityDirectConfig{
-		Realm: data["realm"].(string),
-	}
+func (s splunkObservabilityDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{SplunkObservability: &n9api.SplunkObservabilityDirectConfig{
+		Realm:       d.Get("realm").(string),
+		AccessToken: d.Get("access_token").(string),
+	}}
 }
 
-/**
- * Sumo Logic Direct
- * https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-direct
- */
+func (s splunkObservabilityDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "realm", spec.SplunkObservability.Realm, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//Sumo Logic Direct
+//https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-direct
 const sumologicDirectType = "sumologic"
-const sumologicDirectConfigKey = "sumologic_config"
 
-func schemaDirectSumoLogic() map[string]*schema.Schema {
+type sumologicDirectSpec struct{}
+
+func (s sumologicDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-direct)."
+}
+
+func (s sumologicDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		sumologicDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-direct)." +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"url": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Base API URL to the Splunk Search app.",
-					},
-				},
-			},
-		}}
-}
-
-func marshalDirectSumoLogic(d *schema.ResourceData, diags diag.Diagnostics) *n9api.SumoLogicDirectConfig {
-	data := getDirectResourceData(d, sumologicDirectType, sumologicDirectConfigKey, diags)
-
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.SumoLogicDirectConfig{
-		URL: data["url"].(string),
+		"url": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Sumo Logic API URL.",
+		},
+		"access_id": {
+			Type:        schema.TypeString,
+			Description: "[required] | Sumo Logic API access ID.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+		},
+		"access_key": {
+			Type:        schema.TypeString,
+			Description: "[required] | Sumo Logic API access key.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+		},
 	}
 }
 
-/**
- * ThousandEyes Direct
- * https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-direct
- */
+func (s sumologicDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{SumoLogic: &n9api.SumoLogicDirectConfig{
+		URL:       d.Get("url").(string),
+		AccessID:  d.Get("access_id").(string),
+		AccessKey: d.Get("access_key").(string),
+	}}
+}
+
+func (s sumologicDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "url", spec.SumoLogic.URL, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+//ThousandEyes Direct
+//https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-direct
 const thousandeyesDirectType = "thousandeyes"
-const thousandeyesDirectConfigKey = "thousandeyes_config"
 
-func schemaDirectThousandEyes() map[string]*schema.Schema {
+type thousandeyesDirectSpec struct{}
+
+func (s thousandeyesDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		thousandeyesDirectConfigKey: {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Description: "[Configuration documentation]" +
-				"(https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-direct). " +
-				"The configuration is not refreshed, out-of-band changes are not tracked.",
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Description: "Direct configuration is not required.",
-			},
-		}}
+		"oauth_bearer_token": {
+			Type:        schema.TypeString,
+			Description: "[required] | ThousandEyes OAuth bearer token.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+		},
+	}
 }
 
-func marshalDirectThousandEyes(d *schema.ResourceData, diags diag.Diagnostics) *n9api.ThousandEyesDirectConfig {
-	data := getDirectResourceData(d, thousandeyesDirectType, thousandeyesDirectConfigKey, diags)
-
-	if data == nil {
-		return nil
-	}
-
-	return &n9api.ThousandEyesDirectConfig{}
+func (s thousandeyesDirectSpec) GetDescription() string {
+	return "[Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-direct)."
 }
 
-func getDirectResourceData(
-	d *schema.ResourceData,
-	directType,
-	directConfigKey string,
-	diags diag.Diagnostics) map[string]interface{} {
-	if !isDirectType(d, directType) {
-		return nil
-	}
-	p := d.Get(directConfigKey).(*schema.Set).List()
-	if len(p) == 0 {
-		appendError(diags, fmt.Errorf("no resource data '%s' for direct type '%s'", directConfigKey, directType))
-		return nil
-	}
-	resourceData := p[0].(map[string]interface{})
-
-	return resourceData
+func (s thousandeyesDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
+	return n9api.DirectSpec{ThousandEyes: &n9api.ThousandEyesDirectConfig{
+		OauthBearerToken: d.Get("oauth_bearer_token").(string),
+	}}
 }
 
-func isDirectType(d *schema.ResourceData, directType string) bool {
-	directTypeResource := d.Get(directTypeKey).(string)
-	return directTypeResource == directType
+func (s thousandeyesDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "description", spec.Description, &diags)
+	return
 }

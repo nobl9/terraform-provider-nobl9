@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -11,37 +12,38 @@ import (
 
 func TestAcc_Nobl9Direct(t *testing.T) {
 	cases := []struct {
-		name       string
-		configFunc func(string) string
+		directType string
+		configFunc func(string, string) string
 	}{
-		{"test-appd", testAppDynamicsDirect},
-		{"test-bigquery", testBigQueryDirect},
-		{"test-cloudwatch", testCloudWatchDirect},
-		{"test-ddog", testDatadogDirect},
-		{"test-dynatrace", testDynatraceDirect},
-		{"test-gcm", testGoogleCloudMonitoringDirect},
-		{"test-influxdb", testInfluxDBDirect},
-		{"test-instana", testInstanaDirect},
-		{"test-lightstep", testLightstepDirect},
-		{"test-newrelic", testNewrelicDirect},
-		{"test-pingdom", testPingdomDirect},
-		{"test-redshift", testRedshiftDirect},
-		{"test-splunk", testSplunkDirect},
-		{"test-splunkobs", testSplunkObservabilityDirect},
-		{"test-sumologic", testSumoLogicDirect},
-		{"test-thousandeyes", testThousandEyesDirect},
+		{appDynamicsDirectType, testAppDynamicsDirect},
+		{bigqueryDirectType, testBigQueryDirect},
+		{cloudWatchDirectType, testCloudWatchDirect},
+		{datadogDirectType, testDatadogDirect},
+		{dynatraceDirectType, testDynatraceDirect},
+		{gcmDirectType, testGoogleCloudMonitoringDirect},
+		{influxdbDirectType, testInfluxDBDirect},
+		{instanaDirectType, testInstanaDirect},
+		{lightstepDirectType, testLightstepDirect},
+		{newRelicDirectType, testNewrelicDirect},
+		{pingdomDirectType, testPingdomDirect},
+		{redshiftDirectType, testRedshiftDirect},
+		{splunkDirectType, testSplunkDirect},
+		{splunkObservabilityDirectType, testSplunkObservabilityDirect},
+		{sumologicDirectType, testSumoLogicDirect},
+		{thousandeyesDirectType, testThousandEyesDirect},
 	}
 
 	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(tc.directType, func(t *testing.T) {
+			testName := strings.ReplaceAll("test-"+tc.directType, "_", "")
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_direct", n9api.ObjectDirect),
+				CheckDestroy:      CheckDestroy("nobl9_direct_%s", n9api.ObjectDirect),
 				Steps: []resource.TestStep{
 					{
-						Config: tc.configFunc(tc.name),
-						Check:  CheckObjectCreated("nobl9_direct." + tc.name),
+						Config: tc.configFunc(tc.directType, testName),
+						Check:  CheckObjectCreated("nobl9_direct_" + tc.directType + "." + testName),
 					},
 				},
 			})
@@ -49,281 +51,213 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 	}
 }
 
-func testAppDynamicsDirect(name string) string {
+func testAppDynamicsDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "appdynamics"
-  appdynamics_config {
-	url = "http://web.net"
-  }
+  url = "https://web.net"
+  account_name = "account name"
+  client_secret = "secret"
+  client_name = "client name"
 }
-`, name, name, testProject)
-}
-
-func testBigQueryDirect(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
- name      = "%s"
- project   = "%s"
- source_of = ["Metrics", "Services"]
- direct_type = "bigquery"
-}
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testCloudWatchDirect(name string) string {
+func testBigQueryDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "cloudwatch"
+  service_account_key = "secret"  	
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testDatadogDirect(name string) string {
+func testCloudWatchDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "datadog"
-  datadog_config {
-    site = "eu"
-	api_key = "secret"
-	application_key = "secret"
-  }
+  access_key_id = "secret"
+  secret_access_key = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testDynatraceDirect(name string) string {
+func testDatadogDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "dynatrace"
-  dynatrace_config {
-    url = "http://web.net"
-  }
+  site = "eu"
+  api_key = "secret"
+  application_key = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testElasticsearchDirect(name string) string {
+func testDynatraceDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "elasticsearch"
-  elasticsearch_config {
-    url = "http://web.net"
-  }
+  url = "https://web.net"
+  dynatrace_token = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testGoogleCloudMonitoringDirect(name string) string {
+func testGoogleCloudMonitoringDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "gcm"
+  service_account_key = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testGrafanaLokiDirect(name string) string {
+func testInfluxDBDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "grafana_loki"
-  grafana_loki_config {
-    url = "http://web.net"
-  }
+  url = "https://web.net"
+  api_token = "secret"
+  organization_id = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testGraphiteDirect(name string) string {
+func testInstanaDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "graphite"
-  graphite_config {
-    url = "http://web.net"
-  }
+  url = "https://web.net"
+  api_token = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testInfluxDBDirect(name string) string {
+func testLightstepDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "influxdb"
-  influxdb_config {
-    url = "http://web.net"
-  }
+  lightstep_organization = "acme"
+  lightstep_project = "project1"
+  app_token = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testInstanaDirect(name string) string {
+func testNewrelicDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "instana"
-  instana_config {
-    url = "http://web.net"
-  }
+  account_id = "1234"
+  insights_query_key = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testLightstepDirect(name string) string {
+func testPingdomDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "lightstep"
-  lightstep_config {
-    organization = "acme"
-	project		 = "project1"
-  }
+  api_token = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testNewrelicDirect(name string) string {
+func testRedshiftDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "newrelic"
-  newrelic_config {
-    account_id = 1234
-  }
+  secret_arn = "aws:arn"
+  access_key_id = "secret"
+  secret_access_key = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testOpenTSDBDirect(name string) string {
+func testSplunkDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "opentsdb"
-  opentsdb_config {
-    url = "http://web.net"
-  }
+  url = "https://web.net"
+  access_token = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testPingdomDirect(name string) string {
+func testSplunkObservabilityDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "pingdom"
+  realm = "eu"
+  access_token = "secret"
 }
-`, name, name, testProject)
-}
-
-func testPrometheusDirect(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
-  source_of = ["Metrics", "Services"]
-  direct_type = "prometheus"
-  prometheus_config {
-	url = "http://web.net"
-	}
-}
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testRedshiftDirect(name string) string {
+func testSumoLogicDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
-  source_of = ["Metrics", "Services"]
-  direct_type = "redshift"
-}
-`, name, name, testProject)
-}
-
-func testSplunkDirect(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
-  source_of = ["Metrics", "Services"]
-  direct_type = "splunk"
-  splunk_config {
-    url = "http://web.net"
-  }
-}
-`, name, name, testProject)
-}
-
-func testSplunkObservabilityDirect(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
-  source_of = ["Metrics", "Services"]
-  direct_type = "splunk_observability"
-  splunk_observability_config {
-    realm = "eu"
-  }
-}
-`, name, name, testProject)
-}
-
-func testSumoLogicDirect(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics"]
-  direct_type = "sumologic"
-  sumologic_config {
-    url = "http://web.net"
-  }
+  url = "http://web.net"
+  access_id = "secret"
+  access_key = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
 
-func testThousandEyesDirect(name string) string {
+func testThousandEyesDirect(directType, name string) string {
 	return fmt.Sprintf(`
-resource "nobl9_direct" "%s" {
-  name      = "%s"
-  project   = "%s"
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
   source_of = ["Metrics", "Services"]
-  direct_type = "thousandeyes"
+  oauth_bearer_token = "secret"
 }
-`, name, name, testProject)
+`, directType, name, name, testProject)
 }
