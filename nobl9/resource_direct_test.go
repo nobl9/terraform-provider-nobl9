@@ -87,6 +87,16 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   access_key_id = "secret"
   secret_access_key = "secret"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -101,6 +111,16 @@ resource "nobl9_direct_%s" "%s" {
   site = "eu"
   api_key = "secret"
   application_key = "secret"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -167,6 +187,16 @@ resource "nobl9_direct_%s" "%s" {
   lightstep_organization = "acme"
   lightstep_project = "project1"
   app_token = "secret"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -180,6 +210,16 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   account_id = "1234"
   insights_query_key = "secret"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -219,6 +259,16 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   url = "https://web.net"
   access_token = "secret"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
 }
 `, directType, name, name, testProject)
 }

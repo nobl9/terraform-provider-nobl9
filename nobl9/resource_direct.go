@@ -176,6 +176,7 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*n9api.Direct, d
 	spec := dr.MarshalSpec(d)
 	spec.SourceOf = sourceOfStr
 	spec.Description = d.Get("description").(string)
+	spec.HistoricalDataRetrieval = marshalHistoricalDataRetrieval(d)
 
 	return &n9api.Direct{
 		ObjectHeader: n9api.ObjectHeader{
@@ -196,15 +197,12 @@ func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []n9api
 	}
 	direct := directs[0]
 
-	if ds := unmarshalMetadata(direct.MetadataHolder, d); ds.HasError() {
-		diags = append(diags, ds...)
-	}
-
 	set(d, "status", direct.Status.DirectType, &diags)
+	diags = append(diags, unmarshalMetadata(direct.MetadataHolder, d)...)
+	diags = append(diags, dr.UnmarshalSpec(d, direct.Spec)...)
+	diags = append(diags, unmarshalHistoricalDataRetrieval(d, direct.Spec.HistoricalDataRetrieval)...)
 
-	specDiags := dr.UnmarshalSpec(d, direct.Spec)
-
-	return append(diags, specDiags...)
+	return diags
 }
 
 //AppDynamics Direct
@@ -312,7 +310,7 @@ const cloudWatchDirectType = "cloudwatch"
 type cloudWatchDirectSpec struct{}
 
 func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	cloudWatchSchema := map[string]*schema.Schema{
 		"access_key_id": {
 			Type:        schema.TypeString,
 			Description: "[required] | AWS access key id.",
@@ -328,6 +326,9 @@ func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 		},
 	}
+	setHistoricalDataRetrievalSchema(cloudWatchSchema)
+
+	return cloudWatchSchema
 }
 
 func (s cloudWatchDirectSpec) GetDescription() string {
@@ -375,7 +376,7 @@ func (s datadogDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.Dire
 }
 
 func (s datadogDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	datadogSchema := map[string]*schema.Schema{
 		"site": {
 			Type: schema.TypeString,
 			Description: "`com` or `eu`, Datadog SaaS instance, which corresponds to one of Datadog's " +
@@ -398,6 +399,9 @@ func (s datadogDirectSpec) GetSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 		},
 	}
+	setHistoricalDataRetrievalSchema(datadogSchema)
+
+	return datadogSchema
 }
 
 //Dynatrace Direct
@@ -581,7 +585,7 @@ func (s lightstepDirectSpec) GetDescription() string {
 }
 
 func (s lightstepDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	lightstepSchema := map[string]*schema.Schema{
 		"lightstep_organization": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -600,6 +604,9 @@ func (s lightstepDirectSpec) GetSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 		},
 	}
+	setHistoricalDataRetrievalSchema(lightstepSchema)
+
+	return lightstepSchema
 }
 
 func (s lightstepDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
@@ -626,7 +633,7 @@ const newRelicDirectType = "newrelic"
 type newRelicDirectSpec struct{}
 
 func (s newRelicDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	newRelicSchema := map[string]*schema.Schema{
 		"account_id": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -640,6 +647,9 @@ func (s newRelicDirectSpec) GetSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 		},
 	}
+	setHistoricalDataRetrievalSchema(newRelicSchema)
+
+	return newRelicSchema
 }
 
 func (s newRelicDirectSpec) GetDescription() string {
@@ -759,7 +769,7 @@ func (s splunkDirectSpec) GetDescription() string {
 }
 
 func (s splunkDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	splunkSchema := map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -773,6 +783,9 @@ func (s splunkDirectSpec) GetSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 		},
 	}
+	setHistoricalDataRetrievalSchema(splunkSchema)
+
+	return splunkSchema
 }
 
 func (s splunkDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
