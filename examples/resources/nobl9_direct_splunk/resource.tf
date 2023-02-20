@@ -8,11 +8,11 @@ resource "nobl9_direct_splunk" "test-splunk" {
   historical_data_retrieval {
     default_duration {
       unit  = "Day"
-      value = 1
+      value = 0
     }
     max_duration {
       unit  = "Day"
-      value = 10
+      value = 30
     }
   }
 }

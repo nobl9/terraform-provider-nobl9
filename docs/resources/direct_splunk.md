@@ -23,11 +23,11 @@ resource "nobl9_direct_splunk" "test-splunk" {
   historical_data_retrieval {
     default_duration {
       unit  = "Day"
-      value = 1
+      value = 0
     }
     max_duration {
       unit  = "Day"
-      value = 10
+      value = 30
     }
   }
 }
@@ -48,7 +48,7 @@ resource "nobl9_direct_splunk" "test-splunk" {
 - `access_token` (String, Sensitive) [required] | Splunk API Access Token.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `historical_data_retrieval` (Block List, Max: 1) [Configuration documentation](https://docs.nobl9.com/Features/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
+- `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/Features/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
 
 ### Read-Only
 

@@ -34,7 +34,7 @@ func getHistoricalDataRetrievalSchema() map[string]*schema.Schema {
 		historicalDataRetrievalConfigKey: {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Features/replay)",
+			Description: "[Replay configuration documentation](https://docs.nobl9.com/Features/replay)",
 			MinItems:    1,
 			MaxItems:    1,
 			Elem: &schema.Resource{
