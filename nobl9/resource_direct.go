@@ -13,10 +13,6 @@ import (
 	n9api "github.com/nobl9/nobl9-go"
 )
 
-const (
-	directDescription = "[Direct configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9_direct)"
-)
-
 type directResource struct {
 	directSpecResource
 }
@@ -244,7 +240,7 @@ func (s appDynamicsDirectSpec) GetSchema() map[string]*schema.Schema {
 }
 
 func (s appDynamicsDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-direct)"
+	return "[AppDynamics Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-direct)"
 }
 
 func (s appDynamicsDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
@@ -278,7 +274,7 @@ func (s bigqueryDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"service_account_key": {
 			Type:        schema.TypeString,
-			Description: "Service account key.",
+			Description: "[required] | Service account key.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -287,7 +283,7 @@ func (s bigqueryDirectSpec) GetSchema() map[string]*schema.Schema {
 }
 
 func (s bigqueryDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-direct)"
+	return "[BigQuery Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-direct)"
 }
 
 func (s bigqueryDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
@@ -332,7 +328,7 @@ func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
 }
 
 func (s cloudWatchDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct)"
+	return "[Amazon CloudWatch Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct)"
 }
 
 func (s cloudWatchDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
@@ -356,7 +352,7 @@ const datadogDirectType = "datadog"
 type datadogDirectSpec struct{}
 
 func (s datadogDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/datadog#datadog-direct)."
+	return "[Datadog Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/datadog#datadog-direct)."
 }
 
 func (s datadogDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
@@ -411,7 +407,7 @@ const dynatraceDirectType = "dynatrace"
 type dynatraceDirectSpec struct{}
 
 func (s dynatraceDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#dynatrace-direct)."
+	return "[Dynatrace Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/dynatrace#dynatrace-direct)."
 }
 
 func (s dynatraceDirectSpec) GetSchema() map[string]*schema.Schema {
@@ -465,7 +461,7 @@ func (s gcmDirectSpec) GetSchema() map[string]*schema.Schema {
 }
 
 func (s gcmDirectSpec) GetDescription() string {
-	return "[Configuration documentation]" +
+	return "[Google Cloud Monitoring Direct | Nobl9 Documentation]" +
 		"(https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-direct)."
 }
 
@@ -489,7 +485,7 @@ const influxdbDirectType = "influxdb"
 type influxdbDirectSpec struct{}
 
 func (s influxdbDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/influxdb#influxdb-direct)."
+	return "[InfluxDB Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/influxdb#influxdb-direct)."
 }
 
 func (s influxdbDirectSpec) GetSchema() map[string]*schema.Schema {
@@ -539,7 +535,7 @@ const instanaDirectType = "instana"
 type instanaDirectSpec struct{}
 
 func (s instanaDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/instana#instana-direct)."
+	return "[Instana Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/instana#instana-direct)."
 }
 
 func (s instanaDirectSpec) GetSchema() map[string]*schema.Schema {
@@ -581,7 +577,7 @@ const lightstepDirectType = "lightstep"
 type lightstepDirectSpec struct{}
 
 func (s lightstepDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-direct)."
+	return "[Lightstep Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-direct)."
 }
 
 func (s lightstepDirectSpec) GetSchema() map[string]*schema.Schema {
@@ -653,7 +649,7 @@ func (s newRelicDirectSpec) GetSchema() map[string]*schema.Schema {
 }
 
 func (s newRelicDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/new-relic#new-relic-direct)."
+	return "[New Relic Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/new-relic#new-relic-direct)."
 }
 
 func (s newRelicDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
@@ -676,7 +672,7 @@ const pingdomDirectType = "pingdom"
 type pingdomDirectSpec struct{}
 
 func (s pingdomDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/pingdom#pingdom-direct)."
+	return "[Pingdom Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/pingdom#pingdom-direct)."
 }
 
 func (s pingdomDirectSpec) GetSchema() map[string]*schema.Schema {
@@ -738,7 +734,7 @@ func (s redshiftDirectSpec) GetSchema() map[string]*schema.Schema {
 }
 
 func (s redshiftDirectSpec) GetDescription() string {
-	return "[Configuration documentation]" +
+	return "[Amazon Redshift Direct | Nobl9 Documentation]" +
 		"(https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-direct)."
 }
 
@@ -765,7 +761,7 @@ const splunkDirectType = "splunk"
 type splunkDirectSpec struct{}
 
 func (s splunkDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-direct)."
+	return "[Splunk Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/splunk#splunk-direct)."
 }
 
 func (s splunkDirectSpec) GetSchema() map[string]*schema.Schema {
@@ -808,7 +804,7 @@ const splunkObservabilityDirectType = "splunk_observability"
 type splunkObservabilityDirectSpec struct{}
 
 func (s splunkObservabilityDirectSpec) GetDescription() string {
-	return "[Configuration documentation]" +
+	return "[Splunk Observability Direct | Nobl9 Documentation]" +
 		"(https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-direct)."
 }
 
@@ -849,7 +845,7 @@ const sumologicDirectType = "sumologic"
 type sumologicDirectSpec struct{}
 
 func (s sumologicDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-direct)."
+	return "[Sumo Logic Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-direct)."
 }
 
 func (s sumologicDirectSpec) GetSchema() map[string]*schema.Schema {
@@ -909,7 +905,7 @@ func (s thousandeyesDirectSpec) GetSchema() map[string]*schema.Schema {
 }
 
 func (s thousandeyesDirectSpec) GetDescription() string {
-	return "[Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-direct)."
+	return "[ThousandEyes Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-direct)."
 }
 
 func (s thousandeyesDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {

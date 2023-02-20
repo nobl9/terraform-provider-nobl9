@@ -223,7 +223,7 @@ Required:
 
 Required:
 
-- `url` (String) Base API URL to the Splunk Search app.
+- `url` (String) Sumo Logic API URL.
 
 
 <a id="nestedblock--thousandeyes_config"></a>
