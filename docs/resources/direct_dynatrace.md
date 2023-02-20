@@ -37,7 +37,7 @@ resource "nobl9_direct_dynatrace" "test-dynatrace" {
 
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `dynatrace_token` (String, Sensitive) [required] | Dynatrace token.
+- `dynatrace_token` (String, Sensitive) [required] | Dynatrace Token.
 
 ### Read-Only
 

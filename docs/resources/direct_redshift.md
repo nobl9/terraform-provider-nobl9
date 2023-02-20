@@ -35,11 +35,11 @@ resource "nobl9_direct_redshift" "test-redshift" {
 
 ### Optional
 
-- `access_key_id` (String, Sensitive) [required] | AWS access key id.
+- `access_key_id` (String, Sensitive) [required] | AWS Access Key ID.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `secret_access_key` (String, Sensitive) [required] | AWS secret access key.
-- `secret_arn` (String, Sensitive) AWS secret ARN.
+- `secret_access_key` (String, Sensitive) [required] | AWS Secret Access Key.
+- `secret_arn` (String, Sensitive) AWS Secret ARN.
 
 ### Read-Only
 

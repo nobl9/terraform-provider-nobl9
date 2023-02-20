@@ -35,7 +35,7 @@ resource "nobl9_direct_instana" "test-instana" {
 
 ### Optional
 
-- `api_token` (String, Sensitive) [required] | Instana API token.
+- `api_token` (String, Sensitive) [required] | Instana API Token.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 

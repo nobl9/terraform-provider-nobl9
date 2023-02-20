@@ -36,8 +36,8 @@ resource "nobl9_direct_sumologic" "test-sumologic" {
 
 ### Optional
 
-- `access_id` (String, Sensitive) [required] | Sumo Logic API access ID.
-- `access_key` (String, Sensitive) [required] | Sumo Logic API access key.
+- `access_id` (String, Sensitive) [required] | Sumo Logic API Access ID.
+- `access_key` (String, Sensitive) [required] | Sumo Logic API Access Key.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 

@@ -35,7 +35,7 @@ resource "nobl9_direct_splunk_observability" "test-splunkobservability" {
 
 ### Optional
 
-- `access_token` (String, Sensitive) [required] | Splunk API access token.
+- `access_token` (String, Sensitive) [required] | Splunk API Access Token.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 

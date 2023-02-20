@@ -216,24 +216,24 @@ func (s appDynamicsDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"account_name": {
 			Type:        schema.TypeString,
-			Description: "AppDynamics account name.",
+			Description: "AppDynamics Account Name.",
 			Required:    true,
 		},
 		"client_id": {
 			Type:        schema.TypeString,
-			Description: "AppDynamics client ID.",
+			Description: "AppDynamics Client ID.",
 			Computed:    true,
 		},
 		"client_secret": {
 			Type:        schema.TypeString,
-			Description: "[required] | AppDynamics client secret.",
+			Description: "[required] | AppDynamics Client Secret.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
 		},
 		"client_name": {
 			Type:        schema.TypeString,
-			Description: "AppDynamics client name.",
+			Description: "AppDynamics Client Name.",
 			Required:    true,
 		},
 	}
@@ -274,7 +274,7 @@ func (s bigqueryDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"service_account_key": {
 			Type:        schema.TypeString,
-			Description: "[required] | Service account key.",
+			Description: "[required] | Service Account Key.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -309,14 +309,14 @@ func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
 	cloudWatchSchema := map[string]*schema.Schema{
 		"access_key_id": {
 			Type:        schema.TypeString,
-			Description: "[required] | AWS access key id.",
+			Description: "[required] | AWS Access Key ID.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
 		},
 		"secret_access_key": {
 			Type:        schema.TypeString,
-			Description: "[required] | AWS secret access key.",
+			Description: "[required] | AWS Secret Access Key.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -382,14 +382,14 @@ func (s datadogDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"api_key": {
 			Type:        schema.TypeString,
-			Description: "[required] | Datadog API key.",
+			Description: "[required] | Datadog API Key.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
 		},
 		"application_key": {
 			Type:        schema.TypeString,
-			Description: "[required] | Datadog Application key.",
+			Description: "[required] | Datadog Application Key.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -419,7 +419,7 @@ func (s dynatraceDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"dynatrace_token": {
 			Type:        schema.TypeString,
-			Description: "[required] | Dynatrace token.",
+			Description: "[required] | Dynatrace Token.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -452,7 +452,7 @@ func (s gcmDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"service_account_key": {
 			Type:        schema.TypeString,
-			Description: "[required] | Service account key.",
+			Description: "[required] | Service Account Key.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -497,14 +497,14 @@ func (s influxdbDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"api_token": {
 			Type:        schema.TypeString,
-			Description: "[required] | InfluxDB API token.",
+			Description: "[required] | InfluxDB API Token.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
 		},
 		"organization_id": {
 			Type:        schema.TypeString,
-			Description: "[required] | InfluxDB organization ID.",
+			Description: "[required] | InfluxDB Organization ID.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -547,7 +547,7 @@ func (s instanaDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"api_token": {
 			Type:        schema.TypeString,
-			Description: "[required] | Instana API token.",
+			Description: "[required] | Instana API Token.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -594,7 +594,7 @@ func (s lightstepDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"app_token": {
 			Type:        schema.TypeString,
-			Description: "[required] | Lightstep app token.",
+			Description: "[required] | Lightstep App Token.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -637,7 +637,7 @@ func (s newRelicDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"insights_query_key": {
 			Type:        schema.TypeString,
-			Description: "[required] | New Relic insights query key.",
+			Description: "[required] | New Relic Insights Query Key.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -711,21 +711,21 @@ func (s redshiftDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"secret_arn": {
 			Type:        schema.TypeString,
-			Description: "AWS secret ARN.",
+			Description: "AWS Secret ARN.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
 		},
 		"access_key_id": {
 			Type:        schema.TypeString,
-			Description: "[required] | AWS access key id.",
+			Description: "[required] | AWS Access Key ID.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
 		},
 		"secret_access_key": {
 			Type:        schema.TypeString,
-			Description: "[required] | AWS secret access key.",
+			Description: "[required] | AWS Secret Access Key.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -773,7 +773,7 @@ func (s splunkDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"access_token": {
 			Type:        schema.TypeString,
-			Description: "[required] | Splunk API access token.",
+			Description: "[required] | Splunk API Access Token.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -817,7 +817,7 @@ func (s splunkObservabilityDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"access_token": {
 			Type:        schema.TypeString,
-			Description: "[required] | Splunk API access token.",
+			Description: "[required] | Splunk API Access Token.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -857,14 +857,14 @@ func (s sumologicDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"access_id": {
 			Type:        schema.TypeString,
-			Description: "[required] | Sumo Logic API access ID.",
+			Description: "[required] | Sumo Logic API Access ID.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
 		},
 		"access_key": {
 			Type:        schema.TypeString,
-			Description: "[required] | Sumo Logic API access key.",
+			Description: "[required] | Sumo Logic API Access Key.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -896,7 +896,7 @@ func (s thousandeyesDirectSpec) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"oauth_bearer_token": {
 			Type:        schema.TypeString,
-			Description: "[required] | ThousandEyes OAuth bearer token.",
+			Description: "[required] | ThousandEyes OAuth Bearer Token.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,

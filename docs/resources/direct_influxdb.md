@@ -36,10 +36,10 @@ resource "nobl9_direct_influxdb" "test-influxdb" {
 
 ### Optional
 
-- `api_token` (String, Sensitive) [required] | InfluxDB API token.
+- `api_token` (String, Sensitive) [required] | InfluxDB API Token.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `organization_id` (String, Sensitive) [required] | InfluxDB organization ID.
+- `organization_id` (String, Sensitive) [required] | InfluxDB Organization ID.
 
 ### Read-Only
 

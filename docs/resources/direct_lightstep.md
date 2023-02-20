@@ -47,7 +47,7 @@ resource "nobl9_direct_lightstep" "test-lightstep" {
 
 ### Optional
 
-- `app_token` (String, Sensitive) [required] | Lightstep app token.
+- `app_token` (String, Sensitive) [required] | Lightstep App Token.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `historical_data_retrieval` (Block List, Max: 1) [Configuration documentation](https://docs.nobl9.com/Features/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
