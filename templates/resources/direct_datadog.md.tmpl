@@ -1,0 +1,21 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+Datadog is a cloud-scale application observability solution that monitors servers, databases, tools, and services. Nobl9 connects with Datadog to collect SLI measurements and compare them to SLO targets.
+
+For more information, refer to {{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Nobl9 Official Documentation
+
+https://docs.nobl9.com/

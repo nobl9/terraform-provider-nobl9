@@ -43,7 +43,7 @@ func agentSchema() map[string]*schema.Schema {
 			Required:    true,
 			MinItems:    1,
 			MaxItems:    2,
-			Description: "Source of Metrics and/or Services",
+			Description: "Source of Metrics and/or Services.",
 			Elem: &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Source of Metrics or Services",
@@ -245,7 +245,7 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 	}
 	object := objects[0]
 
-	if ds := unmarshalMetadata(object, d); ds.HasError() {
+	if ds := unmarshalGenericMetadata(object, d); ds.HasError() {
 		diags = append(diags, ds...)
 	}
 
@@ -501,7 +501,7 @@ func marshalAgentCloudWatch(d *schema.ResourceData) *n9api.CloudWatchAgentConfig
 
 /**
  * Datadog Agent
- * https://docs.nobl9.com/Sources/prometheus#prometheus-agent
+ * https://docs.nobl9.com/Sources/datadog#datadog-agent
  */
 const datadogAgentType = "datadog"
 const datadogAgentConfigKey = "datadog_config"
@@ -1155,11 +1155,12 @@ func schemaAgentSumoLogic() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Base API URL to the Splunk Search app.",
+						Description: "Sumo Logic API URL.",
 					},
 				},
 			},
-		}}
+		},
+	}
 }
 
 func marshalAgentSumoLogic(d *schema.ResourceData, diags diag.Diagnostics) *n9api.SumoLogicAgentConfig {
@@ -1192,7 +1193,8 @@ func schemaAgentThousandEyes() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Description: "Agent configuration is not required.",
 			},
-		}}
+		},
+	}
 }
 
 func marshalAgentThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesAgentConfig {

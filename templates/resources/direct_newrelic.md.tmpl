@@ -1,0 +1,21 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+New Relic is a software solution that monitors performance and availability. It sets and rates application performance across the environment using a standardized Apdex (application performance index) score. Nobl9 connects with New Relic to collect SLI measurements and compare them to SLO targets.
+
+For more information, refer to {{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Nobl9 Official Documentation
+
+https://docs.nobl9.com/
