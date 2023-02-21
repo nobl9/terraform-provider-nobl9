@@ -37,16 +37,16 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 				Required:    true,
 				MinItems:    1,
 				MaxItems:    2,
-				Description: "Source of Metrics and/or Services",
+				Description: "Source of Metrics and/or Services.",
 				Elem: &schema.Schema{
 					Type:        schema.TypeString,
-					Description: "Source of Metrics or Services",
+					Description: "Source of Metrics or Services.",
 				},
 			},
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Status of the created direct.",
+				Description: "The status of the created direct.",
 			},
 		},
 		CreateContext: i.resourceDirectApply,
@@ -201,8 +201,8 @@ func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []n9api
 	return diags
 }
 
-//AppDynamics Direct
-//https://docs.nobl9.com/Sources/appdynamics#appdynamics-direct
+// AppDynamics Direct
+// https://docs.nobl9.com/Sources/appdynamics#appdynamics-direct
 const appDynamicsDirectType = "appdynamics"
 
 type appDynamicsDirectSpec struct{}
@@ -264,8 +264,8 @@ func (s appDynamicsDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.
 	return
 }
 
-//BigQuery Direct
-//https://docs.nobl9.com/Sources/bigquery#bigquery-direct
+// BigQuery Direct
+// https://docs.nobl9.com/Sources/bigquery#bigquery-direct
 const bigqueryDirectType = "bigquery"
 
 type bigqueryDirectSpec struct{}
@@ -299,8 +299,8 @@ func (s bigqueryDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.Dir
 	return
 }
 
-//Amazon CloudWatch Direct
-//https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct
+// Amazon CloudWatch Direct
+// https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct
 const cloudWatchDirectType = "cloudwatch"
 
 type cloudWatchDirectSpec struct{}
@@ -345,8 +345,8 @@ func (s cloudWatchDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.D
 	return
 }
 
-//Datadog Direct
-//https://docs.nobl9.com/Sources/datadog#datadog-direct
+// Datadog Direct
+// https://docs.nobl9.com/Sources/datadog#datadog-direct
 const datadogDirectType = "datadog"
 
 type datadogDirectSpec struct{}
@@ -400,8 +400,8 @@ func (s datadogDirectSpec) GetSchema() map[string]*schema.Schema {
 	return datadogSchema
 }
 
-//Dynatrace Direct
-//https://docs.nobl9.com/Sources/dynatrace#dynatrace-direct
+// Dynatrace Direct
+// https://docs.nobl9.com/Sources/dynatrace#dynatrace-direct
 const dynatraceDirectType = "dynatrace"
 
 type dynatraceDirectSpec struct{}
@@ -442,8 +442,8 @@ func (s dynatraceDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.Di
 	return
 }
 
-//Google Cloud Monitoring (GCM) Direct
-//https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-direct
+// Google Cloud Monitoring (GCM) Direct
+// https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-direct
 const gcmDirectType = "gcm"
 
 type gcmDirectSpec struct{}
@@ -478,8 +478,8 @@ func (s gcmDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSp
 	return
 }
 
-//InfluxDB Direct
-//https://docs.nobl9.com/Sources/influxdb#influxdb-direct
+// InfluxDB Direct
+// https://docs.nobl9.com/Sources/influxdb#influxdb-direct
 const influxdbDirectType = "influxdb"
 
 type influxdbDirectSpec struct{}
@@ -528,8 +528,8 @@ func (s influxdbDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.Dir
 	return
 }
 
-//Instana Direct
-//https://docs.nobl9.com/Sources/instana#instana-direct
+// Instana Direct
+// https://docs.nobl9.com/Sources/instana#instana-direct
 const instanaDirectType = "instana"
 
 type instanaDirectSpec struct{}
@@ -570,8 +570,8 @@ func (s instanaDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.Dire
 	return
 }
 
-//Lightstep Direct
-//https://docs.nobl9.com/Sources/lightstep#lightstep-direct
+// Lightstep Direct
+// https://docs.nobl9.com/Sources/lightstep#lightstep-direct
 const lightstepDirectType = "lightstep"
 
 type lightstepDirectSpec struct{}
@@ -622,8 +622,8 @@ func (s lightstepDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.Di
 	return
 }
 
-//New Relic Direct
-//https://docs.nobl9.com/Sources/new-relic#new-relic-direct
+// New Relic Direct
+// https://docs.nobl9.com/Sources/new-relic#new-relic-direct
 const newRelicDirectType = "newrelic"
 
 type newRelicDirectSpec struct{}
@@ -665,8 +665,8 @@ func (s newRelicDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.Dir
 	return
 }
 
-//Pingdom Direct
-//https://docs.nobl9.com/Sources/pingdom#pingdom-direct
+// Pingdom Direct
+// https://docs.nobl9.com/Sources/pingdom#pingdom-direct
 const pingdomDirectType = "pingdom"
 
 type pingdomDirectSpec struct{}
@@ -701,8 +701,8 @@ func (s pingdomDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.Dire
 	return
 }
 
-//Amazon Redshift Direct
-//https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-direct
+// Amazon Redshift Direct
+// https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-direct
 const redshiftDirectType = "redshift"
 
 type redshiftDirectSpec struct{}
@@ -754,8 +754,8 @@ func (s redshiftDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.Dir
 	return
 }
 
-//Splunk Direct
-//https://docs.nobl9.com/Sources/splunk#splunk-direct
+// Splunk Direct
+// https://docs.nobl9.com/Sources/splunk#splunk-direct
 const splunkDirectType = "splunk"
 
 type splunkDirectSpec struct{}
@@ -797,8 +797,8 @@ func (s splunkDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.Direc
 	return
 }
 
-//Splunk Observability Direct
-//https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-direct
+// Splunk Observability Direct
+// https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-direct
 const splunkObservabilityDirectType = "splunk_observability"
 
 type splunkObservabilityDirectSpec struct{}
@@ -838,8 +838,8 @@ func (s splunkObservabilityDirectSpec) UnmarshalSpec(d *schema.ResourceData, spe
 	return
 }
 
-//Sumo Logic Direct
-//https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-direct
+// Sumo Logic Direct
+// https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-direct
 const sumologicDirectType = "sumologic"
 
 type sumologicDirectSpec struct{}
@@ -886,8 +886,8 @@ func (s sumologicDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.Di
 	return
 }
 
-//ThousandEyes Direct
-//https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-direct
+// ThousandEyes Direct
+// https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-direct
 const thousandeyesDirectType = "thousandeyes"
 
 type thousandeyesDirectSpec struct{}

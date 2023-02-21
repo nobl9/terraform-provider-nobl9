@@ -26,7 +26,7 @@ func getHistoricalDataRetrievalSchema() map[string]*schema.Schema {
 		"value": {
 			Type:        schema.TypeInt,
 			Required:    true,
-			Description: "Must be an integer greater than or equal to 0",
+			Description: "Must be an integer greater than or equal to 0.",
 		},
 	}
 
@@ -48,7 +48,7 @@ func getHistoricalDataRetrievalSchema() map[string]*schema.Schema {
 					"max_duration": {
 						Type:        schema.TypeList,
 						Required:    true,
-						Description: "Defines the maximum period for which data can be retrieved",
+						Description: "Defines the maximum period for which data can be retrieved.",
 						Elem:        &schema.Resource{Schema: durationSchema},
 					},
 				},

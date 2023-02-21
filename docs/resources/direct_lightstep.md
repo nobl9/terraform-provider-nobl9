@@ -43,7 +43,7 @@ resource "nobl9_direct_lightstep" "test-lightstep" {
 - `lightstep_project` (String) Name of the Lightstep project.
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services
+- `source_of` (List of String) Source of Metrics and/or Services.
 
 ### Optional
 
@@ -55,7 +55,7 @@ resource "nobl9_direct_lightstep" "test-lightstep" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `status` (String) Status of the created direct.
+- `status` (String) The status of the created direct.
 
 <a id="nestedblock--historical_data_retrieval"></a>
 ### Nested Schema for `historical_data_retrieval`
@@ -63,7 +63,7 @@ resource "nobl9_direct_lightstep" "test-lightstep" {
 Required:
 
 - `default_duration` (Block List, Min: 1) Used by default for any SLOs connected to this data source. (see [below for nested schema](#nestedblock--historical_data_retrieval--default_duration))
-- `max_duration` (Block List, Min: 1) Defines the maximum period for which data can be retrieved (see [below for nested schema](#nestedblock--historical_data_retrieval--max_duration))
+- `max_duration` (Block List, Min: 1) Defines the maximum period for which data can be retrieved. (see [below for nested schema](#nestedblock--historical_data_retrieval--max_duration))
 
 <a id="nestedblock--historical_data_retrieval--default_duration"></a>
 ### Nested Schema for `historical_data_retrieval.default_duration`
@@ -71,7 +71,7 @@ Required:
 Required:
 
 - `unit` (String) Must be one of Minute, Hour, or Day.
-- `value` (Number) Must be an integer greater than or equal to 0
+- `value` (Number) Must be an integer greater than or equal to 0.
 
 
 <a id="nestedblock--historical_data_retrieval--max_duration"></a>
@@ -80,7 +80,7 @@ Required:
 Required:
 
 - `unit` (String) Must be one of Minute, Hour, or Day.
-- `value` (Number) Must be an integer greater than or equal to 0
+- `value` (Number) Must be an integer greater than or equal to 0.
 
 ## Nobl9 Official Documentation
 

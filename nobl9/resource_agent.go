@@ -43,7 +43,7 @@ func agentSchema() map[string]*schema.Schema {
 			Required:    true,
 			MinItems:    1,
 			MaxItems:    2,
-			Description: "Source of Metrics and/or Services",
+			Description: "Source of Metrics and/or Services.",
 			Elem: &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Source of Metrics or Services",
