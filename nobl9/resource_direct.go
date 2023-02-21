@@ -26,7 +26,7 @@ type directSpecResource interface {
 
 func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 	i := directResource{directSpecResource: directSpec}
-	resource := &schema.Resource{
+	r := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name":         schemaName(),
 			"display_name": schemaDisplayName(),
@@ -60,10 +60,10 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 	}
 
 	for k, v := range directSpec.GetSchema() {
-		resource.Schema[k] = v
+		r.Schema[k] = v
 	}
 
-	return resource
+	return r
 }
 
 func (dr directResource) resourceDirectApply(
@@ -94,7 +94,6 @@ func (dr directResource) resourceDirectApply(
 		}
 		return nil
 	}); err != nil {
-
 		return diag.Errorf("could not add direct: %s", err.Error())
 	}
 
@@ -685,7 +684,6 @@ func (s pingdomDirectSpec) GetSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 		},
 	}
-
 }
 
 func (s pingdomDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
