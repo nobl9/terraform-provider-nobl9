@@ -1,6 +1,6 @@
 ---
 page_title: "nobl9_service Resource - terraform-provider-nobl9"
-subcategory: "Alert Methods"
+subcategory: "Groupings and Utilities"
 description: |-
   Service configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#service
 ---
