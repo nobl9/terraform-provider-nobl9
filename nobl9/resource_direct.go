@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -667,9 +668,12 @@ type newRelicDirectSpec struct{}
 func (s newRelicDirectSpec) GetSchema() map[string]*schema.Schema {
 	newRelicSchema := map[string]*schema.Schema{
 		"account_id": {
-			Type:        schema.TypeString,
+			Type:        schema.TypeInt,
 			Required:    true,
 			Description: "ID number assigned to the New Relic user account.",
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.IntAtLeast(0),
+			),
 		},
 		"insights_query_key": {
 			Type:        schema.TypeString,
@@ -693,7 +697,7 @@ func (s newRelicDirectSpec) GetDescription() string {
 
 func (s newRelicDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
 	return n9api.DirectSpec{NewRelic: &n9api.NewRelicDirectConfig{
-		AccountID:        json.Number(d.Get("account_id").(string)),
+		AccountID:        json.Number(strconv.Itoa(d.Get("account_id").(int))),
 		InsightsQueryKey: d.Get("insights_query_key").(string),
 	}}
 }
