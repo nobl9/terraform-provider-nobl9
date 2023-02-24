@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	n9api "github.com/nobl9/nobl9-go"
 )
@@ -229,6 +230,9 @@ func (s appDynamicsDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 		"client_name": {
 			Type:        schema.TypeString,
@@ -277,6 +281,9 @@ func (s bigqueryDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 }
@@ -312,6 +319,9 @@ func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 		"secret_access_key": {
 			Type:        schema.TypeString,
@@ -319,6 +329,9 @@ func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 	setHistoricalDataRetrievalSchema(cloudWatchSchema)
@@ -385,6 +398,9 @@ func (s datadogDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 		"application_key": {
 			Type:        schema.TypeString,
@@ -392,6 +408,9 @@ func (s datadogDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 	setHistoricalDataRetrievalSchema(datadogSchema)
@@ -422,6 +441,9 @@ func (s dynatraceDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 }
@@ -455,6 +477,9 @@ func (s gcmDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 }
@@ -500,6 +525,9 @@ func (s influxdbDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 		"organization_id": {
 			Type:        schema.TypeString,
@@ -507,6 +535,9 @@ func (s influxdbDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 }
@@ -550,6 +581,9 @@ func (s instanaDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 }
@@ -597,6 +631,9 @@ func (s lightstepDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 	setHistoricalDataRetrievalSchema(lightstepSchema)
@@ -640,6 +677,9 @@ func (s newRelicDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 	setHistoricalDataRetrievalSchema(newRelicSchema)
@@ -682,6 +722,9 @@ func (s pingdomDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 }
@@ -713,6 +756,9 @@ func (s redshiftDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 		"access_key_id": {
 			Type:        schema.TypeString,
@@ -720,6 +766,9 @@ func (s redshiftDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 		"secret_access_key": {
 			Type:        schema.TypeString,
@@ -727,6 +776,9 @@ func (s redshiftDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 }
@@ -775,6 +827,9 @@ func (s splunkDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 	setHistoricalDataRetrievalSchema(splunkSchema)
@@ -819,6 +874,9 @@ func (s splunkObservabilityDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 }
@@ -859,6 +917,9 @@ func (s sumologicDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 		"access_key": {
 			Type:        schema.TypeString,
@@ -866,6 +927,9 @@ func (s sumologicDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 }
@@ -898,6 +962,9 @@ func (s thousandeyesDirectSpec) GetSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
 		},
 	}
 }
