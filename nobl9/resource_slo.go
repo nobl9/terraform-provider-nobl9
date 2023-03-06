@@ -1798,13 +1798,18 @@ func schemaMetricLightstep() map[string]*schema.Schema {
 					},
 					"stream_id": {
 						Type:        schema.TypeString,
-						Required:    true,
+						Optional:    true,
 						Description: "ID of the metrics stream",
 					},
 					"type_of_data": {
 						Type:        schema.TypeString,
 						Required:    true,
 						Description: "Type of data to filter by",
+					},
+					"uql": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "UQL query",
 					},
 				},
 			},
@@ -1819,8 +1824,18 @@ func marshalLightstepMetric(s *schema.Set) *n9api.LightstepMetric {
 
 	metric := s.List()[0].(map[string]interface{})
 
-	streamID := metric["stream_id"].(string)
+	var streamID *string
+	if value := metric["stream_id"].(string); value != "" {
+		streamID = &value
+	}
+
+	var uql *string
+	if value := metric["uql"].(string); value != "" {
+		uql = &value
+	}
+
 	typeOfData := metric["type_of_data"].(string)
+
 	var percentile *float64
 	if p := metric["percentile"].(float64); p != 0 {
 		// the API does not accept percentile = 0
@@ -1829,9 +1844,10 @@ func marshalLightstepMetric(s *schema.Set) *n9api.LightstepMetric {
 	}
 
 	return &n9api.LightstepMetric{
-		StreamID:   &streamID,
+		StreamID:   streamID,
 		TypeOfData: &typeOfData,
 		Percentile: percentile,
+		UQL:        uql,
 	}
 }
 
@@ -1840,6 +1856,7 @@ func unmarshalLightstepMetric(metric map[string]interface{}) map[string]interfac
 	res["percentile"] = metric["percentile"]
 	res["stream_id"] = metric["streamId"]
 	res["type_of_data"] = metric["typeOfData"]
+	res["uql"] = metric["uql"]
 
 	return res
 }
