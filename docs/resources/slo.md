@@ -394,12 +394,13 @@ Optional:
 
 Required:
 
-- `stream_id` (String) ID of the metrics stream
 - `type_of_data` (String) Type of data to filter by
 
 Optional:
 
 - `percentile` (Number) Optional value to filter by percentiles
+- `stream_id` (String) ID of the metrics stream
+- `uql` (String) UQL query
 
 
 <a id="nestedblock--objective--count_metrics--good--newrelic"></a>
@@ -690,12 +691,13 @@ Optional:
 
 Required:
 
-- `stream_id` (String) ID of the metrics stream
 - `type_of_data` (String) Type of data to filter by
 
 Optional:
 
 - `percentile` (Number) Optional value to filter by percentiles
+- `stream_id` (String) ID of the metrics stream
+- `uql` (String) UQL query
 
 
 <a id="nestedblock--objective--count_metrics--total--newrelic"></a>
@@ -994,12 +996,13 @@ Optional:
 
 Required:
 
-- `stream_id` (String) ID of the metrics stream
 - `type_of_data` (String) Type of data to filter by
 
 Optional:
 
 - `percentile` (Number) Optional value to filter by percentiles
+- `stream_id` (String) ID of the metrics stream
+- `uql` (String) UQL query
 
 
 <a id="nestedblock--objective--raw_metric--query--newrelic"></a>
