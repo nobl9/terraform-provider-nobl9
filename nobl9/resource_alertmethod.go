@@ -149,7 +149,7 @@ func resourceAlertMethodDelete(_ context.Context, d *schema.ResourceData, meta i
 type alertMethodWebhook struct{}
 
 func (i alertMethodWebhook) GetDescription() string {
-	return "[Webhook Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/webhook)"
+	return "[Webhook Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/webhook)"
 }
 
 //nolint:lll
@@ -217,7 +217,7 @@ func (i alertMethodWebhook) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 type alertMethodPagerDuty struct{}
 
 func (i alertMethodPagerDuty) GetDescription() string {
-	return "[PagerDuty Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/pagerduty)"
+	return "[PagerDuty Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/pagerduty)"
 }
 
 func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
@@ -249,7 +249,7 @@ func (i alertMethodPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec map[str
 type alertMethodSlack struct{}
 
 func (i alertMethodSlack) GetDescription() string {
-	return "[Slack Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/slack)"
+	return "[Slack Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/slack)"
 }
 
 func (i alertMethodSlack) GetSchema() map[string]*schema.Schema {
@@ -281,7 +281,7 @@ func (i alertMethodSlack) UnmarshalSpec(d *schema.ResourceData, spec map[string]
 type alertMethodDiscord struct{}
 
 func (i alertMethodDiscord) GetDescription() string {
-	return "[Discord Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/discord)"
+	return "[Discord Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/discord)"
 }
 
 func (i alertMethodDiscord) GetSchema() map[string]*schema.Schema {
@@ -313,7 +313,7 @@ func (i alertMethodDiscord) UnmarshalSpec(d *schema.ResourceData, spec map[strin
 type alertMethodOpsgenie struct{}
 
 func (i alertMethodOpsgenie) GetDescription() string {
-	return "[OpsGenie Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/opsgenie)"
+	return "[OpsGenie Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/opsgenie)"
 }
 
 func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
@@ -321,14 +321,14 @@ func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
 		"auth": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Opsgenie authentication credentials. See [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie#authentication) for supported formats.",
+			Description: "Opsgenie authentication credentials. See [Nobl9 documentation](https://docs.nobl9.com/Alerting/opsgenie#authentication) for supported formats.",
 			Sensitive:   true,
 			Computed:    true,
 		},
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Opsgenie API URL. See [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie#creating-opsgenie-api-key) for more details.",
+			Description: "Opsgenie API URL. See [Nobl9 documentation](https://docs.nobl9.com/Alerting/opsgenie#creating-opsgenie-api-key) for more details.",
 		},
 	}
 }
@@ -356,7 +356,7 @@ func (i alertMethodOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec map[stri
 type alertMethodServiceNow struct{}
 
 func (i alertMethodServiceNow) GetDescription() string {
-	return "[ServiceNow Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/servicenow)"
+	return "[ServiceNow Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/servicenow)"
 }
 
 func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
@@ -376,7 +376,7 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 		"instance_name": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "ServiceNow InstanceName. For details see [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/servicenow#servicenow-credentials).",
+			Description: "ServiceNow InstanceName. For details see [Nobl9 documentation](https://docs.nobl9.com/Alerting/servicenow#servicenow-credentials).",
 		},
 	}
 }
@@ -407,7 +407,7 @@ func (i alertMethodServiceNow) UnmarshalSpec(d *schema.ResourceData, spec map[st
 type alertMethodJira struct{}
 
 func (i alertMethodJira) GetDescription() string {
-	return "[Jira Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/jira)"
+	return "[Jira Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/jira)"
 }
 
 func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
@@ -466,7 +466,7 @@ func (i alertMethodJira) UnmarshalSpec(d *schema.ResourceData, spec map[string]i
 type alertMethodTeams struct{}
 
 func (i alertMethodTeams) GetDescription() string {
-	return "[MS Teams Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/ms-teams)"
+	return "[MS Teams Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/ms-teams)"
 }
 
 func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
@@ -498,7 +498,7 @@ func (i alertMethodTeams) UnmarshalSpec(d *schema.ResourceData, spec map[string]
 type alertMethodEmail struct{}
 
 func (i alertMethodEmail) GetDescription() string {
-	return "[Email Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/email-alert)"
+	return "[Email Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/email-alert)"
 }
 
 func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
@@ -535,7 +535,7 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 		"body": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "The Body of the email alert. For the format of the body and the list of variables that you can define, refer to the [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/email-alert#yaml-configuration).",
+			Description: "The Body of the email alert. For the format of the body and the list of variables that you can define, refer to the [Nobl9 documentation](https://docs.nobl9.com/Alerting/email-alert#yaml-configuration).",
 		},
 	}
 }

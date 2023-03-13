@@ -2,14 +2,14 @@
 page_title: "nobl9_alert_method_opsgenie Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  OpsGenie Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alert_Methods/opsgenie
+  OpsGenie Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alerting/opsgenie
 ---
 
 # nobl9_alert_method_opsgenie (Resource)
 
 The **OpsGenie Alert Method** enables triggering alerts through OpsGenie to notify whenever an incident is triggered.
 
-For more details, refer to [OpsGenie Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/opsgenie).
+For more details, refer to [OpsGenie Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/opsgenie).
 
 ## Example Usage
 
@@ -33,11 +33,11 @@ resource "nobl9_alert_method_opsgenie" "this" {
 
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `url` (String) Opsgenie API URL. See [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie#creating-opsgenie-api-key) for more details.
+- `url` (String) Opsgenie API URL. See [Nobl9 documentation](https://docs.nobl9.com/Alerting/opsgenie#creating-opsgenie-api-key) for more details.
 
 ### Optional
 
-- `auth` (String, Sensitive) Opsgenie authentication credentials. See [Nobl9 documentation](https://docs.nobl9.com/Alert_Methods/opsgenie#authentication) for supported formats.
+- `auth` (String, Sensitive) Opsgenie authentication credentials. See [Nobl9 documentation](https://docs.nobl9.com/Alerting/opsgenie#authentication) for supported formats.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 
@@ -47,4 +47,4 @@ resource "nobl9_alert_method_opsgenie" "this" {
 
 ## Useful Links
 
-[OpsGenie alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/opsgenie/)
+[OpsGenie alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alerting/opsgenie/)
