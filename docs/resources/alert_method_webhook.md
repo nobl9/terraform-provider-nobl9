@@ -2,7 +2,7 @@
 page_title: "nobl9_alert_method_webhook Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Webhook Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alerting/webhook
+  Webhook Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alerting/Alert_methods/webhook
 ---
 
 # nobl9_alert_method_webhook (Resource)
@@ -11,7 +11,7 @@ The **Webhook Alert Method** enables sending alerts through an HTTP callback han
 
 -> **NOTE** For details on how to use Webhook message templates, check the [Nobl9 documentation](https://docs.nobl9.com/Alerting/webhook#creating-webhook-custom-templates-through-yaml).
 
-For more details, refer to [Webhook Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/webhook).
+For more details, refer to [Webhook Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/webhook).
 
 ## Example Usage
 
