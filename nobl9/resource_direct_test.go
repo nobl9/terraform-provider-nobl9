@@ -134,6 +134,16 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   url = "https://web.net"
   dynatrace_token = "secret"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
 }
 `, directType, name, name, testProject)
 }
