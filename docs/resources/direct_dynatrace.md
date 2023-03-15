@@ -20,6 +20,16 @@ resource "nobl9_direct_dynatrace" "test-dynatrace" {
   source_of       = ["Metrics", "Services"]
   url             = "https://web.net"
   dynatrace_token = "secret"
+  historical_data_retrieval {
+    default_duration {
+      unit  = "Day"
+      value = 1
+    }
+    max_duration {
+      unit  = "Day"
+      value = 10
+    }
+  }
 }
 ```
 
@@ -38,11 +48,37 @@ resource "nobl9_direct_dynatrace" "test-dynatrace" {
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `dynatrace_token` (String, Sensitive) [required] | Dynatrace Token.
+- `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/Features/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 - `status` (String) The status of the created direct.
+
+<a id="nestedblock--historical_data_retrieval"></a>
+### Nested Schema for `historical_data_retrieval`
+
+Required:
+
+- `default_duration` (Block List, Min: 1) Used by default for any SLOs connected to this data source. (see [below for nested schema](#nestedblock--historical_data_retrieval--default_duration))
+- `max_duration` (Block List, Min: 1) Defines the maximum period for which data can be retrieved. (see [below for nested schema](#nestedblock--historical_data_retrieval--max_duration))
+
+<a id="nestedblock--historical_data_retrieval--default_duration"></a>
+### Nested Schema for `historical_data_retrieval.default_duration`
+
+Required:
+
+- `unit` (String) Must be one of Minute, Hour, or Day.
+- `value` (Number) Must be an integer greater than or equal to 0.
+
+
+<a id="nestedblock--historical_data_retrieval--max_duration"></a>
+### Nested Schema for `historical_data_retrieval.max_duration`
+
+Required:
+
+- `unit` (String) Must be one of Minute, Hour, or Day.
+- `value` (Number) Must be an integer greater than or equal to 0.
 
 ## Nobl9 Official Documentation
 
