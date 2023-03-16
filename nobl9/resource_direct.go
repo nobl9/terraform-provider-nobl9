@@ -430,7 +430,7 @@ func (s dynatraceDirectSpec) GetDescription() string {
 }
 
 func (s dynatraceDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	dynatraceSchema := map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
 			Description: "Dynatrace API URL.",
@@ -447,6 +447,9 @@ func (s dynatraceDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+	setHistoricalDataRetrievalSchema(dynatraceSchema)
+
+	return dynatraceSchema
 }
 
 func (s dynatraceDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
