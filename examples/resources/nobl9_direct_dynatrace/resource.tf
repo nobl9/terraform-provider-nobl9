@@ -5,14 +5,4 @@ resource "nobl9_direct_dynatrace" "test-dynatrace" {
   source_of       = ["Metrics", "Services"]
   url             = "https://web.net"
   dynatrace_token = "secret"
-  historical_data_retrieval {
-    default_duration {
-      unit  = "Day"
-      value = 1
-    }
-    max_duration {
-      unit  = "Day"
-      value = 10
-    }
-  }
 }
