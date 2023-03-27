@@ -2,14 +2,14 @@
 page_title: "nobl9_alert_method_jira Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Jira Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alert_Methods/jira
+  Jira Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alerting/Alert_methods/jira
 ---
 
 # nobl9_alert_method_jira (Resource)
 
 The **Jira Alert Method** automatically opens a Jira issue to notify you whenever an incident is triggered.
 
-For more details, refer to [Jira Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/jira).
+For more details, refer to [Jira Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/jira).
 
 ## Example Usage
 
@@ -51,6 +51,6 @@ resource "nobl9_alert_method_jira" "this" {
 
 ## Useful Links
 
-[Jira alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/jira/)
+[Jira alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/jira/)
 
 [Atlassian Accounts Documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)

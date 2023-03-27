@@ -2,14 +2,14 @@
 page_title: "nobl9_alert_method_pagerduty Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  PagerDuty Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alert_Methods/pagerduty
+  PagerDuty Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alerting/Alert_methods/pagerduty
 ---
 
 # nobl9_alert_method_pagerduty (Resource)
 
 The **PagerDuty Alert Method** enables triggering alerts through PagerDuty to notify Nobl9 users whenever an incident is triggered.
 
-For more details, refer to [PagerDuty Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/pagerduty).
+For more details, refer to [PagerDuty Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/pagerduty).
 
 ## Example Usage
 
@@ -45,4 +45,4 @@ resource "nobl9_alert_method_pagerduty" "this" {
 
 ## Useful Links
 
-[PagerDuty alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alert_Methods/pagerduty/)
+[PagerDuty alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/pagerduty/)
