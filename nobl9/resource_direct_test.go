@@ -134,6 +134,16 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   url = "https://web.net"
   dynatrace_token = "secret"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 0
+    }
+    max_duration {
+      unit = "Day"
+      value = 0
+    }
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -209,7 +219,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   account_id = "1234"
-  insights_query_key = "secret"
+  insights_query_key = "NRIQ-secret"
   historical_data_retrieval {
     default_duration  {
       unit = "Day"
