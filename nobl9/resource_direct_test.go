@@ -219,7 +219,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   account_id = "1234"
-  insights_query_key = "secret"
+  insights_query_key = "NRIQ-secret"
   historical_data_retrieval {
     default_duration  {
       unit = "Day"
