@@ -40,11 +40,20 @@ resource "nobl9_direct_influxdb" "test-influxdb" {
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `organization_id` (String, Sensitive) [required] | InfluxDB Organization ID.
+- `query_delay` (Block List, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay) (see [below for nested schema](#nestedblock--query_delay))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 - `status` (String) The status of the created direct.
+
+<a id="nestedblock--query_delay"></a>
+### Nested Schema for `query_delay`
+
+Required:
+
+- `unit` (String) Must be one of Minute or Second.
+- `value` (Number) Must be an integer greater than or equal to 0.
 
 ## Nobl9 Official Documentation
 

@@ -63,6 +63,7 @@ resource "nobl9_agent" "this" {
 - `opentsdb_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#opentsdb-agent) (see [below for nested schema](#nestedblock--opentsdb_config))
 - `pingdom_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#pingdom-agent) (see [below for nested schema](#nestedblock--pingdom_config))
 - `prometheus_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#prometheus-agent) (see [below for nested schema](#nestedblock--prometheus_config))
+- `query_delay` (Block List, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay) (see [below for nested schema](#nestedblock--query_delay))
 - `redshift_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-agent) (see [below for nested schema](#nestedblock--redshift_config))
 - `splunk_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent) (see [below for nested schema](#nestedblock--splunk_config))
 - `splunk_observability_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-agent) (see [below for nested schema](#nestedblock--splunk_observability_config))
@@ -196,6 +197,15 @@ Required:
 Required:
 
 - `url` (String) Base URL to Prometheus server.
+
+
+<a id="nestedblock--query_delay"></a>
+### Nested Schema for `query_delay`
+
+Required:
+
+- `unit` (String) Must be one of Minute or Second.
+- `value` (Number) Must be an integer greater than or equal to 0.
 
 
 <a id="nestedblock--redshift_config"></a>
