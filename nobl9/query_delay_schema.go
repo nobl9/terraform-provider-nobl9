@@ -40,10 +40,6 @@ func schemaQueryDelay() *schema.Schema {
 	}
 }
 
-func setQueryDelaySchema(s map[string]*schema.Schema) {
-	s[queryDelayConfigKey] = schemaQueryDelay()
-}
-
 func marshalQueryDelay(d *schema.ResourceData) *n9api.QueryDelayDuration {
 	hData, ok := d.GetOk(queryDelayConfigKey)
 	if !ok {
