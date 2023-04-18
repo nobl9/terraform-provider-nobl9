@@ -53,6 +53,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		//{"test-sumologic", testSumoLogicSLO},
 		//{"test-thousandeyes", testThousandeyesSLO},
 		{"test-anomaly-config-no-data", testAnomalyConfigNoData},
+		{"test-anomaly-config-without-project", testAnomalyConfigWithoutProject},
 	}
 
 	for _, tc := range cases {
@@ -2489,6 +2490,65 @@ resource "nobl9_slo" ":name" {
 			alert_method {
 				name = "slack2"
 				project = "default2"
+			}
+		}
+	}
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testAnomalyConfigWithoutProject(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testThousandEyesAgent(agentName) + `
+
+resource "nobl9_slo" ":name" {
+	name         = ":name"
+	display_name = ":name"
+	project      = ":project"
+	service      = nobl9_service.:serviceName.name
+
+	budgeting_method = "Occurrences"
+
+	objective {
+    	display_name = "obj1"
+    	name         = "tf-objective-1"
+    	target       = 0.7
+    	value        = 1
+    	op           = "lt"
+    	raw_metric {
+			query {
+				thousandeyes {
+					test_id = 11
+				}
+			}
+		}
+	}
+
+	time_window {
+		count      = 10
+		is_rolling = true
+		unit       = "Minute"
+	}
+
+	indicator {
+		name    = nobl9_agent.:agentName.name
+		project = ":project"
+		kind    = "Agent"
+	}
+
+	anomaly_config {
+		no_data {
+			alert_method {
+				name = "slack"
 			}
 		}
 	}
