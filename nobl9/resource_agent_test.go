@@ -325,6 +325,10 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "pingdom"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }

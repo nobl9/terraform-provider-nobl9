@@ -282,6 +282,10 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   api_token = "secret"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
