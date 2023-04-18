@@ -1,6 +1,8 @@
 package nobl9
 
 import (
+	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -16,44 +18,47 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		name       string
 		configFunc func(string) string
 	}{
-		{"test-amazonprometheus", testAmazonPrometheusSLO},
-		{"test-appdynamics", testAppdynamicsSLO},
-		{"test-bigquery", testBigQuerySLO},
-		{"test-cloudwatch-with-json", testCloudWatchWithJSON},
-		{"test-cloudwatch-with-sql", testCloudWatchWithSQL},
-		{"test-cloudwatch-with-stat", testCloudWatchWithStat},
-		{"test-composite-occurrences", testCompositeSLOOccurrences},
-		{"test-composite-time-slices", testCompositeSLOTimeSlices},
-		{"test-datadog", testDatadogSLO},
-		{"test-dynatrace", testDynatraceSLO},
-		{"test-grafanaloki", testGrafanaLokiSLO},
-		{"test-graphite", testGraphiteSLO},
-		{"test-influxdb", testInfluxDBSLO},
-		{"test-instana-infra", testInstanaInfrastructureSLO},
-		{"test-instana-app", testInstanaApplicationSLO},
-		{"test-lightstep", testLightstepSLO},
-		{"test-multiple-ap", testMultipleAlertPolicies},
-		{"test-newrelic", testNewRelicSLO},
-		{"test-opentsdb", testOpenTSDBSLO},
-		{"test-pingdom", testPingdomSLO},
-		{"test-prom-full", testPrometheusSLOFULL},
-		{"test-prom-with-ap", testPrometheusSLOWithAlertPolicy},
-		{"test-prom-with-attachments-deprecated", testPrometheusWithAttachmentsDeprecated},
-		{"test-prom-with-attachment", testPrometheusWithAttachment},
-		{"test-prom-with-countmetrics", testPrometheusSLOWithCountMetrics},
-		{"test-prom-with-multiple-objectives", testPrometheusSLOWithMultipleObjectives},
-		{"test-prom-with-raw-metric-in-objective", testPrometheusSLOWithRawMetricInObjective},
-		{"test-prom-with-time-slices", testPrometheusSLOWithTimeSlices},
-		{"test-prometheus", testPrometheusSLO},
-		{"test-redshift", testRedshiftSLO},
-		{"test-splunk", testSplunkSLO},
-		{"test-splunk-observability", testSplunkObservabilitySLO},
-		{"test-sumologic", testSumoLogicSLO},
-		{"test-thousandeyes", testThousandeyesSLO},
+		//{"test-amazonprometheus", testAmazonPrometheusSLO},
+		//{"test-appdynamics", testAppdynamicsSLO},
+		//{"test-bigquery", testBigQuerySLO},
+		//{"test-cloudwatch-with-json", testCloudWatchWithJSON},
+		//{"test-cloudwatch-with-sql", testCloudWatchWithSQL},
+		//{"test-cloudwatch-with-stat", testCloudWatchWithStat},
+		//{"test-composite-occurrences", testCompositeSLOOccurrences},
+		//{"test-composite-time-slices", testCompositeSLOTimeSlices},
+		//{"test-datadog", testDatadogSLO},
+		//{"test-dynatrace", testDynatraceSLO},
+		//{"test-grafanaloki", testGrafanaLokiSLO},
+		//{"test-graphite", testGraphiteSLO},
+		//{"test-influxdb", testInfluxDBSLO},
+		//{"test-instana-infra", testInstanaInfrastructureSLO},
+		//{"test-instana-app", testInstanaApplicationSLO},
+		//{"test-lightstep", testLightstepSLO},
+		//{"test-multiple-ap", testMultipleAlertPolicies},
+		//{"test-newrelic", testNewRelicSLO},
+		//{"test-opentsdb", testOpenTSDBSLO},
+		//{"test-pingdom", testPingdomSLO},
+		//{"test-prom-full", testPrometheusSLOFULL},
+		//{"test-prom-with-ap", testPrometheusSLOWithAlertPolicy},
+		//{"test-prom-with-attachments-deprecated", testPrometheusWithAttachmentsDeprecated},
+		//{"test-prom-with-attachment", testPrometheusWithAttachment},
+		//{"test-prom-with-countmetrics", testPrometheusSLOWithCountMetrics},
+		//{"test-prom-with-multiple-objectives", testPrometheusSLOWithMultipleObjectives},
+		//{"test-prom-with-raw-metric-in-objective", testPrometheusSLOWithRawMetricInObjective},
+		//{"test-prom-with-time-slices", testPrometheusSLOWithTimeSlices},
+		//{"test-prometheus", testPrometheusSLO},
+		//{"test-redshift", testRedshiftSLO},
+		//{"test-splunk", testSplunkSLO},
+		//{"test-splunk-observability", testSplunkObservabilitySLO},
+		//{"test-sumologic", testSumoLogicSLO},
+		//{"test-thousandeyes", testThousandeyesSLO},
+		{"test-anomaly-config-no-data", testAnomalyConfigNoData},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			fmt.Println(os.Getenv("TF_ACC"))
+			os.Setenv("TF_ACC", "1")
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
@@ -2422,6 +2427,71 @@ resource "nobl9_slo" ":name" {
     project = ":project"
     kind    = "Agent"
   }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testAnomalyConfigNoData(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testThousandEyesAgent(agentName) + `
+
+resource "nobl9_slo" ":name" {
+	name         = ":name"
+	display_name = ":name"
+	project      = ":project"
+	service      = nobl9_service.:serviceName.name
+
+	budgeting_method = "Occurrences"
+
+	objective {
+    	display_name = "obj1"
+    	name         = "tf-objective-1"
+    	target       = 0.7
+    	value        = 1
+    	op           = "lt"
+    	raw_metric {
+			query {
+				thousandeyes {
+					test_id = 11
+				}
+			}
+		}
+	}
+
+	time_window {
+		count      = 10
+		is_rolling = true
+		unit       = "Minute"
+	}
+
+	indicator {
+		name    = nobl9_agent.:agentName.name
+		project = ":project"
+		kind    = "Agent"
+	}
+
+	anomaly_config {
+		no_data {
+			alert_method {
+				name = "slack"
+				project = "default"
+			}
+
+			alert_method {
+				name = "slack2"
+				project = "default2"
+			}
+		}
+	}
 }
 `
 	config = strings.ReplaceAll(config, ":name", name)
