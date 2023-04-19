@@ -31,9 +31,8 @@ func schemaQueryDelay() *schema.Schema {
 	}
 
 	return &schema.Schema{
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Optional:    true,
-		Computed:    true,
 		Description: "[Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided.",
 		MinItems:    1,
 		MaxItems:    1,
@@ -42,16 +41,15 @@ func schemaQueryDelay() *schema.Schema {
 }
 
 func marshalQueryDelay(d *schema.ResourceData) *n9api.QueryDelayDuration {
-	hData, ok := d.GetOk(queryDelayConfigKey)
-	if !ok {
-		return nil
+	queryDelay := d.Get(queryDelayConfigKey).(*schema.Set)
+	if queryDelay.Len() > 0 {
+		qd := queryDelay.List()[0].(map[string]interface{})
+		return &n9api.QueryDelayDuration{
+			Unit:  qd["unit"].(string),
+			Value: json.Number(strconv.Itoa(qd["value"].(int))),
+		}
 	}
-	queryDelay := hData.([]interface{})[0].(map[string]interface{})
-
-	return &n9api.QueryDelayDuration{
-		Unit:  queryDelay["unit"].(string),
-		Value: json.Number(strconv.Itoa(queryDelay["value"].(int))),
-	}
+	return nil
 }
 
 func unmarshalQueryDelay(d *schema.ResourceData, qd *n9api.QueryDelayDuration) (diags diag.Diagnostics) {
@@ -62,7 +60,7 @@ func unmarshalQueryDelay(d *schema.ResourceData, qd *n9api.QueryDelayDuration) (
 		"unit":  qd.Unit,
 		"value": qd.Value,
 	}
-	set(d, queryDelayConfigKey, []interface{}{config}, &diags)
-
+	err := d.Set(queryDelayConfigKey, schema.NewSet(oneElementSet, []interface{}{config}))
+	diags = appendError(diags, err)
 	return
 }
