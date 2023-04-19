@@ -33,7 +33,8 @@ func schemaQueryDelay() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: "[Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay)",
+		Computed:    true,
+		Description: "[Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided.",
 		MinItems:    1,
 		MaxItems:    1,
 		Elem:        &schema.Resource{Schema: durationSchema},
