@@ -38,7 +38,7 @@ resource "nobl9_direct_redshift" "test-redshift" {
 - `access_key_id` (String, Sensitive) [required] | AWS Access Key ID.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `query_delay` (Block List, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay) (see [below for nested schema](#nestedblock--query_delay))
+- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `secret_access_key` (String, Sensitive) [required] | AWS Secret Access Key.
 - `secret_arn` (String, Sensitive) AWS Secret ARN.
 
