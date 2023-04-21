@@ -63,8 +63,12 @@ resource "nobl9_agent" "%s" {
   source_of = ["Metrics", "Services"]
   agent_type = "amazon_prometheus"
   amazon_prometheus_config {
-	url = "http://web.net"
-	region = "eu-central-1"
+    url = "http://web.net"
+    region = "eu-central-1"
+  }
+  query_delay {
+    unit = "Minute"
+    value = 6
   }
 }
 `, name, name, testProject)
@@ -78,7 +82,11 @@ resource "nobl9_agent" "%s" {
   source_of = ["Metrics", "Services"]
   agent_type = "appdynamics"
   appdynamics_config {
-	url = "http://web.net"
+    url = "http://web.net"
+  }
+  query_delay {
+    unit = "Minute"
+    value = 6
   }
 }
 `, name, name, testProject)
@@ -91,6 +99,10 @@ resource "nobl9_agent" "%s" {
  project   = "%s"
  source_of = ["Metrics", "Services"]
  agent_type = "bigquery"
+ query_delay {
+  unit = "Minute"
+  value = 6
+}
 }
 `, name, name, testProject)
 }
@@ -102,6 +114,10 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "cloudwatch"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -115,6 +131,10 @@ resource "nobl9_agent" "%s" {
   agent_type = "datadog"
   datadog_config {
     site = "eu"
+  }
+  query_delay {
+    unit = "Minute"
+    value = 6
   }
 }
 `, name, name, testProject)
@@ -130,6 +150,10 @@ resource "nobl9_agent" "%s" {
   dynatrace_config {
     url = "http://web.net"
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -144,6 +168,10 @@ resource "nobl9_agent" "%s" {
   elasticsearch_config {
     url = "http://web.net"
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -155,6 +183,10 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "gcm"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -168,6 +200,10 @@ resource "nobl9_agent" "%s" {
   agent_type = "grafana_loki"
   grafana_loki_config {
     url = "http://web.net"
+  }
+  query_delay {
+    unit = "Minute"
+    value = 6
   }
 }
 `, name, name, testProject)
@@ -183,6 +219,10 @@ resource "nobl9_agent" "%s" {
   graphite_config {
     url = "http://web.net"
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -196,6 +236,10 @@ resource "nobl9_agent" "%s" {
   agent_type = "influxdb"
   influxdb_config {
     url = "http://web.net"
+  }
+  query_delay {
+    unit = "Minute"
+    value = 6
   }
 }
 `, name, name, testProject)
@@ -211,6 +255,10 @@ resource "nobl9_agent" "%s" {
   instana_config {
     url = "http://web.net"
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -224,7 +272,11 @@ resource "nobl9_agent" "%s" {
   agent_type = "lightstep"
   lightstep_config {
     organization = "acme"
-	project		 = "project1"
+    project		 = "project1"
+  }
+  query_delay {
+    unit = "Minute"
+    value = 6
   }
 }
 `, name, name, testProject)
@@ -240,6 +292,10 @@ resource "nobl9_agent" "%s" {
   newrelic_config {
     account_id = 1234
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -254,6 +310,10 @@ resource "nobl9_agent" "%s" {
   opentsdb_config {
     url = "http://web.net"
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -265,6 +325,10 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "pingdom"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -279,6 +343,10 @@ resource "nobl9_agent" "%s" {
   prometheus_config {
 	url = "http://web.net"
 	}
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -290,6 +358,10 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "redshift"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -303,6 +375,10 @@ resource "nobl9_agent" "%s" {
   agent_type = "splunk"
   splunk_config {
     url = "http://web.net"
+  }
+  query_delay {
+    unit = "Minute"
+    value = 6
   }
 }
 `, name, name, testProject)
@@ -318,6 +394,10 @@ resource "nobl9_agent" "%s" {
   splunk_observability_config {
     realm = "eu"
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -332,6 +412,10 @@ resource "nobl9_agent" "%s" {
   sumologic_config {
     url = "http://web.net"
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }
@@ -343,6 +427,10 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "thousandeyes"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, name, name, testProject)
 }

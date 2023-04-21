@@ -62,6 +62,10 @@ resource "nobl9_direct_%s" "%s" {
   account_name = "account name"
   client_secret = "secret"
   client_name = "client name"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -73,7 +77,11 @@ resource "nobl9_direct_%s" "%s" {
   project = "%s"
   description = "desc"
   source_of = ["Metrics", "Services"]
-  service_account_key = "secret"  	
+  service_account_key = "secret"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -96,6 +104,10 @@ resource "nobl9_direct_%s" "%s" {
       unit = "Day"
       value = 10
     }
+  }
+  query_delay {
+    unit = "Minute"
+    value = 6
   }
 }
 `, directType, name, name, testProject)
@@ -121,6 +133,10 @@ resource "nobl9_direct_%s" "%s" {
       value = 10
     }
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -144,6 +160,10 @@ resource "nobl9_direct_%s" "%s" {
       value = 0
     }
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -156,6 +176,10 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   service_account_key = "secret"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -170,6 +194,10 @@ resource "nobl9_direct_%s" "%s" {
   url = "https://web.net"
   api_token = "secret"
   organization_id = "secret"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -183,6 +211,10 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   url = "https://web.net"
   api_token = "secret"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -207,6 +239,10 @@ resource "nobl9_direct_%s" "%s" {
       value = 10
     }
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -230,6 +266,10 @@ resource "nobl9_direct_%s" "%s" {
       value = 10
     }
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -242,6 +282,10 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   api_token = "secret"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -256,6 +300,10 @@ resource "nobl9_direct_%s" "%s" {
   secret_arn = "aws:arn"
   access_key_id = "secret"
   secret_access_key = "secret"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -279,6 +327,10 @@ resource "nobl9_direct_%s" "%s" {
       value = 10
     }
   }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -292,6 +344,10 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   realm = "eu"
   access_token = "secret"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -306,6 +362,10 @@ resource "nobl9_direct_%s" "%s" {
   url = "http://web.net"
   access_id = "secret"
   access_key = "secret"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }
@@ -318,6 +378,10 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   oauth_bearer_token = "secret"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
 }
 `, directType, name, name, testProject)
 }

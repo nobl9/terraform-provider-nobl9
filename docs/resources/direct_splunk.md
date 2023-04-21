@@ -49,6 +49,7 @@ resource "nobl9_direct_splunk" "test-splunk" {
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
+- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 
 ### Read-Only
 
@@ -78,6 +79,16 @@ Required:
 Required:
 
 - `unit` (String) Must be one of Minute, Hour, or Day.
+- `value` (Number) Must be an integer greater than or equal to 0.
+
+
+
+<a id="nestedblock--query_delay"></a>
+### Nested Schema for `query_delay`
+
+Required:
+
+- `unit` (String) Must be one of Minute or Second.
 - `value` (Number) Must be an integer greater than or equal to 0.
 
 ## Nobl9 Official Documentation
