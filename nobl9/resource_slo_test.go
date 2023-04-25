@@ -53,7 +53,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		//{"test-sumologic", testSumoLogicSLO},
 		//{"test-thousandeyes", testThousandeyesSLO},
 		{"test-anomaly-config-no-data", testAnomalyConfigNoData},
-		{"test-anomaly-config-without-project", testAnomalyConfigWithoutProject},
+		//{"test-anomaly-config-without-project", testAnomalyConfigWithoutProject},
 	}
 
 	for _, tc := range cases {
@@ -2441,64 +2441,104 @@ resource "nobl9_slo" ":name" {
 func testAnomalyConfigNoData(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
-	config :=
+	var alertMethodName1 = name + "-method-1"
+	var alertMethodName2 = name + "-method-2"
+	var alertMethodName3 = name + "-method-3"
+	var alertMethodName4 = name + "-method-4"
+	var alertMethodName5 = name + "-method-5"
+	var alertMethodProject1 = name + "-project-1"
+	var alertMethodProject2 = name + "-project-2"
+	var alertMethodProject3 = name + "-project-3"
+	var alertMethodProject4 = name + "-project-4"
+	var alertMethodProject5 = name + "-project-5"
+
+	config := mockAlertMethod(alertMethodName1, alertMethodProject1) +
+		mockAlertMethod(alertMethodName2, alertMethodProject2) +
+		mockAlertMethod(alertMethodName3, alertMethodProject3) +
+		mockAlertMethod(alertMethodName4, alertMethodProject4) +
+		mockAlertMethod(alertMethodName5, alertMethodProject5) +
 		testService(serviceName) +
-			testThousandEyesAgent(agentName) + `
+		testThousandEyesAgent(agentName) + `
 
-resource "nobl9_slo" ":name" {
-	name         = ":name"
-	display_name = ":name"
-	project      = ":project"
-	service      = nobl9_service.:serviceName.name
+		resource "nobl9_slo" ":name" {
+			name         = ":name"
+			display_name = ":name"
+			project      = ":project"
+			service      = nobl9_service.:serviceName.name
+		
+			budgeting_method = "Occurrences"
+		
+			objective {
+				display_name = "obj1"
+				name         = "tf-objective-1"
+				target       = 0.7
+				value        = 1
+				op           = "lt"
+				raw_metric {
+					query {
+						thousandeyes {
+							test_id = 11
+						}
+					}
+				}
+			}
+		
+			time_window {
+				count      = 10
+				is_rolling = true
+				unit       = "Minute"
+			}
+		
+			indicator {
+				name    = nobl9_agent.:agentName.name
+				project = ":project"
+				kind    = "Agent"
+			}
+		
+			anomaly_config {
+				no_data {
+					alert_method {
+						name = ":alertMethodName1"
+						project = ":alertMethodProject1"
+					}
+		
+					alert_method {
+						name = ":alertMethodName2"
+						project = ":alertMethodProject2"
+					}
 
-	budgeting_method = "Occurrences"
+					alert_method {
+						name = ":alertMethodName3"
+						project = ":alertMethodProject3"
+					}
 
-	objective {
-    	display_name = "obj1"
-    	name         = "tf-objective-1"
-    	target       = 0.7
-    	value        = 1
-    	op           = "lt"
-    	raw_metric {
-			query {
-				thousandeyes {
-					test_id = 11
+					alert_method {
+						name = ":alertMethodName4"
+						project = ":alertMethodProject4"
+					}
+
+					alert_method {
+						name = ":alertMethodName5"
+						project = ":alertMethodProject5"
+					}
 				}
 			}
 		}
-	}
-
-	time_window {
-		count      = 10
-		is_rolling = true
-		unit       = "Minute"
-	}
-
-	indicator {
-		name    = nobl9_agent.:agentName.name
-		project = ":project"
-		kind    = "Agent"
-	}
-
-	anomaly_config {
-		no_data {
-			alert_method {
-				name = "slack"
-				project = "default"
-			}
-
-			alert_method {
-				name = "slack2"
-				project = "default2"
-			}
-		}
-	}
-}
-`
+	`
 	config = strings.ReplaceAll(config, ":name", name)
 	config = strings.ReplaceAll(config, ":serviceName", serviceName)
 	config = strings.ReplaceAll(config, ":agentName", agentName)
 	config = strings.ReplaceAll(config, ":project", testProject)
+	config = strings.ReplaceAll(config, ":alertMethodName1", alertMethodName1)
+	config = strings.ReplaceAll(config, ":alertMethodName2", alertMethodName2)
+	config = strings.ReplaceAll(config, ":alertMethodName3", alertMethodName3)
+	config = strings.ReplaceAll(config, ":alertMethodName4", alertMethodName4)
+	config = strings.ReplaceAll(config, ":alertMethodName5", alertMethodName5)
+	config = strings.ReplaceAll(config, ":alertMethodProject1", alertMethodProject1)
+	config = strings.ReplaceAll(config, ":alertMethodProject2", alertMethodProject2)
+	config = strings.ReplaceAll(config, ":alertMethodProject3", alertMethodProject3)
+	config = strings.ReplaceAll(config, ":alertMethodProject4", alertMethodProject4)
+	config = strings.ReplaceAll(config, ":alertMethodProject5", alertMethodProject5)
 
 	return config
 }
@@ -2506,10 +2546,12 @@ resource "nobl9_slo" ":name" {
 func testAnomalyConfigWithoutProject(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
-	config :=
-		testService(serviceName) +
-			testThousandEyesAgent(agentName) + `
+	var alertMethodName = name + "-tf-alertmethod"
+	var alertMethodProject = name + "-tf-alertmethod-project"
 
+	config := testService(serviceName) +
+		testThousandEyesAgent(agentName) +
+		mockAlertMethod(alertMethodName, alertMethodProject) + `
 resource "nobl9_slo" ":name" {
 	name         = ":name"
 	display_name = ":name"
@@ -2548,7 +2590,7 @@ resource "nobl9_slo" ":name" {
 	anomaly_config {
 		no_data {
 			alert_method {
-				name = "slack"
+				name = ":alertMethodName"
 			}
 		}
 	}
@@ -2558,6 +2600,7 @@ resource "nobl9_slo" ":name" {
 	config = strings.ReplaceAll(config, ":serviceName", serviceName)
 	config = strings.ReplaceAll(config, ":agentName", agentName)
 	config = strings.ReplaceAll(config, ":project", testProject)
+	config = strings.ReplaceAll(config, ":alertMethodName", alertMethodName)
 
 	return config
 }

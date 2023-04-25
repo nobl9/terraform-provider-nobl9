@@ -700,6 +700,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	diags = appendError(diags, err)
 
 	err = unmarshalAnomalyConfig(d, spec)
+	//fmt.Println()
 	diags = appendError(diags, err)
 
 	err = d.Set("alert_policies", spec["alertPolicies"].([]interface{}))
@@ -776,7 +777,8 @@ func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}) er
 		calendarTF["time_zone"] = calendar["timeZone"].(string)
 		timeWindowsTF["calendar"] = schema.NewSet(oneElementSet, []interface{}{calendarTF})
 	}
-	return d.Set("time_window", schema.NewSet(oneElementSet, []interface{}{timeWindowsTF}))
+	y := schema.NewSet(oneElementSet, []interface{}{timeWindowsTF})
+	return d.Set("time_window", y)
 }
 
 func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) error {
