@@ -1,7 +1,6 @@
 package nobl9
 
 import (
-	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -53,12 +52,11 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		//{"test-sumologic", testSumoLogicSLO},
 		//{"test-thousandeyes", testThousandeyesSLO},
 		{"test-anomaly-config-no-data", testAnomalyConfigNoData},
-		//{"test-anomaly-config-without-project", testAnomalyConfigWithoutProject},
+		{"test-anomaly-config-without-project", testAnomalyConfigWithoutProject},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			fmt.Println(os.Getenv("TF_ACC"))
 			os.Setenv("TF_ACC", "1")
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },

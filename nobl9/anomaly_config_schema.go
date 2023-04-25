@@ -1,7 +1,6 @@
 package nobl9
 
 import (
-	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
 	"reflect"
@@ -82,6 +81,11 @@ func diffSuppressAnomalyConfig(_, _, _ string, d *schema.ResourceData) bool {
 	oldAnomalyConfig := marshalAnomalyConfig(oldValue)
 	newAnomalyConfig := marshalAnomalyConfig(newValue)
 
+	if oldAnomalyConfig == nil && newAnomalyConfig != nil ||
+		oldAnomalyConfig != nil && newAnomalyConfig == nil {
+		return false
+	}
+
 	return reflect.DeepEqual(
 		transformAnomalyConfigAlertMethodsTo2DMap(
 			oldAnomalyConfig.NoData.AlertMethods,
@@ -102,7 +106,6 @@ func marshalAnomalyConfig(anomalyConfigRaw interface{}) *n9api.AnomalyConfig {
 	noDataAnomalyConfig := anomalyConfig["no_data"].(*schema.Set).List()[0].(map[string]interface{})
 	noDataAlertMethods := noDataAnomalyConfig["alert_method"].([]interface{})
 
-	fmt.Println(noDataAlertMethods)
 	return &n9api.AnomalyConfig{
 		NoData: &n9api.AnomalyConfigNoData{
 			AlertMethods: marshalAnomalyConfigAlertMethods(noDataAlertMethods),

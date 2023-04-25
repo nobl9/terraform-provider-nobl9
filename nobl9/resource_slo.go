@@ -460,11 +460,6 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 		attachments = d.Get("attachments")
 	}
 
-	z1 := d.Get("anomaly_config")
-	z2 := d.Get("time_window")
-	z3 := d.Get("lol")
-	fmt.Println(z1, z2, z3)
-
 	return &n9api.SLO{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
