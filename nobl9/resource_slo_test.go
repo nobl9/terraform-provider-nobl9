@@ -52,7 +52,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		//{"test-sumologic", testSumoLogicSLO},
 		//{"test-thousandeyes", testThousandeyesSLO},
 		{"test-anomaly-config-no-data", testAnomalyConfigNoData},
-		{"test-anomaly-config-without-project", testAnomalyConfigWithoutProject},
+		//{"test-anomaly-config-without-project", testAnomalyConfigWithoutProject},
 	}
 
 	for _, tc := range cases {

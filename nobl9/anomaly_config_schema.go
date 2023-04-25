@@ -16,7 +16,10 @@ func schemaAnomalyConfig() *schema.Schema {
 			Schema: map[string]*schema.Schema{
 				"no_data": {
 					Type:        schema.TypeSet,
-					Optional:    true,
+					Required:    true,
+					Optional:    false,
+					Computed:    false,
+					ForceNew:    false,
 					Description: "Alert Policies attached to SLO",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
@@ -78,22 +81,24 @@ func schemaAnomalyConfig() *schema.Schema {
 func diffSuppressAnomalyConfig(_, _, _ string, d *schema.ResourceData) bool {
 	oldValue, newValue := d.GetChange("anomaly_config")
 
-	oldAnomalyConfig := marshalAnomalyConfig(oldValue)
-	newAnomalyConfig := marshalAnomalyConfig(newValue)
+	oldMethods := make(map[string]map[string]string)
+	newMethods := make(map[string]map[string]string)
 
-	if oldAnomalyConfig == nil && newAnomalyConfig != nil ||
-		oldAnomalyConfig != nil && newAnomalyConfig == nil {
-		return false
+	if oldValue != nil {
+		oldAnomalyConfig := marshalAnomalyConfig(oldValue)
+		oldMethods = transformAnomalyConfigAlertMethodsTo2DMap(
+			oldAnomalyConfig.NoData.AlertMethods,
+		)
 	}
 
-	return reflect.DeepEqual(
-		transformAnomalyConfigAlertMethodsTo2DMap(
-			oldAnomalyConfig.NoData.AlertMethods,
-		),
-		transformAnomalyConfigAlertMethodsTo2DMap(
+	if newValue != nil {
+		newAnomalyConfig := marshalAnomalyConfig(newValue)
+		newMethods = transformAnomalyConfigAlertMethodsTo2DMap(
 			newAnomalyConfig.NoData.AlertMethods,
-		),
-	)
+		)
+	}
+
+	return reflect.DeepEqual(oldMethods, newMethods)
 }
 
 func marshalAnomalyConfig(anomalyConfigRaw interface{}) *n9api.AnomalyConfig {
@@ -102,9 +107,18 @@ func marshalAnomalyConfig(anomalyConfigRaw interface{}) *n9api.AnomalyConfig {
 		return nil
 	}
 
+	return nil
 	anomalyConfig := anomalyConfigSet.List()[0].(map[string]interface{})
-	noDataAnomalyConfig := anomalyConfig["no_data"].(*schema.Set).List()[0].(map[string]interface{})
+	noDataAnomalyConfigRaw := anomalyConfig["no_data"]
+	if noDataAnomalyConfigRaw == nil {
+		return nil
+	}
+	noDataAnomalyConfig := noDataAnomalyConfigRaw.(*schema.Set).List()[0].(map[string]interface{})
 	noDataAlertMethods := noDataAnomalyConfig["alert_method"].([]interface{})
+
+	if len(noDataAlertMethods) == 0 {
+		return nil
+	}
 
 	return &n9api.AnomalyConfig{
 		NoData: &n9api.AnomalyConfigNoData{
