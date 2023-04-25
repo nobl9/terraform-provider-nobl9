@@ -7,8 +7,6 @@ import (
 	"reflect"
 )
 
-//const anomalyConfigKey = "anomaly_config"
-
 func schemaAnomalyConfig() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeSet,
@@ -54,18 +52,30 @@ func schemaAnomalyConfig() *schema.Schema {
 	}
 }
 
-func transformAnomalyConfigAlertMethodsTo2DMap(alertMethods []n9api.AnomalyConfigAlertMethod) map[string]map[string]string {
-	result := make(map[string]map[string]string)
-	for _, method := range alertMethods {
-		values := make(map[string]string)
-
-		values["name"] = method.Name
-		values["project"] = method.Project
-		result[method.Name] = values
-	}
-	return result
-}
-
+// diffSuppressAnomalyConfig takes the old and new value of anomaly_config and searches for diff.
+// If the result is true, it means that there's no need to reapply (the diff is suppressed).
+// Example input:
+//
+//	oldValue: {
+//	  NoData: {
+//	    AlertMethods: [
+//	      { Name: "method1", Project: "project1" },
+//	      { Name: "method2", Project: "project2" },
+//	    ],
+//	  },
+//	}
+//
+//	newValue: {
+//	  NoData: {
+//	    AlertMethods: [
+//	      { Name: "method2", Project: "project2" },
+//	      { Name: "method1", Project: "project1" },
+//	    ],
+//	  },
+//	}
+//
+// Example output:
+// true
 func diffSuppressAnomalyConfig(_, _, _ string, d *schema.ResourceData) bool {
 	oldValue, newValue := d.GetChange("anomaly_config")
 
@@ -115,14 +125,12 @@ func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []n9api.Anom
 
 func unmarshalAnomalyConfig(d *schema.ResourceData, spec map[string]interface{}) error {
 	anomalyConfigRaw, _ := spec["anomalyConfig"]
-	//if !ok {
-	//	return nil
-	//}
 	anomalyConfig := anomalyConfigRaw.(map[string]interface{})
 
 	noData := anomalyConfig["noData"].(map[string]interface{})
 	noDataMethods := noData["alertMethods"].([]interface{})
 	resNoDataMethods := make([]map[string]interface{}, len(noDataMethods))
+
 	for i, amRaw := range noDataMethods {
 		am := amRaw.(map[string]interface{})
 
@@ -132,34 +140,48 @@ func unmarshalAnomalyConfig(d *schema.ResourceData, spec map[string]interface{})
 		}
 	}
 
-	noData2 := map[string]interface{}{
-		"alert_method": resNoDataMethods,
-	}
-
-	//anomalyConfigTF := make(map[string]interface{})
 	anomalyConfigTF := map[string]interface{}{
-		"no_data": schema.NewSet(oneElementSet, []interface{}{noData2}),
+		"no_data": schema.NewSet(oneElementSet, []interface{}{
+			map[string]interface{}{
+				"alert_method": resNoDataMethods,
+			},
+		}),
 	}
 
-	x := schema.NewSet(oneElementSet, []interface{}{anomalyConfigTF})
-	y := d.Set(
+	return d.Set(
 		"anomaly_config",
-		x,
+		schema.NewSet(oneElementSet, []interface{}{anomalyConfigTF}),
 	)
-	return y
 }
 
-func convertMapToSet(data map[string]interface{}) *schema.Set {
-	set := &schema.Set{
-		F: schema.HashString,
-	}
+// transformAnomalyConfigAlertMethodsTo2DMap transforms a slice of
+// AnomalyConfigAlertMethod values into a 2D map, where each row of
+// the map corresponds to an alert method and contains the method's
+// name and project as key-value pairs.
+// Example input:
+// [
+//
+//	{ Name: "method1", Project: "project1" },
+//	{ Name: "method2", Project: "project2" },
+//	{ Name: "method3", Project: "project1" },
+//
+// ]
+//
+// Example output:
+//
+//	{
+//	  "method1": { "name": "method1", "project": "project1" },
+//	  "method2": { "name": "method2", "project": "project2" },
+//	  "method3": { "name": "method3", "project": "project1" },
+//	}
+func transformAnomalyConfigAlertMethodsTo2DMap(alertMethods []n9api.AnomalyConfigAlertMethod) map[string]map[string]string {
+	result := make(map[string]map[string]string)
+	for _, method := range alertMethods {
+		values := make(map[string]string)
 
-	for k, v := range data {
-		set.Add(map[string]interface{}{
-			"key":   k,
-			"value": v,
-		})
+		values["name"] = method.Name
+		values["project"] = method.Project
+		result[method.Name] = values
 	}
-
-	return set
+	return result
 }
