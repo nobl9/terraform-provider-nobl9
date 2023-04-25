@@ -5,19 +5,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
 	"reflect"
-	"sort"
-	"strings"
 )
 
-const anomalyConfigKey = "anomaly_config"
+//const anomalyConfigKey = "anomaly_config"
 
 func schemaAnomalyConfig() *schema.Schema {
 	return &schema.Schema{
-		Type:             schema.TypeSet,
-		Optional:         true,
-		Description:      "Configuration for Anomalies. Currently supported Anomaly Type is NoData",
-		MaxItems:         1,
-		DiffSuppressFunc: diffSuppressAnomalyConfig,
+		Type:        schema.TypeSet,
+		Optional:    true,
+		Description: "Configuration for Anomalies. Currently supported Anomaly Type is NoData",
+		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"no_data": {
@@ -27,10 +24,11 @@ func schemaAnomalyConfig() *schema.Schema {
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"alert_method": {
-								Type:        schema.TypeList,
-								Optional:    true,
-								Description: "Alert methods attached to Anomaly Config",
-								MaxItems:    5,
+								Type:             schema.TypeList,
+								Optional:         true,
+								Description:      "Alert methods attached to Anomaly Config",
+								MaxItems:         5,
+								DiffSuppressFunc: diffSuppressAnomalyConfig,
 								Elem: &schema.Resource{
 									Schema: map[string]*schema.Schema{
 										"name": {
@@ -56,86 +54,42 @@ func schemaAnomalyConfig() *schema.Schema {
 	}
 }
 
-func diffSuppressAnomalyConfig(fieldPath, oldValueStr, newValueStr string, d *schema.ResourceData) bool {
-	return true
-	fieldPathSegments := strings.Split(fieldPath, ".")
-	if len(fieldPathSegments) > 1 {
-		fieldName := fieldPathSegments[len(fieldPathSegments)-1]
-		if fieldName == fieldLabelKey {
-			// Terraform's GetChange function will fail to notice if user reapplied the resource
-			// with all the labels removed from the file.
-			// This is the situation in which one of the values in the label's schema is set and the other one isn't.
-			if exactlyOneStringEmpty(oldValueStr, newValueStr) {
-				return false
-			}
-		}
+func transformAnomalyConfigAlertMethodsTo2DMap(alertMethods []n9api.AnomalyConfigAlertMethod) map[string]map[string]string {
+	result := make(map[string]map[string]string)
+	for _, method := range alertMethods {
+		values := make(map[string]string)
+
+		values["name"] = method.Name
+		values["project"] = method.Project
+		result[method.Name] = values
 	}
-
-	// the N9 API will return the labels in alphabetical order for keys and values.
-	// Users should be able to declare label keys and values in any order
-	// and changing order should force recreating the resource.
-	// In order to achieve that, we're flattening the initial label struct to 2D map
-	// and check if the label values inside that 2D map are deeply equal.
-	// A simple reflect.DeepEqual change is not enough for the whole 2D map
-	// because it omits the values order inside the array.
-	// ---------------------------------
-	// Example of (deeply) equal labels:
-	//   label {
-	//    key    = "team"
-	//    values = ["sapphire", "green"]
-	//  }
-	//  label {
-	//    key    = "team"
-	//    values = ["green", "sapphire"]
-	//  }
-	oldValue, newValue := d.GetChange(fieldLabel)
-	labelsOld := oldValue.([]interface{})
-	labelsNew := newValue.([]interface{})
-	if len(labelsOld) != len(labelsNew) {
-		return false
-	}
-
-	oldMap := transformLabelsTo2DMap(labelsOld)
-	newMap := transformLabelsTo2DMap(labelsNew)
-
-	isDeepEqual := true
-	for labelKey := range newMap {
-		if _, exist := oldMap[labelKey][fieldLabelValues]; !exist {
-			return false
-		}
-
-		var oldValues = oldMap[labelKey][fieldLabelValues].([]interface{})
-		var newValues = newMap[labelKey][fieldLabelValues].([]interface{})
-
-		sort.Slice(oldValues, func(i, j int) bool {
-			return oldValues[i].(string) < oldValues[j].(string)
-		})
-		sort.Slice(newValues, func(i, j int) bool {
-			return newValues[i].(string) < newValues[j].(string)
-		})
-
-		if !reflect.DeepEqual(oldValues, newValues) {
-			isDeepEqual = false
-		}
-	}
-
-	return isDeepEqual
+	return result
 }
 
-func marshalAnomalyConfig(d *schema.ResourceData) *n9api.AnomalyConfig {
-	fmt.Println("d", d)
+func diffSuppressAnomalyConfig(_, _, _ string, d *schema.ResourceData) bool {
+	oldValue, newValue := d.GetChange("anomaly_config")
 
-	anomalyConfigSet := d.Get("anomaly_config").(*schema.Set)
+	oldAnomalyConfig := marshalAnomalyConfig(oldValue)
+	newAnomalyConfig := marshalAnomalyConfig(newValue)
+
+	return reflect.DeepEqual(
+		transformAnomalyConfigAlertMethodsTo2DMap(
+			oldAnomalyConfig.NoData.AlertMethods,
+		),
+		transformAnomalyConfigAlertMethodsTo2DMap(
+			newAnomalyConfig.NoData.AlertMethods,
+		),
+	)
+}
+
+func marshalAnomalyConfig(anomalyConfigRaw interface{}) *n9api.AnomalyConfig {
+	anomalyConfigSet := anomalyConfigRaw.(*schema.Set)
 	if anomalyConfigSet.Len() == 0 {
 		return nil
 	}
 
 	anomalyConfig := anomalyConfigSet.List()[0].(map[string]interface{})
 	noDataAnomalyConfig := anomalyConfig["no_data"].(*schema.Set).List()[0].(map[string]interface{})
-	if _, ok := noDataAnomalyConfig["alert_method"]; !ok {
-		panic("no alert method")
-	}
-
 	noDataAlertMethods := noDataAnomalyConfig["alert_method"].([]interface{})
 
 	fmt.Println(noDataAlertMethods)
@@ -160,7 +114,11 @@ func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []n9api.Anom
 }
 
 func unmarshalAnomalyConfig(d *schema.ResourceData, spec map[string]interface{}) error {
-	anomalyConfig := spec["anomalyConfig"].(map[string]interface{})
+	anomalyConfigRaw, _ := spec["anomalyConfig"]
+	//if !ok {
+	//	return nil
+	//}
+	anomalyConfig := anomalyConfigRaw.(map[string]interface{})
 
 	noData := anomalyConfig["noData"].(map[string]interface{})
 	noDataMethods := noData["alertMethods"].([]interface{})
