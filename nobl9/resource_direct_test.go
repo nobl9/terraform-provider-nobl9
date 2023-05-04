@@ -62,6 +62,7 @@ resource "nobl9_direct_%s" "%s" {
   account_name = "account name"
   client_secret = "secret"
   client_name = "client name"
+  log_collection_enabled = false
   query_delay {
     unit = "Minute"
     value = 6
@@ -78,6 +79,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   service_account_key = "secret"
+  log_collection_enabled = true
   query_delay {
     unit = "Minute"
     value = 6
@@ -105,6 +107,7 @@ resource "nobl9_direct_%s" "%s" {
       value = 10
     }
   }
+  log_collection_enabled = true
   query_delay {
     unit = "Minute"
     value = 6
@@ -133,6 +136,7 @@ resource "nobl9_direct_%s" "%s" {
       value = 10
     }
   }
+  log_collection_enabled = true
   query_delay {
     unit = "Minute"
     value = 6
@@ -176,6 +180,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   service_account_key = "secret"
+  log_collection_enabled = true
   query_delay {
     unit = "Minute"
     value = 6
@@ -239,6 +244,7 @@ resource "nobl9_direct_%s" "%s" {
       value = 10
     }
   }
+  log_collection_enabled = true
   query_delay {
     unit = "Minute"
     value = 6
@@ -282,6 +288,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   api_token = "secret"
+  log_collection_enabled = true
   query_delay {
     unit = "Minute"
     value = 6
@@ -300,6 +307,7 @@ resource "nobl9_direct_%s" "%s" {
   secret_arn = "aws:arn"
   access_key_id = "secret"
   secret_access_key = "secret"
+  log_collection_enabled = true
   query_delay {
     unit = "Minute"
     value = 6
@@ -378,6 +386,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   oauth_bearer_token = "secret"
+  log_collection_enabled = true
   query_delay {
     unit = "Minute"
     value = 6
