@@ -316,6 +316,12 @@ func schemaSLO() map[string]*schema.Schema {
 			},
 		},
 		"anomaly_config": schemaAnomalyConfig(),
+		"anomaly_config_count": {
+			Type:      schema.TypeInt,
+			Computed:  true,
+			ForceNew:  true,
+			Sensitive: true,
+		},
 	}
 }
 
@@ -325,6 +331,9 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	if ds != nil {
 		return ds
 	}
+
+	mySet := d.Get("anomaly_config").(*schema.Set)
+	d.Set("anomaly_config_count", len(mySet.List()))
 
 	slo, diags := marshalSLO(d)
 	if diags.HasError() {

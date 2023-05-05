@@ -51,8 +51,9 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		//{"test-splunk-observability", testSplunkObservabilitySLO},
 		//{"test-sumologic", testSumoLogicSLO},
 		//{"test-thousandeyes", testThousandeyesSLO},
-		{"test-anomaly-config-no-data", testAnomalyConfigNoData},
-		//{"test-anomaly-config-without-project", testAnomalyConfigWithoutProject},
+		//{"test-anomaly-config-multiple-projects", testAnomalyConfigNoDataMultipleProjects},
+		{"test-anomaly-config-same-project", testAnomalyConfigNoDataSameProject},
+		//{"test-anomaly-config-one-alert-method", testAnomalyConfigOneAlertMethod},
 	}
 
 	for _, tc := range cases {
@@ -2436,7 +2437,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testAnomalyConfigNoData(name string) string {
+func testAnomalyConfigNoDataMultipleProjects(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	var alertMethodName1 = name + "-method-1"
@@ -2541,15 +2542,94 @@ func testAnomalyConfigNoData(name string) string {
 	return config
 }
 
-func testAnomalyConfigWithoutProject(name string) string {
+func testAnomalyConfigNoDataSameProject(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	var alertMethodName1 = name + "-method-1"
+	var alertMethodName2 = name + "-method-2"
+	var alertMethodName3 = name + "-method-3"
+	var alertMethodName4 = name + "-method-4"
+	var alertMethodName5 = name + "-method-5"
+
+	config := mockAlertMethod(alertMethodName1, testProject) +
+		mockAlertMethod(alertMethodName2, testProject) +
+		mockAlertMethod(alertMethodName3, testProject) +
+		mockAlertMethod(alertMethodName4, testProject) +
+		mockAlertMethod(alertMethodName5, testProject) +
+		testService(serviceName) +
+		testThousandEyesAgent(agentName) + `
+
+		resource "nobl9_slo" ":name" {
+			name         = ":name"
+			display_name = ":name"
+			project      = ":project"
+			service      = nobl9_service.:serviceName.name
+		
+			budgeting_method = "Occurrences"
+		
+			objective {
+				display_name = "obj1"
+				name         = "tf-objective-1"
+				target       = 0.7
+				value        = 1
+				op           = "lt"
+				raw_metric {
+					query {
+						thousandeyes {
+							test_id = 11
+						}
+					}
+				}
+			}
+		
+			time_window {
+				count      = 10
+				is_rolling = true
+				unit       = "Minute"
+			}
+		
+			indicator {
+				name    = nobl9_agent.:agentName.name
+				project = ":project"
+				kind    = "Agent"
+			}
+		
+			anomaly_config {
+				no_data {
+					alert_method {
+						name = ":alertMethodName1"
+						project = ":project"
+					}
+		
+					alert_method {
+						name = ":alertMethodName5"
+						project = ":project"
+					}
+				}
+			}
+		}
+	`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+	config = strings.ReplaceAll(config, ":alertMethodName1", alertMethodName1)
+	config = strings.ReplaceAll(config, ":alertMethodName2", alertMethodName2)
+	config = strings.ReplaceAll(config, ":alertMethodName3", alertMethodName3)
+	config = strings.ReplaceAll(config, ":alertMethodName4", alertMethodName4)
+	config = strings.ReplaceAll(config, ":alertMethodName5", alertMethodName5)
+
+	return config
+}
+
+func testAnomalyConfigOneAlertMethod(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	var alertMethodName = name + "-tf-alertmethod"
-	var alertMethodProject = name + "-tf-alertmethod-project"
 
 	config := testService(serviceName) +
 		testThousandEyesAgent(agentName) +
-		mockAlertMethod(alertMethodName, alertMethodProject) + `
+		mockAlertMethod(alertMethodName, testProject) + `
 resource "nobl9_slo" ":name" {
 	name         = ":name"
 	display_name = ":name"
@@ -2589,6 +2669,7 @@ resource "nobl9_slo" ":name" {
 		no_data {
 			alert_method {
 				name = ":alertMethodName"
+				project = ":project"
 			}
 		}
 	}
