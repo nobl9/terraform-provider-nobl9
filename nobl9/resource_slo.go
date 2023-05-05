@@ -326,9 +326,6 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 		return ds
 	}
 
-	mySet := d.Get("anomaly_config").(*schema.Set)
-	d.Set("anomaly_config_count", len(mySet.List()))
-
 	slo, diags := marshalSLO(d)
 	if diags.HasError() {
 		return diags

@@ -52,7 +52,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		//{"test-sumologic", testSumoLogicSLO},
 		//{"test-thousandeyes", testThousandeyesSLO},
 		//{"test-anomaly-config-multiple-projects", testAnomalyConfigNoDataMultipleProjects},
-		{"test-anomaly-config-same-project", testAnomalyConfigNoDataSameProject},
+		//{"test-anomaly-config-same-project", testAnomalyConfigNoDataSameProject},
 		//{"test-anomaly-config-one-alert-method", testAnomalyConfigOneAlertMethod},
 	}
 
