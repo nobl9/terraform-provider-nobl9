@@ -316,12 +316,6 @@ func schemaSLO() map[string]*schema.Schema {
 			},
 		},
 		"anomaly_config": schemaAnomalyConfig(),
-		"anomaly_config_count": {
-			Type:      schema.TypeInt,
-			Computed:  true,
-			ForceNew:  true,
-			Sensitive: true,
-		},
 	}
 }
 

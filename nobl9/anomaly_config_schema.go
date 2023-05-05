@@ -1,10 +1,10 @@
 package nobl9
 
 import (
-	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
 	"reflect"
+	"strings"
 )
 
 func schemaAnomalyConfig() *schema.Schema {
@@ -17,18 +17,18 @@ func schemaAnomalyConfig() *schema.Schema {
 			Schema: map[string]*schema.Schema{
 				"no_data": {
 					Type:             schema.TypeSet,
-					Optional:         true,
+					Required:         true,
 					DiffSuppressFunc: diffSuppressAnomalyConfig,
 					Description:      "Alert Policies attached to SLO",
-					ConfigMode:       schema.SchemaConfigModeAuto,
+					MinItems:         1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"alert_method": {
 								Type:        schema.TypeList,
-								Optional:    true,
+								Required:    true,
 								Description: "Alert methods attached to Anomaly Config",
 								MaxItems:    5,
-								ConfigMode:  schema.SchemaConfigModeAttr,
+								MinItems:    1,
 								Elem: &schema.Resource{
 									Schema: map[string]*schema.Schema{
 										"name": {
@@ -78,7 +78,7 @@ func schemaAnomalyConfig() *schema.Schema {
 //
 // Example output:
 // true
-func diffSuppressAnomalyConfig(_, oldValueStr, newValueStr string, d *schema.ResourceData) bool {
+func diffSuppressAnomalyConfig(fieldPath, oldValueStr, newValueStr string, d *schema.ResourceData) bool {
 	oldValue, newValue := d.GetChange("anomaly_config")
 	oldAnomalyConfig := marshalAnomalyConfig(oldValue)
 	newAnomalyConfig := marshalAnomalyConfig(newValue)
@@ -97,56 +97,64 @@ func diffSuppressAnomalyConfig(_, oldValueStr, newValueStr string, d *schema.Res
 		)
 	}
 
-	// Terraform's GetChange function will fail to notice if user reapplied the resource
-	// with all the labels removed from the file.
-	// This is the situation in which one of the values in the label's schema is set and the other one isn't.
-	if exactlyOneStringEmpty(oldValueStr, newValueStr) {
-		return false
+	fieldPathSegments := strings.Split(fieldPath, ".")
+	if len(fieldPathSegments) > 1 {
+		fieldName := fieldPathSegments[len(fieldPathSegments)-1]
+		if fieldName == "alert_method" || fieldName == "name" || fieldName == "project" {
+			// Terraform's GetChange function will fail to notice if user reapplied the resource
+			// with all the labels removed from the file.
+			// This is the situation in which one of the values in the label's schema is set and the other one isn't.
+			if exactlyOneStringEmpty(oldValueStr, newValueStr) {
+				return false
+			}
+		}
 	}
-
 	return reflect.DeepEqual(oldMethods, newMethods)
 }
 
 func marshalAnomalyConfig(anomalyConfigRaw interface{}) *n9api.AnomalyConfig {
 	anomalyConfigSet := anomalyConfigRaw.(*schema.Set)
-	if anomalyConfigSet.Len() == 0 {
+	if anomalyConfigSet.Len() == 0 || anomalyConfigSet.List()[0] == nil {
 		return nil
 	}
-
 	anomalyConfig := anomalyConfigSet.List()[0].(map[string]interface{})
-	noDataAnomalyConfigRaw := anomalyConfig["no_data"]
-	if noDataAnomalyConfigRaw == nil {
+	noDataAnomalyConfigList := anomalyConfig["no_data"].(*schema.Set).List()
+	if noDataAnomalyConfigList[0] == nil {
 		return nil
 	}
-	noDataAnomalyConfig := noDataAnomalyConfigRaw.(*schema.Set).List()[0].(map[string]interface{})
+	noDataAnomalyConfig := noDataAnomalyConfigList[0].(map[string]interface{})
 	noDataAlertMethods := noDataAnomalyConfig["alert_method"].([]interface{})
 
 	if len(noDataAlertMethods) == 0 {
 		return nil
 	}
 
+	marshalledAlertMethods, isEmpty := marshalAnomalyConfigAlertMethods(noDataAlertMethods)
+
+	if isEmpty {
+		return nil
+	}
+
 	return &n9api.AnomalyConfig{
 		NoData: &n9api.AnomalyConfigNoData{
-			AlertMethods: marshalAnomalyConfigAlertMethods(noDataAlertMethods),
+			AlertMethods: marshalledAlertMethods,
 		},
 	}
 }
 
-func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []n9api.AnomalyConfigAlertMethod {
-	fmt.Println(alertMethodsTF)
+func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) ([]n9api.AnomalyConfigAlertMethod, bool) {
 	alertMethodsAPI := make([]n9api.AnomalyConfigAlertMethod, 0)
+
+	isEmpty := true
 	for i := 0; i < len(alertMethodsTF); i++ {
 		if alertMethodsTF[i] == nil {
 			continue
 		}
 		alertMethodTF := alertMethodsTF[i].(map[string]interface{})
-
-		if alertMethodTF["name"].(string) != "slack-notification" && alertMethodTF["name"].(string) != "anomalydetector-nodata-tests-performance" {
-		}
-
 		if alertMethodTF["name"].(string) == "" || alertMethodTF["project"].(string) == "" {
-			panic(alertMethodTF["name"].(string))
 			continue
+		} else {
+			isEmpty = false
 		}
 
 		alertMethodsAPI = append(alertMethodsAPI, n9api.AnomalyConfigAlertMethod{
@@ -155,7 +163,7 @@ func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []n9api.Anom
 		})
 	}
 
-	return alertMethodsAPI
+	return alertMethodsAPI, isEmpty
 }
 
 func unmarshalAnomalyConfig(d *schema.ResourceData, spec map[string]interface{}) error {
