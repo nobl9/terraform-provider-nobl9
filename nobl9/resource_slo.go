@@ -776,8 +776,8 @@ func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}) er
 		calendarTF["time_zone"] = calendar["timeZone"].(string)
 		timeWindowsTF["calendar"] = schema.NewSet(oneElementSet, []interface{}{calendarTF})
 	}
-	y := schema.NewSet(oneElementSet, []interface{}{timeWindowsTF})
-	return d.Set("time_window", y)
+	tw := schema.NewSet(oneElementSet, []interface{}{timeWindowsTF})
+	return d.Set("time_window", tw)
 }
 
 func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) error {

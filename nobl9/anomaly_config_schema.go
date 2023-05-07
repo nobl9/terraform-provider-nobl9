@@ -35,7 +35,9 @@ func schemaAnomalyConfig() *schema.Schema {
 										"project": {
 											Type:     schema.TypeString,
 											Required: true,
-											Description: "Project name the Alert Method is in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names)." +
+											Description: "Project name the Alert Method is in, " +
+												" must conform to the naming convention from [DNS RFC1123] " +
+												"(https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names)." +
 												" If not defined, Nobl9 returns a default value for this field.",
 										},
 									},
@@ -91,8 +93,8 @@ func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []n9api.Anom
 }
 
 func unmarshalAnomalyConfig(d *schema.ResourceData, spec map[string]interface{}) error {
-	anomalyConfigRaw, ok := spec["anomalyConfig"]
-	if !ok {
+	anomalyConfigRaw, anomalyConfigExists := spec["anomalyConfig"]
+	if !anomalyConfigExists {
 		return nil
 	}
 	anomalyConfig := anomalyConfigRaw.(map[string]interface{})

@@ -11,8 +11,6 @@ require (
 	github.com/stretchr/testify v1.8.1
 )
 
-replace github.com/nobl9/nobl9-go v0.7.3 => ../nobl9-go
-
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
