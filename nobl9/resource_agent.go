@@ -64,6 +64,7 @@ func agentSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "client_secret of created agent.",
 		},
+		queryDelayConfigKey: schemaQueryDelay(),
 		"status": {
 			Type:        schema.TypeMap,
 			Computed:    true,
@@ -157,7 +158,7 @@ func resourceAgentRead(_ context.Context, d *schema.ResourceData, meta interface
 		return ds
 	}
 
-	objects, err := client.GetObject(n9api.ObjectAgent, "", d.Id())
+	objects, err := client.GetAgents("", d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -232,26 +233,30 @@ func marshalAgent(d *schema.ResourceData) (*n9api.Agent, diag.Diagnostics) {
 			SplunkObservability: marshalAgentSplunkObservability(d, diags),
 			SumoLogic:           marshalAgentSumoLogic(d, diags),
 			ThousandEyes:        marshalAgentThousandEyes(d),
+			QueryDelay:          marshalQueryDelay(d),
 		},
 	}, diags
 }
 
-func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+func unmarshalAgent(d *schema.ResourceData, agents []n9api.Agent) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	if len(objects) != 1 {
+	if len(agents) != 1 {
 		d.SetId("")
 		return nil
 	}
-	object := objects[0]
+	agent := agents[0]
 
-	if ds := unmarshalGenericMetadata(object, d); ds.HasError() {
-		diags = append(diags, ds...)
+	status := map[string]interface{}{
+		"agent_type":      agent.Status.AgentType,
+		"agent_version":   agent.Status.AgentVersion,
+		"last_connection": agent.Status.LastConnection,
 	}
-
-	status := object["status"].(map[string]interface{})
 	err := d.Set("status", status)
+
 	diags = appendError(diags, err)
+	diags = append(diags, unmarshalMetadata(agent.MetadataHolder, d)...)
+	diags = append(diags, unmarshalQueryDelay(d, agent.Spec.QueryDelay)...)
 	spec := n9api.AgentSpec{}
 	supportedAgents := []struct {
 		hclName  string
@@ -282,7 +287,7 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 	}
 
 	for _, name := range supportedAgents {
-		ok, ds := unmarshalAgentConfig(d, object, name.hclName, name.jsonName)
+		ok, ds := unmarshalAgentConfig(d, agent, name.hclName, name.jsonName)
 		if ds.HasError() {
 			diags = append(diags, ds...)
 		}
@@ -296,25 +301,28 @@ func unmarshalAgent(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Dia
 
 func unmarshalAgentConfig(
 	d *schema.ResourceData,
-	object n9api.AnyJSONObj,
+	agent n9api.Agent,
 	hclName,
 	jsonName string) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	spec := object["spec"].(map[string]interface{})
-	if spec[jsonName] == nil {
-		return false, nil
-	}
 
 	// err := d.Set("agent_type", spec[""]) TODO
-	err := d.Set("source_of", spec["sourceOf"])
+	err := d.Set("source_of", agent.Spec.SourceOf)
+	diags = appendError(diags, err)
+
+	spec, err := json.Marshal(&agent.Spec)
+	diags = appendError(diags, err)
+
+	var m map[string]interface{}
+	err = json.Unmarshal(spec, &m)
 	diags = appendError(diags, err)
 
 	switch jsonName {
 	case agentSpecJSONName(n9api.AgentSpec{}.NewRelic, diags):
-		unmarshalDiags := unmarshalNewRelicAgentSpec(d, object)
+		unmarshalDiags := unmarshalNewRelicAgentSpec(d, agent)
 		diags = append(diags, unmarshalDiags...)
 	default:
-		err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{spec[jsonName]}))
+		err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{m[jsonName]}))
 		diags = appendError(diags, err)
 	}
 
@@ -1038,17 +1046,16 @@ func marshalAgentRedshift(d *schema.ResourceData) *n9api.RedshiftAgentConfig {
 	return &n9api.RedshiftAgentConfig{}
 }
 
-func unmarshalNewRelicAgentSpec(d *schema.ResourceData, object n9api.AnyJSONObj) diag.Diagnostics {
+func unmarshalNewRelicAgentSpec(d *schema.ResourceData, agent n9api.Agent) diag.Diagnostics {
 	var diags diag.Diagnostics
-	if spec, ok := object["spec"]; ok {
-		if newRelicSpec, ok := spec.(map[string]interface{})["newRelic"]; ok {
-			accountID := newRelicSpec.(map[string]interface{})["accountId"]
-			accountIDVal := map[string]interface{}{"account_id": fmt.Sprint(accountID)}
-			err := d.Set(newRelicAgentConfigKey, schema.NewSet(oneElementSet, []interface{}{accountIDVal}))
-			diags = appendError(diags, err)
-		}
+	if agent.Spec.NewRelic != nil {
+		accountID := agent.Spec.NewRelic.AccountID
+		accountIDVal := map[string]interface{}{"account_id": fmt.Sprint(accountID)}
+		err := d.Set(newRelicAgentConfigKey, schema.NewSet(oneElementSet, []interface{}{accountIDVal}))
+		diags = appendError(diags, err)
+		return diags
 	}
-
+	diags = appendError(diags, fmt.Errorf("missing newrelic agent spec"))
 	return diags
 }
 

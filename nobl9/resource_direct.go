@@ -45,6 +45,7 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 					Description: "Source of Metrics or Services.",
 				},
 			},
+			queryDelayConfigKey: schemaQueryDelay(),
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -174,6 +175,7 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*n9api.Direct, d
 	spec.SourceOf = sourceOfStr
 	spec.Description = d.Get("description").(string)
 	spec.HistoricalDataRetrieval = marshalHistoricalDataRetrieval(d)
+	spec.QueryDelay = marshalQueryDelay(d)
 
 	return &n9api.Direct{
 		ObjectHeader: n9api.ObjectHeader{
@@ -198,6 +200,7 @@ func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []n9api
 	diags = append(diags, unmarshalMetadata(direct.MetadataHolder, d)...)
 	diags = append(diags, dr.UnmarshalSpec(d, direct.Spec)...)
 	diags = append(diags, unmarshalHistoricalDataRetrieval(d, direct.Spec.HistoricalDataRetrieval)...)
+	diags = append(diags, unmarshalQueryDelay(d, direct.Spec.QueryDelay)...)
 
 	return diags
 }
