@@ -315,6 +315,7 @@ func schemaSLO() map[string]*schema.Schema {
 				},
 			},
 		},
+		"anomaly_config": schemaAnomalyConfig(),
 	}
 }
 
@@ -475,6 +476,7 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 			TimeWindows:     marshalTimeWindows(d),
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
 			Attachments:     marshalAttachments(attachments.([]interface{})),
+			AnomalyConfig:   marshalAnomalyConfig(d.Get("anomaly_config")),
 		},
 	}, diags
 }
@@ -684,6 +686,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 
 	err = unmarshalTimeWindow(d, spec)
 	diags = appendError(diags, err)
+
 	err = unmarshalIndicator(d, spec)
 	diags = appendError(diags, err)
 
@@ -694,6 +697,9 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	diags = appendError(diags, err)
 
 	err = unmarshalAttachments(d, spec)
+	diags = appendError(diags, err)
+
+	err = unmarshalAnomalyConfig(d, spec)
 	diags = appendError(diags, err)
 
 	err = d.Set("alert_policies", spec["alertPolicies"].([]interface{}))
@@ -770,7 +776,8 @@ func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}) er
 		calendarTF["time_zone"] = calendar["timeZone"].(string)
 		timeWindowsTF["calendar"] = schema.NewSet(oneElementSet, []interface{}{calendarTF})
 	}
-	return d.Set("time_window", schema.NewSet(oneElementSet, []interface{}{timeWindowsTF}))
+	tw := schema.NewSet(oneElementSet, []interface{}{timeWindowsTF})
+	return d.Set("time_window", tw)
 }
 
 func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) error {

@@ -140,6 +140,7 @@ resource "nobl9_slo" "this" {
 ### Optional
 
 - `alert_policies` (List of String) Alert Policies attached to SLO
+- `anomaly_config` (Block Set, Max: 1) Configuration for Anomalies. Currently supported Anomaly Type is NoData (see [below for nested schema](#nestedblock--anomaly_config))
 - `attachment` (Block List, Max: 20) (see [below for nested schema](#nestedblock--attachment))
 - `attachments` (Block List, Max: 20, Deprecated) (see [below for nested schema](#nestedblock--attachments))
 - `composite` (Block Set, Max: 1) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
@@ -1118,6 +1119,31 @@ Required:
 
 - `start_time` (String) Date of the start
 - `time_zone` (String) Timezone name in IANA Time Zone Database
+
+
+
+<a id="nestedblock--anomaly_config"></a>
+### Nested Schema for `anomaly_config`
+
+Required:
+
+- `no_data` (Block Set, Min: 1, Max: 1) Alert Policies attached to SLO (see [below for nested schema](#nestedblock--anomaly_config--no_data))
+
+<a id="nestedblock--anomaly_config--no_data"></a>
+### Nested Schema for `anomaly_config.no_data`
+
+Required:
+
+- `alert_method` (Block List, Min: 1, Max: 5) Alert methods attached to Anomaly Config (see [below for nested schema](#nestedblock--anomaly_config--no_data--alert_method))
+
+<a id="nestedblock--anomaly_config--no_data--alert_method"></a>
+### Nested Schema for `anomaly_config.no_data.alert_method`
+
+Required:
+
+- `name` (String) The name of the previously defined alert method.
+- `project` (String) Project name the Alert Method is in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names). If not defined, Nobl9 returns a default value for this field.
+
 
 
 
