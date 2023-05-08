@@ -1,7 +1,6 @@
 package nobl9
 
 import (
-	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -57,7 +56,6 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			os.Setenv("TF_ACC", "1")
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
