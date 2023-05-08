@@ -1,9 +1,10 @@
 package nobl9
 
 import (
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	n9api "github.com/nobl9/nobl9-go"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
