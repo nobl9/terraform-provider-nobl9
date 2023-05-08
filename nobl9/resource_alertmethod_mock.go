@@ -2,7 +2,7 @@ package nobl9
 
 import "fmt"
 
-func mockAlertMethod(name string, project string) string {
+func mockAlertMethod(name, project string) string {
 	return fmt.Sprintf(`
 resource "nobl9_alert_method_slack" "%s" {
   name        = "%s"
