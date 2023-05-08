@@ -106,4 +106,18 @@ resource "nobl9_slo" "this" {
   indicator {
     name = "test-terraform-prom-agent"
   }
+
+  anomaly_config {
+    no_data {
+      alert_method {
+        name = "foo-method-method"
+        project = "default"
+      }
+
+      alert_method {
+        name = "bar-alert-method"
+        project = "default"
+      }
+    }
+  }
 }
