@@ -9,7 +9,7 @@ description: |-
 
 The **Slack Alert Method** allows sending a predefined notification through Slack to notify Nobl9 users whenever an incident is triggered.
 
--> **NOTE** To set up the Slack integration, you'll need to provide an Incoming Webhook URL. This allows Slack to send an automated notification to a channel of your choice. For details, see the [Slack documentation](https://slack.com/help/articles/115005265063-Incoming-webhooks-for-Slack%22).
+-> **NOTE** To set up the Slack integration, you'll need to provide an Incoming Webhook URL. This allows Slack to send an automated notification to a channel of your choice. For details, see the [Slack documentation](https://api.slack.com/messaging/webhooks#enable_webhooks).
 
 For more details, refer to [Slack Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/slack).
 
