@@ -26,4 +26,5 @@ func unmarshalLogCollectionEnabled(d *schema.ResourceData, l *bool) (diags diag.
 		return
 	}
 	set(d, logCollectionConfigKey, l, &diags)
+	return
 }
