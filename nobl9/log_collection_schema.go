@@ -16,7 +16,10 @@ func schemaLogCollection() *schema.Schema {
 }
 
 func marshalLogCollectionEnabled(d *schema.ResourceData) *bool {
-	lData := d.Get(logCollectionConfigKey)
+	lData, ok := d.GetOk(logCollectionConfigKey)
+	if !ok {
+		return nil
+	}
 	value := lData.(bool)
 	return &value
 }
