@@ -177,7 +177,10 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*n9api.Direct, d
 	spec.Description = d.Get("description").(string)
 	spec.HistoricalDataRetrieval = marshalHistoricalDataRetrieval(d)
 	spec.QueryDelay = marshalQueryDelay(d)
-	spec.LogCollectionEnabled = marshalLogCollectionEnabled(d)
+
+	if !d.GetRawConfig().GetAttr(logCollectionConfigKey).IsNull() {
+		spec.LogCollectionEnabled = marshalLogCollectionEnabled(d)
+	}
 
 	return &n9api.Direct{
 		ObjectHeader: n9api.ObjectHeader{
