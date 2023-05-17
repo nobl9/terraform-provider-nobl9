@@ -49,6 +49,7 @@ resource "nobl9_direct_newrelic" "test-newrelic" {
 - `display_name` (String) User-friendly display name of the resource.
 - `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
 - `insights_query_key` (String, Sensitive) [required] | New Relic Insights Query Key.
+- `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/direct-logs)
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 
 ### Read-Only
