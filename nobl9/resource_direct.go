@@ -45,8 +45,7 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 					Description: "Source of Metrics or Services.",
 				},
 			},
-			queryDelayConfigKey:    schemaQueryDelay(),
-			logCollectionConfigKey: schemaLogCollection(),
+			queryDelayConfigKey: schemaQueryDelay(),
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -284,7 +283,7 @@ const bigqueryDirectType = "bigquery"
 type bigqueryDirectSpec struct{}
 
 func (s bigqueryDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	bigQuerySchema := map[string]*schema.Schema{
 		"service_account_key": {
 			Type:        schema.TypeString,
 			Description: "[required] | Service Account Key.",
@@ -296,6 +295,9 @@ func (s bigqueryDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+	setLogCollectionSchema(bigQuerySchema)
+
+	return bigQuerySchema
 }
 
 func (s bigqueryDirectSpec) GetDescription() string {
@@ -345,6 +347,7 @@ func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setHistoricalDataRetrievalSchema(cloudWatchSchema)
+	setLogCollectionSchema(cloudWatchSchema)
 
 	return cloudWatchSchema
 }
@@ -424,6 +427,7 @@ func (s datadogDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setHistoricalDataRetrievalSchema(datadogSchema)
+	setLogCollectionSchema(datadogSchema)
 
 	return datadogSchema
 }
@@ -483,7 +487,7 @@ const gcmDirectType = "gcm"
 type gcmDirectSpec struct{}
 
 func (s gcmDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	gcmSchema := map[string]*schema.Schema{
 		"service_account_key": {
 			Type:        schema.TypeString,
 			Description: "[required] | Service Account Key.",
@@ -495,6 +499,9 @@ func (s gcmDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+	setLogCollectionSchema(gcmSchema)
+
+	return gcmSchema
 }
 
 func (s gcmDirectSpec) GetDescription() string {
@@ -650,6 +657,7 @@ func (s lightstepDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setHistoricalDataRetrievalSchema(lightstepSchema)
+	setLogCollectionSchema(lightstepSchema)
 
 	return lightstepSchema
 }
@@ -731,7 +739,7 @@ func (s pingdomDirectSpec) GetDescription() string {
 }
 
 func (s pingdomDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	pingdomSchema := map[string]*schema.Schema{
 		"api_token": {
 			Type:        schema.TypeString,
 			Description: "[required] | Pingdom API token.",
@@ -743,6 +751,9 @@ func (s pingdomDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+	setLogCollectionSchema(pingdomSchema)
+
+	return pingdomSchema
 }
 
 func (s pingdomDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
@@ -765,7 +776,7 @@ const redshiftDirectType = "redshift"
 type redshiftDirectSpec struct{}
 
 func (s redshiftDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	redshiftSchema := map[string]*schema.Schema{
 		"secret_arn": {
 			Type:        schema.TypeString,
 			Description: "AWS Secret ARN.",
@@ -797,6 +808,9 @@ func (s redshiftDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+	setLogCollectionSchema(redshiftSchema)
+
+	return redshiftSchema
 }
 
 func (s redshiftDirectSpec) GetDescription() string {
@@ -971,7 +985,7 @@ const thousandeyesDirectType = "thousandeyes"
 type thousandeyesDirectSpec struct{}
 
 func (s thousandeyesDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	thousandeyesSchema := map[string]*schema.Schema{
 		"oauth_bearer_token": {
 			Type:        schema.TypeString,
 			Description: "[required] | ThousandEyes OAuth Bearer Token.",
@@ -983,6 +997,9 @@ func (s thousandeyesDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+	setLogCollectionSchema(thousandeyesSchema)
+
+	return thousandeyesSchema
 }
 
 func (s thousandeyesDirectSpec) GetDescription() string {

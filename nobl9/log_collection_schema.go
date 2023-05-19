@@ -7,12 +7,16 @@ import (
 
 const logCollectionConfigKey = "log_collection_enabled"
 
-func schemaLogCollection() *schema.Schema {
+func getLogCollectionSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,
 		Description: "[Logs documentation](https://docs.nobl9.com/Features/direct-logs)",
 	}
+}
+
+func setLogCollectionSchema(s map[string]*schema.Schema) {
+	s[logCollectionConfigKey] = getLogCollectionSchema()
 }
 
 func marshalLogCollectionEnabled(d *schema.ResourceData) *bool {
