@@ -14,11 +14,12 @@ For more information, refer to [BigQuery Direct | Nobl9 Documentation](https://d
 
 ```terraform
 resource "nobl9_direct_bigquery" "test-bigquery" {
-  name                = "test-bigquery"
-  project             = "terraform"
-  description         = "desc"
-  source_of           = ["Metrics", "Services"]
-  service_account_key = "secret"
+  name                   = "test-bigquery"
+  project                = "terraform"
+  description            = "desc"
+  source_of              = ["Metrics", "Services"]
+  service_account_key    = "secret"
+  log_collection_enabled = true
 }
 ```
 

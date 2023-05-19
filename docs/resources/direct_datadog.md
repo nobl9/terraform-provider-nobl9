@@ -14,13 +14,14 @@ For more information, refer to [Datadog Direct | Nobl9 Documentation](https://do
 
 ```terraform
 resource "nobl9_direct_datadog" "test-datadog" {
-  name            = "test-datadog"
-  project         = "terraform"
-  description     = "desc"
-  source_of       = ["Metrics", "Services"]
-  site            = "eu"
-  api_key         = "secret"
-  application_key = "secret"
+  name                   = "test-datadog"
+  project                = "terraform"
+  description            = "desc"
+  source_of              = ["Metrics", "Services"]
+  site                   = "eu"
+  api_key                = "secret"
+  application_key        = "secret"
+  log_collection_enabled = true
   historical_data_retrieval {
     default_duration {
       unit  = "Day"
