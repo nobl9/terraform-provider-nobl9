@@ -62,7 +62,6 @@ resource "nobl9_direct_%s" "%s" {
   account_name = "account name"
   client_secret = "secret"
   client_name = "client name"
-  log_collection_enabled = false
   query_delay {
     unit = "Minute"
     value = 6
