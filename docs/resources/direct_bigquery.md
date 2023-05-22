@@ -14,11 +14,12 @@ For more information, refer to [BigQuery Direct | Nobl9 Documentation](https://d
 
 ```terraform
 resource "nobl9_direct_bigquery" "test-bigquery" {
-  name                = "test-bigquery"
-  project             = "terraform"
-  description         = "desc"
-  source_of           = ["Metrics", "Services"]
-  service_account_key = "secret"
+  name                   = "test-bigquery"
+  project                = "terraform"
+  description            = "desc"
+  source_of              = ["Metrics", "Services"]
+  service_account_key    = "secret"
+  log_collection_enabled = true
 }
 ```
 
@@ -35,6 +36,7 @@ resource "nobl9_direct_bigquery" "test-bigquery" {
 
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
+- `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/direct-logs)
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `service_account_key` (String, Sensitive) [required] | Service Account Key.
 
