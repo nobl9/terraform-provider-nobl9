@@ -218,7 +218,7 @@ const appDynamicsDirectType = "appdynamics"
 type appDynamicsDirectSpec struct{}
 
 func (s appDynamicsDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	appDynamicsSchema := map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
 			Description: "Base URL to the AppDynamics Controller.",
@@ -250,6 +250,9 @@ func (s appDynamicsDirectSpec) GetSchema() map[string]*schema.Schema {
 			Required:    true,
 		},
 	}
+	setLogCollectionSchema(appDynamicsSchema)
+
+	return appDynamicsSchema
 }
 
 func (s appDynamicsDirectSpec) GetDescription() string {
@@ -462,6 +465,7 @@ func (s dynatraceDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setHistoricalDataRetrievalSchema(dynatraceSchema)
+	setLogCollectionSchema(dynatraceSchema)
 
 	return dynatraceSchema
 }
@@ -534,7 +538,7 @@ func (s influxdbDirectSpec) GetDescription() string {
 }
 
 func (s influxdbDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	influxdbSchema := map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -561,6 +565,9 @@ func (s influxdbDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+	setLogCollectionSchema(influxdbSchema)
+
+	return influxdbSchema
 }
 
 func (s influxdbDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
@@ -590,7 +597,7 @@ func (s instanaDirectSpec) GetDescription() string {
 }
 
 func (s instanaDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	instanaSchema := map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -607,6 +614,9 @@ func (s instanaDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+
+	setLogCollectionSchema(instanaSchema)
+	return instanaSchema
 }
 
 func (s instanaDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
@@ -708,6 +718,7 @@ func (s newRelicDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setHistoricalDataRetrievalSchema(newRelicSchema)
+	setLogCollectionSchema(newRelicSchema)
 
 	return newRelicSchema
 }
@@ -864,6 +875,7 @@ func (s splunkDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setHistoricalDataRetrievalSchema(splunkSchema)
+	setLogCollectionSchema(splunkSchema)
 
 	return splunkSchema
 }
@@ -936,7 +948,7 @@ func (s sumologicDirectSpec) GetDescription() string {
 }
 
 func (s sumologicDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	sumologicSchema := map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -963,6 +975,10 @@ func (s sumologicDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+
+	setLogCollectionSchema(sumologicSchema)
+
+	return sumologicSchema
 }
 
 func (s sumologicDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {

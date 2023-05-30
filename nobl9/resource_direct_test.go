@@ -62,6 +62,7 @@ resource "nobl9_direct_%s" "%s" {
   account_name = "account name"
   client_secret = "secret"
   client_name = "client name"
+  log_collection_enabled = true
   query_delay {
     unit = "Minute"
     value = 6
@@ -153,6 +154,7 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   url = "https://web.net"
   dynatrace_token = "secret"
+  log_collection_enabled = true
   historical_data_retrieval {
     default_duration  {
       unit = "Day"
@@ -198,6 +200,7 @@ resource "nobl9_direct_%s" "%s" {
   url = "https://web.net"
   api_token = "secret"
   organization_id = "secret"
+  log_collection_enabled = true
   query_delay {
     unit = "Minute"
     value = 6
@@ -215,6 +218,7 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   url = "https://web.net"
   api_token = "secret"
+  log_collection_enabled = true
   query_delay {
     unit = "Minute"
     value = 6
@@ -261,6 +265,7 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   account_id = "1234"
   insights_query_key = "NRIQ-secret"
+  log_collection_enabled = true
   historical_data_retrieval {
     default_duration  {
       unit = "Day"
@@ -324,6 +329,7 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   url = "https://web.net"
   access_token = "secret"
+  log_collection_enabled = true
   historical_data_retrieval {
     default_duration  {
       unit = "Day"
@@ -369,6 +375,7 @@ resource "nobl9_direct_%s" "%s" {
   url = "http://web.net"
   access_id = "secret"
   access_key = "secret"
+  log_collection_enabled = true
   query_delay {
     unit = "Minute"
     value = 6
