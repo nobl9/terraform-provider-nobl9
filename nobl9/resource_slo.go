@@ -396,8 +396,6 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 }
 
 func schemaMetricSpec() *schema.Schema {
-	metricSchema := map[string]*schema.Schema{}
-
 	metricSchemaDefinitions := []map[string]*schema.Schema{
 		schemaMetricAmazonPrometheus(),
 		schemaMetricAppDynamics(),
@@ -422,15 +420,16 @@ func schemaMetricSpec() *schema.Schema {
 		schemaMetricSumologic(),
 		schemaMetricThousandEyes(),
 	}
+	metricSchema := make(map[string]*schema.Schema, len(metricSchemaDefinitions))
 	for _, metricSchemaDef := range metricSchemaDefinitions {
-		for agentKey, schema := range metricSchemaDef {
-			metricSchema[agentKey] = schema
+		for agentKey, sch := range metricSchemaDef {
+			metricSchema[agentKey] = sch
 		}
 	}
 
 	return &schema.Schema{
 		Type:        schema.TypeSet,
-		Optional:    true,
+		Required:    true,
 		Description: "Configuration for metric source",
 		Elem: &schema.Resource{
 			Schema: metricSchema,
