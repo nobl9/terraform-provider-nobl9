@@ -6,4 +6,5 @@ resource "nobl9_direct_influxdb" "test-influxdb" {
   url             = "https://web.net"
   api_token       = "secret"
   organization_id = "secret"
+  log_collection_enabled = true
 }

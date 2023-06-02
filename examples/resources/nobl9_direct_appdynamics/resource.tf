@@ -7,4 +7,5 @@ resource "nobl9_direct_appdynamics" "test-appdynamics" {
   account_name  = "account name"
   client_secret = "secret"
   client_name   = "client name"
+  log_collection_enabled = true
 }
