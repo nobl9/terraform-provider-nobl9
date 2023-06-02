@@ -5,4 +5,5 @@ resource "nobl9_direct_instana" "test-instana" {
   source_of   = ["Metrics", "Services"]
   url         = "https://web.net"
   api_token   = "secret"
+  log_collection_enabled = true
 }

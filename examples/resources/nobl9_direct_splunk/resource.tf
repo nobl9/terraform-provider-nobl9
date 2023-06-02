@@ -5,6 +5,7 @@ resource "nobl9_direct_splunk" "test-splunk" {
   source_of    = ["Metrics", "Services"]
   url          = "https://web.net"
   access_token = "secret"
+  log_collection_enabled = true
   historical_data_retrieval {
     default_duration {
       unit  = "Day"
