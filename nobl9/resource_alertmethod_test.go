@@ -25,6 +25,7 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 		{"test-jira", "jira", testJiraConfig},
 		{"test-teams", "msteams", testTeamsConfig},
 		{"test-email", "email", testEmailConfig},
+		{"test-email-no-subject-and-body", "email", testEmailConfigWithoutSubjectAndBody},
 	}
 
 	for _, tc := range cases {
@@ -162,6 +163,19 @@ resource "nobl9_alert_method_email" "%s" {
   bcc		  = [ "testUser@nobl9.com" ]
   subject     = "Test email please ignore"
   body        = "This is just a test email"
+}
+`, name, name, testProject)
+}
+
+func testEmailConfigWithoutSubjectAndBody(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_email" "%s" {
+  name        = "%s"
+  project     = "%s"
+  description = "teams"
+  to		  = [ "testUser@nobl9.com" ]
+  cc		  = [ "testUser@nobl9.com" ]
+  bcc		  = [ "testUser@nobl9.com" ]
 }
 `, name, name, testProject)
 }
