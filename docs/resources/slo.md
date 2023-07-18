@@ -201,12 +201,9 @@ Optional:
 
 Required:
 
+- `good` (Block Set, Min: 1) Configuration for metric source (see [below for nested schema](#nestedblock--objective--count_metrics--good))
 - `incremental` (Boolean) Should the metrics be incrementing or not
-
-Optional:
-
-- `good` (Block Set) Configuration for metric source (see [below for nested schema](#nestedblock--objective--count_metrics--good))
-- `total` (Block Set) Configuration for metric source (see [below for nested schema](#nestedblock--objective--count_metrics--total))
+- `total` (Block Set, Min: 1) Configuration for metric source (see [below for nested schema](#nestedblock--objective--count_metrics--total))
 
 <a id="nestedblock--objective--count_metrics--good"></a>
 ### Nested Schema for `objective.count_metrics.good`
@@ -806,9 +803,9 @@ Required:
 <a id="nestedblock--objective--raw_metric"></a>
 ### Nested Schema for `objective.raw_metric`
 
-Optional:
+Required:
 
-- `query` (Block Set) Configuration for metric source (see [below for nested schema](#nestedblock--objective--raw_metric--query))
+- `query` (Block Set, Min: 1) Configuration for metric source (see [below for nested schema](#nestedblock--objective--raw_metric--query))
 
 <a id="nestedblock--objective--raw_metric--query"></a>
 ### Nested Schema for `objective.raw_metric.query`
