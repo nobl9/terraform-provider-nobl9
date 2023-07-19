@@ -529,13 +529,15 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 		},
 		"subject": {
 			Type:        schema.TypeString,
-			Required:    true,
-			Description: "The Subject of the email alert.",
+			Optional:    true,
+			Deprecated:  "Email Subject is Deprecated as of Nobl9 1.57 release. It's not used for email generation. You can safely remove it from your configuration file.",
+			Description: "Deprecated value that was used as the subject of email alert. It's not used anywhere but kept for backward compatibility.",
 		},
 		"body": {
 			Type:        schema.TypeString,
-			Required:    true,
-			Description: "The Body of the email alert. For the format of the body and the list of variables that you can define, refer to the [Nobl9 documentation](https://docs.nobl9.com/Alerting/Alert_methods/email-alert#yaml-configuration).",
+			Optional:    true,
+			Deprecated:  "Email Body is Deprecated as of Nobl9 1.57 release. It's not used for email generation. You can safely remove it from your configuration file.",
+			Description: "Deprecated value that was used as the body template of email alert. It's not used anywhere but kept for backward compatibility.",
 		},
 	}
 }
