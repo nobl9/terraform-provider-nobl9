@@ -33,7 +33,7 @@ func resourceAlertPolicy() *schema.Resource {
 						"measurement": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "One of `timeToBurnBudget` | `burnRate` | `burnedBudget`.",
+							Description: "One of `timeToBurnBudget` | `timeToBurnEntireBudget` | `burnRate` | `burnedBudget`.",
 						},
 						"value": {
 							Type:        schema.TypeFloat,
@@ -43,7 +43,7 @@ func resourceAlertPolicy() *schema.Resource {
 						"value_string": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Used with `timeToBurnBudget`, indicates when the budget would be exhausted. The expected value is a string in time duration string format.",
+							Description: "Used with `timeToBurnBudget` or `timeToBurnEntireBudget`, indicates when the budget would be exhausted. The expected value is a string in time duration string format.",
 						},
 						"lasts_for": {
 							Type:        schema.TypeString,
@@ -170,7 +170,7 @@ func marshalAlertConditions(d *schema.ResourceData) []n9api.AlertCondition {
 
 		measurement := condition["measurement"].(string)
 		op := "gte"
-		if measurement == "timeToBurnBudget" {
+		if measurement == "timeToBurnBudget" || measurement == "timeToBurnEntireBudget" {
 			op = "lt"
 		}
 

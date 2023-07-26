@@ -74,13 +74,13 @@ resource "nobl9_alert_policy" "this" {
 
 Required:
 
-- `measurement` (String) One of `timeToBurnBudget` | `burnRate` | `burnedBudget`.
+- `measurement` (String) One of `timeToBurnBudget` | `timeToBurnEntireBudget` | `burnRate` | `burnedBudget`.
 
 Optional:
 
 - `lasts_for` (String) Indicates how long a given condition needs to be valid to mark the condition as true.
 - `value` (Number) For `averageBurnRate`, it indicates how fast the error budget is burning. For `burnedBudget`, it tells how much error budget is already burned.
-- `value_string` (String) Used with `timeToBurnBudget`, indicates when the budget would be exhausted. The expected value is a string in time duration string format.
+- `value_string` (String) Used with `timeToBurnBudget` or `timeToBurnEntireBudget`, indicates when the budget would be exhausted. The expected value is a string in time duration string format.
 
 
 <a id="nestedblock--alert_method"></a>
