@@ -20,6 +20,7 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 		{"alert-policy-with-multi-alert-method", testAlertPolicyWithMultipleIntegration},
 		// This is coming from SRE-738 where the order of the alert methods was always showing a diff
 		{"alert-policy-with-multi-alert-method-reverse", testAlertPolicyWithMultipleIntegrationReverseOrder},
+		{"alert-policy-with-time-to-burn-entire-budget", testAlertPolicyWithTimeToBurnEntireBudgetCondition},
 	}
 
 	for _, tc := range cases {
@@ -79,11 +80,6 @@ resource "nobl9_alert_policy" "%s" {
 	}
 
   condition {
-	  measurement  = "timeToBurnEntireBudget"
-	  value_string = "1h"
-	}
-
-  condition {
 	  measurement  = "timeToBurnBudget"
 	  value_string = "1h"
 	  lasts_for	   = "300s"
@@ -115,11 +111,6 @@ resource "nobl9_alert_policy" "%s" {
 	measurement  = "timeToBurnBudget"
 	value_string = "1h"
 	lasts_for	   = "300s"
-  }
-
-  condition {
-	measurement  = "timeToBurnEntireBudget"
-	value_string = "1h"
   }
 
   alert_method {
@@ -154,12 +145,6 @@ resource "nobl9_alert_policy" "%s" {
     measurement  = "timeToBurnBudget"
     value_string = "1h"
     lasts_for	   = "300s"
-  }
-
-  condition {
-    measurement  = "timeToBurnEntireBudget"
-    value_string = "1h"
-    lasts_for	   = "60s"
   }
 
   alert_method {
@@ -201,11 +186,6 @@ resource "nobl9_alert_policy" "%s" {
     lasts_for	   = "300s"
   }
 
-  condition {
-    measurement  = "timeToBurnEntireBudget"
-    value_string = "2h"
-  }
-
   alert_method {
     project = "%s"
     name	= nobl9_alert_method_webhook.%s-am-two.name
@@ -217,4 +197,25 @@ resource "nobl9_alert_policy" "%s" {
   }
 }
 `, name, name, testProject, testProject, name, testProject, name)
+}
+
+func testAlertPolicyWithTimeToBurnEntireBudgetCondition(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_policy" "%s" {
+  name       = "%s"
+  project    = "%s"
+  severity   = "Medium"
+
+  condition {
+    measurement  = "timeToBurnEntireBudget"
+    value_string = "1h"
+    lasts_for	   = "300s"
+  }
+
+  condition {
+    measurement  = "timeToBurnEntireBudget"
+    value_string = "1h"
+  }
+}
+`, name, name, testProject)
 }
