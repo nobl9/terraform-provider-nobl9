@@ -45,6 +45,11 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 					Description: "Source of Metrics or Services.",
 				},
 			},
+			"release_channel": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Release channel of the created direct",
+			},
 			queryDelayConfigKey: schemaQueryDelay(),
 			"status": {
 				Type:        schema.TypeString,
