@@ -79,11 +79,6 @@ resource "nobl9_alert_policy" "%s" {
 	}
 
   condition {
-	  measurement  = "timeToBurnEntireBudget"
-	  value_string = "1h"
-	}
-
-  condition {
 	  measurement  = "timeToBurnBudget"
 	  value_string = "1h"
 	  lasts_for	   = "300s"
@@ -115,11 +110,6 @@ resource "nobl9_alert_policy" "%s" {
 	measurement  = "timeToBurnBudget"
 	value_string = "1h"
 	lasts_for	   = "300s"
-  }
-
-  condition {
-	measurement  = "timeToBurnEntireBudget"
-	value_string = "1h"
   }
 
   alert_method {
@@ -154,12 +144,6 @@ resource "nobl9_alert_policy" "%s" {
     measurement  = "timeToBurnBudget"
     value_string = "1h"
     lasts_for	   = "300s"
-  }
-
-  condition {
-    measurement  = "timeToBurnEntireBudget"
-    value_string = "1h"
-    lasts_for	   = "60s"
   }
 
   alert_method {
@@ -201,11 +185,6 @@ resource "nobl9_alert_policy" "%s" {
     lasts_for	   = "300s"
   }
 
-  condition {
-    measurement  = "timeToBurnEntireBudget"
-    value_string = "2h"
-  }
-
   alert_method {
     project = "%s"
     name	= nobl9_alert_method_webhook.%s-am-two.name
@@ -217,4 +196,25 @@ resource "nobl9_alert_policy" "%s" {
   }
 }
 `, name, name, testProject, testProject, name, testProject, name)
+}
+
+func testAlertPolicyWithTimeToBurnEntireBudgetCondition(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_policy" "%s" {
+  name       = "%s"
+  project    = "%s"
+  severity   = "Medium"
+
+  condition {
+    measurement  = "timeToBurnEntireBudget"
+    value_string = "1h"
+    lasts_for	   = "300s"
+  }
+
+  condition {
+    measurement  = "timeToBurnEntireBudget"
+    value_string = "1h"
+  }
+}
+`, name, name, testProject)
 }
