@@ -20,6 +20,7 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 		{"alert-policy-with-multi-alert-method", testAlertPolicyWithMultipleIntegration},
 		// This is coming from SRE-738 where the order of the alert methods was always showing a diff
 		{"alert-policy-with-multi-alert-method-reverse", testAlertPolicyWithMultipleIntegrationReverseOrder},
+		{"alert-policy-with-time-to-burn-entire-budget", testAlertPolicyWithTimeToBurnEntireBudgetCondition},
 	}
 
 	for _, tc := range cases {
