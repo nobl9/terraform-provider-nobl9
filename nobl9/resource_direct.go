@@ -48,7 +48,7 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 			"release_channel": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Release channel of the created direct",
+				Description: "Release channel of the created direct [stable/beta]",
 			},
 			queryDelayConfigKey: schemaQueryDelay(),
 			"status": {

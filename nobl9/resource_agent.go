@@ -67,7 +67,7 @@ func agentSchema() map[string]*schema.Schema {
 		"release_channel": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Release channel of the created agent",
+			Description: "Release channel of the created agent [stable/beta]",
 		},
 		queryDelayConfigKey: schemaQueryDelay(),
 		"status": {
