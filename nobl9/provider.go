@@ -134,6 +134,10 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 
 //nolint:gochecknoglobals
 var (
+	clients   = make(map[string]*nobl9.Client)
+	clientErr error
+	mu        sync.Mutex
+
 	sharedClient    *nobl9.Client
 	newSharedClient *sdk.Client
 	once            sync.Once

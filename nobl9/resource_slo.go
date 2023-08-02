@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nobl9/nobl9-go/sdk"
 
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	v1alpha "github.com/nobl9/nobl9-go"
 )
 
 func resourceSLO() *schema.Resource {
@@ -324,7 +324,7 @@ func schemaSLO() map[string]*schema.Schema {
 // TODO: przyklad
 func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config, d.Get("project").(string))
+	client, ds := getNewClient(config)
 	if ds != nil {
 		return ds
 	}
