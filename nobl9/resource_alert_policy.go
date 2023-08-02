@@ -170,8 +170,10 @@ func marshalAlertConditions(d *schema.ResourceData) []n9api.AlertCondition {
 
 		measurement := condition["measurement"].(string)
 		op := "gte"
-		if measurement == "timeToBurnBudget" || measurement == "timeToBurnEntireBudget" {
+		if measurement == "timeToBurnBudget" {
 			op = "lt"
+		} else if measurement == "timeToBurnEntireBudget" {
+			op = "lte"
 		}
 
 		resultConditions[i] = n9api.AlertCondition{
