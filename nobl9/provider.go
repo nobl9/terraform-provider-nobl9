@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/sdk"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -133,14 +134,21 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 
 //nolint:gochecknoglobals
 var (
-	// The N9 TF Provider supports the creation of project kind. This means that the project can be different (or even
-	// missing during TF import) between requests to the N9 API. The N9 SDK requires a project to be passed when
-	// creating a new API client, and reuses this project for each call. To avoid breaking the current SDK interface,
-	// provider creates the client per project.
-	clients   = make(map[string]*nobl9.Client)
-	clientErr error
-	mu        sync.Mutex
+	sharedClient    *nobl9.Client
+	newSharedClient *sdk.Client
+	once            sync.Once
 )
+
+func getNewClient(config ProviderConfig) (*sdk.Client, diag.Diagnostics) {
+	once.Do(func() {
+		newSharedClient, _ = sdk.NewClientBuilder("terraform-" + Version).WithCredentials(&sdk.Credentials{
+			Organization: config.Organization,
+			ClientID:     config.ClientID,
+			ClientSecret: config.ClientSecret,
+		}).Build()
+	})
+	return newSharedClient, nil
+}
 
 func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
 	var newClient = func() (*nobl9.Client, error) {
