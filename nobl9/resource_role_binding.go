@@ -2,7 +2,6 @@ package nobl9
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -164,21 +163,22 @@ func resourceRoleBindingRead(_ context.Context, d *schema.ResourceData, meta int
 
 func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	project := d.Get("project_ref").(string)
-	if project == "" {
-		project = wildcardProject
-	}
-	client, ds := getClient(config, project)
-	if ds.HasError() {
+	client, ds := getNewClient(config)
+	if ds != nil {
 		return ds
 	}
 
+	project := d.Get("project").(string)
+	if project == "" {
+		project = wildcardProject
+	}
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(n9api.ObjectRoleBinding, d.Id())
+		err := client.DeleteObjectsByName(ctx, project, 11, false, d.Id()) // FIXME: Can it be just '11' here?
 		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
-				return resource.RetryableError(err)
-			}
+			// FIXME: Uncomment after sdk fix.
+			//if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			//	return resource.RetryableError(err)
+			//}
 			return resource.NonRetryableError(err)
 		}
 		return nil

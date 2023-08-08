@@ -454,10 +454,8 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	project := d.Get("project").(string)
 	if project == "" {
-		// project is empty when importing
 		project = config.Project
 	}
-
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.DeleteObjectsByName(ctx, project, 1, false, d.Id()) // FIXME: Can it be just '1' here?
 		if err != nil {

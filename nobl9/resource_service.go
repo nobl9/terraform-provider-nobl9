@@ -127,12 +127,12 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
-	if ds.HasError() {
+	client, ds := getNewClient(config)
+	if ds != nil {
 		return ds
 	}
-
-	err := client.DeleteObjectsByName(n9api.ObjectService, d.Id())
+	project := d.Get("project").(string)
+	err := client.DeleteObjectsByName(ctx, project, 2, false, d.Id()) // FIXME: Can it be just '2' here?
 	if err != nil {
 		return diag.FromErr(err)
 	}

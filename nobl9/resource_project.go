@@ -116,14 +116,15 @@ func resourceProjectRead(_ context.Context, d *schema.ResourceData, meta interfa
 	return unmarshalProject(d, objects)
 }
 
-func resourceProjectDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, "")
-	if ds.HasError() {
+	client, ds := getNewClient(config)
+	if ds != nil {
 		return ds
 	}
 
-	err := client.DeleteObjectsByName(n9api.ObjectProject, d.Id())
+	// FIXME: is 'd.Id()' as the project okay?
+	err := client.DeleteObjectsByName(ctx, d.Id(), 7, false, d.Id()) // FIXME: Can it be just '7' here?
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -169,13 +169,14 @@ func resourceAgentRead(_ context.Context, d *schema.ResourceData, meta interface
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
-	if ds.HasError() {
+	client, ds := getNewClient(config)
+	if ds != nil {
 		return ds
 	}
 
+	project := d.Get("project").(string)
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(n9api.ObjectAgent, d.Id())
+		err := client.DeleteObjectsByName(ctx, project, 3, false, d.Id()) // FIXME: Can it be just '3' here?
 		if err != nil {
 			if errors.Is(err, n9api.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)

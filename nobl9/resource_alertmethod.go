@@ -132,14 +132,15 @@ func (a alertMethod) resourceAlertMethodRead(_ context.Context, d *schema.Resour
 	return a.unmarshalAlertMethod(d, objects)
 }
 
-func resourceAlertMethodDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
-	if ds.HasError() {
+	client, ds := getNewClient(config)
+	if ds != nil {
 		return ds
 	}
 
-	err := client.DeleteObjectsByName(n9api.ObjectAlertMethod, d.Id())
+	project := d.Get("project").(string)
+	err := client.DeleteObjectsByName(ctx, project, 8, false, d.Id()) // FIXME: Can it be just '8' here?
 	if err != nil {
 		return diag.FromErr(err)
 	}
