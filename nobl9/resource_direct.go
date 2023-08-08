@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	n9api "github.com/nobl9/nobl9-go"
+	v1alpha "github.com/nobl9/nobl9-go"
 )
 
 type directResource struct {
@@ -75,24 +76,23 @@ func (dr directResource) resourceDirectApply(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
+	client, ds := getNewClient(config)
 	if ds != nil {
 		return ds
 	}
+
 	n9Direct, diags := dr.marshalDirect(d)
 	if diags.HasError() {
 		return diags
 	}
 
-	var p n9api.Payload
-	p.AddObject(n9Direct)
-
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(p.GetObjects())
+		err := clientApplyObject(ctx, client, n9Direct)
 		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
-				return resource.RetryableError(err)
-			}
+			// FIXME: Uncomment after sdk fix.
+			//if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			//	return resource.RetryableError(err)
+			//}
 			return resource.NonRetryableError(err)
 		}
 		return nil
@@ -182,11 +182,15 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*n9api.Direct, d
 		spec.LogCollectionEnabled = marshalLogCollectionEnabled(d)
 	}
 
+	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
 	return &n9api.Direct{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
 			Kind:           n9api.KindDirect,
 			MetadataHolder: metadataHolder,
+			ObjectInternal: v1alpha.ObjectInternal{
+				Organization: "nobl9-dev",
+			},
 		},
 		Spec: spec,
 	}, diags

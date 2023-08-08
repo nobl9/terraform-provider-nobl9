@@ -2,7 +2,6 @@ package nobl9
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
@@ -12,8 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/nobl9/nobl9-go/sdk"
-
+	n9api "github.com/nobl9/nobl9-go"
 	v1alpha "github.com/nobl9/nobl9-go"
 )
 
@@ -321,7 +319,40 @@ func schemaSLO() map[string]*schema.Schema {
 	}
 }
 
-// TODO: przyklad
+// FIXME: remove oldResourceSLOApply func if you see it.
+func oldResourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	client, ds := getClient(config, d.Get("project").(string))
+	if ds != nil {
+		return ds
+	}
+
+	slo, diags := marshalSLO(d)
+	if diags.HasError() {
+		return diags
+	}
+
+	var p n9api.Payload
+	p.AddObject(slo)
+
+	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
+		err := client.ApplyObjects(p.GetObjects())
+		if err != nil {
+			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	}); err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId(slo.Metadata.Name)
+
+	return resourceSLORead(ctx, d, meta)
+}
+
 func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getNewClient(config)
@@ -353,19 +384,7 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	return resourceSLORead(ctx, d, meta)
 }
 
-// FIXME: move to provider.go
-func clientApplyObject(ctx context.Context, client *sdk.Client, object any) error {
-	data, err := json.Marshal(object)
-	if err != nil {
-		return err
-	}
-	var converted sdk.AnyJSONObj
-	if err = json.Unmarshal(data, &converted); err != nil {
-		return err
-	}
-	return client.ApplyObjects(ctx, []sdk.AnyJSONObj{converted}, false)
-}
-
+// FIXME: remove oldResourceSLORead func if you see it.
 func resourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	project := d.Get("project").(string)
@@ -386,7 +405,24 @@ func resourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}
 	return unmarshalSLO(d, objects)
 }
 
-func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+//func resourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+//	config := meta.(ProviderConfig)
+//	client, ds := getNewClient(config)
+//	if ds != nil {
+//		return ds
+//	}
+//
+//	project := d.Get("project").(string)
+//	objects, err := client.GetObject(v1alpha.ObjectSLO, "", d.Id())
+//	if err != nil {
+//		return diag.FromErr(err)
+//	}
+//
+//	return unmarshalSLO(d, objects)
+//}
+
+// FIXME: remove oldResourceSLODelete func if you see it.
+func oldResourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config, d.Get("project").(string))
 	if ds.HasError() {
@@ -394,9 +430,9 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(v1alpha.ObjectSLO, d.Id())
+		err := client.DeleteObjectsByName(n9api.ObjectSLO, d.Id())
 		if err != nil {
-			if errors.Is(err, v1alpha.ErrConcurrencyIssue) {
+			if errors.Is(err, n9api.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -406,6 +442,35 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 		return diag.FromErr(err)
 	}
 
+	return nil
+}
+
+func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	client, ds := getNewClient(config)
+	if ds != nil {
+		return ds
+	}
+
+	project := d.Get("project").(string)
+	if project == "" {
+		// project is empty when importing
+		project = config.Project
+	}
+
+	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
+		err := client.DeleteObjectsByName(ctx, project, 1, false, d.Id()) // FIXME: Can it be just '1' here?
+		if err != nil {
+			// FIXME: Uncomment after sdk fix.
+			//if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			//	return resource.RetryableError(err)
+			//}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	}); err != nil {
+		return diag.FromErr(err)
+	}
 	return nil
 }
 
@@ -473,11 +538,15 @@ func marshalSLO(d *schema.ResourceData) (*v1alpha.SLO, diag.Diagnostics) {
 		attachments = d.Get("attachments")
 	}
 
+	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
 	return &v1alpha.SLO{
 		ObjectHeader: v1alpha.ObjectHeader{
 			APIVersion:     v1alpha.APIVersion,
 			Kind:           v1alpha.KindSLO,
 			MetadataHolder: metadataHolder,
+			ObjectInternal: v1alpha.ObjectInternal{
+				Organization: "nobl9-dev",
+			},
 		},
 		Spec: v1alpha.SLOSpec{
 			Description:     d.Get("description").(string),

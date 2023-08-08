@@ -2,9 +2,11 @@ package nobl9
 
 import (
 	"context"
+	"encoding/json"
 	"sync"
 
 	"github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/sdk"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,6 +16,8 @@ import (
 //nolint:gochecknoglobals,revive
 var Version string
 
+// FIXME: Edit everything that was necessary but is optional now.
+// FIXME: Set 'Deprecated' for project and organization (need to get a date for deletion first).
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -138,19 +142,50 @@ var (
 	clientErr error
 	mu        sync.Mutex
 
-	sharedClient    *nobl9.Client
+	//sharedClient    *nobl9.Client
 	newSharedClient *sdk.Client
 	once            sync.Once
 )
 
 func getNewClient(config ProviderConfig) (*sdk.Client, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	once.Do(func() {
-		newSharedClient, _ = sdk.NewClientBuilder("terraform-" + Version).WithCredentials(&sdk.Credentials{
-			Organization: config.Organization,
-			ClientID:     config.ClientID,
-			ClientSecret: config.ClientSecret,
-		}).Build()
+		builder := sdk.NewClientBuilder("terraform-"+Version).WithDefaultCredentials(
+			config.ClientID,
+			config.ClientSecret,
+		)
+		if config.IngestURL != "" {
+			builder.WithApiURL(config.IngestURL)
+		}
+		if config.OktaAuthServer != "" && config.OktaOrgURL != "" {
+			u, err := sdk.OktaAuthServerURL(config.OktaOrgURL, config.OktaAuthServer)
+			if err != nil {
+				diags = diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  "Unable to create Nobl9 client",
+						Detail:   err.Error(),
+					},
+				}
+				return
+			}
+			builder.WithOktaAuthServerURL(u)
+		}
+		var err error
+		newSharedClient, err = builder.Build()
+		if err != nil {
+			diags = diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "Unable to create Nobl9 client",
+					Detail:   err.Error(),
+				},
+			}
+		}
 	})
+	if len(diags) > 0 {
+		return nil, diags
+	}
 	return newSharedClient, nil
 }
 
@@ -158,8 +193,8 @@ func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagn
 	var newClient = func() (*nobl9.Client, error) {
 		return nobl9.NewClient(
 			config.IngestURL,
-			config.Organization,
-			project,
+			config.Organization, // TODO: to remove
+			project,             // TODO: to remove
 			"terraform-"+Version,
 			config.ClientID,
 			config.ClientSecret,
@@ -187,4 +222,42 @@ func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagn
 	}
 
 	return client, nil
+}
+
+func clientApplyObject(ctx context.Context, client *sdk.Client, object any) error {
+	data, err := json.Marshal(object)
+	if err != nil {
+		return err
+	}
+	var converted sdk.AnyJSONObj
+	if err = json.Unmarshal(data, &converted); err != nil {
+		return err
+	}
+	return client.ApplyObjects(ctx, []sdk.AnyJSONObj{converted}, false)
+}
+
+//func clientReadObject(ctx context.Context, project string, client *sdk.Client, object any) ([]sdk.AnyJSONObj, error) {
+//	data, err := json.Marshal(object)
+//	if err != nil {
+//		return err
+//	}
+//	var converted sdk.AnyJSONObj
+//	if err = json.Unmarshal(data, &converted); err != nil {
+//		return err
+//	}
+//	return client.GetObjects(ctx, project, v1alpha.KindSLO)
+//}
+
+func clientDeleteObject(
+	ctx context.Context, client *sdk.Client, project string, kind manifest.Kind, object string,
+) error {
+	data, err := json.Marshal(object)
+	if err != nil {
+		return err
+	}
+	var converted sdk.AnyJSONObj
+	if err = json.Unmarshal(data, &converted); err != nil {
+		return err
+	}
+	return client.DeleteObjectsByName(ctx, project, kind, false, object)
 }

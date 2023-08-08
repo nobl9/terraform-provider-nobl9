@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	n9api "github.com/nobl9/nobl9-go"
+	v1alpha "github.com/nobl9/nobl9-go"
 )
 
 type alertMethodProvider interface {
@@ -51,12 +52,15 @@ func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) (*n9api.AlertMet
 	if diags.HasError() {
 		return nil, diags
 	}
-
+	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
 	return &n9api.AlertMethod{
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
 			Kind:           n9api.KindAlertMethod,
 			MetadataHolder: metadataHolder,
+			ObjectInternal: v1alpha.ObjectInternal{
+				Organization: "nobl9-dev",
+			},
 		},
 		Spec: a.MarshalSpec(d),
 	}, diags
@@ -87,7 +91,7 @@ func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []n9ap
 //nolint:lll
 func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
+	client, ds := getNewClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -97,10 +101,7 @@ func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.Res
 		return diags
 	}
 
-	var p n9api.Payload
-	p.AddObject(service)
-
-	err := client.ApplyObjects(p.GetObjects())
+	err := clientApplyObject(ctx, client, service)
 	if err != nil {
 		return diag.Errorf("could not add agent: %s", err.Error())
 	}

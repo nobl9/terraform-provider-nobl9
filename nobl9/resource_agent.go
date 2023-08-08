@@ -106,6 +106,7 @@ func agentSchema() map[string]*schema.Schema {
 	return agentSchema
 }
 
+// FIXME: this one demands different treatment when it comes to new client.
 func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config, d.Get("project").(string))

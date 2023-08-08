@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	n9api "github.com/nobl9/nobl9-go"
+	v1alpha "github.com/nobl9/nobl9-go"
 )
 
 const wildcardProject = "*"
@@ -59,7 +61,11 @@ func marshalRoleBinding(d *schema.ResourceData) *n9api.RoleBinding {
 		id, _ := uuid.NewUUID() // NewUUID returns always nil error
 		name = id.String()
 	}
+	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
 	return &n9api.RoleBinding{
+		ObjectInternal: v1alpha.ObjectInternal{
+			Organization: "nobl9-dev",
+		},
 		APIVersion: n9api.APIVersion,
 		Kind:       n9api.KindRoleBinding,
 		Metadata: n9api.RoleBindingMetadata{
@@ -115,22 +121,20 @@ func containsProjectRef(obj n9api.AnyJSONObj) bool {
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, wildcardProject)
+	client, ds := getNewClient(config)
 	if ds != nil {
 		return ds
 	}
 
 	ap := marshalRoleBinding(d)
 
-	var p n9api.Payload
-	p.AddObject(ap)
-
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(p.GetObjects())
+		err := clientApplyObject(ctx, client, ap)
 		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
-				return resource.RetryableError(err)
-			}
+			// FIXME: Uncomment after sdk fix.
+			//if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			//	return resource.RetryableError(err)
+			//}
 			return resource.NonRetryableError(err)
 		}
 		return nil

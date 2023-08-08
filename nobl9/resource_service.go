@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	n9api "github.com/nobl9/nobl9-go"
+	v1alpha "github.com/nobl9/nobl9-go"
 )
 
 func resourceService() *schema.Resource {
@@ -43,10 +44,14 @@ func marshalService(d *schema.ResourceData) (*n9api.Service, diag.Diagnostics) {
 		return nil, diags
 	}
 	return &n9api.Service{
+		// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
 		ObjectHeader: n9api.ObjectHeader{
 			APIVersion:     n9api.APIVersion,
 			Kind:           n9api.KindService,
 			MetadataHolder: metadataHolder,
+			ObjectInternal: v1alpha.ObjectInternal{
+				Organization: "nobl9-dev",
+			},
 		},
 		Spec: n9api.ServiceSpec{
 			Description: d.Get("description").(string),
@@ -80,7 +85,7 @@ func unmarshalService(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.D
 
 func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
+	client, ds := getNewClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -90,10 +95,7 @@ func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta inte
 		return diags
 	}
 
-	var p n9api.Payload
-	p.AddObject(service)
-
-	err := client.ApplyObjects(p.GetObjects())
+	err := clientApplyObject(ctx, client, service)
 	if err != nil {
 		return diag.Errorf("could not add service: %s", err.Error())
 	}

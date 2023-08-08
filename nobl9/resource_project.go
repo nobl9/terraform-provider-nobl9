@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	n9api "github.com/nobl9/nobl9-go"
+	v1alpha "github.com/nobl9/nobl9-go"
 )
 
 func resourceProject() *schema.Resource {
@@ -39,6 +40,9 @@ func marshalProject(d *schema.ResourceData) (*n9api.Project, diag.Diagnostics) {
 	labelsMarshalled, diags = marshalLabels(labels)
 
 	return &n9api.Project{
+		ObjectInternal: v1alpha.ObjectInternal{
+			Organization: "nobl9-dev",
+		},
 		APIVersion: n9api.APIVersion,
 		Kind:       n9api.KindProject,
 		Metadata: n9api.ProjectMetadata{
@@ -77,7 +81,7 @@ func unmarshalProject(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.D
 
 func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, "")
+	client, ds := getNewClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -87,10 +91,7 @@ func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta inte
 		return diags
 	}
 
-	var p n9api.Payload
-	p.AddObject(ap)
-
-	err := client.ApplyObjects(p.GetObjects())
+	err := clientApplyObject(ctx, client, ap)
 	if err != nil {
 		return diag.Errorf("could not add project: %s", err.Error())
 	}
