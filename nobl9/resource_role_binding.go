@@ -146,14 +146,15 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 	return resourceRoleBindingRead(ctx, d, meta)
 }
 
-func resourceRoleBindingRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, wildcardProject)
-	if ds.HasError() {
+	client, ds := getNewClient(config)
+	if ds != nil {
 		return ds
 	}
 
-	objects, err := client.GetObject(n9api.ObjectRoleBinding, "", d.Id())
+	project := d.Get("project").(string)
+	objects, err := client.GetObjects(ctx, project, 11, nil, d.Id()) // FIXME: Can it be just '11' here?
 	if err != nil {
 		return diag.FromErr(err)
 	}

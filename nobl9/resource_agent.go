@@ -147,24 +147,32 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	return append(diags, readAgentDiags...)
 }
 
-func resourceAgentRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
+	client, ds := getNewClient(config)
+	if ds != nil {
+		return ds
+	}
+
 	project := d.Get("project").(string)
 	if project == "" {
 		// project is empty when importing
 		project = config.Project
 	}
-	client, ds := getClient(config, project)
-	if ds.HasError() {
-		return ds
-	}
-
-	objects, err := client.GetAgents("", d.Id())
+	objects, err := client.GetObjects(ctx, project, 3, nil, d.Id()) // FIXME: Can it be just '3' here?
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return unmarshalAgent(d, objects)
+	data, err := json.Marshal(objects)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	var converted []n9api.Agent
+	if err = json.Unmarshal(data, &converted); err != nil {
+		return diag.FromErr(err)
+	}
+	return unmarshalAgent(d, converted)
 }
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

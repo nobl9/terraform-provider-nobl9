@@ -283,19 +283,19 @@ func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta 
 	return resourceAlertPolicyRead(ctx, d, meta)
 }
 
-func resourceAlertPolicyRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
+	client, ds := getNewClient(config)
+	if ds != nil {
+		return ds
+	}
+
 	project := d.Get("project").(string)
 	if project == "" {
 		// project is empty when importing
 		project = config.Project
 	}
-	client, ds := getClient(config, project)
-	if ds.HasError() {
-		return ds
-	}
-
-	objects, err := client.GetObject(n9api.ObjectAlertPolicy, "", d.Id())
+	objects, err := client.GetObjects(ctx, project, 4, nil, d.Id()) // FIXME: Can it be just '4' here?
 	if err != nil {
 		return diag.FromErr(err)
 	}

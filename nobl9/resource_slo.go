@@ -385,7 +385,7 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 }
 
 // FIXME: remove oldResourceSLORead func if you see it.
-func resourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func oldResourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	project := d.Get("project").(string)
 	if project == "" {
@@ -405,21 +405,21 @@ func resourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}
 	return unmarshalSLO(d, objects)
 }
 
-//func resourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-//	config := meta.(ProviderConfig)
-//	client, ds := getNewClient(config)
-//	if ds != nil {
-//		return ds
-//	}
-//
-//	project := d.Get("project").(string)
-//	objects, err := client.GetObject(v1alpha.ObjectSLO, "", d.Id())
-//	if err != nil {
-//		return diag.FromErr(err)
-//	}
-//
-//	return unmarshalSLO(d, objects)
-//}
+func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	client, ds := getNewClient(config)
+	if ds != nil {
+		return ds
+	}
+
+	project := d.Get("project").(string)
+	objects, err := client.GetObjects(ctx, project, 1, nil, d.Id()) // FIXME: Can it be just '1' here?
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return unmarshalSLO(d, objects)
+}
 
 // FIXME: remove oldResourceSLODelete func if you see it.
 func oldResourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

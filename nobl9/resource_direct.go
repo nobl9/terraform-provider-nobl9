@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
 	n9api "github.com/nobl9/nobl9-go"
 	v1alpha "github.com/nobl9/nobl9-go"
 )
@@ -107,27 +106,35 @@ func (dr directResource) resourceDirectApply(
 }
 
 func (dr directResource) resourceDirectRead(
-	_ context.Context,
+	ctx context.Context,
 	d *schema.ResourceData,
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
+	client, ds := getNewClient(config)
+	if ds != nil {
+		return ds
+	}
+
 	project := d.Get("project").(string)
 	if project == "" {
 		// project is empty when importing
 		project = config.Project
 	}
-	client, ds := getClient(config, project)
-	if ds.HasError() {
-		return ds
-	}
-
-	objects, err := client.GetDirects("", d.Id())
+	objects, err := client.GetObjects(ctx, project, 9, nil, d.Id()) // FIXME: Can it be just '9' here?
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return dr.unmarshalDirect(d, objects)
+	data, err := json.Marshal(objects)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	var converted []n9api.Direct
+	if err = json.Unmarshal(data, &converted); err != nil {
+		return diag.FromErr(err)
+	}
+	return dr.unmarshalDirect(d, converted)
 }
 
 func (dr directResource) resourceDirectDelete(

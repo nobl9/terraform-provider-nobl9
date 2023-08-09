@@ -101,14 +101,15 @@ func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta inte
 	return resourceProjectRead(ctx, d, meta)
 }
 
-func resourceProjectRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, "")
-	if ds.HasError() {
+	client, ds := getNewClient(config)
+	if ds != nil {
 		return ds
 	}
 
-	objects, err := client.GetObject(n9api.ObjectProject, "", d.Id())
+	// FIXME: is 'd.Id()' as the project okay?
+	objects, err := client.GetObjects(ctx, d.Id(), 7, nil, d.Id()) // FIXME: Can it be just '7' here?
 	if err != nil {
 		return diag.FromErr(err)
 	}

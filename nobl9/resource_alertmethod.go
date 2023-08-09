@@ -112,19 +112,19 @@ func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.Res
 }
 
 //nolint:lll
-func (a alertMethod) resourceAlertMethodRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (a alertMethod) resourceAlertMethodRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
+	client, ds := getNewClient(config)
+	if ds != nil {
+		return ds
+	}
+
 	project := d.Get("project").(string)
 	if project == "" {
 		// project is empty when importing
 		project = config.Project
 	}
-	client, ds := getClient(config, project)
-	if ds.HasError() {
-		return ds
-	}
-
-	objects, err := client.GetObject(n9api.ObjectAlertMethod, "", d.Id())
+	objects, err := client.GetObjects(ctx, project, 8, nil, d.Id()) // FIXME: Can it be just '8' here?
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/nobl9/nobl9-go"
-	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/sdk"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -234,30 +233,4 @@ func clientApplyObject(ctx context.Context, client *sdk.Client, object any) erro
 		return err
 	}
 	return client.ApplyObjects(ctx, []sdk.AnyJSONObj{converted}, false)
-}
-
-//func clientReadObject(ctx context.Context, project string, client *sdk.Client, object any) ([]sdk.AnyJSONObj, error) {
-//	data, err := json.Marshal(object)
-//	if err != nil {
-//		return err
-//	}
-//	var converted sdk.AnyJSONObj
-//	if err = json.Unmarshal(data, &converted); err != nil {
-//		return err
-//	}
-//	return client.GetObjects(ctx, project, v1alpha.KindSLO)
-//}
-
-func clientDeleteObject(
-	ctx context.Context, client *sdk.Client, project string, kind manifest.Kind, object string,
-) error {
-	data, err := json.Marshal(object)
-	if err != nil {
-		return err
-	}
-	var converted sdk.AnyJSONObj
-	if err = json.Unmarshal(data, &converted); err != nil {
-		return err
-	}
-	return client.DeleteObjectsByName(ctx, project, kind, false, object)
 }
