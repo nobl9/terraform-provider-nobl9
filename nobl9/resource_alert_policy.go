@@ -6,9 +6,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/sdk"
 
-	n9api "github.com/nobl9/nobl9-go"
-	v1alpha "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 func resourceAlertPolicy() *schema.Resource {
@@ -117,22 +118,22 @@ func transformAlertMethodsTo2DMap(alertMethods []interface{}) map[string]map[str
 	return result
 }
 
-func marshalAlertPolicy(d *schema.ResourceData) (*n9api.AlertPolicy, diag.Diagnostics) {
+func marshalAlertPolicy(d *schema.ResourceData) (*v1alpha.AlertPolicy, diag.Diagnostics) {
 	metadataHolder, diags := marshalMetadata(d)
 	if diags.HasError() {
 		return nil, diags
 	}
 	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
-	return &n9api.AlertPolicy{
-		ObjectHeader: n9api.ObjectHeader{
-			APIVersion:     n9api.APIVersion,
-			Kind:           n9api.KindAlertPolicy,
+	return &v1alpha.AlertPolicy{
+		ObjectHeader: manifest.ObjectHeader{
+			APIVersion:     v1alpha.APIVersion,
+			Kind:           manifest.KindAlertPolicy,
 			MetadataHolder: metadataHolder,
-			ObjectInternal: v1alpha.ObjectInternal{
+			ObjectInternal: manifest.ObjectInternal{
 				Organization: "nobl9-dev",
 			},
 		},
-		Spec: n9api.AlertPolicySpec{
+		Spec: v1alpha.AlertPolicySpec{
 			Description:  d.Get("description").(string),
 			Severity:     d.Get("severity").(string),
 			Conditions:   marshalAlertConditions(d),
@@ -141,16 +142,16 @@ func marshalAlertPolicy(d *schema.ResourceData) (*n9api.AlertPolicy, diag.Diagno
 	}, diags
 }
 
-func marshalAlertMethods(d *schema.ResourceData) []n9api.PublicAlertMethod {
+func marshalAlertMethods(d *schema.ResourceData) []v1alpha.PublicAlertMethod {
 	methods := d.Get("alert_method").([]interface{})
-	resultConditions := make([]n9api.PublicAlertMethod, len(methods))
+	resultConditions := make([]v1alpha.PublicAlertMethod, len(methods))
 	for i, m := range methods {
 		method := m.(map[string]interface{})
 
-		resultConditions[i] = n9api.PublicAlertMethod{
-			ObjectHeader: n9api.ObjectHeader{
-				MetadataHolder: n9api.MetadataHolder{
-					Metadata: n9api.Metadata{
+		resultConditions[i] = v1alpha.PublicAlertMethod{
+			ObjectHeader: manifest.ObjectHeader{
+				MetadataHolder: manifest.MetadataHolder{
+					Metadata: manifest.Metadata{
 						Project: method["project"].(string),
 						Name:    method["name"].(string),
 					},
@@ -162,9 +163,9 @@ func marshalAlertMethods(d *schema.ResourceData) []n9api.PublicAlertMethod {
 	return resultConditions
 }
 
-func marshalAlertConditions(d *schema.ResourceData) []n9api.AlertCondition {
+func marshalAlertConditions(d *schema.ResourceData) []v1alpha.AlertCondition {
 	conditions := d.Get("condition").([]interface{})
-	resultConditions := make([]n9api.AlertCondition, len(conditions))
+	resultConditions := make([]v1alpha.AlertCondition, len(conditions))
 	for i, c := range conditions {
 		condition := c.(map[string]interface{})
 		value := condition["value"]
@@ -180,7 +181,7 @@ func marshalAlertConditions(d *schema.ResourceData) []n9api.AlertCondition {
 			op = "lte"
 		}
 
-		resultConditions[i] = n9api.AlertCondition{
+		resultConditions[i] = v1alpha.AlertCondition{
 			Measurement:      measurement,
 			Value:            value,
 			LastsForDuration: condition["lasts_for"].(string),
@@ -191,7 +192,7 @@ func marshalAlertConditions(d *schema.ResourceData) []n9api.AlertCondition {
 	return resultConditions
 }
 
-func unmarshalAlertPolicy(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+func unmarshalAlertPolicy(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -295,7 +296,7 @@ func resourceAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 		// project is empty when importing
 		project = config.Project
 	}
-	objects, err := client.GetObjects(ctx, project, 4, nil, d.Id()) // FIXME: Can it be just '4' here?
+	objects, err := client.GetObjects(ctx, project, manifest.KindAlertPolicy, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -311,7 +312,7 @@ func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	project := d.Get("project").(string)
-	err := client.DeleteObjectsByName(ctx, project, 4, false, d.Id()) // FIXME: Can it be just '4' here?
+	err := client.DeleteObjectsByName(ctx, project, manifest.KindAlertPolicy, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

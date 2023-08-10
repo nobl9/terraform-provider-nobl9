@@ -5,9 +5,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/sdk"
 
-	n9api "github.com/nobl9/nobl9-go"
-	v1alpha "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 func resourceService() *schema.Resource {
@@ -38,28 +39,28 @@ func resourceService() *schema.Resource {
 	}
 }
 
-func marshalService(d *schema.ResourceData) (*n9api.Service, diag.Diagnostics) {
+func marshalService(d *schema.ResourceData) (*v1alpha.Service, diag.Diagnostics) {
 	metadataHolder, diags := marshalMetadata(d)
 	if diags.HasError() {
 		return nil, diags
 	}
-	return &n9api.Service{
+	return &v1alpha.Service{
 		// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
-		ObjectHeader: n9api.ObjectHeader{
-			APIVersion:     n9api.APIVersion,
-			Kind:           n9api.KindService,
+		ObjectHeader: manifest.ObjectHeader{
+			APIVersion:     v1alpha.APIVersion,
+			Kind:           manifest.KindService,
 			MetadataHolder: metadataHolder,
-			ObjectInternal: v1alpha.ObjectInternal{
+			ObjectInternal: manifest.ObjectInternal{
 				Organization: "nobl9-dev",
 			},
 		},
-		Spec: n9api.ServiceSpec{
+		Spec: v1alpha.ServiceSpec{
 			Description: d.Get("description").(string),
 		},
 	}, diags
 }
 
-func unmarshalService(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+func unmarshalService(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -117,7 +118,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 		// project is empty when importing
 		project = config.Project
 	}
-	objects, err := client.GetObjects(ctx, project, 2, nil, d.Id()) // FIXME: Can it be just '2' here?
+	objects, err := client.GetObjects(ctx, project, manifest.KindService, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -132,7 +133,7 @@ func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta int
 		return ds
 	}
 	project := d.Get("project").(string)
-	err := client.DeleteObjectsByName(ctx, project, 2, false, d.Id()) // FIXME: Can it be just '2' here?
+	err := client.DeleteObjectsByName(ctx, project, manifest.KindService, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

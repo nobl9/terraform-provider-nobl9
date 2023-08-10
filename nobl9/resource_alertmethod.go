@@ -5,15 +5,16 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/sdk"
 
-	n9api "github.com/nobl9/nobl9-go"
-	v1alpha "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 type alertMethodProvider interface {
 	GetSchema() map[string]*schema.Schema
 	GetDescription() string
-	MarshalSpec(data *schema.ResourceData) n9api.AlertMethodSpec
+	MarshalSpec(data *schema.ResourceData) v1alpha.AlertMethodSpec
 	UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics
 }
 
@@ -47,18 +48,18 @@ type alertMethod struct {
 	alertMethodProvider
 }
 
-func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) (*n9api.AlertMethod, diag.Diagnostics) {
+func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) (*v1alpha.AlertMethod, diag.Diagnostics) {
 	metadataHolder, diags := marshalMetadata(d)
 	if diags.HasError() {
 		return nil, diags
 	}
 	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
-	return &n9api.AlertMethod{
-		ObjectHeader: n9api.ObjectHeader{
-			APIVersion:     n9api.APIVersion,
-			Kind:           n9api.KindAlertMethod,
+	return &v1alpha.AlertMethod{
+		ObjectHeader: manifest.ObjectHeader{
+			APIVersion:     v1alpha.APIVersion,
+			Kind:           manifest.KindAlertMethod,
 			MetadataHolder: metadataHolder,
-			ObjectInternal: v1alpha.ObjectInternal{
+			ObjectInternal: manifest.ObjectInternal{
 				Organization: "nobl9-dev",
 			},
 		},
@@ -66,7 +67,7 @@ func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) (*n9api.AlertMet
 	}, diags
 }
 
-func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -124,7 +125,7 @@ func (a alertMethod) resourceAlertMethodRead(ctx context.Context, d *schema.Reso
 		// project is empty when importing
 		project = config.Project
 	}
-	objects, err := client.GetObjects(ctx, project, 8, nil, d.Id()) // FIXME: Can it be just '8' here?
+	objects, err := client.GetObjects(ctx, project, manifest.KindAlertMethod, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,7 +141,7 @@ func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	project := d.Get("project").(string)
-	err := client.DeleteObjectsByName(ctx, project, 8, false, d.Id()) // FIXME: Can it be just '8' here?
+	err := client.DeleteObjectsByName(ctx, project, manifest.KindAlertMethod, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -182,7 +183,7 @@ func (i alertMethodWebhook) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodWebhook) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
+func (i alertMethodWebhook) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
 	fields := d.Get("template_fields").([]interface{})
 	templateFields := make([]string, len(fields))
 	for i, field := range fields {
@@ -194,9 +195,9 @@ func (i alertMethodWebhook) MarshalSpec(d *schema.ResourceData) n9api.AlertMetho
 		templateFields = nil
 	}
 
-	return n9api.AlertMethodSpec{
+	return v1alpha.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Webhook: &n9api.WebhookAlertMethod{
+		Webhook: &v1alpha.WebhookAlertMethod{
 			URL:            d.Get("url").(string),
 			Template:       template,
 			TemplateFields: templateFields,
@@ -234,10 +235,10 @@ func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodPagerDuty) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
-	return n9api.AlertMethodSpec{
+func (i alertMethodPagerDuty) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
+	return v1alpha.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		PagerDuty: &n9api.PagerDutyAlertMethod{
+		PagerDuty: &v1alpha.PagerDutyAlertMethod{
 			IntegrationKey: d.Get("integration_key").(string),
 		},
 	}
@@ -266,10 +267,10 @@ func (i alertMethodSlack) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodSlack) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
-	return n9api.AlertMethodSpec{
+func (i alertMethodSlack) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
+	return v1alpha.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Slack: &n9api.SlackAlertMethod{
+		Slack: &v1alpha.SlackAlertMethod{
 			URL: d.Get("url").(string),
 		},
 	}
@@ -298,10 +299,10 @@ func (i alertMethodDiscord) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodDiscord) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
-	return n9api.AlertMethodSpec{
+func (i alertMethodDiscord) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
+	return v1alpha.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Discord: &n9api.DiscordAlertMethod{
+		Discord: &v1alpha.DiscordAlertMethod{
 			URL: d.Get("url").(string),
 		},
 	}
@@ -335,10 +336,10 @@ func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodOpsgenie) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
-	return n9api.AlertMethodSpec{
+func (i alertMethodOpsgenie) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
+	return v1alpha.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Opsgenie: &n9api.OpsgenieAlertMethod{
+		Opsgenie: &v1alpha.OpsgenieAlertMethod{
 			Auth: d.Get("auth").(string),
 			URL:  d.Get("url").(string),
 		},
@@ -383,10 +384,10 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodServiceNow) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
-	return n9api.AlertMethodSpec{
+func (i alertMethodServiceNow) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
+	return v1alpha.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		ServiceNow: &n9api.ServiceNowAlertMethod{
+		ServiceNow: &v1alpha.ServiceNowAlertMethod{
 			Username:     d.Get("username").(string),
 			Password:     d.Get("password").(string),
 			InstanceName: d.Get("instance_name").(string),
@@ -439,10 +440,10 @@ func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodJira) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
-	return n9api.AlertMethodSpec{
+func (i alertMethodJira) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
+	return v1alpha.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Jira: &n9api.JiraAlertMethod{
+		Jira: &v1alpha.JiraAlertMethod{
 			URL:        d.Get("url").(string),
 			Username:   d.Get("username").(string),
 			APIToken:   d.Get("apitoken").(string),
@@ -483,10 +484,10 @@ func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodTeams) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
-	return n9api.AlertMethodSpec{
+func (i alertMethodTeams) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
+	return v1alpha.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Teams: &n9api.TeamsAlertMethod{
+		Teams: &v1alpha.TeamsAlertMethod{
 			URL: d.Get("url").(string),
 		},
 	}
@@ -544,10 +545,10 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) n9api.AlertMethodSpec {
-	return n9api.AlertMethodSpec{
+func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
+	return v1alpha.AlertMethodSpec{
 		Description: d.Get("description").(string),
-		Email: &n9api.EmailAlertMethod{
+		Email: &v1alpha.EmailAlertMethod{
 			To:      toStringSlice(d.Get("to").([]interface{})),
 			Cc:      toStringSlice(d.Get("cc").([]interface{})),
 			Bcc:     toStringSlice(d.Get("bcc").([]interface{})),

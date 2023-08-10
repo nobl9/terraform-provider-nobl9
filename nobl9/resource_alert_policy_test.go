@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	n9api "github.com/nobl9/nobl9-go"
+	v1alpha "github.com/nobl9/nobl9-go"
 )
 
 func TestAcc_Nobl9AlertPolicy(t *testing.T) {
@@ -30,7 +30,7 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 				ProviderFactories: ProviderFactory(),
 				CheckDestroy: destroyMultiple(
 					[]string{"nobl9_alert_policy", "nobl9_alert_method_webhook"},
-					[]n9api.Object{n9api.ObjectAlertPolicy, n9api.ObjectAlertMethod},
+					[]v1alpha.Object{v1alpha.ObjectAlertPolicy, v1alpha.ObjectAlertMethod},
 				),
 				Steps: []resource.TestStep{
 					{
@@ -49,7 +49,7 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 	}
 }
 
-func destroyMultiple(rsTypes []string, objectTypes []n9api.Object) resource.TestCheckFunc {
+func destroyMultiple(rsTypes []string, objectTypes []v1alpha.Object) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		if len(rsTypes) != len(objectTypes) {
 			return fmt.Errorf("resource_types (%v) must match objectTypes (%v)", rsTypes, objectTypes)

@@ -8,8 +8,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/sdk"
 )
 
 const (
@@ -174,18 +174,18 @@ func schemaDescription() *schema.Schema {
 	}
 }
 
-func marshalMetadata(d *schema.ResourceData) (n9api.MetadataHolder, diag.Diagnostics) {
+func marshalMetadata(d *schema.ResourceData) (manifest.MetadataHolder, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	var labels []interface{}
 	if labelsData := d.Get("label"); labelsData != nil {
 		labels = labelsData.([]interface{})
 	}
-	var labelsMarshalled n9api.Labels
+	var labelsMarshalled manifest.Labels
 	labelsMarshalled, diags = marshalLabels(labels)
 
-	return n9api.MetadataHolder{
-		Metadata: n9api.Metadata{
+	return manifest.MetadataHolder{
+		Metadata: manifest.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: d.Get("display_name").(string),
 			Project:     d.Get("project").(string),
@@ -194,7 +194,7 @@ func marshalMetadata(d *schema.ResourceData) (n9api.MetadataHolder, diag.Diagnos
 	}, diags
 }
 
-func unmarshalGenericMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Diagnostics {
+func unmarshalGenericMetadata(object sdk.AnyJSONObj, d *schema.ResourceData) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	metadata := object["metadata"].(map[string]interface{})
@@ -215,7 +215,7 @@ func unmarshalGenericMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) d
 	return diags
 }
 
-func unmarshalMetadata(metadataHolder n9api.MetadataHolder, d *schema.ResourceData) diag.Diagnostics {
+func unmarshalMetadata(metadataHolder manifest.MetadataHolder, d *schema.ResourceData) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	set(d, "name", metadataHolder.Metadata.Name, &diags)
@@ -228,9 +228,9 @@ func unmarshalMetadata(metadataHolder n9api.MetadataHolder, d *schema.ResourceDa
 	return diags
 }
 
-func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
+func marshalLabels(labels []interface{}) (manifest.Labels, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	labelsResult := make(n9api.Labels, len(labels))
+	labelsResult := make(manifest.Labels, len(labels))
 
 labelsLoop:
 	for _, labelRaw := range labels {

@@ -5,9 +5,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/sdk"
 
-	n9api "github.com/nobl9/nobl9-go"
-	v1alpha "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 func resourceProject() *schema.Resource {
@@ -29,34 +30,34 @@ func resourceProject() *schema.Resource {
 	}
 }
 
-func marshalProject(d *schema.ResourceData) (*n9api.Project, diag.Diagnostics) {
+func marshalProject(d *schema.ResourceData) (*v1alpha.Project, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	var labels []interface{}
 	if labelsData := d.Get("label"); labelsData != nil {
 		labels = labelsData.([]interface{})
 	}
-	var labelsMarshalled n9api.Labels
+	var labelsMarshalled manifest.Labels
 	labelsMarshalled, diags = marshalLabels(labels)
 
-	return &n9api.Project{
-		ObjectInternal: v1alpha.ObjectInternal{
+	return &v1alpha.Project{
+		ObjectInternal: manifest.ObjectInternal{
 			Organization: "nobl9-dev",
 		},
-		APIVersion: n9api.APIVersion,
-		Kind:       n9api.KindProject,
-		Metadata: n9api.ProjectMetadata{
+		APIVersion: v1alpha.APIVersion,
+		Kind:       manifest.KindProject,
+		Metadata: manifest.ProjectMetadata{
 			Name:        d.Get("name").(string),
 			DisplayName: d.Get("display_name").(string),
 			Labels:      labelsMarshalled,
 		},
-		Spec: n9api.ProjectSpec{
+		Spec: v1alpha.ProjectSpec{
 			Description: d.Get("description").(string),
 		},
 	}, diags
 }
 
-func unmarshalProject(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+func unmarshalProject(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -109,7 +110,7 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	// FIXME: is 'd.Id()' as the project okay?
-	objects, err := client.GetObjects(ctx, d.Id(), 7, nil, d.Id()) // FIXME: Can it be just '7' here?
+	objects, err := client.GetObjects(ctx, d.Id(), manifest.KindProject, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,7 +126,7 @@ func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	// FIXME: is 'd.Id()' as the project okay?
-	err := client.DeleteObjectsByName(ctx, d.Id(), 7, false, d.Id()) // FIXME: Can it be just '7' here?
+	err := client.DeleteObjectsByName(ctx, d.Id(), manifest.KindProject, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

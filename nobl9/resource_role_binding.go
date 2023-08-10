@@ -8,9 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/sdk"
 
-	n9api "github.com/nobl9/nobl9-go"
-	v1alpha "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 const wildcardProject = "*"
@@ -54,31 +55,32 @@ func resourceRoleBinding() *schema.Resource {
 	}
 }
 
-func marshalRoleBinding(d *schema.ResourceData) *n9api.RoleBinding {
+func marshalRoleBinding(d *schema.ResourceData) *v1alpha.RoleBinding {
 	name := d.Get("name").(string)
 	if name == "" {
 		id, _ := uuid.NewUUID() // NewUUID returns always nil error
 		name = id.String()
 	}
+	userRoleBindingSpec := d.Get("user").(string)
 	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
-	return &n9api.RoleBinding{
-		ObjectInternal: v1alpha.ObjectInternal{
+	return &v1alpha.RoleBinding{
+		ObjectInternal: manifest.ObjectInternal{
 			Organization: "nobl9-dev",
 		},
-		APIVersion: n9api.APIVersion,
-		Kind:       n9api.KindRoleBinding,
-		Metadata: n9api.RoleBindingMetadata{
+		APIVersion: v1alpha.APIVersion,
+		Kind:       manifest.KindRoleBinding,
+		Metadata: manifest.RoleBindingMetadata{
 			Name: name,
 		},
-		Spec: n9api.RoleBindingSpec{
-			User:       d.Get("user").(string),
+		Spec: v1alpha.RoleBindingSpec{
+			User:       &userRoleBindingSpec,
 			RoleRef:    d.Get("role_ref").(string),
 			ProjectRef: d.Get("project_ref").(string),
 		},
 	}
 }
 
-func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+func unmarshalRoleBinding(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnostics {
 	_, isProjectRole := d.GetOk("project_ref")
 	roleBinding := findRoleBindingByType(isProjectRole, objects)
 	if roleBinding == nil {
@@ -102,7 +104,7 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 	return diags
 }
 
-func findRoleBindingByType(projectRole bool, objects []n9api.AnyJSONObj) n9api.AnyJSONObj {
+func findRoleBindingByType(projectRole bool, objects []sdk.AnyJSONObj) sdk.AnyJSONObj {
 	for _, object := range objects {
 		if projectRole && containsProjectRef(object) {
 			return object
@@ -113,7 +115,7 @@ func findRoleBindingByType(projectRole bool, objects []n9api.AnyJSONObj) n9api.A
 	return nil
 }
 
-func containsProjectRef(obj n9api.AnyJSONObj) bool {
+func containsProjectRef(obj sdk.AnyJSONObj) bool {
 	spec := obj["spec"].(map[string]interface{})
 	return spec["projectRef"] != nil
 }
@@ -154,7 +156,7 @@ func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	project := d.Get("project").(string)
-	objects, err := client.GetObjects(ctx, project, 11, nil, d.Id()) // FIXME: Can it be just '11' here?
+	objects, err := client.GetObjects(ctx, project, manifest.KindRoleBinding, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -174,7 +176,7 @@ func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta
 		project = wildcardProject
 	}
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(ctx, project, 11, false, d.Id()) // FIXME: Can it be just '11' here?
+		err := client.DeleteObjectsByName(ctx, project, manifest.KindRoleBinding, false, d.Id())
 		if err != nil {
 			// FIXME: Uncomment after sdk fix.
 			//if errors.Is(err, sdk.ErrConcurrencyIssue) {

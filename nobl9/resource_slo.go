@@ -2,7 +2,6 @@ package nobl9
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -11,8 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	n9api "github.com/nobl9/nobl9-go"
-	v1alpha "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/sdk"
+
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 func resourceSLO() *schema.Resource {
@@ -319,40 +320,6 @@ func schemaSLO() map[string]*schema.Schema {
 	}
 }
 
-// FIXME: remove oldResourceSLOApply func if you see it.
-func oldResourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
-	if ds != nil {
-		return ds
-	}
-
-	slo, diags := marshalSLO(d)
-	if diags.HasError() {
-		return diags
-	}
-
-	var p n9api.Payload
-	p.AddObject(slo)
-
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(p.GetObjects())
-		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	}); err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(slo.Metadata.Name)
-
-	return resourceSLORead(ctx, d, meta)
-}
-
 func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getNewClient(config)
@@ -384,27 +351,6 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	return resourceSLORead(ctx, d, meta)
 }
 
-// FIXME: remove oldResourceSLORead func if you see it.
-func oldResourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(ProviderConfig)
-	project := d.Get("project").(string)
-	if project == "" {
-		// project is empty when importing
-		project = config.Project
-	}
-	client, ds := getClient(config, project)
-	if ds.HasError() {
-		return ds
-	}
-
-	objects, err := client.GetObject(v1alpha.ObjectSLO, "", d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return unmarshalSLO(d, objects)
-}
-
 func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getNewClient(config)
@@ -413,36 +359,12 @@ func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface
 	}
 
 	project := d.Get("project").(string)
-	objects, err := client.GetObjects(ctx, project, 1, nil, d.Id()) // FIXME: Can it be just '1' here?
+	objects, err := client.GetObjects(ctx, project, manifest.KindSLO, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	return unmarshalSLO(d, objects)
-}
-
-// FIXME: remove oldResourceSLODelete func if you see it.
-func oldResourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
-	if ds.HasError() {
-		return ds
-	}
-
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(n9api.ObjectSLO, d.Id())
-		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	}); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
 }
 
 func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -457,7 +379,7 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 		project = config.Project
 	}
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(ctx, project, 1, false, d.Id()) // FIXME: Can it be just '1' here?
+		err := client.DeleteObjectsByName(ctx, project, manifest.KindSLO, false, d.Id())
 		if err != nil {
 			// FIXME: Uncomment after sdk fix.
 			//if errors.Is(err, sdk.ErrConcurrencyIssue) {
@@ -538,11 +460,11 @@ func marshalSLO(d *schema.ResourceData) (*v1alpha.SLO, diag.Diagnostics) {
 
 	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
 	return &v1alpha.SLO{
-		ObjectHeader: v1alpha.ObjectHeader{
+		ObjectHeader: manifest.ObjectHeader{
 			APIVersion:     v1alpha.APIVersion,
-			Kind:           v1alpha.KindSLO,
+			Kind:           manifest.KindSLO,
 			MetadataHolder: metadataHolder,
-			ObjectInternal: v1alpha.ObjectInternal{
+			ObjectInternal: manifest.ObjectInternal{
 				Organization: "nobl9-dev",
 			},
 		},
@@ -634,7 +556,7 @@ func marshalIndicator(d *schema.ResourceData) v1alpha.Indicator {
 		MetricSource: &v1alpha.MetricSourceSpec{
 			Project: indicator["project"].(string),
 			Name:    indicator["name"].(string),
-			Kind:    indicator["kind"].(string),
+			Kind:    indicator["kind"].(manifest.Kind),
 		},
 	}
 }
@@ -732,7 +654,7 @@ func marshalMetric(metric map[string]interface{}) *v1alpha.MetricSpec {
 	}
 }
 
-func unmarshalSLO(d *schema.ResourceData, objects []v1alpha.AnyJSONObj) diag.Diagnostics {
+func unmarshalSLO(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -1816,8 +1738,8 @@ func marshalInstanaApplicationMetric(s *schema.Set) *v1alpha.InstanaApplicationM
 			TagSecondLevelKey: tagSecondLevelKey,
 		},
 		APIQuery:         application["api_query"].(string),
-		IncludeInternal:  includeInternal,
-		IncludeSynthetic: includeSynthetic,
+		IncludeInternal:  *includeInternal,
+		IncludeSynthetic: *includeSynthetic,
 	}
 }
 

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -152,12 +152,12 @@ func TestMarshalAnomalyConfigAlertMethods(t *testing.T) {
 	testCases := []struct {
 		name          string
 		alertMethods  []interface{}
-		expectedAlert []n9api.AnomalyConfigAlertMethod
+		expectedAlert []v1alpha.AnomalyConfigAlertMethod
 	}{
 		{
 			name:          "Empty alert methods slice",
 			alertMethods:  []interface{}{},
-			expectedAlert: []n9api.AnomalyConfigAlertMethod{},
+			expectedAlert: []v1alpha.AnomalyConfigAlertMethod{},
 		},
 		{
 			name: "Alert methods slice with nil values",
@@ -169,7 +169,7 @@ func TestMarshalAnomalyConfigAlertMethods(t *testing.T) {
 				},
 				nil,
 			},
-			expectedAlert: []n9api.AnomalyConfigAlertMethod{
+			expectedAlert: []v1alpha.AnomalyConfigAlertMethod{
 				{
 					Name:    "the-net-is-vast",
 					Project: "and-infinite",
@@ -188,7 +188,7 @@ func TestMarshalAnomalyConfigAlertMethods(t *testing.T) {
 					"project": "infinite",
 				},
 			},
-			expectedAlert: []n9api.AnomalyConfigAlertMethod{
+			expectedAlert: []v1alpha.AnomalyConfigAlertMethod{
 				{
 					Name:    "the-net",
 					Project: "is-vast",

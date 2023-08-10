@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	n9api "github.com/nobl9/nobl9-go"
+	v1alpha "github.com/nobl9/nobl9-go"
 )
 
 //nolint:gochecknoglobals
@@ -75,7 +75,7 @@ func CheckObjectCreated(name string) resource.TestCheckFunc {
 	}
 }
 
-func CheckDestroy(rsType string, objectType n9api.Object) func(s *terraform.State) error {
+func CheckDestroy(rsType string, objectType v1alpha.Object) func(s *terraform.State) error {
 	return func(s *terraform.State) error {
 		config, ok := testProvider.Meta().(ProviderConfig)
 		if !ok {

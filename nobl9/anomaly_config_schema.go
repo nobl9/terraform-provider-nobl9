@@ -2,7 +2,8 @@ package nobl9
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	n9api "github.com/nobl9/nobl9-go"
+
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 func schemaAnomalyConfig() *schema.Schema {
@@ -53,7 +54,7 @@ func schemaAnomalyConfig() *schema.Schema {
 	}
 }
 
-func marshalAnomalyConfig(anomalyConfigRaw interface{}) *n9api.AnomalyConfig {
+func marshalAnomalyConfig(anomalyConfigRaw interface{}) *v1alpha.AnomalyConfig {
 	anomalyConfigSet := anomalyConfigRaw.(*schema.Set)
 	if anomalyConfigSet.Len() == 0 {
 		return nil
@@ -68,22 +69,22 @@ func marshalAnomalyConfig(anomalyConfigRaw interface{}) *n9api.AnomalyConfig {
 	noDataAlertMethods := noDataAnomalyConfig["alert_method"].([]interface{})
 	marshalledAlertMethods := marshalAnomalyConfigAlertMethods(noDataAlertMethods)
 
-	return &n9api.AnomalyConfig{
-		NoData: &n9api.AnomalyConfigNoData{
+	return &v1alpha.AnomalyConfig{
+		NoData: &v1alpha.AnomalyConfigNoData{
 			AlertMethods: marshalledAlertMethods,
 		},
 	}
 }
 
-func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []n9api.AnomalyConfigAlertMethod {
-	alertMethodsAPI := make([]n9api.AnomalyConfigAlertMethod, 0)
+func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []v1alpha.AnomalyConfigAlertMethod {
+	alertMethodsAPI := make([]v1alpha.AnomalyConfigAlertMethod, 0)
 
 	for i := 0; i < len(alertMethodsTF); i++ {
 		if alertMethodsTF[i] == nil {
 			continue
 		}
 		alertMethodTF := alertMethodsTF[i].(map[string]interface{})
-		alertMethodsAPI = append(alertMethodsAPI, n9api.AnomalyConfigAlertMethod{
+		alertMethodsAPI = append(alertMethodsAPI, v1alpha.AnomalyConfigAlertMethod{
 			Name:    alertMethodTF["name"].(string),
 			Project: alertMethodTF["project"].(string),
 		})
