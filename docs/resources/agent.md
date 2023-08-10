@@ -65,6 +65,7 @@ resource "nobl9_agent" "this" {
 - `prometheus_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#prometheus-agent) (see [below for nested schema](#nestedblock--prometheus_config))
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `redshift_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-agent) (see [below for nested schema](#nestedblock--redshift_config))
+- `release_channel` (String) Release channel of the created agent [stable/beta]
 - `splunk_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent) (see [below for nested schema](#nestedblock--splunk_config))
 - `splunk_observability_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-agent) (see [below for nested schema](#nestedblock--splunk_observability_config))
 - `sumologic_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-agent) (see [below for nested schema](#nestedblock--sumologic_config))
