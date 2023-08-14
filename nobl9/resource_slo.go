@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -335,10 +336,9 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
 		err := clientApplyObject(ctx, client, slo)
 		if err != nil {
-			// FIXME: po poprawce nobl9-go odkomentuj
-			//if errors.Is(err, sdk.ErrConcurrencyIssue) {
-			//	return resource.RetryableError(err)
-			//}
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
 			return resource.NonRetryableError(err)
 		}
 		return nil
@@ -364,7 +364,7 @@ func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface
 		return diag.FromErr(err)
 	}
 
-	return unmarshalSLO(d, objects)
+	return unmarshalSLO(d, manifest.FilterByKind[v1alpha.SLO](objects))
 }
 
 func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -449,7 +449,7 @@ func equalSlices(a, b []interface{}) bool {
 }
 
 func marshalSLO(d *schema.ResourceData) (*v1alpha.SLO, diag.Diagnostics) {
-	metadataHolder, diags := marshalMetadata(d)
+	metadata, diags := marshalMetadata(d)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -457,17 +457,10 @@ func marshalSLO(d *schema.ResourceData) (*v1alpha.SLO, diag.Diagnostics) {
 	if !ok {
 		attachments = d.Get("attachments")
 	}
-
-	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
 	return &v1alpha.SLO{
-		ObjectHeader: manifest.ObjectHeader{
-			APIVersion:     v1alpha.APIVersion,
-			Kind:           manifest.KindSLO,
-			MetadataHolder: metadataHolder,
-			ObjectInternal: manifest.ObjectInternal{
-				Organization: "nobl9-dev",
-			},
-		},
+		APIVersion: v1alpha.APIVersion,
+		Kind:       manifest.KindSLO,
+		Metadata:   metadata,
 		Spec: v1alpha.SLOSpec{
 			Description:     d.Get("description").(string),
 			Service:         d.Get("service").(string),
@@ -551,9 +544,8 @@ func marshalCalendar(c map[string]interface{}) *v1alpha.Calendar {
 
 func marshalIndicator(d *schema.ResourceData) v1alpha.Indicator {
 	indicator := d.Get("indicator").(*schema.Set).List()[0].(map[string]interface{})
-
 	return v1alpha.Indicator{
-		MetricSource: &v1alpha.MetricSourceSpec{
+		MetricSource: v1alpha.MetricSourceSpec{
 			Project: indicator["project"].(string),
 			Name:    indicator["name"].(string),
 			Kind:    indicator["kind"].(manifest.Kind),
@@ -654,7 +646,7 @@ func marshalMetric(metric map[string]interface{}) *v1alpha.MetricSpec {
 	}
 }
 
-func unmarshalSLO(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnostics {
+func unmarshalSLO(d *schema.ResourceData, objects []v1alpha.SLO) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -666,23 +658,20 @@ func unmarshalSLO(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnos
 		diags = append(diags, ds...)
 	}
 
+	spec := object.Spec
 	var err error
-	if alertPolicies, ok := object["alertPolicies"]; ok {
-		err = d.Set("alert_policies", alertPolicies.([]interface{}))
-		diags = appendError(diags, err)
-	}
+	err = d.Set("alert_policies", spec.AlertPolicies)
+	diags = appendError(diags, err)
 
-	spec := object["spec"].(map[string]interface{})
-
-	budgetingMethod := spec["budgetingMethod"].(string)
+	budgetingMethod := spec.BudgetingMethod
 	err = d.Set("budgeting_method", budgetingMethod)
 	diags = appendError(diags, err)
 
-	description := spec["description"].(string)
+	description := spec.Description
 	err = d.Set("description", description)
 	diags = appendError(diags, err)
 
-	service := spec["service"].(string)
+	service := spec.Service
 	err = d.Set("service", service)
 	diags = appendError(diags, err)
 
@@ -692,7 +681,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnos
 	err = unmarshalIndicator(d, spec)
 	diags = appendError(diags, err)
 
-	err = unmarshalObjectives(d, spec)
+	err = unmarshalThresholds(d, spec)
 	diags = appendError(diags, err)
 
 	err = unmarshalComposite(d, spec)
@@ -704,7 +693,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnos
 	err = unmarshalAnomalyConfig(d, spec)
 	diags = appendError(diags, err)
 
-	err = d.Set("alert_policies", spec["alertPolicies"].([]interface{}))
+	err = d.Set("alert_policies", spec.AlertPolicies)
 	diags = appendError(diags, err)
 
 	// Remove this warning once SLO objective unique identifier grace period ends.
@@ -720,20 +709,20 @@ func unmarshalSLO(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnos
 	return diags
 }
 
-func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) error {
-	if _, ok := spec["attachments"]; !ok {
+func unmarshalAttachments(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
+	// FIXME: is this line modified correctly?
+	if len(spec.Attachments) == 0 {
 		return nil
 	}
 
 	declaredAttachmentTag := getDeclaredAttachmentTag(d)
 
-	attachments := spec["attachments"].([]interface{})
+	attachments := spec.Attachments
 	res := make([]interface{}, len(attachments))
-	for i, v := range attachments {
-		m := v.(map[string]interface{})
+	for i, attachment := range attachments {
 		attachment := map[string]interface{}{
-			"display_name": m["displayName"],
-			"url":          m["url"],
+			"display_name": attachment.DisplayName,
+			"url":          attachment.URL,
 		}
 		res[i] = attachment
 	}
@@ -749,73 +738,77 @@ func getDeclaredAttachmentTag(d *schema.ResourceData) string {
 	return "attachment"
 }
 
-func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}) error {
-	indicator := spec["indicator"].(map[string]interface{})
+func unmarshalIndicator(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
+	indicator := spec.Indicator
 	res := make(map[string]interface{})
-	metricSource := indicator["metricSource"].(map[string]interface{})
-	res["name"] = metricSource["name"]
-	res["project"] = metricSource["project"]
-	res["kind"] = metricSource["kind"]
-	if rawMetric, ok := indicator["rawMetric"]; ok {
-		tfMetric := unmarshalSLOMetric(rawMetric.(map[string]interface{}))
+	metricSource := indicator.MetricSource
+	res["name"] = metricSource.Name
+	res["project"] = metricSource.Project
+	res["kind"] = metricSource.Kind
+	// FIXME: is this condition needed?
+	if rawMetric := indicator.RawMetric; rawMetric != nil {
+		// FIXME: continue fixing here.
+		tfMetric := unmarshalSLOMetric(rawMetric)
 		res["raw_metric"] = tfMetric
 	}
 	return d.Set("indicator", schema.NewSet(oneElementSet, []interface{}{res}))
 }
 
-func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}) error {
-	timeWindows := spec["timeWindows"].([]interface{})
-	timeWindow := timeWindows[0].(map[string]interface{})
+func unmarshalTimeWindow(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
+	timeWindows := spec.TimeWindows
+	timeWindow := timeWindows[0]
 	timeWindowsTF := make(map[string]interface{})
-	timeWindowsTF["count"] = timeWindow["count"]
-	timeWindowsTF["is_rolling"] = timeWindow["isRolling"]
-	timeWindowsTF["unit"] = timeWindow["unit"]
-	timeWindowsTF["period"] = timeWindow["period"]
-	if c, ok := timeWindow["calendar"]; ok {
-		calendar := c.(map[string]interface{})
+	timeWindowsTF["count"] = timeWindow.Count
+	timeWindowsTF["is_rolling"] = timeWindow.IsRolling
+	timeWindowsTF["unit"] = timeWindow.Unit
+	timeWindowsTF["period"] = timeWindow.Period
+
+	// FIXME: is this condition needed?
+	if calendar := timeWindow.Calendar; calendar != nil {
 		calendarTF := make(map[string]interface{})
-		calendarTF["start_time"] = calendar["startTime"].(string)
-		calendarTF["time_zone"] = calendar["timeZone"].(string)
+		calendarTF["start_time"] = calendar.StartTime
+		calendarTF["time_zone"] = calendar.TimeZone
 		timeWindowsTF["calendar"] = schema.NewSet(oneElementSet, []interface{}{calendarTF})
 	}
 	tw := schema.NewSet(oneElementSet, []interface{}{timeWindowsTF})
 	return d.Set("time_window", tw)
 }
 
-func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) error {
-	objectives := spec["objectives"].([]interface{})
-	objectivesTF := make([]interface{}, len(objectives))
+func unmarshalThresholds(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
+	// FIXME: is this line modified correctly? It was spec["objectives"] before.
+	thresholds := spec.Thresholds
+	thresholdsTF := make([]interface{}, len(thresholds))
 
-	for i, o := range objectives {
-		objective := o.(map[string]interface{})
-		objectiveTF := make(map[string]interface{})
-		objectiveTF["name"] = objective["name"]
-		objectiveTF["display_name"] = objective["displayName"]
-		objectiveTF["op"] = objective["op"]
-		objectiveTF["value"] = objective["value"]
-		objectiveTF["target"] = objective["target"]
-		objectiveTF["time_slice_target"] = objective["timeSliceTarget"]
+	for i, threshold := range thresholds {
+		thresholdTF := make(map[string]interface{})
+		thresholdTF["name"] = threshold.Name
+		thresholdTF["display_name"] = threshold.DisplayName
+		thresholdTF["op"] = threshold.Operator
+		thresholdTF["value"] = threshold.Value
+		thresholdTF["target"] = threshold.BudgetTarget
+		thresholdTF["time_slice_target"] = threshold.TimeSliceTarget
 
-		if countMetrics, isCountMetrics := objective["countMetrics"]; isCountMetrics {
-			cm := countMetrics.(map[string]interface{})
+		// FIXME: is this line modified correctly?
+		if threshold.CountMetrics != nil {
+			cm := threshold.CountMetrics
 			countMetricsTF := make(map[string]interface{})
-			countMetricsTF["incremental"] = cm["incremental"]
-			good := unmarshalSLOMetric(cm["good"].(map[string]interface{}))
+			countMetricsTF["incremental"] = cm.Incremental
+			good := unmarshalSLOMetric(cm.GoodMetric)
 			countMetricsTF["good"] = good
-			total := unmarshalSLOMetric(cm["total"].(map[string]interface{}))
+			total := unmarshalSLOMetric(cm.TotalMetric)
 			countMetricsTF["total"] = total
-			objectiveTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
+			thresholdTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
 		}
 
-		if rawMetric, isRawMetric := objective["rawMetric"]; isRawMetric {
-			rm := rawMetric.(map[string]interface{})
-			tfMetric := unmarshalSLORawMetric(rm)
-			objectiveTF["raw_metric"] = tfMetric
+		// FIXME: is this line modified correctly?
+		if threshold.RawMetric != nil {
+			tfMetric := unmarshalSLORawMetric(threshold.RawMetric)
+			thresholdTF["raw_metric"] = tfMetric
 		}
 
-		objectivesTF[i] = objectiveTF
+		thresholdsTF[i] = thresholdTF
 	}
-	return d.Set("objective", schema.NewSet(objectiveHash, objectivesTF))
+	return d.Set("objective", schema.NewSet(objectiveHash, thresholdsTF))
 }
 
 func objectiveHash(objective interface{}) int {
@@ -830,18 +823,20 @@ func objectiveHash(objective interface{}) int {
 	)
 	return schema.HashString(indicator)
 }
-func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) error {
-	if compositeSpec, isCompositeSLO := spec["composite"]; isCompositeSLO {
-		composite := compositeSpec.(map[string]interface{})
+func unmarshalComposite(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
+	// FIXME: is this line modified correctly?
+	if spec.Composite != nil {
+		composite := spec.Composite
 		compositeTF := make(map[string]interface{})
 
-		compositeTF["target"] = composite["target"]
+		compositeTF["target"] = composite.BudgetTarget
 
-		if burnRateConditionRaw, isBurnRateConditionSet := composite["burnRateCondition"]; isBurnRateConditionSet {
-			burnRateCondition := burnRateConditionRaw.(map[string]interface{})
+		// FIXME: is this line modified correctly?
+		if composite.BurnRateCondition != nil {
+			burnRateCondition := composite.BurnRateCondition
 			burnRateConditionTF := make(map[string]interface{})
-			burnRateConditionTF["value"] = burnRateCondition["value"]
-			burnRateConditionTF["op"] = burnRateCondition["op"]
+			burnRateConditionTF["value"] = burnRateCondition.Value
+			burnRateConditionTF["op"] = burnRateCondition.Operator
 			compositeTF["burn_rate_condition"] = schema.NewSet(oneElementSet, []interface{}{burnRateConditionTF})
 		}
 
@@ -851,15 +846,15 @@ func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) err
 	return nil
 }
 
-func unmarshalSLORawMetric(rawMetricSource map[string]interface{}) *schema.Set {
+func unmarshalSLORawMetric(rawMetricSource *v1alpha.RawMetricSpec) *schema.Set {
 	var rawMetricQuery *schema.Set
-	if rawMetricQuerySource, isRawMetric := rawMetricSource["query"]; isRawMetric {
-		rawMetricQuery = unmarshalSLOMetric(rawMetricQuerySource.(map[string]interface{}))
+	if rawMetricSource.MetricQuery != nil {
+		rawMetricQuery = unmarshalSLOMetric(rawMetricSource.MetricQuery)
 	}
 	return schema.NewSet(oneElementSet, []interface{}{map[string]interface{}{"query": rawMetricQuery}})
 }
 
-func unmarshalSLOMetric(spec map[string]interface{}) *schema.Set {
+func unmarshalSLOMetric(spec *v1alpha.MetricSpec) *schema.Set {
 	supportedMetrics := []struct {
 		hclName       string
 		jsonName      string

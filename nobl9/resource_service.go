@@ -6,8 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/sdk"
-
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
@@ -40,27 +38,22 @@ func resourceService() *schema.Resource {
 }
 
 func marshalService(d *schema.ResourceData) (*v1alpha.Service, diag.Diagnostics) {
-	metadataHolder, diags := marshalMetadata(d)
+	metadata, diags := marshalMetadata(d)
 	if diags.HasError() {
 		return nil, diags
 	}
 	return &v1alpha.Service{
 		// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
-		ObjectHeader: manifest.ObjectHeader{
-			APIVersion:     v1alpha.APIVersion,
-			Kind:           manifest.KindService,
-			MetadataHolder: metadataHolder,
-			ObjectInternal: manifest.ObjectInternal{
-				Organization: "nobl9-dev",
-			},
-		},
+		APIVersion: v1alpha.APIVersion,
+		Kind:       manifest.KindService,
+		Metadata:   metadata,
 		Spec: v1alpha.ServiceSpec{
 			Description: d.Get("description").(string),
 		},
 	}, diags
 }
 
-func unmarshalService(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnostics {
+func unmarshalService(d *schema.ResourceData, objects []v1alpha.Service) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -68,17 +61,28 @@ func unmarshalService(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Dia
 	object := objects[0]
 	var diags diag.Diagnostics
 
-	if ds := unmarshalGenericMetadata(object, d); ds.HasError() {
-		diags = append(diags, ds...)
-	}
-
-	status := object["status"].(map[string]interface{})
-	err := d.Set("status", status)
+	err := d.Set("name", object.Metadata.Name)
+	diags = appendError(diags, err)
+	err = d.Set("display_name", object.Metadata.DisplayName)
 	diags = appendError(diags, err)
 
-	spec := object["spec"].(map[string]interface{})
+	err = d.Set("project", object.Metadata.Project)
+	diags = appendError(diags, err)
 
-	err = d.Set("description", spec["description"])
+	labelsRaw := object.Metadata.Labels
+	// FIXME: is this condition correct and necessary?
+	if labelsRaw != nil {
+		err = d.Set("label", unmarshalLabels(labelsRaw))
+		diags = appendError(diags, err)
+	}
+
+	status := object.Status
+	err = d.Set("status", status)
+	diags = appendError(diags, err)
+
+	spec := object.Spec
+
+	err = d.Set("description", spec.Description)
 	diags = appendError(diags, err)
 
 	return diags
@@ -123,7 +127,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(err)
 	}
 
-	return unmarshalService(d, objects)
+	return unmarshalService(d, manifest.FilterByKind[v1alpha.Service](objects))
 }
 
 func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

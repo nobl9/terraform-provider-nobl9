@@ -7,8 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/sdk"
-
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
@@ -119,19 +117,23 @@ func transformAlertMethodsTo2DMap(alertMethods []interface{}) map[string]map[str
 }
 
 func marshalAlertPolicy(d *schema.ResourceData) (*v1alpha.AlertPolicy, diag.Diagnostics) {
-	metadataHolder, diags := marshalMetadata(d)
-	if diags.HasError() {
+	//metadata, diags := marshalMetadata(d)
+	//if diags.HasError() {
+	//	return nil, diags
+	//}
+	// FIXME: how to deal with labels here?
+	labels, diag := marshalLabels(d.Get("labels"))
+	if diag.HasError() {
 		return nil, diags
 	}
-	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
 	return &v1alpha.AlertPolicy{
-		ObjectHeader: manifest.ObjectHeader{
-			APIVersion:     v1alpha.APIVersion,
-			Kind:           manifest.KindAlertPolicy,
-			MetadataHolder: metadataHolder,
-			ObjectInternal: manifest.ObjectInternal{
-				Organization: "nobl9-dev",
-			},
+		APIVersion: v1alpha.APIVersion,
+		Kind:       manifest.KindAlertPolicy,
+		Metadata: v1alpha.AlertPolicyMetadata{
+			Name:        d.Get("name").(string),
+			DisplayName: d.Get("displayName").(string),
+			Project:     d.Get("project").(string),
+			Labels:      ,
 		},
 		Spec: v1alpha.AlertPolicySpec{
 			Description:  d.Get("description").(string),
@@ -142,16 +144,45 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alpha.AlertPolicy, diag.Diag
 	}, diags
 }
 
+// FIXME: work checkpoint, delete if you see it.
+//func marshalAlertPolicy(d *schema.ResourceData) (*v1alpha.AlertPolicy, diag.Diagnostics) {
+//	//metadata, diags := marshalMetadata(d)
+//	//if diags.HasError() {
+//	//	return nil, diags
+//	//}
+//	labels, diag := marshalLabels(d.Get("labels"))
+//	if diag.HasError() {
+//		return nil, diags
+//	}
+//	return &v1alpha.AlertPolicy{
+//		APIVersion: v1alpha.APIVersion,
+//		Kind:       manifest.KindAlertPolicy,
+//		Metadata: v1alpha.AlertPolicyMetadata{
+//			Name:        d.Get("name").(string),
+//			DisplayName: d.Get("displayName").(string),
+//			Project:     d.Get("project").(string),
+//			Labels:      ,
+//		},
+//		Spec: v1alpha.AlertPolicySpec{
+//			Description:  d.Get("description").(string),
+//			Severity:     d.Get("severity").(string),
+//			Conditions:   marshalAlertConditions(d),
+//			AlertMethods: marshalAlertMethods(d),
+//		},
+//	}, diags
+//}
+
 func marshalAlertMethods(d *schema.ResourceData) []v1alpha.PublicAlertMethod {
 	methods := d.Get("alert_method").([]interface{})
 	resultConditions := make([]v1alpha.PublicAlertMethod, len(methods))
 	for i, m := range methods {
 		method := m.(map[string]interface{})
 
+		// FIXME: replace the deprecated objects.
 		resultConditions[i] = v1alpha.PublicAlertMethod{
-			ObjectHeader: manifest.ObjectHeader{
-				MetadataHolder: manifest.MetadataHolder{
-					Metadata: manifest.Metadata{
+			ObjectHeader: v1alpha.ObjectHeader{
+				MetadataHolder: v1alpha.MetadataHolder{
+					Metadata: v1alpha.Metadata{
 						Project: method["project"].(string),
 						Name:    method["name"].(string),
 					},
@@ -192,7 +223,8 @@ func marshalAlertConditions(d *schema.ResourceData) []v1alpha.AlertCondition {
 	return resultConditions
 }
 
-func unmarshalAlertPolicy(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnostics {
+// FIXME: fix pls.
+func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alpha.AlertPolicy) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -200,53 +232,72 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag
 	object := objects[0]
 	var diags diag.Diagnostics
 
-	if ds := unmarshalGenericMetadata(object, d); ds.HasError() {
-		diags = append(diags, ds...)
+	metadata := object.Metadata
+	err := d.Set("name", metadata.Name)
+	diags = appendError(diags, err)
+	err = d.Set("display_name", metadata.DisplayName)
+	diags = appendError(diags, err)
+
+	err = d.Set("project", metadata.Project)
+	diags = appendError(diags, err)
+
+	labelsRaw := metadata.Labels
+	// FIXME: is this condition correct and needed?
+	if labelsRaw != nil {
+		err = d.Set("label", unmarshalLabels(labelsRaw))
+		diags = appendError(diags, err)
 	}
 
-	spec := object["spec"].(map[string]interface{})
-	err := d.Set("description", spec["description"])
+	spec := object.Spec
+	err = d.Set("description", spec.Description)
 	diags = appendError(diags, err)
-	err = d.Set("severity", spec["severity"])
+	err = d.Set("severity", spec.Severity)
 	diags = appendError(diags, err)
 
-	conditions := spec["conditions"].([]interface{})
+	conditions := spec.Conditions
 	err = d.Set("condition", unmarshalAlertPolicyConditions(conditions))
 	diags = appendError(diags, err)
 
-	alertMethods := spec["alertMethods"].([]interface{})
+	alertMethods := spec.AlertMethods
 	err = d.Set("alert_method", unmarshalAlertMethods(alertMethods))
 	diags = appendError(diags, err)
 
 	return diags
 }
 
-func unmarshalAlertPolicyConditions(conditions []interface{}) interface{} {
+func unmarshalAlertPolicyConditions(conditions []v1alpha.AlertCondition) interface{} {
 	resultConditions := make([]map[string]interface{}, len(conditions))
 
-	for i, c := range conditions {
-		condition := c.(map[string]interface{})
-		var value float64
-		if v, ok := condition["value"].(float64); ok {
-			value = v
-		}
-		var valueStr string
-		if v, ok := condition["value"].(string); ok {
-			valueStr = v
-		}
-
+	for i, condition := range conditions {
+		// FIXME: are the values correct?
 		resultConditions[i] = map[string]interface{}{
-			"measurement":  condition["measurement"].(string),
-			"value":        value,
-			"value_string": valueStr,
-			"lasts_for":    condition["lastsFor"].(string),
+			"measurement":  condition.Measurement,
+			"value":        condition.Value,
+			"value_string": condition.Value,
+			"lasts_for":    condition.LastsForDuration,
 		}
 	}
 
 	return resultConditions
 }
 
-func unmarshalAlertMethods(alertMethods []interface{}) interface{} {
+func unmarshalAlertMethods(alertMethods []v1alpha.PublicAlertMethod) interface{} {
+	resultMethods := make([]map[string]interface{}, len(alertMethods))
+
+	for i, method := range alertMethods {
+		metadata := method.Metadata
+
+		resultMethods[i] = map[string]interface{}{
+			"name":    metadata.Name,
+			"project": metadata.Project,
+		}
+	}
+
+	return resultMethods
+}
+
+// FIXME: delete this func if you see it.
+func oldUnmarshalAlertMethods(alertMethods []interface{}) interface{} {
 	resultMethods := make([]map[string]interface{}, len(alertMethods))
 
 	for i, m := range alertMethods {
@@ -300,8 +351,7 @@ func resourceAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	return unmarshalAlertPolicy(d, objects)
+	return unmarshalAlertPolicy(d, manifest.FilterByKind[v1alpha.AlertPolicy](objects))
 }
 
 func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

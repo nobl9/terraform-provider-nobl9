@@ -6,8 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/sdk"
-
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
@@ -15,7 +13,7 @@ type alertMethodProvider interface {
 	GetSchema() map[string]*schema.Schema
 	GetDescription() string
 	MarshalSpec(data *schema.ResourceData) v1alpha.AlertMethodSpec
-	UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics
+	UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics
 }
 
 func resourceAlertMethodFactory(provider alertMethodProvider) *schema.Resource {
@@ -49,25 +47,20 @@ type alertMethod struct {
 }
 
 func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) (*v1alpha.AlertMethod, diag.Diagnostics) {
-	metadataHolder, diags := marshalMetadata(d)
+	metadata, diags := marshalMetadata(d)
 	if diags.HasError() {
 		return nil, diags
 	}
-	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
 	return &v1alpha.AlertMethod{
-		ObjectHeader: manifest.ObjectHeader{
-			APIVersion:     v1alpha.APIVersion,
-			Kind:           manifest.KindAlertMethod,
-			MetadataHolder: metadataHolder,
-			ObjectInternal: manifest.ObjectInternal{
-				Organization: "nobl9-dev",
-			},
-		},
-		Spec: a.MarshalSpec(d),
+		APIVersion: v1alpha.APIVersion,
+		Kind:       manifest.KindAlertMethod,
+		Metadata:   metadata,
+		Spec:       a.MarshalSpec(d),
 	}, diags
 }
 
-func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnostics {
+// FIXME: Shouldn't it be PublicAlertMethod as the 2nd argument?
+func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []v1alpha.AlertMethod) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -75,12 +68,17 @@ func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []sdk.
 	object := objects[0]
 	var diags diag.Diagnostics
 
-	if ds := unmarshalGenericMetadata(object, d); ds.HasError() {
-		diags = append(diags, ds...)
-	}
+	metadata := object.Metadata
+	err := d.Set("name", metadata.Name)
+	diags = appendError(diags, err)
+	err = d.Set("display_name", metadata.DisplayName)
+	diags = appendError(diags, err)
 
-	spec := object["spec"].(map[string]interface{})
-	err := d.Set("description", spec["description"])
+	err = d.Set("project", metadata.Project)
+	diags = appendError(diags, err)
+
+	spec := object.Spec
+	err = d.Set("description", spec.Description)
 	diags = appendError(diags, err)
 
 	errs := a.UnmarshalSpec(d, spec)
@@ -130,7 +128,7 @@ func (a alertMethod) resourceAlertMethodRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return a.unmarshalAlertMethod(d, objects)
+	return a.unmarshalAlertMethod(d, manifest.FilterByKind[v1alpha.AlertMethod](objects))
 }
 
 func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -205,13 +203,13 @@ func (i alertMethodWebhook) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMet
 	}
 }
 
-func (i alertMethodWebhook) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
-	config := spec["webhook"].(map[string]interface{})
+func (i alertMethodWebhook) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+	config := spec.Webhook
 	var diags diag.Diagnostics
 
-	err := d.Set("template", config["template"])
+	err := d.Set("template", config.Template)
 	diags = appendError(diags, err)
-	err = d.Set("template_fields", config["templateFields"])
+	err = d.Set("template_fields", config.TemplateFields)
 	diags = appendError(diags, err)
 
 	return diags
@@ -244,7 +242,7 @@ func (i alertMethodPagerDuty) MarshalSpec(d *schema.ResourceData) v1alpha.AlertM
 	}
 }
 
-func (i alertMethodPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
 	// pager duty has only one, secret field
 	return nil
 }
@@ -276,7 +274,7 @@ func (i alertMethodSlack) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMetho
 	}
 }
 
-func (i alertMethodSlack) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodSlack) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
 	// slack has only one, secret field
 	return nil
 }
@@ -308,7 +306,7 @@ func (i alertMethodDiscord) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMet
 	}
 }
 
-func (i alertMethodDiscord) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodDiscord) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
 	// discord has only one, secret field
 	return nil
 }
@@ -346,11 +344,11 @@ func (i alertMethodOpsgenie) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMe
 	}
 }
 
-func (i alertMethodOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
-	config := spec["opsgenie"].(map[string]interface{})
+func (i alertMethodOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+	config := spec.Opsgenie
 	var diags diag.Diagnostics
 
-	err := d.Set("url", config["url"])
+	err := d.Set("url", config.URL)
 	diags = appendError(diags, err)
 
 	return diags
@@ -395,13 +393,13 @@ func (i alertMethodServiceNow) MarshalSpec(d *schema.ResourceData) v1alpha.Alert
 	}
 }
 
-func (i alertMethodServiceNow) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
-	config := spec["servicenow"].(map[string]interface{})
+func (i alertMethodServiceNow) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+	config := spec.ServiceNow
 	var diags diag.Diagnostics
 
-	err := d.Set("username", config["username"])
+	err := d.Set("username", config.Username)
 	diags = appendError(diags, err)
-	err = d.Set("instance_name", config["instanceName"])
+	err = d.Set("instance_name", config.InstanceName)
 	diags = appendError(diags, err)
 
 	return diags
@@ -452,15 +450,15 @@ func (i alertMethodJira) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethod
 	}
 }
 
-func (i alertMethodJira) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
-	config := spec["jira"].(map[string]interface{})
+func (i alertMethodJira) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+	config := spec.Jira
 	var diags diag.Diagnostics
 
-	err := d.Set("username", config["username"])
+	err := d.Set("username", config.Username)
 	diags = appendError(diags, err)
-	err = d.Set("url", config["url"])
+	err = d.Set("url", config.URL)
 	diags = appendError(diags, err)
-	err = d.Set("project_key", config["projectKey"])
+	err = d.Set("project_key", config.ProjectKey)
 	diags = appendError(diags, err)
 
 	return diags
@@ -493,7 +491,7 @@ func (i alertMethodTeams) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMetho
 	}
 }
 
-func (i alertMethodTeams) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
+func (i alertMethodTeams) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
 	// teams has only one, secret field
 	return nil
 }
@@ -558,19 +556,21 @@ func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMetho
 	}
 }
 
-func (i alertMethodEmail) UnmarshalSpec(d *schema.ResourceData, spec map[string]interface{}) diag.Diagnostics {
-	config := spec["email"].(map[string]interface{})
+func (i alertMethodEmail) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+	config := spec.Email
 	var diags diag.Diagnostics
 
-	err := d.Set("to", config["to"])
+	err := d.Set("to", config.To)
 	diags = appendError(diags, err)
-	err = d.Set("cc", config["cc"])
+	err = d.Set("cc", config.Cc)
 	diags = appendError(diags, err)
-	err = d.Set("bcc", config["bcc"])
+	err = d.Set("bcc", config.Bcc)
 	diags = appendError(diags, err)
-	err = d.Set("subject", config["subject"])
+	// FIXME: What to put here instead of Subject?
+	err = d.Set("subject", config.Subject)
 	diags = appendError(diags, err)
-	err = d.Set("body", config["body"])
+	// FIXME: What to put here instead of Body?
+	err = d.Set("body", config.Body)
 	diags = appendError(diags, err)
 
 	return diags

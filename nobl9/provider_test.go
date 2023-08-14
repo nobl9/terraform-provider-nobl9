@@ -1,6 +1,7 @@
 package nobl9
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -8,8 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	v1alpha "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
 )
 
 //nolint:gochecknoglobals
@@ -75,22 +75,24 @@ func CheckObjectCreated(name string) resource.TestCheckFunc {
 	}
 }
 
-func CheckDestroy(rsType string, objectType v1alpha.Object) func(s *terraform.State) error {
+func CheckDestroy(rsType string, kind manifest.Kind) func(s *terraform.State) error {
 	return func(s *terraform.State) error {
 		config, ok := testProvider.Meta().(ProviderConfig)
 		if !ok {
 			return fmt.Errorf("could not cast data to ProviderConfig")
 		}
-		client, ds := getClient(config, testProject)
+		client, ds := getNewClient(config)
 		if ds.HasError() {
 			return fmt.Errorf("unable create client when deleting objects")
 		}
 
+		ctx := context.Background()
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != rsType {
 				continue
 			}
-			if _, err := client.GetObject(objectType, "", rs.Primary.ID); err != nil {
+
+			if _, err := client.GetObjects(ctx, testProject, kind, nil, rs.Primary.ID); err != nil {
 				return err
 			}
 		}

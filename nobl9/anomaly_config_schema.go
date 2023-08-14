@@ -93,30 +93,27 @@ func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []v1alpha.An
 	return alertMethodsAPI
 }
 
-func unmarshalAnomalyConfig(d *schema.ResourceData, spec map[string]interface{}) error {
-	anomalyConfigRaw, anomalyConfigExists := spec["anomalyConfig"]
-	if !anomalyConfigExists {
+func unmarshalAnomalyConfig(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
+	if spec.AnomalyConfig == nil {
 		return nil
 	}
-	anomalyConfig := anomalyConfigRaw.(map[string]interface{})
 
-	noData := anomalyConfig["noData"].(map[string]interface{})
-	noDataMethods := noData["alertMethods"].([]interface{})
+	noData := spec.AnomalyConfig.NoData
+	noDataMethods := noData.AlertMethods
 	resNoDataMethods := make([]map[string]interface{}, 0)
 
 	if len(noDataMethods) == 0 {
 		return nil
 	}
 
-	for _, amRaw := range noDataMethods {
-		am := amRaw.(map[string]interface{})
-		if am["name"] == nil || am["project"] == nil {
+	for _, am := range noDataMethods {
+		if am.Name == "" || am.Project == "" {
 			continue
 		}
 
 		resNoDataMethods = append(resNoDataMethods, map[string]interface{}{
-			"name":    am["name"],
-			"project": am["project"],
+			"name":    am.Name,
+			"project": am.Project,
 		})
 	}
 

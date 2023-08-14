@@ -9,8 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/sdk"
-
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
@@ -62,14 +60,10 @@ func marshalRoleBinding(d *schema.ResourceData) *v1alpha.RoleBinding {
 		name = id.String()
 	}
 	userRoleBindingSpec := d.Get("user").(string)
-	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
 	return &v1alpha.RoleBinding{
-		ObjectInternal: manifest.ObjectInternal{
-			Organization: "nobl9-dev",
-		},
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindRoleBinding,
-		Metadata: manifest.RoleBindingMetadata{
+		Metadata: v1alpha.RoleBindingMetadata{
 			Name: name,
 		},
 		Spec: v1alpha.RoleBindingSpec{
@@ -80,44 +74,47 @@ func marshalRoleBinding(d *schema.ResourceData) *v1alpha.RoleBinding {
 	}
 }
 
-func unmarshalRoleBinding(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnostics {
+func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alpha.RoleBinding) diag.Diagnostics {
 	_, isProjectRole := d.GetOk("project_ref")
-	roleBinding := findRoleBindingByType(isProjectRole, objects)
-	if roleBinding == nil {
+	// FIXME: is this func modified correctly?
+	roleBindingP := findRoleBindingByType(isProjectRole, objects)
+	if roleBindingP == nil {
 		d.SetId("")
 		return nil
 	}
+	roleBinding := *roleBindingP
 
 	var diags diag.Diagnostics
-	metadata := roleBinding["metadata"].(map[string]interface{})
-	err := d.Set("name", metadata["name"])
+	metadata := roleBinding.Metadata
+	err := d.Set("name", metadata.Name)
 	diags = appendError(diags, err)
 
-	spec := roleBinding["spec"].(map[string]interface{})
-	err = d.Set("user", spec["user"])
+	spec := roleBinding.Spec
+	err = d.Set("user", spec.User)
 	diags = appendError(diags, err)
-	err = d.Set("role_ref", spec["roleRef"])
+	err = d.Set("role_ref", spec.RoleRef)
 	diags = appendError(diags, err)
-	err = d.Set("project_ref", spec["projectRef"])
+	err = d.Set("project_ref", spec.ProjectRef)
 	diags = appendError(diags, err)
 
 	return diags
 }
 
-func findRoleBindingByType(projectRole bool, objects []sdk.AnyJSONObj) sdk.AnyJSONObj {
+func findRoleBindingByType(projectRole bool, objects []v1alpha.RoleBinding) *v1alpha.RoleBinding {
 	for _, object := range objects {
 		if projectRole && containsProjectRef(object) {
-			return object
+			return &object
 		} else if !projectRole && !containsProjectRef(object) {
-			return object
+			return &object
 		}
 	}
 	return nil
 }
 
-func containsProjectRef(obj sdk.AnyJSONObj) bool {
-	spec := obj["spec"].(map[string]interface{})
-	return spec["projectRef"] != nil
+func containsProjectRef(obj v1alpha.RoleBinding) bool {
+	spec := obj.Spec
+	// FIXME: is this a correct change?
+	return spec.ProjectRef != ""
 }
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -161,7 +158,7 @@ func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	return unmarshalRoleBinding(d, objects)
+	return unmarshalRoleBinding(d, manifest.FilterByKind[v1alpha.RoleBinding](objects))
 }
 
 func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

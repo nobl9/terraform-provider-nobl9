@@ -3,7 +3,6 @@ package nobl9
 import (
 	"context"
 	"encoding/json"
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -12,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	v1alpha "github.com/nobl9/nobl9-go/manifest/v1alpha"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 type directResource struct {
@@ -174,7 +173,7 @@ func (dr directResource) resourceDirectDelete(
 
 func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alpha.Direct, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	metadataHolder, diags := marshalMetadata(d)
+	metadata, diags := marshalMetadata(d)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -198,15 +197,10 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alpha.Direct,
 
 	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
 	return &v1alpha.Direct{
-		ObjectHeader: manifest.ObjectHeader{
-			APIVersion:     v1alpha.APIVersion,
-			Kind:           manifest.KindDirect,
-			MetadataHolder: metadataHolder,
-			ObjectInternal: manifest.ObjectInternal{
-				Organization: "nobl9-dev",
-			},
-		},
-		Spec: spec,
+		APIVersion: v1alpha.APIVersion,
+		Kind:       manifest.KindDirect,
+		Metadata:   metadata,
+		Spec:       spec,
 	}, diags
 }
 
@@ -220,7 +214,7 @@ func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []v1alp
 	direct := directs[0]
 
 	set(d, "status", direct.Status.DirectType, &diags)
-	diags = append(diags, unmarshalMetadata(direct.MetadataHolder, d)...)
+	diags = append(diags, unmarshalMetadata(direct.Metadata, d)...)
 	diags = append(diags, dr.UnmarshalSpec(d, direct.Spec)...)
 	diags = append(diags, unmarshalHistoricalDataRetrieval(d, direct.Spec.HistoricalDataRetrieval)...)
 	diags = append(diags, unmarshalQueryDelay(d, direct.Spec.QueryDelay)...)
@@ -747,7 +741,7 @@ func (s newRelicDirectSpec) GetDescription() string {
 
 func (s newRelicDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
 	return v1alpha.DirectSpec{NewRelic: &v1alpha.NewRelicDirectConfig{
-		AccountID:        json.Number(strconv.Itoa(d.Get("account_id").(int))),
+		AccountID:        d.Get("account_id").(int),
 		InsightsQueryKey: d.Get("insights_query_key").(string),
 	}}
 }

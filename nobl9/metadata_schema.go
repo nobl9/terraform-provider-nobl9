@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/sdk"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 const (
@@ -174,6 +174,7 @@ func schemaDescription() *schema.Schema {
 	}
 }
 
+// TODO: Delete this func after deleting all its uses.
 func marshalMetadata(d *schema.ResourceData) (manifest.MetadataHolder, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -181,7 +182,7 @@ func marshalMetadata(d *schema.ResourceData) (manifest.MetadataHolder, diag.Diag
 	if labelsData := d.Get("label"); labelsData != nil {
 		labels = labelsData.([]interface{})
 	}
-	var labelsMarshalled manifest.Labels
+	var labelsMarshalled v1alpha.Labels
 	labelsMarshalled, diags = marshalLabels(labels)
 
 	return manifest.MetadataHolder{
@@ -194,7 +195,8 @@ func marshalMetadata(d *schema.ResourceData) (manifest.MetadataHolder, diag.Diag
 	}, diags
 }
 
-func unmarshalGenericMetadata(object sdk.AnyJSONObj, d *schema.ResourceData) diag.Diagnostics {
+// TODO: Delete this func after deleting all its uses.
+func unmarshalGenericMetadata(object manifest.Object, d *schema.ResourceData) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	metadata := object["metadata"].(map[string]interface{})
@@ -228,9 +230,9 @@ func unmarshalMetadata(metadataHolder manifest.MetadataHolder, d *schema.Resourc
 	return diags
 }
 
-func marshalLabels(labels []interface{}) (manifest.Labels, diag.Diagnostics) {
+func marshalLabels(labels []interface{}) (v1alpha.Labels, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	labelsResult := make(manifest.Labels, len(labels))
+	labelsResult := make(v1alpha.Labels, len(labels))
 
 labelsLoop:
 	for _, labelRaw := range labels {

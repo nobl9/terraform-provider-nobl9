@@ -6,8 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/sdk"
-
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
@@ -37,16 +35,13 @@ func marshalProject(d *schema.ResourceData) (*v1alpha.Project, diag.Diagnostics)
 	if labelsData := d.Get("label"); labelsData != nil {
 		labels = labelsData.([]interface{})
 	}
-	var labelsMarshalled manifest.Labels
+	var labelsMarshalled v1alpha.Labels
 	labelsMarshalled, diags = marshalLabels(labels)
 
 	return &v1alpha.Project{
-		ObjectInternal: manifest.ObjectInternal{
-			Organization: "nobl9-dev",
-		},
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindProject,
-		Metadata: manifest.ProjectMetadata{
+		Metadata: v1alpha.ProjectMetadata{
 			Name:        d.Get("name").(string),
 			DisplayName: d.Get("display_name").(string),
 			Labels:      labelsMarshalled,
@@ -57,7 +52,7 @@ func marshalProject(d *schema.ResourceData) (*v1alpha.Project, diag.Diagnostics)
 	}, diags
 }
 
-func unmarshalProject(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Diagnostics {
+func unmarshalProject(d *schema.ResourceData, objects []v1alpha.Project) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -65,16 +60,16 @@ func unmarshalProject(d *schema.ResourceData, objects []sdk.AnyJSONObj) diag.Dia
 	object := objects[0]
 	var diags diag.Diagnostics
 
-	metadata := object["metadata"].(map[string]interface{})
-	err := d.Set("name", metadata["name"])
+	metadata := object.Metadata
+	err := d.Set("name", metadata.Name)
 	diags = appendError(diags, err)
-	err = d.Set("display_name", metadata["displayName"])
+	err = d.Set("display_name", metadata.DisplayName)
 	diags = appendError(diags, err)
-	err = d.Set("label", unmarshalLabels(metadata["labels"]))
+	err = d.Set("label", unmarshalLabels(metadata.Labels))
 	diags = appendError(diags, err)
 
-	spec := object["spec"].(map[string]interface{})
-	err = d.Set("description", spec["description"])
+	spec := object.Spec
+	err = d.Set("description", spec.Description)
 	diags = appendError(diags, err)
 
 	return diags
@@ -115,7 +110,7 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(err)
 	}
 
-	return unmarshalProject(d, objects)
+	return unmarshalProject(d, manifest.FilterByKind[v1alpha.Project](objects))
 }
 
 func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

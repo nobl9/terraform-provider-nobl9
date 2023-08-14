@@ -3,17 +3,19 @@ package nobl9
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	n9api "github.com/nobl9/nobl9-go"
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	"github.com/nobl9/nobl9-go/sdk"
 )
 
 const agentTypeKey = "agent_type"
@@ -114,33 +116,30 @@ func agentSchema() map[string]*schema.Schema {
 // FIXME: this one demands different treatment when it comes to new client.
 func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
+	client, ds := getNewClient(config)
 	if ds != nil {
 		return ds
 	}
+
 	agent, diags := marshalAgent(d)
 	if diags.HasError() {
 		return diags
 	}
 
-	var p n9api.Payload
-	p.AddObject(agent)
-
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		agentsData, err := client.ApplyAgents(p.GetObjects())
+		err := clientApplyObject(ctx, client, agent)
 		if err != nil {
-			// FIXME: Uncomment after sdk fix.
-			//if errors.Is(err, v1alpha.ErrConcurrencyIssue) {
-			//	return resource.RetryableError(err)
-			//}
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
 			return resource.NonRetryableError(err)
 		}
-		if len(agentsData) == 1 {
-			err = d.Set("client_id", agentsData[0].ClientID)
-			diags = appendError(diags, err)
-			err = d.Set("client_secret", agentsData[0].ClientSecret)
-			diags = appendError(diags, err)
-		}
+		project := d.Get("project").(string)
+		agentsData, err := client.GetAgentCredentials(ctx, project, agent.Metadata.Name)
+		err = d.Set("client_id", agentsData.ClientID)
+		diags = appendError(diags, err)
+		err = d.Set("client_secret", agentsData.ClientSecret)
+		diags = appendError(diags, err)
 		return nil
 	}); err != nil {
 		return diag.Errorf("could not add agent: %s", err.Error())
@@ -208,7 +207,7 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 
 func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	metadataHolder, diags := marshalMetadata(d)
+	metadata, diags := marshalMetadata(d)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -220,11 +219,9 @@ func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
 	}
 
 	return &v1alpha.Agent{
-		ObjectHeader: manifest.ObjectHeader{
-			APIVersion:     v1alpha.APIVersion,
-			Kind:           manifest.KindAgent,
-			MetadataHolder: metadataHolder,
-		},
+		APIVersion: v1alpha.APIVersion,
+		Kind:       manifest.KindAgent,
+		Metadata:   metadata,
 		Spec: v1alpha.AgentSpec{
 			Description:         d.Get("description").(string),
 			SourceOf:            sourceOfStr,
@@ -272,7 +269,7 @@ func unmarshalAgent(d *schema.ResourceData, agents []v1alpha.Agent) diag.Diagnos
 	err := d.Set("status", status)
 
 	diags = appendError(diags, err)
-	diags = append(diags, unmarshalMetadata(agent.MetadataHolder, d)...)
+	diags = append(diags, unmarshalMetadata(agent.Metadata, d)...)
 	diags = append(diags, unmarshalQueryDelay(d, agent.Spec.QueryDelay)...)
 	spec := v1alpha.AgentSpec{}
 	supportedAgents := []struct {
@@ -913,13 +910,17 @@ func schemaAgentNewRelic() map[string]*schema.Schema {
 
 func marshalAgentNewRelic(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.NewRelicAgentConfig {
 	data := getAgentResourceData(d, newRelicAgentType, newRelicAgentConfigKey, diags)
-
 	if data == nil {
 		return nil
 	}
 
+	// FIXME: can this error be handled like that?
+	accID, err := strconv.Atoi(data["account_id"].(string))
+	if err != nil {
+		return nil
+	}
 	return &v1alpha.NewRelicAgentConfig{
-		AccountID: json.Number(data["account_id"].(string)),
+		AccountID: accID,
 	}
 }
 
