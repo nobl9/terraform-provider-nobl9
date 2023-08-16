@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
@@ -174,60 +173,12 @@ func schemaDescription() *schema.Schema {
 	}
 }
 
-// TODO: Delete this func after deleting all its uses.
-func marshalMetadata(d *schema.ResourceData) (manifest.MetadataHolder, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
+func getMarshalledLabels(d *schema.ResourceData) (v1alpha.Labels, diag.Diagnostics) {
 	var labels []interface{}
 	if labelsData := d.Get("label"); labelsData != nil {
 		labels = labelsData.([]interface{})
 	}
-	var labelsMarshalled v1alpha.Labels
-	labelsMarshalled, diags = marshalLabels(labels)
-
-	return manifest.MetadataHolder{
-		Metadata: manifest.Metadata{
-			Name:        d.Get("name").(string),
-			DisplayName: d.Get("display_name").(string),
-			Project:     d.Get("project").(string),
-			Labels:      labelsMarshalled,
-		},
-	}, diags
-}
-
-// TODO: Delete this func after deleting all its uses.
-func unmarshalGenericMetadata(object manifest.Object, d *schema.ResourceData) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	metadata := object["metadata"].(map[string]interface{})
-	err := d.Set("name", metadata["name"])
-	diags = appendError(diags, err)
-	err = d.Set("display_name", metadata["displayName"])
-	diags = appendError(diags, err)
-
-	err = d.Set("project", metadata["project"])
-	diags = appendError(diags, err)
-
-	labelsRaw, exist := metadata["labels"]
-	if exist {
-		err = d.Set("label", unmarshalLabels(labelsRaw))
-		diags = appendError(diags, err)
-	}
-
-	return diags
-}
-
-func unmarshalMetadata(metadataHolder manifest.MetadataHolder, d *schema.ResourceData) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	set(d, "name", metadataHolder.Metadata.Name, &diags)
-	set(d, "display_name", metadataHolder.Metadata.DisplayName, &diags)
-	set(d, "project", metadataHolder.Metadata.Project, &diags)
-	if metadataHolder.Metadata.Labels != nil {
-		set(d, "label", metadataHolder.Metadata.Labels, &diags)
-	}
-
-	return diags
+	return marshalLabels(labels)
 }
 
 func marshalLabels(labels []interface{}) (v1alpha.Labels, diag.Diagnostics) {
@@ -273,15 +224,15 @@ labelsLoop:
 	return labelsResult, diags
 }
 
-func unmarshalLabels(labelsRaw interface{}) interface{} {
+func unmarshalLabels(labelsRaw v1alpha.Labels) interface{} {
 	resultLabels := make([]map[string]interface{}, 0)
 
 	if labelsRaw != nil {
-		labelsMap := labelsRaw.(map[string]interface{})
+		labelsMap := labelsRaw
 		for labelKey, labelValuesRaw := range labelsMap {
 			var labelValuesStr []string
-			for _, labelValueRaw := range labelValuesRaw.([]interface{}) {
-				labelValuesStr = append(labelValuesStr, labelValueRaw.(string))
+			for _, labelValueRaw := range labelValuesRaw {
+				labelValuesStr = append(labelValuesStr, labelValueRaw)
 			}
 			labelKeyWithValues := make(map[string]interface{})
 			labelKeyWithValues["key"] = labelKey

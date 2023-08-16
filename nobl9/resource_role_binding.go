@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	"github.com/nobl9/nobl9-go/sdk"
 )
 
 const wildcardProject = "*"
@@ -112,9 +114,8 @@ func findRoleBindingByType(projectRole bool, objects []v1alpha.RoleBinding) *v1a
 }
 
 func containsProjectRef(obj v1alpha.RoleBinding) bool {
-	spec := obj.Spec
 	// FIXME: is this a correct change?
-	return spec.ProjectRef != ""
+	return obj.Spec.ProjectRef != ""
 }
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -124,15 +125,14 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 		return ds
 	}
 
-	ap := marshalRoleBinding(d)
+	roleBinding := marshalRoleBinding(d)
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := clientApplyObject(ctx, client, ap)
+		err := client.ApplyObjects(ctx, []manifest.Object{roleBinding}, false)
 		if err != nil {
-			// FIXME: Uncomment after sdk fix.
-			//if errors.Is(err, sdk.ErrConcurrencyIssue) {
-			//	return resource.RetryableError(err)
-			//}
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
 			return resource.NonRetryableError(err)
 		}
 		return nil
@@ -140,7 +140,7 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("could not add project: %s", err.Error())
 	}
 
-	d.SetId(ap.Metadata.Name)
+	d.SetId(roleBinding.Metadata.Name)
 
 	return resourceRoleBindingRead(ctx, d, meta)
 }
@@ -175,10 +175,9 @@ func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.DeleteObjectsByName(ctx, project, manifest.KindRoleBinding, false, d.Id())
 		if err != nil {
-			// FIXME: Uncomment after sdk fix.
-			//if errors.Is(err, sdk.ErrConcurrencyIssue) {
-			//	return resource.RetryableError(err)
-			//}
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
 			return resource.NonRetryableError(err)
 		}
 		return nil

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"sort"
 	"time"
 
@@ -334,7 +335,7 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := clientApplyObject(ctx, client, slo)
+		err := client.ApplyObjects(ctx, []manifest.Object{slo}, false)
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
@@ -381,10 +382,9 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.DeleteObjectsByName(ctx, project, manifest.KindSLO, false, d.Id())
 		if err != nil {
-			// FIXME: Uncomment after sdk fix.
-			//if errors.Is(err, sdk.ErrConcurrencyIssue) {
-			//	return resource.RetryableError(err)
-			//}
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
 			return resource.NonRetryableError(err)
 		}
 		return nil
@@ -449,18 +449,30 @@ func equalSlices(a, b []interface{}) bool {
 }
 
 func marshalSLO(d *schema.ResourceData) (*v1alpha.SLO, diag.Diagnostics) {
-	metadata, diags := marshalMetadata(d)
+	labelsMarshalled, diags := getMarshalledLabels(d)
 	if diags.HasError() {
 		return nil, diags
 	}
+
 	attachments, ok := d.GetOk("attachment")
 	if !ok {
 		attachments = d.Get("attachments")
 	}
+
+	var displayName string
+	if dn := d.Get("displayName"); dn != nil {
+		displayName = dn.(string)
+	}
+
 	return &v1alpha.SLO{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindSLO,
-		Metadata:   metadata,
+		Metadata: v1alpha.SLOMetadata{
+			Name:        d.Get("name").(string),
+			DisplayName: displayName,
+			Project:     d.Get("project").(string),
+			Labels:      labelsMarshalled,
+		},
 		Spec: v1alpha.SLOSpec{
 			Description:     d.Get("description").(string),
 			Service:         d.Get("service").(string),
@@ -653,13 +665,25 @@ func unmarshalSLO(d *schema.ResourceData, objects []v1alpha.SLO) diag.Diagnostic
 	}
 	object := objects[0]
 	var diags diag.Diagnostics
+	var err error
 
-	if ds := unmarshalGenericMetadata(object, d); ds.HasError() {
-		diags = append(diags, ds...)
+	metadata := object.Metadata
+	err = d.Set("name", metadata.Name)
+	diags = appendError(diags, err)
+	err = d.Set("display_name", metadata.DisplayName)
+	diags = appendError(diags, err)
+
+	err = d.Set("project", metadata.Project)
+	diags = appendError(diags, err)
+
+	// FIXME: != nil here should be fine, right?
+	if labelsRaw := metadata.Labels; labelsRaw != nil {
+		err = d.Set("label", unmarshalLabels(labelsRaw))
+		diags = appendError(diags, err)
 	}
 
 	spec := object.Spec
-	var err error
+
 	err = d.Set("alert_policies", spec.AlertPolicies)
 	diags = appendError(diags, err)
 
@@ -747,7 +771,6 @@ func unmarshalIndicator(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
 	res["kind"] = metricSource.Kind
 	// FIXME: is this condition needed?
 	if rawMetric := indicator.RawMetric; rawMetric != nil {
-		// FIXME: continue fixing here.
 		tfMetric := unmarshalSLOMetric(rawMetric)
 		res["raw_metric"] = tfMetric
 	}
@@ -857,37 +880,41 @@ func unmarshalSLORawMetric(rawMetricSource *v1alpha.RawMetricSpec) *schema.Set {
 func unmarshalSLOMetric(spec *v1alpha.MetricSpec) *schema.Set {
 	supportedMetrics := []struct {
 		hclName       string
-		jsonName      string
+		specFieldName string
 		unmarshalFunc func(map[string]interface{}) map[string]interface{}
 	}{
-		{amazonPrometheusMetric, "amazonPrometheus", unmarshalAmazonPrometheusMetric},
-		{appDynamicsMetric, "appDynamics", unmarshalAppdynamicsMetric},
-		{bigQueryMetric, "bigQuery", unmarshalBigqueryMetric},
-		{cloudwatchMetric, "cloudWatch", unmarshalCloudWatchMetric},
-		{datadogMetric, "datadog", unmarshalDatadogMetric},
-		{dynatraceMetric, "dynatrace", unmarshalDynatraceMetric},
-		{elasticsearchMetric, "elasticsearch", unmarshalElasticsearchMetric},
-		{gcmMetric, "gcm", unmarshalGCMMetric},
-		{grafanaLokiMetric, "grafanaLoki", unmarshalGrafanaLokiMetric},
-		{graphiteMetric, "graphite", unmarshalGraphiteMetric},
-		{influxdbMetric, "influxdb", unmarshalInfluxDBMetric},
-		{instanaMetric, "instana", unmarshalInstanaMetric},
-		{lightstepMetric, "lightstep", unmarshalLightstepMetric},
-		{newrelicMetric, "newRelic", unmarshalNewRelicMetric},
-		{opentsdbMetric, "opentsdb", unmarshalOpentsdbMetric},
-		{pingdomMetric, "pingdom", unmarshalPingdomMetric},
-		{prometheusMetric, "prometheus", unmarshalPrometheusMetric},
-		{redshiftMetric, "redshift", unmarshalRedshiftMetric},
-		{splunkMetric, "splunk", unmarshalSplunkMetric},
-		{splunkObservabilityMetric, "splunkObservability", unmarshalSplunkObservabilityMetric},
-		{sumologicMetric, "sumoLogic", unmarshalSumologicMetric},
-		{thousandeyesMetric, "thousandEyes", unmarshalThousandeyesMetric},
+		{amazonPrometheusMetric, "AmazonPrometheus", unmarshalAmazonPrometheusMetric},
+		{appDynamicsMetric, "AppDynamics", unmarshalAppdynamicsMetric},
+		{bigQueryMetric, "BigQuery", unmarshalBigqueryMetric},
+		{cloudwatchMetric, "CloudWatch", unmarshalCloudWatchMetric},
+		{datadogMetric, "Datadog", unmarshalDatadogMetric},
+		{dynatraceMetric, "Dynatrace", unmarshalDynatraceMetric},
+		{elasticsearchMetric, "Elasticsearch", unmarshalElasticsearchMetric},
+		{gcmMetric, "GCM", unmarshalGCMMetric},
+		{grafanaLokiMetric, "GrafanaLoki", unmarshalGrafanaLokiMetric},
+		{graphiteMetric, "Graphite", unmarshalGraphiteMetric},
+		{influxdbMetric, "InfluxDB", unmarshalInfluxDBMetric},
+		{instanaMetric, "Instana", unmarshalInstanaMetric},
+		{lightstepMetric, "Lightstep", unmarshalLightstepMetric},
+		{newrelicMetric, "NewRelic", unmarshalNewRelicMetric},
+		{opentsdbMetric, "OpenTSDB", unmarshalOpentsdbMetric},
+		{pingdomMetric, "Pingdom", unmarshalPingdomMetric},
+		{prometheusMetric, "Prometheus", unmarshalPrometheusMetric},
+		{redshiftMetric, "Redshift", unmarshalRedshiftMetric},
+		{splunkMetric, "Splunk", unmarshalSplunkMetric},
+		{splunkObservabilityMetric, "SplunkObservability", unmarshalSplunkObservabilityMetric},
+		{sumologicMetric, "SumoLogic", unmarshalSumologicMetric},
+		{thousandeyesMetric, "ThousandEyes", unmarshalThousandeyesMetric},
 	}
 
 	res := make(map[string]interface{})
+
+	// FIXME: is this change good enough?
+	v := reflect.ValueOf(spec).Elem()
 	for _, name := range supportedMetrics {
-		if metric, ok := spec[name.jsonName]; ok {
-			tfMetric := name.unmarshalFunc(metric.(map[string]interface{}))
+		field := v.FieldByName(name.specFieldName)
+		if field.IsValid() && !field.IsNil() {
+			tfMetric := name.unmarshalFunc(field.Interface().(map[string]interface{}))
 			res[name.hclName] = schema.NewSet(oneElementSet, []interface{}{tfMetric})
 			break
 		}

@@ -113,7 +113,6 @@ func agentSchema() map[string]*schema.Schema {
 	return agentSchema
 }
 
-// FIXME: this one demands different treatment when it comes to new client.
 func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getNewClient(config)
@@ -127,7 +126,7 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := clientApplyObject(ctx, client, agent)
+		err := client.ApplyObjects(ctx, []manifest.Object{agent}, false)
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
@@ -191,10 +190,9 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.DeleteObjectsByName(ctx, project, manifest.KindAgent, false, d.Id())
 		if err != nil {
-			// FIXME: Uncomment after sdk fix.
-			//if errors.Is(err, sdk.ErrConcurrencyIssue) {
-			//	return resource.RetryableError(err)
-			//}
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
 			return resource.NonRetryableError(err)
 		}
 		return nil
@@ -206,8 +204,7 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 }
 
 func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	metadata, diags := marshalMetadata(d)
+	labelsMarshalled, diags := getMarshalledLabels(d)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -218,10 +215,19 @@ func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
 		sourceOfStr[i] = s.(string)
 	}
 
+	var displayName string
+	if dn := d.Get("displayName"); dn != nil {
+		displayName = dn.(string)
+	}
 	return &v1alpha.Agent{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindAgent,
-		Metadata:   metadata,
+		Metadata: v1alpha.AgentMetadata{
+			Name:        d.Get("name").(string),
+			DisplayName: displayName,
+			Project:     d.Get("project").(string),
+			Labels:      labelsMarshalled,
+		},
 		Spec: v1alpha.AgentSpec{
 			Description:         d.Get("description").(string),
 			SourceOf:            sourceOfStr,
@@ -269,7 +275,14 @@ func unmarshalAgent(d *schema.ResourceData, agents []v1alpha.Agent) diag.Diagnos
 	err := d.Set("status", status)
 
 	diags = appendError(diags, err)
-	diags = append(diags, unmarshalMetadata(agent.Metadata, d)...)
+
+	set(d, "name", agent.Metadata.Name, &diags)
+	set(d, "display_name", agent.Metadata.DisplayName, &diags)
+	set(d, "project", agent.Metadata.Project, &diags)
+	if agent.Metadata.Labels != nil {
+		set(d, "label", agent.Metadata.Labels, &diags)
+	}
+
 	diags = append(diags, unmarshalQueryDelay(d, agent.Spec.QueryDelay)...)
 	spec := v1alpha.AgentSpec{}
 	supportedAgents := []struct {

@@ -29,14 +29,10 @@ func resourceProject() *schema.Resource {
 }
 
 func marshalProject(d *schema.ResourceData) (*v1alpha.Project, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	var labels []interface{}
-	if labelsData := d.Get("label"); labelsData != nil {
-		labels = labelsData.([]interface{})
+	labelsMarshalled, diags := getMarshalledLabels(d)
+	if diags.HasError() {
+		return nil, diags
 	}
-	var labelsMarshalled v1alpha.Labels
-	labelsMarshalled, diags = marshalLabels(labels)
 
 	return &v1alpha.Project{
 		APIVersion: v1alpha.APIVersion,
@@ -82,17 +78,17 @@ func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta inte
 		return ds
 	}
 
-	ap, diags := marshalProject(d)
+	project, diags := marshalProject(d)
 	if diags.HasError() {
 		return diags
 	}
 
-	err := clientApplyObject(ctx, client, ap)
+	err := client.ApplyObjects(ctx, []manifest.Object{project}, false)
 	if err != nil {
 		return diag.Errorf("could not add project: %s", err.Error())
 	}
 
-	d.SetId(ap.Metadata.Name)
+	d.SetId(project.Metadata.Name)
 
 	return resourceProjectRead(ctx, d, meta)
 }
@@ -104,7 +100,6 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta inter
 		return ds
 	}
 
-	// FIXME: is 'd.Id()' as the project okay?
 	objects, err := client.GetObjects(ctx, d.Id(), manifest.KindProject, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -120,7 +115,6 @@ func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta int
 		return ds
 	}
 
-	// FIXME: is 'd.Id()' as the project okay?
 	err := client.DeleteObjectsByName(ctx, d.Id(), manifest.KindProject, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

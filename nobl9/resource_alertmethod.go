@@ -46,20 +46,25 @@ type alertMethod struct {
 	alertMethodProvider
 }
 
-func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) (*v1alpha.AlertMethod, diag.Diagnostics) {
-	metadata, diags := marshalMetadata(d)
-	if diags.HasError() {
-		return nil, diags
+func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) *v1alpha.AlertMethod {
+	var displayName string
+	if dn := d.Get("displayName"); dn != nil {
+		displayName = dn.(string)
 	}
+
 	return &v1alpha.AlertMethod{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindAlertMethod,
-		Metadata:   metadata,
-		Spec:       a.MarshalSpec(d),
-	}, diags
+		Metadata: v1alpha.AlertMethodMetadata{
+			Name:        d.Get("name").(string),
+			DisplayName: displayName,
+			Project:     d.Get("project").(string),
+		},
+		Spec: a.MarshalSpec(d),
+	}
 }
 
-// FIXME: Shouldn't it be PublicAlertMethod as the 2nd argument?
+// FIXME: shouldn't it be PublicAlertMethod as the 2nd argument?
 func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []v1alpha.AlertMethod) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
@@ -95,17 +100,14 @@ func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.Res
 		return ds
 	}
 
-	service, diags := a.marshalAlertMethod(d)
-	if diags.HasError() {
-		return diags
-	}
+	am := a.marshalAlertMethod(d)
 
-	err := clientApplyObject(ctx, client, service)
+	err := client.ApplyObjects(ctx, []manifest.Object{am}, false)
 	if err != nil {
 		return diag.Errorf("could not add agent: %s", err.Error())
 	}
 
-	d.SetId(service.Metadata.Name)
+	d.SetId(am.Metadata.Name)
 
 	return a.resourceAlertMethodRead(ctx, d, meta)
 }

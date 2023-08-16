@@ -3,12 +3,14 @@ package nobl9
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/nobl9/nobl9-go/sdk"
 
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
@@ -90,12 +92,11 @@ func (dr directResource) resourceDirectApply(
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := clientApplyObject(ctx, client, n9Direct)
+		err := client.ApplyObjects(ctx, []manifest.Object{n9Direct}, false)
 		if err != nil {
-			// FIXME: Uncomment after sdk fix.
-			//if errors.Is(err, sdk.ErrConcurrencyIssue) {
-			//	return resource.RetryableError(err)
-			//}
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
 			return resource.NonRetryableError(err)
 		}
 		return nil
@@ -157,10 +158,9 @@ func (dr directResource) resourceDirectDelete(
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.DeleteObjectsByName(ctx, project, manifest.KindDirect, false, d.Id())
 		if err != nil {
-			// FIXME: Uncomment after sdk fix.
-			//if errors.Is(err, sdk.ErrConcurrencyIssue) {
-			//	return resource.RetryableError(err)
-			//}
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+				return resource.RetryableError(err)
+			}
 			return resource.NonRetryableError(err)
 		}
 		return nil
@@ -172,8 +172,7 @@ func (dr directResource) resourceDirectDelete(
 }
 
 func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alpha.Direct, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	metadata, diags := marshalMetadata(d)
+	labelsMarshalled, diags := getMarshalledLabels(d)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -195,12 +194,21 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alpha.Direct,
 		spec.LogCollectionEnabled = marshalLogCollectionEnabled(d)
 	}
 
-	// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
+	var displayName string
+	if dn := d.Get("displayName"); dn != nil {
+		displayName = dn.(string)
+	}
+
 	return &v1alpha.Direct{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindDirect,
-		Metadata:   metadata,
-		Spec:       spec,
+		Metadata: v1alpha.DirectMetadata{
+			Name:        d.Get("name").(string),
+			DisplayName: displayName,
+			Project:     d.Get("project").(string),
+			Labels:      labelsMarshalled,
+		},
+		Spec: spec,
 	}, diags
 }
 
@@ -214,7 +222,12 @@ func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []v1alp
 	direct := directs[0]
 
 	set(d, "status", direct.Status.DirectType, &diags)
-	diags = append(diags, unmarshalMetadata(direct.Metadata, d)...)
+	set(d, "name", direct.Metadata.Name, &diags)
+	set(d, "display_name", direct.Metadata.DisplayName, &diags)
+	set(d, "project", direct.Metadata.Project, &diags)
+	if direct.Metadata.Labels != nil {
+		set(d, "label", direct.Metadata.Labels, &diags)
+	}
 	diags = append(diags, dr.UnmarshalSpec(d, direct.Spec)...)
 	diags = append(diags, unmarshalHistoricalDataRetrieval(d, direct.Spec.HistoricalDataRetrieval)...)
 	diags = append(diags, unmarshalQueryDelay(d, direct.Spec.QueryDelay)...)

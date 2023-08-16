@@ -38,15 +38,25 @@ func resourceService() *schema.Resource {
 }
 
 func marshalService(d *schema.ResourceData) (*v1alpha.Service, diag.Diagnostics) {
-	metadata, diags := marshalMetadata(d)
+	labelsMarshalled, diags := getMarshalledLabels(d)
 	if diags.HasError() {
 		return nil, diags
 	}
+
+	var displayName string
+	if dn := d.Get("displayName"); dn != nil {
+		displayName = dn.(string)
+	}
+
 	return &v1alpha.Service{
-		// FIXME: delete ObjectInternal field after SDK update - for now it's hardcoded organization.
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindService,
-		Metadata:   metadata,
+		Metadata: v1alpha.ServiceMetadata{
+			Name:        d.Get("name").(string),
+			DisplayName: displayName,
+			Project:     d.Get("project").(string),
+			Labels:      labelsMarshalled,
+		},
 		Spec: v1alpha.ServiceSpec{
 			Description: d.Get("description").(string),
 		},
@@ -100,7 +110,7 @@ func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta inte
 		return diags
 	}
 
-	err := clientApplyObject(ctx, client, service)
+	err := client.ApplyObjects(ctx, []manifest.Object{service}, false)
 	if err != nil {
 		return diag.Errorf("could not add service: %s", err.Error())
 	}

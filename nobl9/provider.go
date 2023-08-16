@@ -2,11 +2,8 @@ package nobl9
 
 import (
 	"context"
-	"encoding/json"
 	"sync"
 
-	"github.com/nobl9/nobl9-go"
-	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/sdk"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -138,10 +135,6 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 
 //nolint:gochecknoglobals
 var (
-	clients   = make(map[string]*nobl9.Client)
-	clientErr error
-	mu        sync.Mutex
-
 	//sharedClient    *nobl9.Client
 	newSharedClient *sdk.Client
 	once            sync.Once
@@ -187,51 +180,4 @@ func getNewClient(config ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 		return nil, diags
 	}
 	return newSharedClient, nil
-}
-
-func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
-	var newClient = func() (*nobl9.Client, error) {
-		return nobl9.NewClient(
-			config.IngestURL,
-			config.Organization, // TODO: to remove.
-			project,             // TODO: to remove.
-			"terraform-"+Version,
-			config.ClientID,
-			config.ClientSecret,
-			config.OktaOrgURL,
-			config.OktaAuthServer,
-		)
-	}
-	mu.Lock()
-	defer mu.Unlock()
-
-	client, clientInitialized := clients[project]
-	if !clientInitialized {
-		client, clientErr = newClient()
-		clients[project] = client
-	}
-
-	if clientErr != nil {
-		return nil, diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Unable to create Nobl9 client",
-				Detail:   clientErr.Error(),
-			},
-		}
-	}
-
-	return client, nil
-}
-
-func clientApplyObject(ctx context.Context, client *sdk.Client, object any) error {
-	data, err := json.Marshal(object)
-	if err != nil {
-		return err
-	}
-	var converted manifest.Object
-	if err = json.Unmarshal(data, &converted); err != nil {
-		return err
-	}
-	return client.ApplyObjects(ctx, []manifest.Object{converted}, false)
 }

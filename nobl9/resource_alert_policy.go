@@ -117,23 +117,24 @@ func transformAlertMethodsTo2DMap(alertMethods []interface{}) map[string]map[str
 }
 
 func marshalAlertPolicy(d *schema.ResourceData) (*v1alpha.AlertPolicy, diag.Diagnostics) {
-	//metadata, diags := marshalMetadata(d)
-	//if diags.HasError() {
-	//	return nil, diags
-	//}
-	// FIXME: how to deal with labels here?
-	labels, diag := marshalLabels(d.Get("labels"))
-	if diag.HasError() {
+	labelsMarshalled, diags := getMarshalledLabels(d)
+	if diags.HasError() {
 		return nil, diags
 	}
+
+	var displayName string
+	if dn := d.Get("displayName"); dn != nil {
+		displayName = dn.(string)
+	}
+
 	return &v1alpha.AlertPolicy{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindAlertPolicy,
 		Metadata: v1alpha.AlertPolicyMetadata{
 			Name:        d.Get("name").(string),
-			DisplayName: d.Get("displayName").(string),
+			DisplayName: displayName,
 			Project:     d.Get("project").(string),
-			Labels:      ,
+			Labels:      labelsMarshalled,
 		},
 		Spec: v1alpha.AlertPolicySpec{
 			Description:  d.Get("description").(string),
@@ -143,34 +144,6 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alpha.AlertPolicy, diag.Diag
 		},
 	}, diags
 }
-
-// FIXME: work checkpoint, delete if you see it.
-//func marshalAlertPolicy(d *schema.ResourceData) (*v1alpha.AlertPolicy, diag.Diagnostics) {
-//	//metadata, diags := marshalMetadata(d)
-//	//if diags.HasError() {
-//	//	return nil, diags
-//	//}
-//	labels, diag := marshalLabels(d.Get("labels"))
-//	if diag.HasError() {
-//		return nil, diags
-//	}
-//	return &v1alpha.AlertPolicy{
-//		APIVersion: v1alpha.APIVersion,
-//		Kind:       manifest.KindAlertPolicy,
-//		Metadata: v1alpha.AlertPolicyMetadata{
-//			Name:        d.Get("name").(string),
-//			DisplayName: d.Get("displayName").(string),
-//			Project:     d.Get("project").(string),
-//			Labels:      ,
-//		},
-//		Spec: v1alpha.AlertPolicySpec{
-//			Description:  d.Get("description").(string),
-//			Severity:     d.Get("severity").(string),
-//			Conditions:   marshalAlertConditions(d),
-//			AlertMethods: marshalAlertMethods(d),
-//		},
-//	}, diags
-//}
 
 func marshalAlertMethods(d *schema.ResourceData) []v1alpha.PublicAlertMethod {
 	methods := d.Get("alert_method").([]interface{})
@@ -223,7 +196,6 @@ func marshalAlertConditions(d *schema.ResourceData) []v1alpha.AlertCondition {
 	return resultConditions
 }
 
-// FIXME: fix pls.
 func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alpha.AlertPolicy) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
@@ -267,13 +239,20 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alpha.AlertPolicy)
 
 func unmarshalAlertPolicyConditions(conditions []v1alpha.AlertCondition) interface{} {
 	resultConditions := make([]map[string]interface{}, len(conditions))
-
+	// FIXME PC-9234: shouldn't it be rewritten to use v1alpha.AlertCondition{} or smth else?
 	for i, condition := range conditions {
-		// FIXME: are the values correct?
+		var value float64
+		if v, ok := condition.Value.(float64); ok {
+			value = v
+		}
+		var valueStr string
+		if v, ok := condition.Value.(string); ok {
+			valueStr = v
+		}
 		resultConditions[i] = map[string]interface{}{
 			"measurement":  condition.Measurement,
-			"value":        condition.Value,
-			"value_string": condition.Value,
+			"value":        value,
+			"value_string": valueStr,
 			"lasts_for":    condition.LastsForDuration,
 		}
 	}
@@ -296,23 +275,6 @@ func unmarshalAlertMethods(alertMethods []v1alpha.PublicAlertMethod) interface{}
 	return resultMethods
 }
 
-// FIXME: delete this func if you see it.
-func oldUnmarshalAlertMethods(alertMethods []interface{}) interface{} {
-	resultMethods := make([]map[string]interface{}, len(alertMethods))
-
-	for i, m := range alertMethods {
-		method := m.(map[string]interface{})
-		metadata := method["metadata"].(map[string]interface{})
-
-		resultMethods[i] = map[string]interface{}{
-			"name":    metadata["name"],
-			"project": metadata["project"],
-		}
-	}
-
-	return resultMethods
-}
-
 func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getNewClient(config)
@@ -325,7 +287,7 @@ func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta 
 		return diags
 	}
 
-	err := clientApplyObject(ctx, client, ap)
+	err := client.ApplyObjects(ctx, []manifest.Object{ap}, false)
 	if err != nil {
 		return diag.Errorf("could not add alertPolicy: %s", err.Error())
 	}
