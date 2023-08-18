@@ -216,7 +216,7 @@ func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
 	}
 
 	var displayName string
-	if dn := d.Get("displayName"); dn != nil {
+	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
 	}
 	return &v1alpha.Agent{
@@ -927,7 +927,6 @@ func marshalAgentNewRelic(d *schema.ResourceData, diags diag.Diagnostics) *v1alp
 		return nil
 	}
 
-	// FIXME: can this error be handled like that?
 	accID, err := strconv.Atoi(data["account_id"].(string))
 	if err != nil {
 		return nil

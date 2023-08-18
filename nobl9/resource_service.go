@@ -44,7 +44,7 @@ func marshalService(d *schema.ResourceData) (*v1alpha.Service, diag.Diagnostics)
 	}
 
 	var displayName string
-	if dn := d.Get("displayName"); dn != nil {
+	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
 	}
 
@@ -71,22 +71,21 @@ func unmarshalService(d *schema.ResourceData, objects []v1alpha.Service) diag.Di
 	object := objects[0]
 	var diags diag.Diagnostics
 
-	err := d.Set("name", object.Metadata.Name)
+	metadata := object.Metadata
+	err := d.Set("name", metadata.Name)
 	diags = appendError(diags, err)
-	err = d.Set("display_name", object.Metadata.DisplayName)
-	diags = appendError(diags, err)
-
-	err = d.Set("project", object.Metadata.Project)
+	err = d.Set("display_name", metadata.DisplayName)
 	diags = appendError(diags, err)
 
-	labelsRaw := object.Metadata.Labels
-	// FIXME: is this condition correct and necessary?
-	if labelsRaw != nil {
+	err = d.Set("project", metadata.Project)
+	diags = appendError(diags, err)
+
+	if labelsRaw := metadata.Labels; len(labelsRaw) > 0 {
 		err = d.Set("label", unmarshalLabels(labelsRaw))
 		diags = appendError(diags, err)
 	}
 
-	status := object.Status
+	status := map[string]int{"sloCount": object.Status.SloCount}
 	err = d.Set("status", status)
 	diags = appendError(diags, err)
 

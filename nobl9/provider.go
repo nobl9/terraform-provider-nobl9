@@ -13,8 +13,8 @@ import (
 //nolint:gochecknoglobals,revive
 var Version string
 
-// FIXME: Edit everything that was necessary but is optional now.
-// FIXME: Set 'Deprecated' for project and organization (need to get a date for deletion first).
+// FIXME PC-9234: Edit everything that was necessary but is optional now.
+// FIXME PC-9234: Set 'Deprecated' for project and organization (need to get a date for deletion first).
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{

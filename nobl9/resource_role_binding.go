@@ -78,7 +78,7 @@ func marshalRoleBinding(d *schema.ResourceData) *v1alpha.RoleBinding {
 
 func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alpha.RoleBinding) diag.Diagnostics {
 	_, isProjectRole := d.GetOk("project_ref")
-	// FIXME: is this func modified correctly?
+	// FIXME PC-9234: is this func modified correctly?
 	roleBindingP := findRoleBindingByType(isProjectRole, objects)
 	if roleBindingP == nil {
 		d.SetId("")
@@ -114,7 +114,6 @@ func findRoleBindingByType(projectRole bool, objects []v1alpha.RoleBinding) *v1a
 }
 
 func containsProjectRef(obj v1alpha.RoleBinding) bool {
-	// FIXME: is this a correct change?
 	return obj.Spec.ProjectRef != ""
 }
 

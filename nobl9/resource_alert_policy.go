@@ -123,7 +123,7 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alpha.AlertPolicy, diag.Diag
 	}
 
 	var displayName string
-	if dn := d.Get("displayName"); dn != nil {
+	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
 	}
 
@@ -151,7 +151,6 @@ func marshalAlertMethods(d *schema.ResourceData) []v1alpha.PublicAlertMethod {
 	for i, m := range methods {
 		method := m.(map[string]interface{})
 
-		// FIXME: replace the deprecated objects.
 		resultConditions[i] = v1alpha.PublicAlertMethod{
 			ObjectHeader: v1alpha.ObjectHeader{
 				MetadataHolder: v1alpha.MetadataHolder{
@@ -213,9 +212,7 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alpha.AlertPolicy)
 	err = d.Set("project", metadata.Project)
 	diags = appendError(diags, err)
 
-	labelsRaw := metadata.Labels
-	// FIXME: is this condition correct and needed?
-	if labelsRaw != nil {
+	if labelsRaw := metadata.Labels; len(labelsRaw) > 0 {
 		err = d.Set("label", unmarshalLabels(labelsRaw))
 		diags = appendError(diags, err)
 	}
@@ -239,7 +236,6 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alpha.AlertPolicy)
 
 func unmarshalAlertPolicyConditions(conditions []v1alpha.AlertCondition) interface{} {
 	resultConditions := make([]map[string]interface{}, len(conditions))
-	// FIXME PC-9234: shouldn't it be rewritten to use v1alpha.AlertCondition{} or smth else?
 	for i, condition := range conditions {
 		var value float64
 		if v, ok := condition.Value.(float64); ok {

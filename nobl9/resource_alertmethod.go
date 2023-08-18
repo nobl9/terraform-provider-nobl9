@@ -48,7 +48,7 @@ type alertMethod struct {
 
 func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) *v1alpha.AlertMethod {
 	var displayName string
-	if dn := d.Get("displayName"); dn != nil {
+	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
 	}
 
@@ -64,7 +64,6 @@ func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) *v1alpha.AlertMe
 	}
 }
 
-// FIXME: shouldn't it be PublicAlertMethod as the 2nd argument?
 func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []v1alpha.AlertMethod) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
@@ -568,10 +567,10 @@ func (i alertMethodEmail) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.Ale
 	diags = appendError(diags, err)
 	err = d.Set("bcc", config.Bcc)
 	diags = appendError(diags, err)
-	// FIXME: What to put here instead of Subject?
+	// TODO: replace deprecated 'Subject'.
 	err = d.Set("subject", config.Subject)
 	diags = appendError(diags, err)
-	// FIXME: What to put here instead of Body?
+	// TODO: replace deprecated 'Body'.
 	err = d.Set("body", config.Body)
 	diags = appendError(diags, err)
 

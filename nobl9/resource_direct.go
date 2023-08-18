@@ -195,7 +195,7 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alpha.Direct,
 	}
 
 	var displayName string
-	if dn := d.Get("displayName"); dn != nil {
+	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
 	}
 
