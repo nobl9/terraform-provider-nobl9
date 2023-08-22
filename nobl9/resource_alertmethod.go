@@ -94,7 +94,7 @@ func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []v1al
 //nolint:lll
 func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -114,7 +114,7 @@ func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.Res
 //nolint:lll
 func (a alertMethod) resourceAlertMethodRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -134,7 +134,7 @@ func (a alertMethod) resourceAlertMethodRead(ctx context.Context, d *schema.Reso
 
 func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}

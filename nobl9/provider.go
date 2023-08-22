@@ -30,6 +30,7 @@ func Provider() *schema.Provider {
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_ORG", nil),
 				Description: "Nobl9 [Organization ID](https://docs.nobl9.com/API_Documentation/api-endpoints-for-slo-annotations/#common-headers) that contains resources managed by the Nobl9 Terraform provider.",
+				Deprecated:  "test organization deprecation message; test deprecation date: 19700101",
 			},
 
 			"project": {
@@ -37,6 +38,7 @@ func Provider() *schema.Provider {
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", nil),
 				Description: "Nobl9 project used when importing resources.",
+				Deprecated:  "test project deprecation message; test deprecation date: 19700101",
 			},
 
 			"client_id": {
@@ -135,12 +137,11 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 
 //nolint:gochecknoglobals
 var (
-	//sharedClient    *nobl9.Client
-	newSharedClient *sdk.Client
-	once            sync.Once
+	sharedClient *sdk.Client
+	once         sync.Once
 )
 
-func getNewClient(config ProviderConfig) (*sdk.Client, diag.Diagnostics) {
+func getClient(config ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	once.Do(func() {
 		builder := sdk.NewClientBuilder("terraform-"+Version).WithDefaultCredentials(
@@ -165,7 +166,7 @@ func getNewClient(config ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 			builder.WithOktaAuthServerURL(u)
 		}
 		var err error
-		newSharedClient, err = builder.Build()
+		sharedClient, err = builder.Build()
 		if err != nil {
 			diags = diag.Diagnostics{
 				diag.Diagnostic{
@@ -179,5 +180,5 @@ func getNewClient(config ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 	if len(diags) > 0 {
 		return nil, diags
 	}
-	return newSharedClient, nil
+	return sharedClient, nil
 }

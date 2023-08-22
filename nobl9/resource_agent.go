@@ -115,7 +115,7 @@ func agentSchema() map[string]*schema.Schema {
 
 func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -153,7 +153,7 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 
 func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -181,7 +181,7 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -204,11 +204,6 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 }
 
 func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
-	labelsMarshalled, diags := getMarshalledLabels(d)
-	if diags.HasError() {
-		return nil, diags
-	}
-
 	sourceOf := d.Get("source_of").([]interface{})
 	sourceOfStr := make([]string, len(sourceOf))
 	for i, s := range sourceOf {
@@ -219,6 +214,12 @@ func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
 	}
+
+	labelsMarshalled, diags := getMarshalledLabels(d)
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	return &v1alpha.Agent{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindAgent,

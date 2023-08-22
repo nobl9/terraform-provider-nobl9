@@ -81,7 +81,7 @@ func (dr directResource) resourceDirectApply(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -117,7 +117,7 @@ func (dr directResource) resourceDirectRead(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -149,7 +149,7 @@ func (dr directResource) resourceDirectDelete(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -172,11 +172,6 @@ func (dr directResource) resourceDirectDelete(
 }
 
 func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alpha.Direct, diag.Diagnostics) {
-	labelsMarshalled, diags := getMarshalledLabels(d)
-	if diags.HasError() {
-		return nil, diags
-	}
-
 	sourceOf := d.Get("source_of").([]interface{})
 	sourceOfStr := make([]string, len(sourceOf))
 	for i, s := range sourceOf {
@@ -197,6 +192,11 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alpha.Direct,
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
+	}
+
+	labelsMarshalled, diags := getMarshalledLabels(d)
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return &v1alpha.Direct{

@@ -28,12 +28,12 @@ resource "nobl9_slo" "this" {
   }
 
   attachment {
-    utl          = "https://www.nobl9.com/"
+    url          = "https://www.nobl9.com/"
     display_name = "SLO provider"
   }
 
   attachment {
-    utl          = "https://duckduckgo.com/"
+    url          = "https://duckduckgo.com/"
     display_name = "Nice search engine"
   }
 

@@ -78,7 +78,6 @@ func marshalRoleBinding(d *schema.ResourceData) *v1alpha.RoleBinding {
 
 func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alpha.RoleBinding) diag.Diagnostics {
 	_, isProjectRole := d.GetOk("project_ref")
-	// FIXME PC-9234: is this func modified correctly?
 	roleBindingP := findRoleBindingByType(isProjectRole, objects)
 	if roleBindingP == nil {
 		d.SetId("")
@@ -119,7 +118,7 @@ func containsProjectRef(obj v1alpha.RoleBinding) bool {
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -146,7 +145,7 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 
 func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -162,7 +161,7 @@ func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta i
 
 func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}

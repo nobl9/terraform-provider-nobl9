@@ -61,8 +61,11 @@ func unmarshalProject(d *schema.ResourceData, objects []v1alpha.Project) diag.Di
 	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata.DisplayName)
 	diags = appendError(diags, err)
-	err = d.Set("label", unmarshalLabels(metadata.Labels))
-	diags = appendError(diags, err)
+
+	if labelsRaw := metadata.Labels; len(labelsRaw) > 0 {
+		err = d.Set("label", unmarshalLabels(labelsRaw))
+		diags = appendError(diags, err)
+	}
 
 	spec := object.Spec
 	err = d.Set("description", spec.Description)
@@ -73,7 +76,7 @@ func unmarshalProject(d *schema.ResourceData, objects []v1alpha.Project) diag.Di
 
 func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -95,7 +98,7 @@ func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta inte
 
 func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -110,7 +113,7 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}

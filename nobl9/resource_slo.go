@@ -325,7 +325,7 @@ func schemaSLO() map[string]*schema.Schema {
 
 func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -355,7 +355,7 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 
 func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -371,7 +371,7 @@ func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface
 
 func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getNewClient(config)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -450,11 +450,6 @@ func equalSlices(a, b []interface{}) bool {
 }
 
 func marshalSLO(d *schema.ResourceData) (*v1alpha.SLO, diag.Diagnostics) {
-	labelsMarshalled, diags := getMarshalledLabels(d)
-	if diags.HasError() {
-		return nil, diags
-	}
-
 	attachments, ok := d.GetOk("attachment")
 	if !ok {
 		attachments = d.Get("attachments")
@@ -463,6 +458,11 @@ func marshalSLO(d *schema.ResourceData) (*v1alpha.SLO, diag.Diagnostics) {
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
+	}
+
+	labelsMarshalled, diags := getMarshalledLabels(d)
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	return &v1alpha.SLO{
@@ -907,7 +907,8 @@ func unmarshalSLOMetric(spec *v1alpha.MetricSpec) *schema.Set {
 
 	res := make(map[string]interface{})
 
-	// FIXME PC-9234: let's get rid of the reflect here.
+	// Using reflect here is good enough for the time being.
+	// This provider will get entirely rewritten to the new terraform-plugin-sdk version soon.
 	v := reflect.ValueOf(spec).Elem()
 	for _, name := range supportedMetrics {
 		field := v.FieldByName(name.specFieldName)
@@ -920,48 +921,6 @@ func unmarshalSLOMetric(spec *v1alpha.MetricSpec) *schema.Set {
 
 	return schema.NewSet(oneElementSet, []interface{}{res})
 }
-
-//func unmarshalSLOMetric(spec *v1alpha.MetricSpec) *schema.Set {
-//	supportedMetrics := []struct {
-//		hclName       string
-//		jsonName      string
-//		unmarshalFunc func(map[string]interface{}) map[string]interface{}
-//	}{
-//		{amazonPrometheusMetric, "amazonPrometheus", unmarshalAmazonPrometheusMetric},
-//		{appDynamicsMetric, "appDynamics", unmarshalAppdynamicsMetric},
-//		{bigQueryMetric, "bigQuery", unmarshalBigqueryMetric},
-//		{cloudwatchMetric, "cloudWatch", unmarshalCloudWatchMetric},
-//		{datadogMetric, "datadog", unmarshalDatadogMetric},
-//		{dynatraceMetric, "dynatrace", unmarshalDynatraceMetric},
-//		{elasticsearchMetric, "elasticsearch", unmarshalElasticsearchMetric},
-//		{gcmMetric, "gcm", unmarshalGCMMetric},
-//		{grafanaLokiMetric, "grafanaLoki", unmarshalGrafanaLokiMetric},
-//		{graphiteMetric, "graphite", unmarshalGraphiteMetric},
-//		{influxdbMetric, "influxdb", unmarshalInfluxDBMetric},
-//		{instanaMetric, "instana", unmarshalInstanaMetric},
-//		{lightstepMetric, "lightstep", unmarshalLightstepMetric},
-//		{newrelicMetric, "newRelic", unmarshalNewRelicMetric},
-//		{opentsdbMetric, "opentsdb", unmarshalOpentsdbMetric},
-//		{pingdomMetric, "pingdom", unmarshalPingdomMetric},
-//		{prometheusMetric, "prometheus", unmarshalPrometheusMetric},
-//		{redshiftMetric, "redshift", unmarshalRedshiftMetric},
-//		{splunkMetric, "splunk", unmarshalSplunkMetric},
-//		{splunkObservabilityMetric, "splunkObservability", unmarshalSplunkObservabilityMetric},
-//		{sumologicMetric, "sumoLogic", unmarshalSumologicMetric},
-//		{thousandeyesMetric, "thousandEyes", unmarshalThousandeyesMetric},
-//	}
-//
-//	res := make(map[string]interface{})
-//	for _, name := range supportedMetrics {
-//		if metric, ok := spec. ; ok {
-//			tfMetric := name.unmarshalFunc(metric.(map[string]interface{}))
-//			res[name.hclName] = schema.NewSet(oneElementSet, []interface{}{tfMetric})
-//			break
-//		}
-//	}
-//
-//	return schema.NewSet(oneElementSet, []interface{}{res})
-//}
 
 /**
  * Amazon Prometheus Metric
@@ -1280,9 +1239,11 @@ func unmarshalCloudWatchMetric(metric interface{}) map[string]interface{} {
 	res["stat"] = cwMetric.Stat
 	res["sql"] = cwMetric.SQL
 	res["json"] = cwMetric.JSON
-	// FIXME PC-9234: this is a hack and should be replaced.
+	// Using marshal-unmarshal here is good enough for the time being.
+	// This provider will get entirely rewritten to the new terraform-plugin-sdk version soon.
 	dim, _ := json.Marshal(cwMetric.Dimensions)
 	var dimensions any
+	// FIXME PC-9234: What about handling the error from Unmarshal?
 	json.Unmarshal(dim, &dimensions)
 	res["dimensions"] = dimensions
 
