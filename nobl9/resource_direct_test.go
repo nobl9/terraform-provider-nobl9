@@ -63,7 +63,6 @@ resource "nobl9_direct_%s" "%s" {
   client_secret = "secret"
   client_name = "client name"
   log_collection_enabled = true
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -81,7 +80,6 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   service_account_key = "secret"
   log_collection_enabled = true
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -110,7 +108,6 @@ resource "nobl9_direct_%s" "%s" {
     }
   }
   log_collection_enabled = true
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -140,7 +137,6 @@ resource "nobl9_direct_%s" "%s" {
     }
   }
   log_collection_enabled = true
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -169,7 +165,6 @@ resource "nobl9_direct_%s" "%s" {
       value = 0
     }
   }
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -187,7 +182,6 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   service_account_key = "secret"
   log_collection_enabled = true
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -207,7 +201,6 @@ resource "nobl9_direct_%s" "%s" {
   api_token = "secret"
   organization_id = "secret"
   log_collection_enabled = true
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -226,7 +219,6 @@ resource "nobl9_direct_%s" "%s" {
   url = "https://web.net"
   api_token = "secret"
   log_collection_enabled = true
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -256,7 +248,6 @@ resource "nobl9_direct_%s" "%s" {
     }
   }
   log_collection_enabled = true
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -285,7 +276,6 @@ resource "nobl9_direct_%s" "%s" {
       value = 10
     }
   }
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -303,7 +293,6 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   api_token = "secret"
   log_collection_enabled = true
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -323,7 +312,6 @@ resource "nobl9_direct_%s" "%s" {
   access_key_id = "secret"
   secret_access_key = "secret"
   log_collection_enabled = true
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -352,7 +340,6 @@ resource "nobl9_direct_%s" "%s" {
       value = 10
     }
   }
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -370,7 +357,6 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   realm = "eu"
   access_token = "secret"
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -390,7 +376,6 @@ resource "nobl9_direct_%s" "%s" {
   access_id = "secret"
   access_key = "secret"
   log_collection_enabled = true
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -408,7 +393,6 @@ resource "nobl9_direct_%s" "%s" {
   source_of = ["Metrics", "Services"]
   oauth_bearer_token = "secret"
   log_collection_enabled = true
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6

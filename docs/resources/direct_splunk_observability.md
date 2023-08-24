@@ -39,7 +39,6 @@ resource "nobl9_direct_splunk_observability" "test-splunkobservability" {
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
-- `release_channel` (String) Release channel of the created direct [stable/beta]
 
 ### Read-Only
 

@@ -66,7 +66,6 @@ resource "nobl9_agent" "%s" {
     url = "http://web.net"
     region = "eu-central-1"
   }
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -85,7 +84,6 @@ resource "nobl9_agent" "%s" {
   appdynamics_config {
     url = "http://web.net"
   }
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -101,7 +99,6 @@ resource "nobl9_agent" "%s" {
  project   = "%s"
  source_of = ["Metrics", "Services"]
  agent_type = "bigquery"
- release_channel = "stable"
  query_delay {
   unit = "Minute"
   value = 6
@@ -117,7 +114,6 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "cloudwatch"
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -133,7 +129,6 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "datadog"
-  release_channel = "stable"
   datadog_config {
     site = "eu"
   }
@@ -155,7 +150,6 @@ resource "nobl9_agent" "%s" {
   dynatrace_config {
     url = "http://web.net"
   }
-  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -174,7 +168,6 @@ resource "nobl9_agent" "%s" {
   elasticsearch_config {
     url = "http://web.net"
   }
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -190,7 +183,6 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "gcm"
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -209,7 +201,6 @@ resource "nobl9_agent" "%s" {
   grafana_loki_config {
     url = "http://web.net"
   }
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -228,7 +219,6 @@ resource "nobl9_agent" "%s" {
   graphite_config {
     url = "http://web.net"
   }
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -247,7 +237,6 @@ resource "nobl9_agent" "%s" {
   influxdb_config {
     url = "http://web.net"
   }
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -266,7 +255,6 @@ resource "nobl9_agent" "%s" {
   instana_config {
     url = "http://web.net"
   }
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -286,7 +274,6 @@ resource "nobl9_agent" "%s" {
     organization = "acme"
     project		 = "project1"
   }
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -305,7 +292,6 @@ resource "nobl9_agent" "%s" {
   newrelic_config {
     account_id = 1234
   }
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -324,7 +310,6 @@ resource "nobl9_agent" "%s" {
   opentsdb_config {
     url = "http://web.net"
   }
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -340,7 +325,6 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "pingdom"
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -359,7 +343,6 @@ resource "nobl9_agent" "%s" {
   prometheus_config {
 	url = "http://web.net"
 	}
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -375,7 +358,6 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "redshift"
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -394,7 +376,6 @@ resource "nobl9_agent" "%s" {
   splunk_config {
     url = "http://web.net"
   }
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -413,7 +394,6 @@ resource "nobl9_agent" "%s" {
   splunk_observability_config {
     realm = "eu"
   }
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -432,7 +412,6 @@ resource "nobl9_agent" "%s" {
   sumologic_config {
     url = "http://web.net"
   }
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -448,7 +427,6 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   source_of = ["Metrics", "Services"]
   agent_type = "thousandeyes"
-  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
