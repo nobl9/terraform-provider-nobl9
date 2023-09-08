@@ -95,8 +95,7 @@ resource "nobl9_direct_%s" "%s" {
   project = "%s"
   description = "desc"
   source_of = ["Metrics", "Services"]
-  access_key_id = "secret"
-  secret_access_key = "secret"
+  role_arn = "secret"
   historical_data_retrieval {
     default_duration  {
       unit = "Day"
@@ -309,8 +308,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   secret_arn = "aws:arn"
-  access_key_id = "secret"
-  secret_access_key = "secret"
+  role_arn = "secret"
   log_collection_enabled = true
   query_delay {
     unit = "Minute"

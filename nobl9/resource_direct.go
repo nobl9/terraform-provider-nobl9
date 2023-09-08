@@ -329,19 +329,9 @@ type cloudWatchDirectSpec struct{}
 
 func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
 	cloudWatchSchema := map[string]*schema.Schema{
-		"access_key_id": {
+		"role_arn": {
 			Type:        schema.TypeString,
-			Description: "[required] | AWS Access Key ID.",
-			Optional:    true,
-			Computed:    true,
-			Sensitive:   true,
-			ValidateDiagFunc: validation.ToDiagFunc(
-				validation.StringIsNotEmpty,
-			),
-		},
-		"secret_access_key": {
-			Type:        schema.TypeString,
-			Description: "[required] | AWS Secret Access Key.",
+			Description: "[required] | ARN of the AWS IAM Role to assume.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -363,8 +353,7 @@ func (s cloudWatchDirectSpec) GetDescription() string {
 func (s cloudWatchDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
 	return n9api.DirectSpec{
 		CloudWatch: &n9api.CloudWatchDirectConfig{
-			AccessKeyID:     d.Get("access_key_id").(string),
-			SecretAccessKey: d.Get("secret_access_key").(string),
+			RoleARN: d.Get("role_arn").(string),
 		},
 	}
 }
@@ -799,19 +788,9 @@ func (s redshiftDirectSpec) GetSchema() map[string]*schema.Schema {
 				validation.StringIsNotEmpty,
 			),
 		},
-		"access_key_id": {
+		"role_arn": {
 			Type:        schema.TypeString,
-			Description: "[required] | AWS Access Key ID.",
-			Optional:    true,
-			Computed:    true,
-			Sensitive:   true,
-			ValidateDiagFunc: validation.ToDiagFunc(
-				validation.StringIsNotEmpty,
-			),
-		},
-		"secret_access_key": {
-			Type:        schema.TypeString,
-			Description: "[required] | AWS Secret Access Key.",
+			Description: "[required] | ARN of the AWS IAM Role to assume.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -833,9 +812,8 @@ func (s redshiftDirectSpec) GetDescription() string {
 func (s redshiftDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
 	return n9api.DirectSpec{
 		Redshift: &n9api.RedshiftDirectConfig{
-			AccessKeyID:     d.Get("access_key_id").(string),
-			SecretAccessKey: d.Get("secret_access_key").(string),
-			SecretARN:       d.Get("secret_arn").(string),
+			RoleARN:   d.Get("role_arn").(string),
+			SecretARN: d.Get("secret_arn").(string),
 		},
 	}
 }
