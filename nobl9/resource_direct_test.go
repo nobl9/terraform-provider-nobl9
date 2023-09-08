@@ -97,7 +97,7 @@ resource "nobl9_direct_%s" "%s" {
   project = "%s"
   description = "desc"
   source_of = ["Metrics", "Services"]
-  rola_arn = "secret"
+  role_arn = "secret"
   historical_data_retrieval {
     default_duration  {
       unit = "Day"
@@ -319,7 +319,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   secret_arn = "aws:arn"
-  rola_arn = "secret"
+  role_arn = "secret"
   log_collection_enabled = true
   release_channel = "stable"
   query_delay {
