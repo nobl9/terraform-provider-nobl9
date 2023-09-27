@@ -8,4 +8,5 @@ resource "nobl9_direct_appdynamics" "test-appdynamics" {
   client_secret = "secret"
   client_name   = "client name"
   log_collection_enabled = true
+  release_channel = "stable"
 }

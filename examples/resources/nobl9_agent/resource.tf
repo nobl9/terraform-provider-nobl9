@@ -9,6 +9,7 @@ resource "nobl9_agent" "this" {
   project   = nobl9_project.this.name
   source_of = ["Metrics", "Services"]
   agent_type = "prometheus"
+  release_channel = "stable"
   prometheus_config {
     url = "http://web.net"
   }
