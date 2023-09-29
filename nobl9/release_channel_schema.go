@@ -15,8 +15,15 @@ func schemaReleaseChannel() *schema.Schema {
 	}
 }
 
-func marshalReleaseChannel(d *schema.ResourceData) string {
-	return d.Get(releaseChannel).(string)
+func marshalReleaseChannel(d *schema.ResourceData) (string, error) {
+	rc, ok := d.Get(releaseChannel).(string)
+	if !ok {
+		return "", nil
+	}
+	if _, err := v1alpha.ParseReleaseChannel(rc); err != nil {
+		return "", err
+	}
+	return rc, nil
 }
 
 func unmarshalReleaseChannel(d *schema.ResourceData, rc string) (diags diag.Diagnostics) {
