@@ -1,8 +1,11 @@
 package nobl9
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 const releaseChannel = "release_channel"
@@ -15,15 +18,16 @@ func schemaReleaseChannel() *schema.Schema {
 	}
 }
 
-func marshalReleaseChannel(d *schema.ResourceData) (string, error) {
+func marshalReleaseChannel(d *schema.ResourceData, diags diag.Diagnostics) string {
 	rc, ok := d.Get(releaseChannel).(string)
 	if !ok {
-		return "", nil
+		return ""
 	}
 	if _, err := v1alpha.ParseReleaseChannel(rc); err != nil {
-		return "", err
+		appendError(diags, fmt.Errorf("invalid release channel '%s'", rc))
+		return ""
 	}
-	return rc, nil
+	return rc
 }
 
 func unmarshalReleaseChannel(d *schema.ResourceData, rc string) (diags diag.Diagnostics) {

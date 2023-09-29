@@ -177,7 +177,7 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*n9api.Direct, d
 	spec.Description = d.Get("description").(string)
 	spec.HistoricalDataRetrieval = marshalHistoricalDataRetrieval(d)
 	spec.QueryDelay = marshalQueryDelay(d)
-	spec.ReleaseChannel = marshalReleaseChannel(d)
+	spec.ReleaseChannel = marshalReleaseChannel(d, diags)
 
 	if d.GetRawConfig().Type().HasAttribute(logCollectionConfigKey) &&
 		!d.GetRawConfig().GetAttr(logCollectionConfigKey).IsNull() {

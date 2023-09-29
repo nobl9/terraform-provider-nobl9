@@ -235,7 +235,7 @@ func marshalAgent(d *schema.ResourceData) (*n9api.Agent, diag.Diagnostics) {
 			SumoLogic:           marshalAgentSumoLogic(d, diags),
 			ThousandEyes:        marshalAgentThousandEyes(d),
 			QueryDelay:          marshalQueryDelay(d),
-			ReleaseChannel:      marshalReleaseChannel(d),
+			ReleaseChannel:      marshalReleaseChannel(d, diags),
 		},
 	}, diags
 }
