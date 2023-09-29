@@ -23,6 +23,7 @@ resource "nobl9_direct_appdynamics" "test-appdynamics" {
   client_secret = "secret"
   client_name   = "client name"
   log_collection_enabled = true
+  release_channel = "stable"
 }
 ```
 
@@ -45,7 +46,7 @@ resource "nobl9_direct_appdynamics" "test-appdynamics" {
 - `display_name` (String) User-friendly display name of the resource.
 - `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
-- `release_channel` (String) Release channel of the created direct [stable/beta]
+- `release_channel` (String) Release channel of the created datasource [stable/beta]
 
 ### Read-Only
 

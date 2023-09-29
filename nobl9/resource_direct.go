@@ -45,11 +45,7 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 					Description: "Source of Metrics or Services.",
 				},
 			},
-			"release_channel": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Release channel of the created direct [stable/beta]",
-			},
+			releaseChannel:      schemaReleaseChannel(),
 			queryDelayConfigKey: schemaQueryDelay(),
 			"status": {
 				Type:        schema.TypeString,
@@ -181,6 +177,7 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*n9api.Direct, d
 	spec.Description = d.Get("description").(string)
 	spec.HistoricalDataRetrieval = marshalHistoricalDataRetrieval(d)
 	spec.QueryDelay = marshalQueryDelay(d)
+	spec.ReleaseChannel = marshalReleaseChannel(d, diags)
 
 	if d.GetRawConfig().Type().HasAttribute(logCollectionConfigKey) &&
 		!d.GetRawConfig().GetAttr(logCollectionConfigKey).IsNull() {
@@ -212,6 +209,7 @@ func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []n9api
 	diags = append(diags, unmarshalHistoricalDataRetrieval(d, direct.Spec.HistoricalDataRetrieval)...)
 	diags = append(diags, unmarshalQueryDelay(d, direct.Spec.QueryDelay)...)
 	diags = append(diags, unmarshalLogCollectionEnabled(d, direct.Spec.LogCollectionEnabled)...)
+	diags = append(diags, unmarshalReleaseChannel(d, direct.Spec.ReleaseChannel)...)
 
 	return diags
 }
@@ -256,6 +254,7 @@ func (s appDynamicsDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setLogCollectionSchema(appDynamicsSchema)
+	setHistoricalDataRetrievalSchema(appDynamicsSchema)
 
 	return appDynamicsSchema
 }
