@@ -45,7 +45,7 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 					Description: "Source of Metrics or Services.",
 				},
 			},
-			"release_channel":   schemaReleaseChannel(),
+			releaseChannel:      schemaReleaseChannel(),
 			queryDelayConfigKey: schemaQueryDelay(),
 			"status": {
 				Type:        schema.TypeString,
@@ -254,6 +254,7 @@ func (s appDynamicsDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setLogCollectionSchema(appDynamicsSchema)
+	setHistoricalDataRetrievalSchema(appDynamicsSchema)
 
 	return appDynamicsSchema
 }
