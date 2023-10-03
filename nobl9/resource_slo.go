@@ -72,6 +72,7 @@ func resourceObjective() *schema.Resource {
 				Description: "Compares two time series, indicating the ratio of the count of good values to total values.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						// FIXME PC-9234: Add bad metric.
 						"good":  schemaMetricSpec(),
 						"total": schemaMetricSpec(),
 						"incremental": {
@@ -188,6 +189,7 @@ func schemaSLO() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Name of the service",
 		},
+		// FIXME PC-9234: Find this in nobl9-go.
 		"indicator": {
 			Type:        schema.TypeSet,
 			Required:    true,
@@ -480,7 +482,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alpha.SLO, diag.Diagnostics) {
 			BudgetingMethod: d.Get("budgeting_method").(string),
 			Indicator:       marshalIndicator(d),
 			Composite:       marshalComposite(d),
-			Thresholds:      marshalThresholds(d),
+			Objectives:      marshalObjectives(d),
 			TimeWindows:     marshalTimeWindows(d),
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
 			Attachments:     marshalAttachments(attachments.([]interface{})),
@@ -572,9 +574,11 @@ func marshalIndicator(d *schema.ResourceData) v1alpha.Indicator {
 	return resultIndicator
 }
 
-func marshalThresholds(d *schema.ResourceData) []v1alpha.Threshold {
+func marshalObjectives(d *schema.ResourceData) []v1alpha.Objective {
+	// FIXME PC-9234: Find proper names for this variable.
 	objectives := d.Get("objective").(*schema.Set).List()
-	thresholds := make([]v1alpha.Threshold, len(objectives))
+	// FIXME PC-9234: Find proper names for this variable.
+	thresholds := make([]v1alpha.Objective, len(objectives))
 	for i, o := range objectives {
 		objective := o.(map[string]interface{})
 		target := objective["target"].(float64)
@@ -585,8 +589,8 @@ func marshalThresholds(d *schema.ResourceData) []v1alpha.Threshold {
 		}
 		operator := objective["op"].(string)
 
-		thresholds[i] = v1alpha.Threshold{
-			ThresholdBase: v1alpha.ThresholdBase{
+		thresholds[i] = v1alpha.Objective{
+			ObjectiveBase: v1alpha.ObjectiveBase{
 				DisplayName: objective["display_name"].(string),
 				Value:       objective["value"].(float64),
 				Name:        objective["name"].(string),
@@ -801,7 +805,7 @@ func unmarshalTimeWindow(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
 }
 
 func unmarshalObjectives(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
-	objectives := spec.Thresholds
+	objectives := spec.Objectives
 	objectivesTF := make([]interface{}, len(objectives))
 
 	for i, objective := range objectives {

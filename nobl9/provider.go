@@ -27,7 +27,7 @@ func Provider() *schema.Provider {
 
 			"organization": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_ORG", nil),
 				Description: "Nobl9 [Organization ID](https://docs.nobl9.com/API_Documentation/api-endpoints-for-slo-annotations/#common-headers) that contains resources managed by the Nobl9 Terraform provider.",
 				Deprecated:  "test organization deprecation message; test deprecation date: 19700101",
@@ -35,10 +35,9 @@ func Provider() *schema.Provider {
 
 			"project": {
 				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", nil),
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", sdk.DefaultProject),
 				Description: "Nobl9 project used when importing resources.",
-				Deprecated:  "test project deprecation message; test deprecation date: 19700101",
 			},
 
 			"client_id": {
@@ -144,37 +143,17 @@ var (
 func getClient(config ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	once.Do(func() {
-		builder := sdk.NewClientBuilder("terraform-"+Version).WithDefaultCredentials(
-			config.ClientID,
-			config.ClientSecret,
-		)
-		if config.IngestURL != "" {
-			builder.WithApiURL(config.IngestURL)
-		}
-		if config.OktaAuthServer != "" && config.OktaOrgURL != "" {
-			u, err := sdk.OktaAuthServerURL(config.OktaOrgURL, config.OktaAuthServer)
-			if err != nil {
-				diags = diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Error,
-						Summary:  "Unable to create Nobl9 client",
-						Detail:   err.Error(),
-					},
-				}
-				return
-			}
-			builder.WithOktaAuthServerURL(u)
-		}
-		var err error
-		sharedClient, err = builder.Build()
+		// FIXME PC-9234: Adjust this code so that it builds client correctly.
+		config, err := sdk.ReadConfig(
+			sdk.ConfigOptionWithCredentials("clientId", "clientSecret"),
+			sdk.ConfigOptionNoConfigFile())
+		config.DisableOkta = true
 		if err != nil {
-			diags = diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  "Unable to create Nobl9 client",
-					Detail:   err.Error(),
-				},
-			}
+			panic(err)
+		}
+		sharedClient, err = sdk.NewClient(config)
+		if err != nil {
+			panic(err)
 		}
 	})
 	if len(diags) > 0 {

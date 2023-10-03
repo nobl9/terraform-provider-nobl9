@@ -146,20 +146,34 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alpha.AlertPolicy, diag.Diag
 }
 
 func marshalAlertMethods(d *schema.ResourceData) []v1alpha.PublicAlertMethod {
+	// FIXME PC-9234: Does this method need updating?
 	methods := d.Get("alert_method").([]interface{})
 	resultConditions := make([]v1alpha.PublicAlertMethod, len(methods))
 	for i, m := range methods {
 		method := m.(map[string]interface{})
 
+		// FIXME PC-9234: Establish what to put here.
 		resultConditions[i] = v1alpha.PublicAlertMethod{
-			ObjectHeader: v1alpha.ObjectHeader{
-				MetadataHolder: v1alpha.MetadataHolder{
-					Metadata: v1alpha.Metadata{
-						Project: method["project"].(string),
-						Name:    method["name"].(string),
-					},
-				},
+			APIVersion: "",
+			Kind:       0,
+			Metadata: v1alpha.AlertMethodMetadata{
+				Name:        method["name"].(string),
+				DisplayName: "",
+				Project:     method["project"].(string),
 			},
+			Spec:           v1alpha.PublicAlertMethodSpec{},
+			Status:         nil,
+			Organization:   "",
+			ManifestSource: "",
+
+			//ObjectHeader: v1alpha.ObjectHeader{
+			//	MetadataHolder: v1alpha.MetadataHolder{
+			//		Metadata: v1alpha.Metadata{
+			//			Project: method["project"].(string),
+			//			Name:    method["name"].(string),
+			//		},
+			//	},
+			//},
 		}
 	}
 
