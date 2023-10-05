@@ -174,6 +174,11 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alpha.Direct,
 		sourceOfStr[i] = s.(string)
 	}
 
+	labelsMarshalled, diags := getMarshalledLabels(d)
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	spec := dr.MarshalSpec(d)
 	spec.SourceOf = sourceOfStr
 	spec.Description = d.Get("description").(string)
@@ -189,11 +194,6 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alpha.Direct,
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
-	}
-
-	labelsMarshalled, diags := getMarshalledLabels(d)
-	if diags.HasError() {
-		return nil, diags
 	}
 
 	return &v1alpha.Direct{

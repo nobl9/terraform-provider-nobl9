@@ -142,7 +142,6 @@ var (
 )
 
 func getClient(config ProviderConfig) (*sdk.Client, diag.Diagnostics) {
-	var diags diag.Diagnostics
 	once.Do(func() {
 		options := []sdk.ConfigOption{}
 		// TODO PC-9234: Do we use envs prefix?
@@ -170,8 +169,5 @@ func getClient(config ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 			panic(err)
 		}
 	})
-	if len(diags) > 0 {
-		return nil, diags
-	}
 	return sharedClient, nil
 }

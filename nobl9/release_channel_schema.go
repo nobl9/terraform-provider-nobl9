@@ -18,22 +18,20 @@ func schemaReleaseChannel() *schema.Schema {
 	}
 }
 
-func marshalReleaseChannel(d *schema.ResourceData, diags diag.Diagnostics) string {
+func marshalReleaseChannel(d *schema.ResourceData, diags diag.Diagnostics) v1alpha.ReleaseChannel {
 	rc, ok := d.Get(releaseChannel).(string)
 	if !ok {
-		return ""
+		return 0
 	}
-	if _, err := v1alpha.ParseReleaseChannel(rc); err != nil {
+	result, err := v1alpha.ParseReleaseChannel(rc)
+	if err != nil {
 		appendError(diags, fmt.Errorf("invalid release channel '%s'", rc))
-		return ""
+		return 0
 	}
-	return rc
+	return result
 }
 
-func unmarshalReleaseChannel(d *schema.ResourceData, rc string) (diags diag.Diagnostics) {
-	if rc == "" {
-		return
-	}
-	err := d.Set(releaseChannel, rc)
+func unmarshalReleaseChannel(d *schema.ResourceData, rc v1alpha.ReleaseChannel) (diags diag.Diagnostics) {
+	err := d.Set(releaseChannel, rc.String())
 	return appendError(diags, err)
 }
