@@ -66,11 +66,7 @@ func agentSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "client_secret of created agent.",
 		},
-		"release_channel": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Release channel of the created agent [stable/beta]",
-		},
+		releaseChannel:      schemaReleaseChannel(),
 		queryDelayConfigKey: schemaQueryDelay(),
 		"status": {
 			Type:        schema.TypeMap,
@@ -255,6 +251,7 @@ func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
 			SumoLogic:           marshalAgentSumoLogic(d, diags),
 			ThousandEyes:        marshalAgentThousandEyes(d),
 			QueryDelay:          marshalQueryDelay(d),
+			ReleaseChannel:      marshalReleaseChannel(d, diags),
 		},
 	}, diags
 }
@@ -285,6 +282,7 @@ func unmarshalAgent(d *schema.ResourceData, agents []v1alpha.Agent) diag.Diagnos
 	}
 
 	diags = append(diags, unmarshalQueryDelay(d, agent.Spec.QueryDelay)...)
+	diags = append(diags, unmarshalReleaseChannel(d, agent.Spec.ReleaseChannel)...)
 	spec := v1alpha.AgentSpec{}
 	supportedAgents := []struct {
 		hclName  string

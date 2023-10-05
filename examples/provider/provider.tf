@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     nobl9 = {
-      source  = "nobl9/nobl9"
-      version = "0.13.0"
+      source  = "nobl9.com/nobl9/nobl9"
+      version = "0.15.0"
     }
   }
 }

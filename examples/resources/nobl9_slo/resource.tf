@@ -53,7 +53,7 @@ resource "nobl9_slo" "this" {
     display_name = "OK"
     value        = 2000
     op           = "gte"
-    
+
     raw_metric {
       query {
         prometheus {

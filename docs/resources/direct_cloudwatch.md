@@ -18,8 +18,7 @@ resource "nobl9_direct_cloudwatch" "test-cloudwatch" {
   project                = "terraform"
   description            = "desc"
   source_of              = ["Metrics", "Services"]
-  access_key_id          = "secret"
-  secret_access_key      = "secret"
+  role_arn               = "secret"
   log_collection_enabled = true
   historical_data_retrieval {
     default_duration {
@@ -45,14 +44,13 @@ resource "nobl9_direct_cloudwatch" "test-cloudwatch" {
 
 ### Optional
 
-- `access_key_id` (String, Sensitive) [required] | AWS Access Key ID.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
 - `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
-- `release_channel` (String) Release channel of the created direct [stable/beta]
-- `secret_access_key` (String, Sensitive) [required] | AWS Secret Access Key.
+- `release_channel` (String) Release channel of the created datasource [stable/beta]
+- `role_arn` (String, Sensitive) [required] | ARN of the AWS IAM Role to assume.
 
 ### Read-Only
 

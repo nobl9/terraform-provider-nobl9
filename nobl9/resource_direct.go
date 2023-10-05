@@ -46,11 +46,7 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 					Description: "Source of Metrics or Services.",
 				},
 			},
-			"release_channel": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Release channel of the created direct [stable/beta]",
-			},
+			releaseChannel:      schemaReleaseChannel(),
 			queryDelayConfigKey: schemaQueryDelay(),
 			"status": {
 				Type:        schema.TypeString,
@@ -183,6 +179,7 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alpha.Direct,
 	spec.Description = d.Get("description").(string)
 	spec.HistoricalDataRetrieval = marshalHistoricalDataRetrieval(d)
 	spec.QueryDelay = marshalQueryDelay(d)
+	spec.ReleaseChannel = marshalReleaseChannel(d, diags)
 
 	if d.GetRawConfig().Type().HasAttribute(logCollectionConfigKey) &&
 		!d.GetRawConfig().GetAttr(logCollectionConfigKey).IsNull() {
@@ -232,6 +229,7 @@ func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []v1alp
 	diags = append(diags, unmarshalHistoricalDataRetrieval(d, direct.Spec.HistoricalDataRetrieval)...)
 	diags = append(diags, unmarshalQueryDelay(d, direct.Spec.QueryDelay)...)
 	diags = append(diags, unmarshalLogCollectionEnabled(d, direct.Spec.LogCollectionEnabled)...)
+	diags = append(diags, unmarshalReleaseChannel(d, direct.Spec.ReleaseChannel)...)
 
 	return diags
 }
@@ -276,6 +274,7 @@ func (s appDynamicsDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setLogCollectionSchema(appDynamicsSchema)
+	setHistoricalDataRetrievalSchema(appDynamicsSchema)
 
 	return appDynamicsSchema
 }
@@ -354,19 +353,9 @@ type cloudWatchDirectSpec struct{}
 
 func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
 	cloudWatchSchema := map[string]*schema.Schema{
-		"access_key_id": {
+		"role_arn": {
 			Type:        schema.TypeString,
-			Description: "[required] | AWS Access Key ID.",
-			Optional:    true,
-			Computed:    true,
-			Sensitive:   true,
-			ValidateDiagFunc: validation.ToDiagFunc(
-				validation.StringIsNotEmpty,
-			),
-		},
-		"secret_access_key": {
-			Type:        schema.TypeString,
-			Description: "[required] | AWS Secret Access Key.",
+			Description: "[required] | ARN of the AWS IAM Role to assume.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -388,8 +377,7 @@ func (s cloudWatchDirectSpec) GetDescription() string {
 func (s cloudWatchDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
 	return v1alpha.DirectSpec{
 		CloudWatch: &v1alpha.CloudWatchDirectConfig{
-			AccessKeyID:     d.Get("access_key_id").(string),
-			SecretAccessKey: d.Get("secret_access_key").(string),
+			RoleARN: d.Get("role_arn").(string),
 		},
 	}
 }
@@ -824,19 +812,9 @@ func (s redshiftDirectSpec) GetSchema() map[string]*schema.Schema {
 				validation.StringIsNotEmpty,
 			),
 		},
-		"access_key_id": {
+		"role_arn": {
 			Type:        schema.TypeString,
-			Description: "[required] | AWS Access Key ID.",
-			Optional:    true,
-			Computed:    true,
-			Sensitive:   true,
-			ValidateDiagFunc: validation.ToDiagFunc(
-				validation.StringIsNotEmpty,
-			),
-		},
-		"secret_access_key": {
-			Type:        schema.TypeString,
-			Description: "[required] | AWS Secret Access Key.",
+			Description: "[required] | ARN of the AWS IAM Role to assume.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -858,9 +836,8 @@ func (s redshiftDirectSpec) GetDescription() string {
 func (s redshiftDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
 	return v1alpha.DirectSpec{
 		Redshift: &v1alpha.RedshiftDirectConfig{
-			AccessKeyID:     d.Get("access_key_id").(string),
-			SecretAccessKey: d.Get("secret_access_key").(string),
-			SecretARN:       d.Get("secret_arn").(string),
+			RoleARN:   d.Get("role_arn").(string),
+			SecretARN: d.Get("secret_arn").(string),
 		},
 	}
 }

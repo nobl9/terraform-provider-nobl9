@@ -43,12 +43,12 @@ resource "nobl9_slo" "this" {
   }
 
   attachment {
-    utl          = "https://www.nobl9.com/"
-    display_name = "SLO provider"
+    url          = "https://www.nobl9.com/"
+    display_name = "Nobl9 Reliability Center"
   }
 
   attachment {
-    utl          = "https://duckduckgo.com/"
+    url          = "https://duckduckgo.com/"
     display_name = "Nice search engine"
   }
 
@@ -68,7 +68,7 @@ resource "nobl9_slo" "this" {
     display_name = "OK"
     value        = 2000
     op           = "gte"
-    
+
     raw_metric {
       query {
         prometheus {

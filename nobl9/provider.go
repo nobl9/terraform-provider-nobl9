@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"net/url"
 	"sync"
 
 	"github.com/nobl9/nobl9-go/sdk"
@@ -143,15 +144,28 @@ var (
 func getClient(config ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	once.Do(func() {
-		// FIXME PC-9234: Adjust this code so that it builds client correctly.
-		config, err := sdk.ReadConfig(
-			sdk.ConfigOptionWithCredentials("clientId", "clientSecret"),
-			sdk.ConfigOptionNoConfigFile())
-		config.DisableOkta = true
+		options := []sdk.ConfigOption{}
+		// TODO PC-9234: Do we use envs prefix?
+		options = append(options, sdk.ConfigOptionWithCredentials(config.ClientID, config.ClientSecret))
+		conf, err := sdk.ReadConfig(options...)
 		if err != nil {
 			panic(err)
 		}
-		sharedClient, err = sdk.NewClient(config)
+		ingestURL, err := url.Parse(config.IngestURL)
+		if err != nil {
+			panic(err)
+		}
+		conf.URL = ingestURL
+		conf.Organization = config.Organization
+		conf.Project = config.Project
+		oktaOrgURL, err := url.Parse(config.OktaOrgURL)
+		if err != nil {
+			panic(err)
+		}
+		conf.OktaOrgURL = oktaOrgURL
+		conf.OktaAuthServer = config.OktaAuthServer
+
+		sharedClient, err = sdk.NewClient(conf)
 		if err != nil {
 			panic(err)
 		}

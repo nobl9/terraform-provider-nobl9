@@ -63,6 +63,16 @@ resource "nobl9_direct_%s" "%s" {
   client_name = "client name"
   log_collection_enabled = true
   release_channel = "beta"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
   query_delay {
     unit = "Minute"
     value = 6
@@ -96,8 +106,7 @@ resource "nobl9_direct_%s" "%s" {
   project = "%s"
   description = "desc"
   source_of = ["Metrics", "Services"]
-  access_key_id = "secret"
-  secret_access_key = "secret"
+  role_arn = "secret"
   historical_data_retrieval {
     default_duration  {
       unit = "Day"
@@ -319,8 +328,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   source_of = ["Metrics", "Services"]
   secret_arn = "aws:arn"
-  access_key_id = "secret"
-  secret_access_key = "secret"
+  role_arn = "secret"
   log_collection_enabled = true
   release_channel = "stable"
   query_delay {
