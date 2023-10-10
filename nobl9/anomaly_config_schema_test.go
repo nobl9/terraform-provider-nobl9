@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 func TestMarshalAnomalyConfig(t *testing.T) {

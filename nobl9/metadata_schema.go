@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
@@ -228,8 +229,7 @@ func unmarshalLabels(labelsRaw v1alpha.Labels) interface{} {
 	resultLabels := make([]map[string]interface{}, 0)
 
 	if labelsRaw != nil {
-		labelsMap := labelsRaw
-		for labelKey, labelValuesRaw := range labelsMap {
+		for labelKey, labelValuesRaw := range labelsRaw {
 			var labelValuesStr []string
 			for _, labelValueRaw := range labelValuesRaw {
 				labelValuesStr = append(labelValuesStr, labelValueRaw)

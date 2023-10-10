@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
@@ -204,7 +205,6 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alpha.AlertPolicy)
 	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata.DisplayName)
 	diags = appendError(diags, err)
-
 	err = d.Set("project", metadata.Project)
 	diags = appendError(diags, err)
 

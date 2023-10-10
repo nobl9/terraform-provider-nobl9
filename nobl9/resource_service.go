@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
@@ -76,7 +77,6 @@ func unmarshalService(d *schema.ResourceData, objects []v1alpha.Service) diag.Di
 	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata.DisplayName)
 	diags = appendError(diags, err)
-
 	err = d.Set("project", metadata.Project)
 	diags = appendError(diags, err)
 
@@ -90,7 +90,6 @@ func unmarshalService(d *schema.ResourceData, objects []v1alpha.Service) diag.Di
 	diags = appendError(diags, err)
 
 	spec := object.Spec
-
 	err = d.Set("description", spec.Description)
 	diags = appendError(diags, err)
 

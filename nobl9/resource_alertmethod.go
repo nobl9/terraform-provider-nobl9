@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
@@ -71,23 +72,18 @@ func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []v1al
 	}
 	object := objects[0]
 	var diags diag.Diagnostics
-
 	metadata := object.Metadata
 	err := d.Set("name", metadata.Name)
 	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata.DisplayName)
 	diags = appendError(diags, err)
-
 	err = d.Set("project", metadata.Project)
 	diags = appendError(diags, err)
-
 	spec := object.Spec
 	err = d.Set("description", spec.Description)
 	diags = appendError(diags, err)
-
 	errs := a.UnmarshalSpec(d, spec)
 	diags = append(diags, errs...)
-
 	return diags
 }
 
