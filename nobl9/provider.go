@@ -14,8 +14,6 @@ import (
 //nolint:gochecknoglobals,revive
 var Version string
 
-// FIXME PC-9234: Edit everything that was necessary but is optional now.
-// FIXME PC-9234: Set 'Deprecated' for project and organization (need to get a date for deletion first).
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -31,7 +29,6 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_ORG", nil),
 				Description: "Nobl9 [Organization ID](https://docs.nobl9.com/API_Documentation/api-endpoints-for-slo-annotations/#common-headers) that contains resources managed by the Nobl9 Terraform provider.",
-				Deprecated:  "test organization deprecation message; test deprecation date: 19700101",
 			},
 
 			"project": {
@@ -141,30 +138,39 @@ var (
 	once         sync.Once
 )
 
-func getClient(config ProviderConfig) (*sdk.Client, diag.Diagnostics) {
+func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 	once.Do(func() {
-		options := []sdk.ConfigOption{}
-		// TODO PC-9234: Do we use envs prefix?
-		options = append(options, sdk.ConfigOptionWithCredentials(config.ClientID, config.ClientSecret))
-		conf, err := sdk.ReadConfig(options...)
+		options := []sdk.ConfigOption{
+			sdk.ConfigOptionWithCredentials(providerConfig.ClientID, providerConfig.ClientSecret),
+			sdk.ConfigOptionNoConfigFile(),
+			sdk.ConfigOptionEnvPrefix("TERRAFORM_NOBL9_"),
+		}
+		sdkConfig, err := sdk.ReadConfig(options...)
 		if err != nil {
 			panic(err)
 		}
-		ingestURL, err := url.Parse(config.IngestURL)
-		if err != nil {
-			panic(err)
+		if providerConfig.IngestURL != "" {
+			sdkConfig.URL, err = url.Parse(providerConfig.IngestURL)
+			if err != nil {
+				panic(err)
+			}
 		}
-		conf.URL = ingestURL
-		conf.Organization = config.Organization
-		conf.Project = config.Project
-		oktaOrgURL, err := url.Parse(config.OktaOrgURL)
-		if err != nil {
-			panic(err)
+		if providerConfig.Organization != "" {
+			sdkConfig.Organization = providerConfig.Organization
 		}
-		conf.OktaOrgURL = oktaOrgURL
-		conf.OktaAuthServer = config.OktaAuthServer
-
-		sharedClient, err = sdk.NewClient(conf)
+		if providerConfig.Project != "" {
+			sdkConfig.Project = providerConfig.Project
+		}
+		if providerConfig.OktaOrgURL != "" {
+			sdkConfig.OktaOrgURL, err = url.Parse(providerConfig.OktaOrgURL)
+			if err != nil {
+				panic(err)
+			}
+		}
+		if providerConfig.OktaAuthServer != "" {
+			sdkConfig.OktaAuthServer = providerConfig.OktaAuthServer
+		}
+		sharedClient, err = sdk.NewClient(sdkConfig)
 		if err != nil {
 			panic(err)
 		}

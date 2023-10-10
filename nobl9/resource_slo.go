@@ -72,7 +72,6 @@ func resourceObjective() *schema.Resource {
 				Description: "Compares two time series, indicating the ratio of the count of good values to total values.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						// FIXME PC-9234: Add bad metric.
 						"good":  schemaMetricSpec(),
 						"total": schemaMetricSpec(),
 						"incremental": {
@@ -189,7 +188,6 @@ func schemaSLO() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Name of the service",
 		},
-		// FIXME PC-9234: Find this in nobl9-go.
 		"indicator": {
 			Type:        schema.TypeSet,
 			Required:    true,
@@ -575,11 +573,9 @@ func marshalIndicator(d *schema.ResourceData) v1alpha.Indicator {
 }
 
 func marshalObjectives(d *schema.ResourceData) []v1alpha.Objective {
-	// FIXME PC-9234: Find proper names for this variable.
-	objectives := d.Get("objective").(*schema.Set).List()
-	// FIXME PC-9234: Find proper names for this variable.
-	thresholds := make([]v1alpha.Objective, len(objectives))
-	for i, o := range objectives {
+	objectivesSchema := d.Get("objective").(*schema.Set).List()
+	objectives := make([]v1alpha.Objective, len(objectivesSchema))
+	for i, o := range objectivesSchema {
 		objective := o.(map[string]interface{})
 		target := objective["target"].(float64)
 		timeSliceTarget := objective["time_slice_target"].(float64)
@@ -589,7 +585,7 @@ func marshalObjectives(d *schema.ResourceData) []v1alpha.Objective {
 		}
 		operator := objective["op"].(string)
 
-		thresholds[i] = v1alpha.Objective{
+		objectives[i] = v1alpha.Objective{
 			ObjectiveBase: v1alpha.ObjectiveBase{
 				DisplayName: objective["display_name"].(string),
 				Value:       objective["value"].(float64),
@@ -603,7 +599,7 @@ func marshalObjectives(d *schema.ResourceData) []v1alpha.Objective {
 		}
 	}
 
-	return thresholds
+	return objectives
 }
 
 func marshalRawMetric(metricRoot map[string]interface{}) *v1alpha.RawMetricSpec {
@@ -1247,10 +1243,8 @@ func unmarshalCloudWatchMetric(metric interface{}) map[string]interface{} {
 	// This provider will get entirely rewritten to the new terraform-plugin-sdk version soon.
 	dim, _ := json.Marshal(cwMetric.Dimensions)
 	var dimensions any
-	// FIXME PC-9234: What about handling the error from Unmarshal?
 	json.Unmarshal(dim, &dimensions)
 	res["dimensions"] = dimensions
-
 	return res
 }
 

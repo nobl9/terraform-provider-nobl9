@@ -567,10 +567,8 @@ func (i alertMethodEmail) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.Ale
 	diags = appendError(diags, err)
 	err = d.Set("bcc", config.Bcc)
 	diags = appendError(diags, err)
-	// TODO: replace deprecated 'Subject'.
 	err = d.Set("subject", config.Subject)
 	diags = appendError(diags, err)
-	// TODO: replace deprecated 'Body'.
 	err = d.Set("body", config.Body)
 	diags = appendError(diags, err)
 
