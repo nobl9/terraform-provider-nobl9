@@ -8,8 +8,6 @@ terraform {
 }
 
 provider "nobl9" {
-  organization  = "<your org name>"
-  project       = "default"
   client_id     = "<client_id>"
   client_secret = "<client_secret>"
 }
