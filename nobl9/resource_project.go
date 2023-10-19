@@ -81,19 +81,16 @@ func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta inte
 	if ds != nil {
 		return ds
 	}
-
 	project, diags := marshalProject(d)
 	if diags.HasError() {
 		return diags
 	}
-
-	err := client.ApplyObjects(ctx, []manifest.Object{project}, false)
+	resultProject := manifest.SetDefaultProject([]manifest.Object{project}, config.Project)
+	err := client.ApplyObjects(ctx, resultProject, false)
 	if err != nil {
 		return diag.Errorf("could not add project: %s", err.Error())
 	}
-
 	d.SetId(project.Metadata.Name)
-
 	return resourceProjectRead(ctx, d, meta)
 }
 
@@ -103,12 +100,10 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta inter
 	if ds != nil {
 		return ds
 	}
-
 	objects, err := client.GetObjects(ctx, d.Id(), manifest.KindProject, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	return unmarshalProject(d, manifest.FilterByKind[v1alpha.Project](objects))
 }
 
@@ -118,11 +113,9 @@ func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta int
 	if ds != nil {
 		return ds
 	}
-
 	err := client.DeleteObjectsByName(ctx, d.Id(), manifest.KindProject, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	return nil
 }

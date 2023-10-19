@@ -102,19 +102,16 @@ func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta inte
 	if ds != nil {
 		return ds
 	}
-
 	service, diags := marshalService(d)
 	if diags.HasError() {
 		return diags
 	}
-
-	err := client.ApplyObjects(ctx, []manifest.Object{service}, false)
+	resultService := manifest.SetDefaultProject([]manifest.Object{service}, config.Project)
+	err := client.ApplyObjects(ctx, resultService, false)
 	if err != nil {
 		return diag.Errorf("could not add service: %s", err.Error())
 	}
-
 	d.SetId(service.Metadata.Name)
-
 	return resourceServiceRead(ctx, d, meta)
 }
 
@@ -124,17 +121,14 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 	if ds != nil {
 		return ds
 	}
-
 	project := d.Get("project").(string)
 	if project == "" {
-		// project is empty when importing
 		project = config.Project
 	}
 	objects, err := client.GetObjects(ctx, project, manifest.KindService, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	return unmarshalService(d, manifest.FilterByKind[v1alpha.Service](objects))
 }
 
@@ -145,10 +139,12 @@ func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta int
 		return ds
 	}
 	project := d.Get("project").(string)
+	if project == "" {
+		project = config.Project
+	}
 	err := client.DeleteObjectsByName(ctx, project, manifest.KindService, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	return nil
 }

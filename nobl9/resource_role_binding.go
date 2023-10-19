@@ -15,8 +15,6 @@ import (
 	"github.com/nobl9/nobl9-go/sdk"
 )
 
-const wildcardProject = "*"
-
 //nolint:lll
 func resourceRoleBinding() *schema.Resource {
 	return &schema.Resource{
@@ -125,7 +123,6 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	roleBinding := marshalRoleBinding(d)
-
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
 		err := client.ApplyObjects(ctx, []manifest.Object{roleBinding}, false)
 		if err != nil {
@@ -140,7 +137,6 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	d.SetId(roleBinding.Metadata.Name)
-
 	return resourceRoleBindingRead(ctx, d, meta)
 }
 
@@ -150,13 +146,14 @@ func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta i
 	if ds != nil {
 		return ds
 	}
-
-	project := d.Get("project").(string)
+	project := d.Get("project_ref").(string)
+	if project == "" {
+		project = config.Project
+	}
 	objects, err := client.GetObjects(ctx, project, manifest.KindRoleBinding, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	return unmarshalRoleBinding(d, manifest.FilterByKind[v1alpha.RoleBinding](objects))
 }
 
@@ -167,10 +164,11 @@ func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta
 		return ds
 	}
 
-	project := d.Get("project").(string)
+	project := d.Get("project_ref").(string)
 	if project == "" {
-		project = wildcardProject
+		project = config.Project
 	}
+
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.DeleteObjectsByName(ctx, project, manifest.KindRoleBinding, false, d.Id())
 		if err != nil {
@@ -183,6 +181,5 @@ func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta
 	}); err != nil {
 		return diag.FromErr(err)
 	}
-
 	return nil
 }

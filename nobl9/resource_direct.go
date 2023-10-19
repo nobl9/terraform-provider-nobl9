@@ -2,7 +2,6 @@ package nobl9
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"time"
 
@@ -127,16 +126,7 @@ func (dr directResource) resourceDirectRead(
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	data, err := json.Marshal(objects)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	var converted []v1alpha.Direct
-	if err = json.Unmarshal(data, &converted); err != nil {
-		return diag.FromErr(err)
-	}
-	return dr.unmarshalDirect(d, converted)
+	return dr.unmarshalDirect(d, manifest.FilterByKind[v1alpha.Direct](objects))
 }
 
 func (dr directResource) resourceDirectDelete(

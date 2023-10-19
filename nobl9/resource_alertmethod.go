@@ -48,11 +48,7 @@ type alertMethod struct {
 }
 
 func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) *v1alpha.AlertMethod {
-	var displayName string
-	if dn := d.Get("display_name"); dn != nil {
-		displayName = dn.(string)
-	}
-
+	displayName, _ := d.Get("display_name").(string)
 	return &v1alpha.AlertMethod{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindAlertMethod,
@@ -94,16 +90,13 @@ func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.Res
 	if ds != nil {
 		return ds
 	}
-
 	am := a.marshalAlertMethod(d)
-
-	err := client.ApplyObjects(ctx, []manifest.Object{am}, false)
+	resultAm := manifest.SetDefaultProject([]manifest.Object{am}, config.Project)
+	err := client.ApplyObjects(ctx, resultAm, false)
 	if err != nil {
 		return diag.Errorf("could not add agent: %s", err.Error())
 	}
-
 	d.SetId(am.Metadata.Name)
-
 	return a.resourceAlertMethodRead(ctx, d, meta)
 }
 
@@ -114,17 +107,14 @@ func (a alertMethod) resourceAlertMethodRead(ctx context.Context, d *schema.Reso
 	if ds != nil {
 		return ds
 	}
-
 	project := d.Get("project").(string)
 	if project == "" {
-		// project is empty when importing
 		project = config.Project
 	}
 	objects, err := client.GetObjects(ctx, project, manifest.KindAlertMethod, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	return a.unmarshalAlertMethod(d, manifest.FilterByKind[v1alpha.AlertMethod](objects))
 }
 
@@ -134,13 +124,14 @@ func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta
 	if ds != nil {
 		return ds
 	}
-
 	project := d.Get("project").(string)
+	if project == "" {
+		project = config.Project
+	}
 	err := client.DeleteObjectsByName(ctx, project, manifest.KindAlertMethod, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	return nil
 }
 

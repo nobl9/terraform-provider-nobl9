@@ -121,9 +121,10 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	if diags.HasError() {
 		return diags
 	}
+	resultAgent := manifest.SetDefaultProject([]manifest.Object{agent}, config.Project)
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, []manifest.Object{agent}, false)
+		err := client.ApplyObjects(ctx, resultAgent, false)
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
@@ -154,26 +155,15 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	if ds != nil {
 		return ds
 	}
-
 	project := d.Get("project").(string)
 	if project == "" {
-		// project is empty when importing
 		project = config.Project
 	}
 	objects, err := client.GetObjects(ctx, project, manifest.KindAgent, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	data, err := json.Marshal(objects)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	var converted []v1alpha.Agent
-	if err = json.Unmarshal(data, &converted); err != nil {
-		return diag.FromErr(err)
-	}
-	return unmarshalAgent(d, converted)
+	return unmarshalAgent(d, manifest.FilterByKind[v1alpha.Agent](objects))
 }
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -182,8 +172,10 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	if ds != nil {
 		return ds
 	}
-
 	project := d.Get("project").(string)
+	if project == "" {
+		project = config.Project
+	}
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.DeleteObjectsByName(ctx, project, manifest.KindAgent, false, d.Id())
 		if err != nil {
@@ -196,7 +188,6 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	}); err != nil {
 		return diag.FromErr(err)
 	}
-
 	return nil
 }
 
@@ -278,7 +269,7 @@ func unmarshalAgent(d *schema.ResourceData, agents []v1alpha.Agent) diag.Diagnos
 	set(d, "name", agent.Metadata.Name, &diags)
 	set(d, "display_name", agent.Metadata.DisplayName, &diags)
 	set(d, "project", agent.Metadata.Project, &diags)
-	if agent.Metadata.Labels != nil {
+	if len(agent.Metadata.Labels) > 0 {
 		set(d, "label", agent.Metadata.Labels, &diags)
 	}
 
@@ -929,6 +920,7 @@ func marshalAgentNewRelic(d *schema.ResourceData, diags diag.Diagnostics) *v1alp
 
 	accID, err := strconv.Atoi(data["account_id"].(string))
 	if err != nil {
+		diags = appendError(diags, err)
 		return nil
 	}
 	return &v1alpha.NewRelicAgentConfig{

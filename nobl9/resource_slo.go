@@ -334,9 +334,10 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	if diags.HasError() {
 		return diags
 	}
+	resultSlo := manifest.SetDefaultProject([]manifest.Object{slo}, config.Project)
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, []manifest.Object{slo}, false)
+		err := client.ApplyObjects(ctx, resultSlo, false)
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
@@ -349,7 +350,6 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	}
 
 	d.SetId(slo.Metadata.Name)
-
 	return resourceSLORead(ctx, d, meta)
 }
 
@@ -359,13 +359,14 @@ func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface
 	if ds != nil {
 		return ds
 	}
-
 	project := d.Get("project").(string)
+	if project == "" {
+		project = config.Project
+	}
 	objects, err := client.GetObjects(ctx, project, manifest.KindSLO, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	return unmarshalSLO(d, manifest.FilterByKind[v1alpha.SLO](objects))
 }
 
@@ -375,11 +376,11 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 	if ds != nil {
 		return ds
 	}
-
 	project := d.Get("project").(string)
 	if project == "" {
 		project = config.Project
 	}
+
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.DeleteObjectsByName(ctx, project, manifest.KindSLO, false, d.Id())
 		if err != nil {
@@ -454,17 +455,11 @@ func marshalSLO(d *schema.ResourceData) (*v1alpha.SLO, diag.Diagnostics) {
 	if !ok {
 		attachments = d.Get("attachments")
 	}
-
-	var displayName string
-	if dn := d.Get("display_name"); dn != nil {
-		displayName = dn.(string)
-	}
-
+	displayName, _ := d.Get("display_name").(string)
 	labelsMarshalled, diags := getMarshalledLabels(d)
 	if diags.HasError() {
 		return nil, diags
 	}
-
 	return &v1alpha.SLO{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindSLO,
@@ -1239,8 +1234,6 @@ func unmarshalCloudWatchMetric(metric interface{}) map[string]interface{} {
 	res["stat"] = cwMetric.Stat
 	res["sql"] = cwMetric.SQL
 	res["json"] = cwMetric.JSON
-	// Using marshal-unmarshal here is good enough for the time being.
-	// This provider will get entirely rewritten to the new terraform-plugin-sdk version soon.
 	dim, _ := json.Marshal(cwMetric.Dimensions)
 	var dimensions any
 	json.Unmarshal(dim, &dimensions)
@@ -1782,14 +1775,14 @@ func marshalInstanaApplicationMetric(s *schema.Set) *v1alpha.InstanaApplicationM
 	}
 	application := s.List()[0].(map[string]interface{})
 
-	var includeInternal *bool
+	var includeInternal bool
 	if value, ok := application["include_internal"].(bool); ok {
-		includeInternal = &value
+		includeInternal = value
 	}
 
-	var includeSynthetic *bool
+	var includeSynthetic bool
 	if value, ok := application["include_synthetic"].(bool); ok {
-		includeSynthetic = &value
+		includeSynthetic = value
 	}
 
 	var groupBy = application["group_by"].(*schema.Set).List()[0].(map[string]interface{})
@@ -1807,8 +1800,8 @@ func marshalInstanaApplicationMetric(s *schema.Set) *v1alpha.InstanaApplicationM
 			TagSecondLevelKey: tagSecondLevelKey,
 		},
 		APIQuery:         application["api_query"].(string),
-		IncludeInternal:  *includeInternal,
-		IncludeSynthetic: *includeSynthetic,
+		IncludeInternal:  includeInternal,
+		IncludeSynthetic: includeSynthetic,
 	}
 }
 

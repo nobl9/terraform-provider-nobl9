@@ -273,19 +273,16 @@ func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta 
 	if ds != nil {
 		return ds
 	}
-
 	ap, diags := marshalAlertPolicy(d)
 	if diags.HasError() {
 		return diags
 	}
-
-	err := client.ApplyObjects(ctx, []manifest.Object{ap}, false)
+	resultAp := manifest.SetDefaultProject([]manifest.Object{ap}, config.Project)
+	err := client.ApplyObjects(ctx, resultAp, false)
 	if err != nil {
 		return diag.Errorf("could not add alertPolicy: %s", err.Error())
 	}
-
 	d.SetId(ap.Metadata.Name)
-
 	return resourceAlertPolicyRead(ctx, d, meta)
 }
 
@@ -295,10 +292,8 @@ func resourceAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 	if ds != nil {
 		return ds
 	}
-
 	project := d.Get("project").(string)
 	if project == "" {
-		// project is empty when importing
 		project = config.Project
 	}
 	objects, err := client.GetObjects(ctx, project, manifest.KindAlertPolicy, nil, d.Id())
@@ -314,12 +309,13 @@ func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta
 	if ds != nil {
 		return ds
 	}
-
 	project := d.Get("project").(string)
+	if project == "" {
+		project = config.Project
+	}
 	err := client.DeleteObjectsByName(ctx, project, manifest.KindAlertPolicy, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	return nil
 }
