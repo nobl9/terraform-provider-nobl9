@@ -15,6 +15,8 @@ import (
 	"github.com/nobl9/nobl9-go/sdk"
 )
 
+const wildcardProject = "*"
+
 //nolint:lll
 func resourceRoleBinding() *schema.Resource {
 	return &schema.Resource{
@@ -148,7 +150,7 @@ func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 	project := d.Get("project_ref").(string)
 	if project == "" {
-		project = config.Project
+		project = wildcardProject
 	}
 	objects, err := client.GetObjects(ctx, project, manifest.KindRoleBinding, nil, d.Id())
 	if err != nil {
@@ -166,7 +168,7 @@ func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta
 
 	project := d.Get("project_ref").(string)
 	if project == "" {
-		project = config.Project
+		project = wildcardProject
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
