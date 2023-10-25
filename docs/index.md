@@ -37,7 +37,7 @@ terraform {
   required_providers {
     nobl9 = {
       source  = "nobl9/nobl9"
-      version = "0.13.0"
+      version = "0.16.0"
     }
   }
 }
@@ -57,14 +57,14 @@ provider "nobl9" {
 
 - `client_id` (String) the [Client ID](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.
 - `client_secret` (String, Sensitive) the [Client Secret](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.
-- `organization` (String) Nobl9 [Organization ID](https://docs.nobl9.com/API_Documentation/api-endpoints-for-slo-annotations/#common-headers) that contains resources managed by the Nobl9 Terraform provider.
-- `project` (String) Nobl9 project used when importing resources.
 
 ### Optional
 
 - `ingest_url` (String) Nobl9 API URL.
 - `okta_auth_server` (String) Authorization service configuration.
 - `okta_org_url` (String) Authorization service URL.
+- `organization` (String) Nobl9 [Organization ID](https://docs.nobl9.com/API_Documentation/api-endpoints-for-slo-annotations/#common-headers) that contains resources managed by the Nobl9 Terraform provider.
+- `project` (String) Nobl9 project used when importing resources.
 
 ## Useful Links
 

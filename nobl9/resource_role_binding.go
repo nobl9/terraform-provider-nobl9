@@ -9,7 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	n9api "github.com/nobl9/nobl9-go"
+
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	"github.com/nobl9/nobl9-go/sdk"
 )
 
 const wildcardProject = "*"
@@ -53,82 +56,79 @@ func resourceRoleBinding() *schema.Resource {
 	}
 }
 
-func marshalRoleBinding(d *schema.ResourceData) *n9api.RoleBinding {
+func marshalRoleBinding(d *schema.ResourceData) *v1alpha.RoleBinding {
 	name := d.Get("name").(string)
 	if name == "" {
 		id, _ := uuid.NewUUID() // NewUUID returns always nil error
 		name = id.String()
 	}
-	return &n9api.RoleBinding{
-		APIVersion: n9api.APIVersion,
-		Kind:       n9api.KindRoleBinding,
-		Metadata: n9api.RoleBindingMetadata{
+	userRoleBindingSpec := d.Get("user").(string)
+	return &v1alpha.RoleBinding{
+		APIVersion: v1alpha.APIVersion,
+		Kind:       manifest.KindRoleBinding,
+		Metadata: v1alpha.RoleBindingMetadata{
 			Name: name,
 		},
-		Spec: n9api.RoleBindingSpec{
-			User:       d.Get("user").(string),
+		Spec: v1alpha.RoleBindingSpec{
+			User:       &userRoleBindingSpec,
 			RoleRef:    d.Get("role_ref").(string),
 			ProjectRef: d.Get("project_ref").(string),
 		},
 	}
 }
 
-func unmarshalRoleBinding(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alpha.RoleBinding) diag.Diagnostics {
 	_, isProjectRole := d.GetOk("project_ref")
-	roleBinding := findRoleBindingByType(isProjectRole, objects)
-	if roleBinding == nil {
+	roleBindingP := findRoleBindingByType(isProjectRole, objects)
+	if roleBindingP == nil {
 		d.SetId("")
 		return nil
 	}
+	roleBinding := *roleBindingP
 
 	var diags diag.Diagnostics
-	metadata := roleBinding["metadata"].(map[string]interface{})
-	err := d.Set("name", metadata["name"])
+	metadata := roleBinding.Metadata
+	err := d.Set("name", metadata.Name)
 	diags = appendError(diags, err)
 
-	spec := roleBinding["spec"].(map[string]interface{})
-	err = d.Set("user", spec["user"])
+	spec := roleBinding.Spec
+	err = d.Set("user", spec.User)
 	diags = appendError(diags, err)
-	err = d.Set("role_ref", spec["roleRef"])
+	err = d.Set("role_ref", spec.RoleRef)
 	diags = appendError(diags, err)
-	err = d.Set("project_ref", spec["projectRef"])
+	err = d.Set("project_ref", spec.ProjectRef)
 	diags = appendError(diags, err)
 
 	return diags
 }
 
-func findRoleBindingByType(projectRole bool, objects []n9api.AnyJSONObj) n9api.AnyJSONObj {
+func findRoleBindingByType(projectRole bool, objects []v1alpha.RoleBinding) *v1alpha.RoleBinding {
 	for _, object := range objects {
 		if projectRole && containsProjectRef(object) {
-			return object
+			return &object
 		} else if !projectRole && !containsProjectRef(object) {
-			return object
+			return &object
 		}
 	}
 	return nil
 }
 
-func containsProjectRef(obj n9api.AnyJSONObj) bool {
-	spec := obj["spec"].(map[string]interface{})
-	return spec["projectRef"] != nil
+func containsProjectRef(obj v1alpha.RoleBinding) bool {
+	return obj.Spec.ProjectRef != ""
 }
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, wildcardProject)
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
 
-	ap := marshalRoleBinding(d)
-
-	var p n9api.Payload
-	p.AddObject(ap)
-
+	roleBinding := marshalRoleBinding(d)
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(p.GetObjects())
+		err := client.ApplyObjects(ctx, []manifest.Object{roleBinding}, false)
 		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -138,41 +138,43 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("could not add project: %s", err.Error())
 	}
 
-	d.SetId(ap.Metadata.Name)
-
+	d.SetId(roleBinding.Metadata.Name)
 	return resourceRoleBindingRead(ctx, d, meta)
 }
 
-func resourceRoleBindingRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, wildcardProject)
-	if ds.HasError() {
+	client, ds := getClient(config)
+	if ds != nil {
 		return ds
 	}
-
-	objects, err := client.GetObject(n9api.ObjectRoleBinding, "", d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return unmarshalRoleBinding(d, objects)
-}
-
-func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(ProviderConfig)
 	project := d.Get("project_ref").(string)
 	if project == "" {
 		project = wildcardProject
 	}
-	client, ds := getClient(config, project)
-	if ds.HasError() {
+	objects, err := client.GetObjects(ctx, project, manifest.KindRoleBinding, nil, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return unmarshalRoleBinding(d, manifest.FilterByKind[v1alpha.RoleBinding](objects))
+}
+
+func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(ProviderConfig)
+	client, ds := getClient(config)
+	if ds != nil {
 		return ds
 	}
 
+	project := d.Get("project_ref").(string)
+	if project == "" {
+		project = wildcardProject
+	}
+
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(n9api.ObjectRoleBinding, d.Id())
+		err := client.DeleteObjectsByName(ctx, project, manifest.KindRoleBinding, false, d.Id())
 		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -181,6 +183,5 @@ func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta
 	}); err != nil {
 		return diag.FromErr(err)
 	}
-
 	return nil
 }

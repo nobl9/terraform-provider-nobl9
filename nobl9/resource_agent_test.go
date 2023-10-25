@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
 )
 
 func TestAcc_Nobl9Agent(t *testing.T) {
@@ -43,7 +43,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_agent", n9api.ObjectAgent),
+				CheckDestroy:      CheckDestroy("nobl9_agent", manifest.KindAgent),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),

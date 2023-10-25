@@ -7,7 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 func resourceAlertPolicy() *schema.Resource {
@@ -116,19 +117,27 @@ func transformAlertMethodsTo2DMap(alertMethods []interface{}) map[string]map[str
 	return result
 }
 
-func marshalAlertPolicy(d *schema.ResourceData) (*n9api.AlertPolicy, diag.Diagnostics) {
-	metadataHolder, diags := marshalMetadata(d)
+func marshalAlertPolicy(d *schema.ResourceData) (*v1alpha.AlertPolicy, diag.Diagnostics) {
+	var displayName string
+	if dn := d.Get("display_name"); dn != nil {
+		displayName = dn.(string)
+	}
+
+	labelsMarshalled, diags := getMarshalledLabels(d)
 	if diags.HasError() {
 		return nil, diags
 	}
 
-	return &n9api.AlertPolicy{
-		ObjectHeader: n9api.ObjectHeader{
-			APIVersion:     n9api.APIVersion,
-			Kind:           n9api.KindAlertPolicy,
-			MetadataHolder: metadataHolder,
+	return &v1alpha.AlertPolicy{
+		APIVersion: v1alpha.APIVersion,
+		Kind:       manifest.KindAlertPolicy,
+		Metadata: v1alpha.AlertPolicyMetadata{
+			Name:        d.Get("name").(string),
+			DisplayName: displayName,
+			Project:     d.Get("project").(string),
+			Labels:      labelsMarshalled,
 		},
-		Spec: n9api.AlertPolicySpec{
+		Spec: v1alpha.AlertPolicySpec{
 			Description:  d.Get("description").(string),
 			Severity:     d.Get("severity").(string),
 			Conditions:   marshalAlertConditions(d),
@@ -137,30 +146,26 @@ func marshalAlertPolicy(d *schema.ResourceData) (*n9api.AlertPolicy, diag.Diagno
 	}, diags
 }
 
-func marshalAlertMethods(d *schema.ResourceData) []n9api.PublicAlertMethod {
+func marshalAlertMethods(d *schema.ResourceData) []v1alpha.PublicAlertMethod {
 	methods := d.Get("alert_method").([]interface{})
-	resultConditions := make([]n9api.PublicAlertMethod, len(methods))
+	resultConditions := make([]v1alpha.PublicAlertMethod, len(methods))
 	for i, m := range methods {
 		method := m.(map[string]interface{})
-
-		resultConditions[i] = n9api.PublicAlertMethod{
-			ObjectHeader: n9api.ObjectHeader{
-				MetadataHolder: n9api.MetadataHolder{
-					Metadata: n9api.Metadata{
-						Project: method["project"].(string),
-						Name:    method["name"].(string),
-					},
-				},
+		resultConditions[i] = v1alpha.PublicAlertMethod{
+			APIVersion: v1alpha.APIVersion,
+			Kind:       manifest.KindAlertMethod,
+			Metadata: v1alpha.AlertMethodMetadata{
+				Name:    method["name"].(string),
+				Project: method["project"].(string),
 			},
 		}
 	}
-
 	return resultConditions
 }
 
-func marshalAlertConditions(d *schema.ResourceData) []n9api.AlertCondition {
+func marshalAlertConditions(d *schema.ResourceData) []v1alpha.AlertCondition {
 	conditions := d.Get("condition").([]interface{})
-	resultConditions := make([]n9api.AlertCondition, len(conditions))
+	resultConditions := make([]v1alpha.AlertCondition, len(conditions))
 	for i, c := range conditions {
 		condition := c.(map[string]interface{})
 		value := condition["value"]
@@ -176,7 +181,7 @@ func marshalAlertConditions(d *schema.ResourceData) []n9api.AlertCondition {
 			op = "lte"
 		}
 
-		resultConditions[i] = n9api.AlertCondition{
+		resultConditions[i] = v1alpha.AlertCondition{
 			Measurement:      measurement,
 			Value:            value,
 			LastsForDuration: condition["lasts_for"].(string),
@@ -187,7 +192,7 @@ func marshalAlertConditions(d *schema.ResourceData) []n9api.AlertCondition {
 	return resultConditions
 }
 
-func unmarshalAlertPolicy(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alpha.AlertPolicy) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -195,62 +200,67 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []n9api.AnyJSONObj) di
 	object := objects[0]
 	var diags diag.Diagnostics
 
-	if ds := unmarshalGenericMetadata(object, d); ds.HasError() {
-		diags = append(diags, ds...)
+	metadata := object.Metadata
+	err := d.Set("name", metadata.Name)
+	diags = appendError(diags, err)
+	err = d.Set("display_name", metadata.DisplayName)
+	diags = appendError(diags, err)
+	err = d.Set("project", metadata.Project)
+	diags = appendError(diags, err)
+
+	if labelsRaw := metadata.Labels; len(labelsRaw) > 0 {
+		err = d.Set("label", unmarshalLabels(labelsRaw))
+		diags = appendError(diags, err)
 	}
 
-	spec := object["spec"].(map[string]interface{})
-	err := d.Set("description", spec["description"])
+	spec := object.Spec
+	err = d.Set("description", spec.Description)
 	diags = appendError(diags, err)
-	err = d.Set("severity", spec["severity"])
+	err = d.Set("severity", spec.Severity)
 	diags = appendError(diags, err)
 
-	conditions := spec["conditions"].([]interface{})
+	conditions := spec.Conditions
 	err = d.Set("condition", unmarshalAlertPolicyConditions(conditions))
 	diags = appendError(diags, err)
 
-	alertMethods := spec["alertMethods"].([]interface{})
+	alertMethods := spec.AlertMethods
 	err = d.Set("alert_method", unmarshalAlertMethods(alertMethods))
 	diags = appendError(diags, err)
 
 	return diags
 }
 
-func unmarshalAlertPolicyConditions(conditions []interface{}) interface{} {
+func unmarshalAlertPolicyConditions(conditions []v1alpha.AlertCondition) interface{} {
 	resultConditions := make([]map[string]interface{}, len(conditions))
-
-	for i, c := range conditions {
-		condition := c.(map[string]interface{})
+	for i, condition := range conditions {
 		var value float64
-		if v, ok := condition["value"].(float64); ok {
+		if v, ok := condition.Value.(float64); ok {
 			value = v
 		}
 		var valueStr string
-		if v, ok := condition["value"].(string); ok {
+		if v, ok := condition.Value.(string); ok {
 			valueStr = v
 		}
-
 		resultConditions[i] = map[string]interface{}{
-			"measurement":  condition["measurement"].(string),
+			"measurement":  condition.Measurement,
 			"value":        value,
 			"value_string": valueStr,
-			"lasts_for":    condition["lastsFor"].(string),
+			"lasts_for":    condition.LastsForDuration,
 		}
 	}
 
 	return resultConditions
 }
 
-func unmarshalAlertMethods(alertMethods []interface{}) interface{} {
+func unmarshalAlertMethods(alertMethods []v1alpha.PublicAlertMethod) interface{} {
 	resultMethods := make([]map[string]interface{}, len(alertMethods))
 
-	for i, m := range alertMethods {
-		method := m.(map[string]interface{})
-		metadata := method["metadata"].(map[string]interface{})
+	for i, method := range alertMethods {
+		metadata := method.Metadata
 
 		resultMethods[i] = map[string]interface{}{
-			"name":    metadata["name"],
-			"project": metadata["project"],
+			"name":    metadata.Name,
+			"project": metadata.Project,
 		}
 	}
 
@@ -259,60 +269,53 @@ func unmarshalAlertMethods(alertMethods []interface{}) interface{} {
 
 func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
-
 	ap, diags := marshalAlertPolicy(d)
 	if diags.HasError() {
 		return diags
 	}
-
-	var p n9api.Payload
-	p.AddObject(ap)
-
-	err := client.ApplyObjects(p.GetObjects())
+	resultAp := manifest.SetDefaultProject([]manifest.Object{ap}, config.Project)
+	err := client.ApplyObjects(ctx, resultAp, false)
 	if err != nil {
 		return diag.Errorf("could not add alertPolicy: %s", err.Error())
 	}
-
 	d.SetId(ap.Metadata.Name)
-
 	return resourceAlertPolicyRead(ctx, d, meta)
 }
 
-func resourceAlertPolicyRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
+	client, ds := getClient(config)
+	if ds != nil {
+		return ds
+	}
 	project := d.Get("project").(string)
 	if project == "" {
-		// project is empty when importing
 		project = config.Project
 	}
-	client, ds := getClient(config, project)
-	if ds.HasError() {
-		return ds
-	}
-
-	objects, err := client.GetObject(n9api.ObjectAlertPolicy, "", d.Id())
+	objects, err := client.GetObjects(ctx, project, manifest.KindAlertPolicy, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	return unmarshalAlertPolicy(d, objects)
+	return unmarshalAlertPolicy(d, manifest.FilterByKind[v1alpha.AlertPolicy](objects))
 }
 
-func resourceAlertPolicyDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
-	if ds.HasError() {
+	client, ds := getClient(config)
+	if ds != nil {
 		return ds
 	}
-
-	err := client.DeleteObjectsByName(n9api.ObjectAlertPolicy, d.Id())
+	project := d.Get("project").(string)
+	if project == "" {
+		project = config.Project
+	}
+	err := client.DeleteObjectsByName(ctx, project, manifest.KindAlertPolicy, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	return nil
 }

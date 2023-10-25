@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 const (
@@ -174,63 +174,17 @@ func schemaDescription() *schema.Schema {
 	}
 }
 
-func marshalMetadata(d *schema.ResourceData) (n9api.MetadataHolder, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
+func getMarshalledLabels(d *schema.ResourceData) (v1alpha.Labels, diag.Diagnostics) {
 	var labels []interface{}
 	if labelsData := d.Get("label"); labelsData != nil {
 		labels = labelsData.([]interface{})
 	}
-	var labelsMarshalled n9api.Labels
-	labelsMarshalled, diags = marshalLabels(labels)
-
-	return n9api.MetadataHolder{
-		Metadata: n9api.Metadata{
-			Name:        d.Get("name").(string),
-			DisplayName: d.Get("display_name").(string),
-			Project:     d.Get("project").(string),
-			Labels:      labelsMarshalled,
-		},
-	}, diags
+	return marshalLabels(labels)
 }
 
-func unmarshalGenericMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Diagnostics {
+func marshalLabels(labels []interface{}) (v1alpha.Labels, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	metadata := object["metadata"].(map[string]interface{})
-	err := d.Set("name", metadata["name"])
-	diags = appendError(diags, err)
-	err = d.Set("display_name", metadata["displayName"])
-	diags = appendError(diags, err)
-
-	err = d.Set("project", metadata["project"])
-	diags = appendError(diags, err)
-
-	labelsRaw, exist := metadata["labels"]
-	if exist {
-		err = d.Set("label", unmarshalLabels(labelsRaw))
-		diags = appendError(diags, err)
-	}
-
-	return diags
-}
-
-func unmarshalMetadata(metadataHolder n9api.MetadataHolder, d *schema.ResourceData) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	set(d, "name", metadataHolder.Metadata.Name, &diags)
-	set(d, "display_name", metadataHolder.Metadata.DisplayName, &diags)
-	set(d, "project", metadataHolder.Metadata.Project, &diags)
-	if metadataHolder.Metadata.Labels != nil {
-		set(d, "label", metadataHolder.Metadata.Labels, &diags)
-	}
-
-	return diags
-}
-
-func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	labelsResult := make(n9api.Labels, len(labels))
+	labelsResult := make(v1alpha.Labels, len(labels))
 
 labelsLoop:
 	for _, labelRaw := range labels {
@@ -271,15 +225,14 @@ labelsLoop:
 	return labelsResult, diags
 }
 
-func unmarshalLabels(labelsRaw interface{}) interface{} {
+func unmarshalLabels(labelsRaw v1alpha.Labels) interface{} {
 	resultLabels := make([]map[string]interface{}, 0)
 
 	if labelsRaw != nil {
-		labelsMap := labelsRaw.(map[string]interface{})
-		for labelKey, labelValuesRaw := range labelsMap {
+		for labelKey, labelValuesRaw := range labelsRaw {
 			var labelValuesStr []string
-			for _, labelValueRaw := range labelValuesRaw.([]interface{}) {
-				labelValuesStr = append(labelValuesStr, labelValueRaw.(string))
+			for _, labelValueRaw := range labelValuesRaw {
+				labelValuesStr = append(labelValuesStr, labelValueRaw)
 			}
 			labelKeyWithValues := make(map[string]interface{})
 			labelKeyWithValues["key"] = labelKey

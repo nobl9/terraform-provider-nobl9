@@ -2,9 +2,7 @@ package nobl9
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -12,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	"github.com/nobl9/nobl9-go/sdk"
 )
 
 type directResource struct {
@@ -22,8 +22,8 @@ type directResource struct {
 type directSpecResource interface {
 	GetSchema() map[string]*schema.Schema
 	GetDescription() string
-	MarshalSpec(d *schema.ResourceData) n9api.DirectSpec
-	UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics)
+	MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec
+	UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics)
 }
 
 func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
@@ -76,22 +76,20 @@ func (dr directResource) resourceDirectApply(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
+
 	n9Direct, diags := dr.marshalDirect(d)
 	if diags.HasError() {
 		return diags
 	}
 
-	var p n9api.Payload
-	p.AddObject(n9Direct)
-
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(p.GetObjects())
+		err := client.ApplyObjects(ctx, []manifest.Object{n9Direct}, false)
 		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -109,27 +107,26 @@ func (dr directResource) resourceDirectApply(
 }
 
 func (dr directResource) resourceDirectRead(
-	_ context.Context,
+	ctx context.Context,
 	d *schema.ResourceData,
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
+	client, ds := getClient(config)
+	if ds != nil {
+		return ds
+	}
+
 	project := d.Get("project").(string)
 	if project == "" {
 		// project is empty when importing
 		project = config.Project
 	}
-	client, ds := getClient(config, project)
-	if ds.HasError() {
-		return ds
-	}
-
-	objects, err := client.GetDirects("", d.Id())
+	objects, err := client.GetObjects(ctx, project, manifest.KindDirect, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	return dr.unmarshalDirect(d, objects)
+	return dr.unmarshalDirect(d, manifest.FilterByKind[v1alpha.Direct](objects))
 }
 
 func (dr directResource) resourceDirectDelete(
@@ -138,15 +135,16 @@ func (dr directResource) resourceDirectDelete(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
-	if ds.HasError() {
+	client, ds := getClient(config)
+	if ds != nil {
 		return ds
 	}
 
+	project := d.Get("project").(string)
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(n9api.ObjectDirect, d.Id())
+		err := client.DeleteObjectsByName(ctx, project, manifest.KindDirect, false, d.Id())
 		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -159,17 +157,16 @@ func (dr directResource) resourceDirectDelete(
 	return nil
 }
 
-func (dr directResource) marshalDirect(d *schema.ResourceData) (*n9api.Direct, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	metadataHolder, diags := marshalMetadata(d)
-	if diags.HasError() {
-		return nil, diags
-	}
-
+func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alpha.Direct, diag.Diagnostics) {
 	sourceOf := d.Get("source_of").([]interface{})
 	sourceOfStr := make([]string, len(sourceOf))
 	for i, s := range sourceOf {
 		sourceOfStr[i] = s.(string)
+	}
+
+	labelsMarshalled, diags := getMarshalledLabels(d)
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	spec := dr.MarshalSpec(d)
@@ -184,17 +181,25 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*n9api.Direct, d
 		spec.LogCollectionEnabled = marshalLogCollectionEnabled(d)
 	}
 
-	return &n9api.Direct{
-		ObjectHeader: n9api.ObjectHeader{
-			APIVersion:     n9api.APIVersion,
-			Kind:           n9api.KindDirect,
-			MetadataHolder: metadataHolder,
+	var displayName string
+	if dn := d.Get("display_name"); dn != nil {
+		displayName = dn.(string)
+	}
+
+	return &v1alpha.Direct{
+		APIVersion: v1alpha.APIVersion,
+		Kind:       manifest.KindDirect,
+		Metadata: v1alpha.DirectMetadata{
+			Name:        d.Get("name").(string),
+			DisplayName: displayName,
+			Project:     d.Get("project").(string),
+			Labels:      labelsMarshalled,
 		},
 		Spec: spec,
 	}, diags
 }
 
-func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []n9api.Direct) diag.Diagnostics {
+func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []v1alpha.Direct) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if len(directs) != 1 {
@@ -204,7 +209,12 @@ func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []n9api
 	direct := directs[0]
 
 	set(d, "status", direct.Status.DirectType, &diags)
-	diags = append(diags, unmarshalMetadata(direct.MetadataHolder, d)...)
+	set(d, "name", direct.Metadata.Name, &diags)
+	set(d, "display_name", direct.Metadata.DisplayName, &diags)
+	set(d, "project", direct.Metadata.Project, &diags)
+	if direct.Metadata.Labels != nil {
+		set(d, "label", direct.Metadata.Labels, &diags)
+	}
 	diags = append(diags, dr.UnmarshalSpec(d, direct.Spec)...)
 	diags = append(diags, unmarshalHistoricalDataRetrieval(d, direct.Spec.HistoricalDataRetrieval)...)
 	diags = append(diags, unmarshalQueryDelay(d, direct.Spec.QueryDelay)...)
@@ -263,9 +273,9 @@ func (s appDynamicsDirectSpec) GetDescription() string {
 	return "[AppDynamics Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-direct)"
 }
 
-func (s appDynamicsDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{
-		AppDynamics: &n9api.AppDynamicsDirectConfig{
+func (s appDynamicsDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		AppDynamics: &v1alpha.AppDynamicsDirectConfig{
 			URL:          d.Get("url").(string),
 			AccountName:  d.Get("account_name").(string),
 			ClientID:     d.Get("client_id").(string),
@@ -275,7 +285,7 @@ func (s appDynamicsDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectS
 	}
 }
 
-func (s appDynamicsDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s appDynamicsDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "url", spec.AppDynamics.URL, &diags)
 	set(d, "account_name", spec.AppDynamics.AccountName, &diags)
 	set(d, "client_id", spec.AppDynamics.ClientID, &diags)
@@ -312,15 +322,15 @@ func (s bigqueryDirectSpec) GetDescription() string {
 	return "[BigQuery Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-direct)"
 }
 
-func (s bigqueryDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{
-		BigQuery: &n9api.BigQueryDirectConfig{
+func (s bigqueryDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		BigQuery: &v1alpha.BigQueryDirectConfig{
 			ServiceAccountKey: d.Get("service_account_key").(string),
 		},
 	}
 }
 
-func (s bigqueryDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s bigqueryDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "description", spec.Description, &diags)
 	return
 }
@@ -354,15 +364,15 @@ func (s cloudWatchDirectSpec) GetDescription() string {
 	return "[Amazon CloudWatch Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct)"
 }
 
-func (s cloudWatchDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{
-		CloudWatch: &n9api.CloudWatchDirectConfig{
+func (s cloudWatchDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		CloudWatch: &v1alpha.CloudWatchDirectConfig{
 			RoleARN: d.Get("role_arn").(string),
 		},
 	}
 }
 
-func (s cloudWatchDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s cloudWatchDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "description", spec.Description, &diags)
 	return
 }
@@ -377,9 +387,9 @@ func (s datadogDirectSpec) GetDescription() string {
 	return "[Datadog Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/datadog#datadog-direct)."
 }
 
-func (s datadogDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{
-		Datadog: &n9api.DatadogDirectConfig{
+func (s datadogDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		Datadog: &v1alpha.DatadogDirectConfig{
 			Site:           d.Get("site").(string),
 			APIKey:         d.Get("api_key").(string),
 			ApplicationKey: d.Get("application_key").(string),
@@ -387,7 +397,7 @@ func (s datadogDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec 
 	}
 }
 
-func (s datadogDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s datadogDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "site", spec.Datadog.Site, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
@@ -463,16 +473,16 @@ func (s dynatraceDirectSpec) GetSchema() map[string]*schema.Schema {
 	return dynatraceSchema
 }
 
-func (s dynatraceDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{
-		Dynatrace: &n9api.DynatraceDirectConfig{
+func (s dynatraceDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		Dynatrace: &v1alpha.DynatraceDirectConfig{
 			URL:            d.Get("url").(string),
 			DynatraceToken: d.Get("dynatrace_token").(string),
 		},
 	}
 }
 
-func (s dynatraceDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s dynatraceDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "url", spec.Dynatrace.URL, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
@@ -507,15 +517,15 @@ func (s gcmDirectSpec) GetDescription() string {
 		"(https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-direct)."
 }
 
-func (s gcmDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{
-		GCM: &n9api.GCMDirectConfig{
+func (s gcmDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		GCM: &v1alpha.GCMDirectConfig{
 			ServiceAccountKey: d.Get("service_account_key").(string),
 		},
 	}
 }
 
-func (s gcmDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s gcmDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "description", spec.Description, &diags)
 	return
 }
@@ -563,9 +573,9 @@ func (s influxdbDirectSpec) GetSchema() map[string]*schema.Schema {
 	return influxdbSchema
 }
 
-func (s influxdbDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{
-		InfluxDB: &n9api.InfluxDBDirectConfig{
+func (s influxdbDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		InfluxDB: &v1alpha.InfluxDBDirectConfig{
 			URL:            d.Get("url").(string),
 			APIToken:       d.Get("api_token").(string),
 			OrganizationID: d.Get("organization_id").(string),
@@ -573,7 +583,7 @@ func (s influxdbDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec
 	}
 }
 
-func (s influxdbDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s influxdbDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "url", spec.InfluxDB.URL, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
@@ -612,16 +622,16 @@ func (s instanaDirectSpec) GetSchema() map[string]*schema.Schema {
 	return instanaSchema
 }
 
-func (s instanaDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{
-		Instana: &n9api.InstanaDirectConfig{
+func (s instanaDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		Instana: &v1alpha.InstanaDirectConfig{
 			URL:      d.Get("url").(string),
 			APIToken: d.Get("api_token").(string),
 		},
 	}
 }
 
-func (s instanaDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s instanaDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "url", spec.Instana.URL, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
@@ -666,9 +676,9 @@ func (s lightstepDirectSpec) GetSchema() map[string]*schema.Schema {
 	return lightstepSchema
 }
 
-func (s lightstepDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{
-		Lightstep: &n9api.LightstepDirectConfig{
+func (s lightstepDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		Lightstep: &v1alpha.LightstepDirectConfig{
 			AppToken:     d.Get("app_token").(string),
 			Organization: d.Get("lightstep_organization").(string),
 			Project:      d.Get("lightstep_project").(string),
@@ -676,7 +686,7 @@ func (s lightstepDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpe
 	}
 }
 
-func (s lightstepDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s lightstepDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "lightstep_organization", spec.Lightstep.Organization, &diags)
 	set(d, "lightstep_project", spec.Lightstep.Project, &diags)
 	set(d, "description", spec.Description, &diags)
@@ -720,14 +730,14 @@ func (s newRelicDirectSpec) GetDescription() string {
 	return "[New Relic Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/new-relic#new-relic-direct)."
 }
 
-func (s newRelicDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{NewRelic: &n9api.NewRelicDirectConfig{
-		AccountID:        json.Number(strconv.Itoa(d.Get("account_id").(int))),
+func (s newRelicDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{NewRelic: &v1alpha.NewRelicDirectConfig{
+		AccountID:        d.Get("account_id").(int),
 		InsightsQueryKey: d.Get("insights_query_key").(string),
 	}}
 }
 
-func (s newRelicDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s newRelicDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "account_id", spec.NewRelic.AccountID, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
@@ -761,15 +771,15 @@ func (s pingdomDirectSpec) GetSchema() map[string]*schema.Schema {
 	return pingdomSchema
 }
 
-func (s pingdomDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{
-		Pingdom: &n9api.PingdomDirectConfig{
+func (s pingdomDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		Pingdom: &v1alpha.PingdomDirectConfig{
 			APIToken: d.Get("api_token").(string),
 		},
 	}
 }
 
-func (s pingdomDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s pingdomDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "description", spec.Description, &diags)
 	return
 }
@@ -813,16 +823,16 @@ func (s redshiftDirectSpec) GetDescription() string {
 		"(https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-direct)."
 }
 
-func (s redshiftDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{
-		Redshift: &n9api.RedshiftDirectConfig{
+func (s redshiftDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		Redshift: &v1alpha.RedshiftDirectConfig{
 			RoleARN:   d.Get("role_arn").(string),
 			SecretARN: d.Get("secret_arn").(string),
 		},
 	}
 }
 
-func (s redshiftDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s redshiftDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "secret_arn", spec.Redshift.SecretARN, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
@@ -862,14 +872,14 @@ func (s splunkDirectSpec) GetSchema() map[string]*schema.Schema {
 	return splunkSchema
 }
 
-func (s splunkDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{Splunk: &n9api.SplunkDirectConfig{
+func (s splunkDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{Splunk: &v1alpha.SplunkDirectConfig{
 		URL:         d.Get("url").(string),
 		AccessToken: d.Get("access_token").(string),
 	}}
 }
 
-func (s splunkDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s splunkDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "url", spec.Splunk.URL, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
@@ -906,14 +916,14 @@ func (s splunkObservabilityDirectSpec) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (s splunkObservabilityDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{SplunkObservability: &n9api.SplunkObservabilityDirectConfig{
+func (s splunkObservabilityDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{SplunkObservability: &v1alpha.SplunkObservabilityDirectConfig{
 		Realm:       d.Get("realm").(string),
 		AccessToken: d.Get("access_token").(string),
 	}}
 }
 
-func (s splunkObservabilityDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s splunkObservabilityDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "realm", spec.SplunkObservability.Realm, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
@@ -963,15 +973,15 @@ func (s sumologicDirectSpec) GetSchema() map[string]*schema.Schema {
 	return sumologicSchema
 }
 
-func (s sumologicDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{SumoLogic: &n9api.SumoLogicDirectConfig{
+func (s sumologicDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{SumoLogic: &v1alpha.SumoLogicDirectConfig{
 		URL:       d.Get("url").(string),
 		AccessID:  d.Get("access_id").(string),
 		AccessKey: d.Get("access_key").(string),
 	}}
 }
 
-func (s sumologicDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s sumologicDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "url", spec.SumoLogic.URL, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
@@ -1005,13 +1015,13 @@ func (s thousandeyesDirectSpec) GetDescription() string {
 	return "[ThousandEyes Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-direct)."
 }
 
-func (s thousandeyesDirectSpec) MarshalSpec(d *schema.ResourceData) n9api.DirectSpec {
-	return n9api.DirectSpec{ThousandEyes: &n9api.ThousandEyesDirectConfig{
+func (s thousandeyesDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{ThousandEyes: &v1alpha.ThousandEyesDirectConfig{
 		OauthBearerToken: d.Get("oauth_bearer_token").(string),
 	}}
 }
 
-func (s thousandeyesDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec n9api.DirectSpec) (diags diag.Diagnostics) {
+func (s thousandeyesDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "description", spec.Description, &diags)
 	return
 }

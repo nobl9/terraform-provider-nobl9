@@ -29,7 +29,7 @@ resource "nobl9_slo" "this" {
 
   attachment {
     url          = "https://www.nobl9.com/"
-    display_name = "SLO provider"
+    display_name = "Nobl9 Reliability Center"
   }
 
   attachment {

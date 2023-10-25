@@ -2,12 +2,13 @@ package nobl9
 
 import (
 	"context"
+	"net/url"
 	"sync"
-
-	"github.com/nobl9/nobl9-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/nobl9/nobl9-go/sdk"
 )
 
 //nolint:gochecknoglobals,revive
@@ -25,15 +26,15 @@ func Provider() *schema.Provider {
 
 			"organization": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_ORG", nil),
 				Description: "Nobl9 [Organization ID](https://docs.nobl9.com/API_Documentation/api-endpoints-for-slo-annotations/#common-headers) that contains resources managed by the Nobl9 Terraform provider.",
 			},
 
 			"project": {
 				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", nil),
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", sdk.DefaultProject),
 				Description: "Nobl9 project used when importing resources.",
 			},
 
@@ -133,46 +134,46 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 
 //nolint:gochecknoglobals
 var (
-	// The N9 TF Provider supports the creation of project kind. This means that the project can be different (or even
-	// missing during TF import) between requests to the N9 API. The N9 SDK requires a project to be passed when
-	// creating a new API client, and reuses this project for each call. To avoid breaking the current SDK interface,
-	// provider creates the client per project.
-	clients   = make(map[string]*nobl9.Client)
-	clientErr error
-	mu        sync.Mutex
+	sharedClient *sdk.Client
+	once         sync.Once
 )
 
-func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
-	var newClient = func() (*nobl9.Client, error) {
-		return nobl9.NewClient(
-			config.IngestURL,
-			config.Organization,
-			project,
-			"terraform-"+Version,
-			config.ClientID,
-			config.ClientSecret,
-			config.OktaOrgURL,
-			config.OktaAuthServer,
-		)
-	}
-	mu.Lock()
-	defer mu.Unlock()
-
-	client, clientInitialized := clients[project]
-	if !clientInitialized {
-		client, clientErr = newClient()
-		clients[project] = client
-	}
-
-	if clientErr != nil {
-		return nil, diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Unable to create Nobl9 client",
-				Detail:   clientErr.Error(),
-			},
+func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
+	once.Do(func() {
+		options := []sdk.ConfigOption{
+			sdk.ConfigOptionWithCredentials(providerConfig.ClientID, providerConfig.ClientSecret),
+			sdk.ConfigOptionNoConfigFile(),
+			sdk.ConfigOptionEnvPrefix("TERRAFORM_NOBL9_"),
 		}
-	}
-
-	return client, nil
+		sdkConfig, err := sdk.ReadConfig(options...)
+		if err != nil {
+			panic(err)
+		}
+		if providerConfig.IngestURL != "" {
+			sdkConfig.URL, err = url.Parse(providerConfig.IngestURL)
+			if err != nil {
+				panic(err)
+			}
+		}
+		if providerConfig.Organization != "" {
+			sdkConfig.Organization = providerConfig.Organization
+		}
+		if providerConfig.Project != "" {
+			sdkConfig.Project = providerConfig.Project
+		}
+		if providerConfig.OktaOrgURL != "" {
+			sdkConfig.OktaOrgURL, err = url.Parse(providerConfig.OktaOrgURL)
+			if err != nil {
+				panic(err)
+			}
+		}
+		if providerConfig.OktaAuthServer != "" {
+			sdkConfig.OktaAuthServer = providerConfig.OktaAuthServer
+		}
+		sharedClient, err = sdk.NewClient(sdkConfig)
+		if err != nil {
+			panic(err)
+		}
+	})
+	return sharedClient, nil
 }

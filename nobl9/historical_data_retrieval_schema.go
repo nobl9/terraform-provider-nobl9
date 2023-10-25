@@ -1,14 +1,11 @@
 package nobl9
 
 import (
-	"encoding/json"
-	"strconv"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 const historicalDataRetrievalConfigKey = "historical_data_retrieval"
@@ -61,7 +58,7 @@ func setHistoricalDataRetrievalSchema(s map[string]*schema.Schema) {
 	s[historicalDataRetrievalConfigKey] = getHistoricalDataRetrievalSchema()[historicalDataRetrievalConfigKey]
 }
 
-func marshalHistoricalDataRetrieval(d *schema.ResourceData) *n9api.HistoricalDataRetrieval {
+func marshalHistoricalDataRetrieval(d *schema.ResourceData) *v1alpha.HistoricalDataRetrieval {
 	hData, ok := d.GetOk(historicalDataRetrievalConfigKey)
 	if !ok {
 		return nil
@@ -70,19 +67,21 @@ func marshalHistoricalDataRetrieval(d *schema.ResourceData) *n9api.HistoricalDat
 	defaultDuration := historicalDataRetrieval["default_duration"].([]interface{})[0].(map[string]interface{})
 	maxDuration := historicalDataRetrieval["max_duration"].([]interface{})[0].(map[string]interface{})
 
-	return &n9api.HistoricalDataRetrieval{
-		DefaultDuration: n9api.HistoricalDataRetrievalDuration{
-			Unit:  defaultDuration["unit"].(string),
-			Value: json.Number(strconv.Itoa(defaultDuration["value"].(int))),
+	valueDefaultDuration := defaultDuration["value"].(int)
+	valueMaxDuration := maxDuration["value"].(int)
+	return &v1alpha.HistoricalDataRetrieval{
+		DefaultDuration: v1alpha.HistoricalRetrievalDuration{
+			Value: &valueDefaultDuration,
+			Unit:  v1alpha.HistoricalRetrievalDurationUnit(defaultDuration["unit"].(string)),
 		},
-		MaxDuration: n9api.HistoricalDataRetrievalDuration{
-			Unit:  maxDuration["unit"].(string),
-			Value: json.Number(strconv.Itoa(maxDuration["value"].(int))),
+		MaxDuration: v1alpha.HistoricalRetrievalDuration{
+			Value: &valueMaxDuration,
+			Unit:  v1alpha.HistoricalRetrievalDurationUnit(maxDuration["unit"].(string)),
 		},
 	}
 }
 
-func unmarshalHistoricalDataRetrieval(d *schema.ResourceData, h *n9api.HistoricalDataRetrieval) (diags diag.Diagnostics) {
+func unmarshalHistoricalDataRetrieval(d *schema.ResourceData, h *v1alpha.HistoricalDataRetrieval) (diags diag.Diagnostics) {
 	if h == nil {
 		return
 	}

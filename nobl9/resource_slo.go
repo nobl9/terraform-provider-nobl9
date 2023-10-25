@@ -2,8 +2,10 @@ package nobl9
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"sort"
 	"time"
 
@@ -12,7 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	"github.com/nobl9/nobl9-go/sdk"
 )
 
 func resourceSLO() *schema.Resource {
@@ -321,7 +325,7 @@ func schemaSLO() map[string]*schema.Schema {
 
 func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
@@ -330,14 +334,12 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	if diags.HasError() {
 		return diags
 	}
-
-	var p n9api.Payload
-	p.AddObject(slo)
+	resultSlo := manifest.SetDefaultProject([]manifest.Object{slo}, config.Project)
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(p.GetObjects())
+		err := client.ApplyObjects(ctx, resultSlo, false)
 		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -348,41 +350,41 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	}
 
 	d.SetId(slo.Metadata.Name)
-
 	return resourceSLORead(ctx, d, meta)
 }
 
-func resourceSLORead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	project := d.Get("project").(string)
-	if project == "" {
-		// project is empty when importing
-		project = config.Project
-	}
-	client, ds := getClient(config, project)
-	if ds.HasError() {
+	client, ds := getClient(config)
+	if ds != nil {
 		return ds
 	}
-
-	objects, err := client.GetObject(n9api.ObjectSLO, "", d.Id())
+	project := d.Get("project").(string)
+	if project == "" {
+		project = config.Project
+	}
+	objects, err := client.GetObjects(ctx, project, manifest.KindSLO, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	return unmarshalSLO(d, objects)
+	return unmarshalSLO(d, manifest.FilterByKind[v1alpha.SLO](objects))
 }
 
 func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
-	if ds.HasError() {
+	client, ds := getClient(config)
+	if ds != nil {
 		return ds
+	}
+	project := d.Get("project").(string)
+	if project == "" {
+		project = config.Project
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(n9api.ObjectSLO, d.Id())
+		err := client.DeleteObjectsByName(ctx, project, manifest.KindSLO, false, d.Id())
 		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
+			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -391,7 +393,6 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 	}); err != nil {
 		return diag.FromErr(err)
 	}
-
 	return nil
 }
 
@@ -449,29 +450,32 @@ func equalSlices(a, b []interface{}) bool {
 	return true
 }
 
-func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
-	metadataHolder, diags := marshalMetadata(d)
-	if diags.HasError() {
-		return nil, diags
-	}
+func marshalSLO(d *schema.ResourceData) (*v1alpha.SLO, diag.Diagnostics) {
 	attachments, ok := d.GetOk("attachment")
 	if !ok {
 		attachments = d.Get("attachments")
 	}
-
-	return &n9api.SLO{
-		ObjectHeader: n9api.ObjectHeader{
-			APIVersion:     n9api.APIVersion,
-			Kind:           n9api.KindSLO,
-			MetadataHolder: metadataHolder,
+	displayName, _ := d.Get("display_name").(string)
+	labelsMarshalled, diags := getMarshalledLabels(d)
+	if diags.HasError() {
+		return nil, diags
+	}
+	return &v1alpha.SLO{
+		APIVersion: v1alpha.APIVersion,
+		Kind:       manifest.KindSLO,
+		Metadata: v1alpha.SLOMetadata{
+			Name:        d.Get("name").(string),
+			DisplayName: displayName,
+			Project:     d.Get("project").(string),
+			Labels:      labelsMarshalled,
 		},
-		Spec: n9api.SLOSpec{
+		Spec: v1alpha.SLOSpec{
 			Description:     d.Get("description").(string),
 			Service:         d.Get("service").(string),
 			BudgetingMethod: d.Get("budgeting_method").(string),
 			Indicator:       marshalIndicator(d),
 			Composite:       marshalComposite(d),
-			Thresholds:      marshalThresholds(d),
+			Objectives:      marshalObjectives(d),
 			TimeWindows:     marshalTimeWindows(d),
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
 			Attachments:     marshalAttachments(attachments.([]interface{})),
@@ -480,25 +484,25 @@ func marshalSLO(d *schema.ResourceData) (*n9api.SLO, diag.Diagnostics) {
 	}, diags
 }
 
-func marshalComposite(d *schema.ResourceData) *n9api.Composite {
+func marshalComposite(d *schema.ResourceData) *v1alpha.Composite {
 	compositeSet := d.Get("composite").(*schema.Set)
 
 	if compositeSet.Len() > 0 {
 		compositeTf := compositeSet.List()[0].(map[string]interface{})
 
-		var burnRateCondition *n9api.CompositeBurnRateCondition
+		var burnRateCondition *v1alpha.CompositeBurnRateCondition
 		burnRateConditionSet := compositeTf["burn_rate_condition"].(*schema.Set)
 
 		if burnRateConditionSet.Len() > 0 {
 			burnRateConditionTf := burnRateConditionSet.List()[0].(map[string]interface{})
 
-			burnRateCondition = &n9api.CompositeBurnRateCondition{
+			burnRateCondition = &v1alpha.CompositeBurnRateCondition{
 				Value:    burnRateConditionTf["value"].(float64),
 				Operator: burnRateConditionTf["op"].(string),
 			}
 		}
 
-		return &n9api.Composite{
+		return &v1alpha.Composite{
 			BudgetTarget:      compositeTf["target"].(float64),
 			BurnRateCondition: burnRateCondition,
 		}
@@ -507,10 +511,10 @@ func marshalComposite(d *schema.ResourceData) *n9api.Composite {
 	return nil
 }
 
-func marshalTimeWindows(d *schema.ResourceData) []n9api.TimeWindow {
+func marshalTimeWindows(d *schema.ResourceData) []v1alpha.TimeWindow {
 	timeWindow := d.Get("time_window").(*schema.Set).List()[0].(map[string]interface{})
 
-	return []n9api.TimeWindow{{
+	return []v1alpha.TimeWindow{{
 		Unit:      timeWindow["unit"].(string),
 		Count:     timeWindow["count"].(int),
 		IsRolling: timeWindow["is_rolling"].(bool),
@@ -518,13 +522,13 @@ func marshalTimeWindows(d *schema.ResourceData) []n9api.TimeWindow {
 	}}
 }
 
-func marshalAttachments(attachments []interface{}) []n9api.Attachment {
-	resultConditions := make([]n9api.Attachment, len(attachments))
+func marshalAttachments(attachments []interface{}) []v1alpha.Attachment {
+	resultConditions := make([]v1alpha.Attachment, len(attachments))
 	for i, c := range attachments {
 		attachments := c.(map[string]interface{})
 		displayName := attachments["display_name"].(string)
 
-		resultConditions[i] = n9api.Attachment{
+		resultConditions[i] = v1alpha.Attachment{
 			DisplayName: &displayName,
 			URL:         attachments["url"].(string),
 		}
@@ -533,35 +537,40 @@ func marshalAttachments(attachments []interface{}) []n9api.Attachment {
 	return resultConditions
 }
 
-func marshalCalendar(c map[string]interface{}) *n9api.Calendar {
+func marshalCalendar(c map[string]interface{}) *v1alpha.Calendar {
 	calendars := c["calendar"].(*schema.Set).List()
 	if len(calendars) == 0 {
 		return nil
 	}
 	calendar := calendars[0].(map[string]interface{})
 
-	return &n9api.Calendar{
+	return &v1alpha.Calendar{
 		StartTime: calendar["start_time"].(string),
 		TimeZone:  calendar["time_zone"].(string),
 	}
 }
 
-func marshalIndicator(d *schema.ResourceData) n9api.Indicator {
+func marshalIndicator(d *schema.ResourceData) v1alpha.Indicator {
+	var resultIndicator v1alpha.Indicator
 	indicator := d.Get("indicator").(*schema.Set).List()[0].(map[string]interface{})
-
-	return n9api.Indicator{
-		MetricSource: &n9api.MetricSourceSpec{
+	kind, err := manifest.ParseKind(indicator["kind"].(string))
+	if err != nil {
+		return resultIndicator
+	}
+	resultIndicator = v1alpha.Indicator{
+		MetricSource: v1alpha.MetricSourceSpec{
 			Project: indicator["project"].(string),
 			Name:    indicator["name"].(string),
-			Kind:    indicator["kind"].(string),
+			Kind:    kind,
 		},
 	}
+	return resultIndicator
 }
 
-func marshalThresholds(d *schema.ResourceData) []n9api.Threshold {
-	objectives := d.Get("objective").(*schema.Set).List()
-	thresholds := make([]n9api.Threshold, len(objectives))
-	for i, o := range objectives {
+func marshalObjectives(d *schema.ResourceData) []v1alpha.Objective {
+	objectivesSchema := d.Get("objective").(*schema.Set).List()
+	objectives := make([]v1alpha.Objective, len(objectivesSchema))
+	for i, o := range objectivesSchema {
 		objective := o.(map[string]interface{})
 		target := objective["target"].(float64)
 		timeSliceTarget := objective["time_slice_target"].(float64)
@@ -571,8 +580,8 @@ func marshalThresholds(d *schema.ResourceData) []n9api.Threshold {
 		}
 		operator := objective["op"].(string)
 
-		thresholds[i] = n9api.Threshold{
-			ThresholdBase: n9api.ThresholdBase{
+		objectives[i] = v1alpha.Objective{
+			ObjectiveBase: v1alpha.ObjectiveBase{
 				DisplayName: objective["display_name"].(string),
 				Value:       objective["value"].(float64),
 				Name:        objective["name"].(string),
@@ -585,10 +594,10 @@ func marshalThresholds(d *schema.ResourceData) []n9api.Threshold {
 		}
 	}
 
-	return thresholds
+	return objectives
 }
 
-func marshalRawMetric(metricRoot map[string]interface{}) *n9api.RawMetricSpec {
+func marshalRawMetric(metricRoot map[string]interface{}) *v1alpha.RawMetricSpec {
 	rawMetricSet := metricRoot["raw_metric"].(*schema.Set)
 	if rawMetricSet.Len() == 0 {
 		return nil
@@ -601,12 +610,12 @@ func marshalRawMetric(metricRoot map[string]interface{}) *n9api.RawMetricSpec {
 
 	metric := rawMetric["query"].(*schema.Set).List()[0].(map[string]interface{})
 
-	return &n9api.RawMetricSpec{
+	return &v1alpha.RawMetricSpec{
 		MetricQuery: marshalMetric(metric),
 	}
 }
 
-func marshalCountMetrics(countMetricsTf map[string]interface{}) *n9api.CountMetricsSpec {
+func marshalCountMetrics(countMetricsTf map[string]interface{}) *v1alpha.CountMetricsSpec {
 	countMetricsSet := countMetricsTf["count_metrics"].(*schema.Set)
 	if countMetricsSet.Len() == 0 {
 		return nil
@@ -617,15 +626,15 @@ func marshalCountMetrics(countMetricsTf map[string]interface{}) *n9api.CountMetr
 	incremental := countMetrics["incremental"].(bool)
 	good := countMetrics["good"].(*schema.Set).List()[0].(map[string]interface{})
 	total := countMetrics["total"].(*schema.Set).List()[0].(map[string]interface{})
-	return &n9api.CountMetricsSpec{
+	return &v1alpha.CountMetricsSpec{
 		Incremental: &incremental,
 		GoodMetric:  marshalMetric(good),
 		TotalMetric: marshalMetric(total),
 	}
 }
 
-func marshalMetric(metric map[string]interface{}) *n9api.MetricSpec {
-	return &n9api.MetricSpec{
+func marshalMetric(metric map[string]interface{}) *v1alpha.MetricSpec {
+	return &v1alpha.MetricSpec{
 		AmazonPrometheus:    marshalAmazonPrometheusMetric(metric[amazonPrometheusMetric].(*schema.Set)),
 		AppDynamics:         marshalAppDynamicsMetric(metric[appDynamicsMetric].(*schema.Set)),
 		BigQuery:            marshalBigQueryMetric(metric[bigQueryMetric].(*schema.Set)),
@@ -651,35 +660,43 @@ func marshalMetric(metric map[string]interface{}) *n9api.MetricSpec {
 	}
 }
 
-func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+func unmarshalSLO(d *schema.ResourceData, objects []v1alpha.SLO) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
 	}
 	object := objects[0]
 	var diags diag.Diagnostics
-
-	if ds := unmarshalGenericMetadata(object, d); ds.HasError() {
-		diags = append(diags, ds...)
-	}
-
 	var err error
-	if alertPolicies, ok := object["alertPolicies"]; ok {
-		err = d.Set("alert_policies", alertPolicies.([]interface{}))
+
+	metadata := object.Metadata
+	err = d.Set("name", metadata.Name)
+	diags = appendError(diags, err)
+	err = d.Set("display_name", metadata.DisplayName)
+	diags = appendError(diags, err)
+
+	err = d.Set("project", metadata.Project)
+	diags = appendError(diags, err)
+
+	if labelsRaw := metadata.Labels; len(labelsRaw) > 0 {
+		err = d.Set("label", unmarshalLabels(labelsRaw))
 		diags = appendError(diags, err)
 	}
 
-	spec := object["spec"].(map[string]interface{})
+	spec := object.Spec
 
-	budgetingMethod := spec["budgetingMethod"].(string)
+	err = d.Set("alert_policies", spec.AlertPolicies)
+	diags = appendError(diags, err)
+
+	budgetingMethod := spec.BudgetingMethod
 	err = d.Set("budgeting_method", budgetingMethod)
 	diags = appendError(diags, err)
 
-	description := spec["description"].(string)
+	description := spec.Description
 	err = d.Set("description", description)
 	diags = appendError(diags, err)
 
-	service := spec["service"].(string)
+	service := spec.Service
 	err = d.Set("service", service)
 	diags = appendError(diags, err)
 
@@ -701,7 +718,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	err = unmarshalAnomalyConfig(d, spec)
 	diags = appendError(diags, err)
 
-	err = d.Set("alert_policies", spec["alertPolicies"].([]interface{}))
+	err = d.Set("alert_policies", spec.AlertPolicies)
 	diags = appendError(diags, err)
 
 	// Remove this warning once SLO objective unique identifier grace period ends.
@@ -717,20 +734,19 @@ func unmarshalSLO(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagn
 	return diags
 }
 
-func unmarshalAttachments(d *schema.ResourceData, spec map[string]interface{}) error {
-	if _, ok := spec["attachments"]; !ok {
+func unmarshalAttachments(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
+	if len(spec.Attachments) == 0 {
 		return nil
 	}
 
 	declaredAttachmentTag := getDeclaredAttachmentTag(d)
 
-	attachments := spec["attachments"].([]interface{})
+	attachments := spec.Attachments
 	res := make([]interface{}, len(attachments))
-	for i, v := range attachments {
-		m := v.(map[string]interface{})
+	for i, attachment := range attachments {
 		attachment := map[string]interface{}{
-			"display_name": m["displayName"],
-			"url":          m["url"],
+			"display_name": attachment.DisplayName,
+			"url":          attachment.URL,
 		}
 		res[i] = attachment
 	}
@@ -746,67 +762,65 @@ func getDeclaredAttachmentTag(d *schema.ResourceData) string {
 	return "attachment"
 }
 
-func unmarshalIndicator(d *schema.ResourceData, spec map[string]interface{}) error {
-	indicator := spec["indicator"].(map[string]interface{})
+func unmarshalIndicator(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
+	indicator := spec.Indicator
 	res := make(map[string]interface{})
-	metricSource := indicator["metricSource"].(map[string]interface{})
-	res["name"] = metricSource["name"]
-	res["project"] = metricSource["project"]
-	res["kind"] = metricSource["kind"]
-	if rawMetric, ok := indicator["rawMetric"]; ok {
-		tfMetric := unmarshalSLOMetric(rawMetric.(map[string]interface{}))
+	metricSource := indicator.MetricSource
+	res["name"] = metricSource.Name
+	res["project"] = metricSource.Project
+	res["kind"] = metricSource.Kind.String()
+	if rawMetric := indicator.RawMetric; rawMetric != nil {
+		tfMetric := unmarshalSLOMetric(rawMetric)
 		res["raw_metric"] = tfMetric
 	}
 	return d.Set("indicator", schema.NewSet(oneElementSet, []interface{}{res}))
 }
 
-func unmarshalTimeWindow(d *schema.ResourceData, spec map[string]interface{}) error {
-	timeWindows := spec["timeWindows"].([]interface{})
-	timeWindow := timeWindows[0].(map[string]interface{})
+func unmarshalTimeWindow(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
+	timeWindows := spec.TimeWindows
+	timeWindow := timeWindows[0]
 	timeWindowsTF := make(map[string]interface{})
-	timeWindowsTF["count"] = timeWindow["count"]
-	timeWindowsTF["is_rolling"] = timeWindow["isRolling"]
-	timeWindowsTF["unit"] = timeWindow["unit"]
-	timeWindowsTF["period"] = timeWindow["period"]
-	if c, ok := timeWindow["calendar"]; ok {
-		calendar := c.(map[string]interface{})
+	timeWindowsTF["count"] = timeWindow.Count
+	timeWindowsTF["is_rolling"] = timeWindow.IsRolling
+	timeWindowsTF["unit"] = timeWindow.Unit
+	timeWindowsTF["period"] = map[string]string{"begin": timeWindow.Period.Begin, "end": timeWindow.Period.End}
+
+	if calendar := timeWindow.Calendar; calendar != nil {
 		calendarTF := make(map[string]interface{})
-		calendarTF["start_time"] = calendar["startTime"].(string)
-		calendarTF["time_zone"] = calendar["timeZone"].(string)
+		calendarTF["start_time"] = calendar.StartTime
+		calendarTF["time_zone"] = calendar.TimeZone
 		timeWindowsTF["calendar"] = schema.NewSet(oneElementSet, []interface{}{calendarTF})
 	}
 	tw := schema.NewSet(oneElementSet, []interface{}{timeWindowsTF})
 	return d.Set("time_window", tw)
 }
 
-func unmarshalObjectives(d *schema.ResourceData, spec map[string]interface{}) error {
-	objectives := spec["objectives"].([]interface{})
+func unmarshalObjectives(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
+	objectives := spec.Objectives
 	objectivesTF := make([]interface{}, len(objectives))
 
-	for i, o := range objectives {
-		objective := o.(map[string]interface{})
+	for i, objective := range objectives {
 		objectiveTF := make(map[string]interface{})
-		objectiveTF["name"] = objective["name"]
-		objectiveTF["display_name"] = objective["displayName"]
-		objectiveTF["op"] = objective["op"]
-		objectiveTF["value"] = objective["value"]
-		objectiveTF["target"] = objective["target"]
-		objectiveTF["time_slice_target"] = objective["timeSliceTarget"]
+		objectiveTF["name"] = objective.Name
+		objectiveTF["display_name"] = objective.DisplayName
+		objectiveTF["op"] = objective.Operator
+		objectiveTF["value"] = objective.Value
+		objectiveTF["target"] = objective.BudgetTarget
+		objectiveTF["time_slice_target"] = objective.TimeSliceTarget
 
-		if countMetrics, isCountMetrics := objective["countMetrics"]; isCountMetrics {
-			cm := countMetrics.(map[string]interface{})
+		if objective.CountMetrics != nil {
+			cm := objective.CountMetrics
 			countMetricsTF := make(map[string]interface{})
-			countMetricsTF["incremental"] = cm["incremental"]
-			good := unmarshalSLOMetric(cm["good"].(map[string]interface{}))
+			countMetricsTF["incremental"] = cm.Incremental
+			good := unmarshalSLOMetric(cm.GoodMetric)
 			countMetricsTF["good"] = good
-			total := unmarshalSLOMetric(cm["total"].(map[string]interface{}))
+			total := unmarshalSLOMetric(cm.TotalMetric)
 			countMetricsTF["total"] = total
 			objectiveTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
 		}
 
-		if rawMetric, isRawMetric := objective["rawMetric"]; isRawMetric {
-			rm := rawMetric.(map[string]interface{})
-			tfMetric := unmarshalSLORawMetric(rm)
+		if objective.RawMetric != nil {
+			tfMetric := unmarshalSLORawMetric(objective.RawMetric)
 			objectiveTF["raw_metric"] = tfMetric
 		}
 
@@ -827,18 +841,18 @@ func objectiveHash(objective interface{}) int {
 	)
 	return schema.HashString(indicator)
 }
-func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) error {
-	if compositeSpec, isCompositeSLO := spec["composite"]; isCompositeSLO {
-		composite := compositeSpec.(map[string]interface{})
+func unmarshalComposite(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
+	if spec.Composite != nil {
+		composite := spec.Composite
 		compositeTF := make(map[string]interface{})
 
-		compositeTF["target"] = composite["target"]
+		compositeTF["target"] = composite.BudgetTarget
 
-		if burnRateConditionRaw, isBurnRateConditionSet := composite["burnRateCondition"]; isBurnRateConditionSet {
-			burnRateCondition := burnRateConditionRaw.(map[string]interface{})
+		if composite.BurnRateCondition != nil {
+			burnRateCondition := composite.BurnRateCondition
 			burnRateConditionTF := make(map[string]interface{})
-			burnRateConditionTF["value"] = burnRateCondition["value"]
-			burnRateConditionTF["op"] = burnRateCondition["op"]
+			burnRateConditionTF["value"] = burnRateCondition.Value
+			burnRateConditionTF["op"] = burnRateCondition.Operator
 			compositeTF["burn_rate_condition"] = schema.NewSet(oneElementSet, []interface{}{burnRateConditionTF})
 		}
 
@@ -848,48 +862,53 @@ func unmarshalComposite(d *schema.ResourceData, spec map[string]interface{}) err
 	return nil
 }
 
-func unmarshalSLORawMetric(rawMetricSource map[string]interface{}) *schema.Set {
+func unmarshalSLORawMetric(rawMetricSource *v1alpha.RawMetricSpec) *schema.Set {
 	var rawMetricQuery *schema.Set
-	if rawMetricQuerySource, isRawMetric := rawMetricSource["query"]; isRawMetric {
-		rawMetricQuery = unmarshalSLOMetric(rawMetricQuerySource.(map[string]interface{}))
+	if rawMetricSource.MetricQuery != nil {
+		rawMetricQuery = unmarshalSLOMetric(rawMetricSource.MetricQuery)
 	}
 	return schema.NewSet(oneElementSet, []interface{}{map[string]interface{}{"query": rawMetricQuery}})
 }
 
-func unmarshalSLOMetric(spec map[string]interface{}) *schema.Set {
+func unmarshalSLOMetric(spec *v1alpha.MetricSpec) *schema.Set {
 	supportedMetrics := []struct {
 		hclName       string
-		jsonName      string
-		unmarshalFunc func(map[string]interface{}) map[string]interface{}
+		specFieldName string
+		unmarshalFunc func(interface{}) map[string]interface{}
 	}{
-		{amazonPrometheusMetric, "amazonPrometheus", unmarshalAmazonPrometheusMetric},
-		{appDynamicsMetric, "appDynamics", unmarshalAppdynamicsMetric},
-		{bigQueryMetric, "bigQuery", unmarshalBigqueryMetric},
-		{cloudwatchMetric, "cloudWatch", unmarshalCloudWatchMetric},
-		{datadogMetric, "datadog", unmarshalDatadogMetric},
-		{dynatraceMetric, "dynatrace", unmarshalDynatraceMetric},
-		{elasticsearchMetric, "elasticsearch", unmarshalElasticsearchMetric},
-		{gcmMetric, "gcm", unmarshalGCMMetric},
-		{grafanaLokiMetric, "grafanaLoki", unmarshalGrafanaLokiMetric},
-		{graphiteMetric, "graphite", unmarshalGraphiteMetric},
-		{influxdbMetric, "influxdb", unmarshalInfluxDBMetric},
-		{instanaMetric, "instana", unmarshalInstanaMetric},
-		{lightstepMetric, "lightstep", unmarshalLightstepMetric},
-		{newrelicMetric, "newRelic", unmarshalNewRelicMetric},
-		{opentsdbMetric, "opentsdb", unmarshalOpentsdbMetric},
-		{pingdomMetric, "pingdom", unmarshalPingdomMetric},
-		{prometheusMetric, "prometheus", unmarshalPrometheusMetric},
-		{redshiftMetric, "redshift", unmarshalRedshiftMetric},
-		{splunkMetric, "splunk", unmarshalSplunkMetric},
-		{splunkObservabilityMetric, "splunkObservability", unmarshalSplunkObservabilityMetric},
-		{sumologicMetric, "sumoLogic", unmarshalSumologicMetric},
-		{thousandeyesMetric, "thousandEyes", unmarshalThousandeyesMetric},
+		{amazonPrometheusMetric, "AmazonPrometheus", unmarshalAmazonPrometheusMetric},
+		{appDynamicsMetric, "AppDynamics", unmarshalAppdynamicsMetric},
+		{bigQueryMetric, "BigQuery", unmarshalBigqueryMetric},
+		{cloudwatchMetric, "CloudWatch", unmarshalCloudWatchMetric},
+		{datadogMetric, "Datadog", unmarshalDatadogMetric},
+		{dynatraceMetric, "Dynatrace", unmarshalDynatraceMetric},
+		{elasticsearchMetric, "Elasticsearch", unmarshalElasticsearchMetric},
+		{gcmMetric, "GCM", unmarshalGCMMetric},
+		{grafanaLokiMetric, "GrafanaLoki", unmarshalGrafanaLokiMetric},
+		{graphiteMetric, "Graphite", unmarshalGraphiteMetric},
+		{influxdbMetric, "InfluxDB", unmarshalInfluxDBMetric},
+		{instanaMetric, "Instana", unmarshalInstanaMetric},
+		{lightstepMetric, "Lightstep", unmarshalLightstepMetric},
+		{newrelicMetric, "NewRelic", unmarshalNewRelicMetric},
+		{opentsdbMetric, "OpenTSDB", unmarshalOpentsdbMetric},
+		{pingdomMetric, "Pingdom", unmarshalPingdomMetric},
+		{prometheusMetric, "Prometheus", unmarshalPrometheusMetric},
+		{redshiftMetric, "Redshift", unmarshalRedshiftMetric},
+		{splunkMetric, "Splunk", unmarshalSplunkMetric},
+		{splunkObservabilityMetric, "SplunkObservability", unmarshalSplunkObservabilityMetric},
+		{sumologicMetric, "SumoLogic", unmarshalSumologicMetric},
+		{thousandeyesMetric, "ThousandEyes", unmarshalThousandeyesMetric},
 	}
 
 	res := make(map[string]interface{})
+
+	// Using reflect here is good enough for the time being.
+	// This provider will get entirely rewritten to the new terraform-plugin-sdk version soon.
+	v := reflect.ValueOf(spec).Elem()
 	for _, name := range supportedMetrics {
-		if metric, ok := spec[name.jsonName]; ok {
-			tfMetric := name.unmarshalFunc(metric.(map[string]interface{}))
+		field := v.FieldByName(name.specFieldName)
+		if field.IsValid() && !field.IsNil() {
+			tfMetric := name.unmarshalFunc(field.Interface())
 			res[name.hclName] = schema.NewSet(oneElementSet, []interface{}{tfMetric})
 			break
 		}
@@ -924,21 +943,25 @@ func schemaMetricAmazonPrometheus() map[string]*schema.Schema {
 	}
 }
 
-func marshalAmazonPrometheusMetric(s *schema.Set) *n9api.AmazonPrometheusMetric {
+func marshalAmazonPrometheusMetric(s *schema.Set) *v1alpha.AmazonPrometheusMetric {
 	if s.Len() == 0 {
 		return nil
 	}
 
 	metric := s.List()[0].(map[string]interface{})
 	query := metric["promql"].(string)
-	return &n9api.AmazonPrometheusMetric{
+	return &v1alpha.AmazonPrometheusMetric{
 		PromQL: &query,
 	}
 }
 
-func unmarshalAmazonPrometheusMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalAmazonPrometheusMetric(metric interface{}) map[string]interface{} {
+	apMetric, ok := metric.(*v1alpha.AmazonPrometheusMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["promql"] = metric["promql"]
+	res["promql"] = apMetric.PromQL
 
 	return res
 }
@@ -974,7 +997,7 @@ func schemaMetricAppDynamics() map[string]*schema.Schema {
 	}
 }
 
-func marshalAppDynamicsMetric(s *schema.Set) *n9api.AppDynamicsMetric {
+func marshalAppDynamicsMetric(s *schema.Set) *v1alpha.AppDynamicsMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -983,16 +1006,20 @@ func marshalAppDynamicsMetric(s *schema.Set) *n9api.AppDynamicsMetric {
 
 	applicationName := metric["application_name"].(string)
 	metricPath := metric["metric_path"].(string)
-	return &n9api.AppDynamicsMetric{
+	return &v1alpha.AppDynamicsMetric{
 		ApplicationName: &applicationName,
 		MetricPath:      &metricPath,
 	}
 }
 
-func unmarshalAppdynamicsMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalAppdynamicsMetric(metric interface{}) map[string]interface{} {
+	adMetric, ok := metric.(*v1alpha.AppDynamicsMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["application_name"] = metric["applicationName"]
-	res["metric_path"] = metric["metricPath"]
+	res["application_name"] = adMetric.ApplicationName
+	res["metric_path"] = adMetric.MetricPath
 
 	return res
 }
@@ -1033,25 +1060,29 @@ func schemaMetricBigQuery() map[string]*schema.Schema {
 	}
 }
 
-func marshalBigQueryMetric(s *schema.Set) *n9api.BigQueryMetric {
+func marshalBigQueryMetric(s *schema.Set) *v1alpha.BigQueryMetric {
 	if s.Len() == 0 {
 		return nil
 	}
 
 	metric := s.List()[0].(map[string]interface{})
 
-	return &n9api.BigQueryMetric{
+	return &v1alpha.BigQueryMetric{
 		Query:     metric["query"].(string),
 		ProjectID: metric["project_id"].(string),
 		Location:  metric["location"].(string),
 	}
 }
 
-func unmarshalBigqueryMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalBigqueryMetric(metric interface{}) map[string]interface{} {
+	bqMetric, ok := metric.(*v1alpha.BigQueryMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["location"] = metric["location"]
-	res["project_id"] = metric["projectId"]
-	res["query"] = metric["query"]
+	res["location"] = bqMetric.Location
+	res["project_id"] = bqMetric.ProjectID
+	res["query"] = bqMetric.Query
 
 	return res
 }
@@ -1128,7 +1159,7 @@ func schemaMetricCloudwatch() map[string]*schema.Schema {
 	}
 }
 
-func marshalCloudWatchMetric(s *schema.Set) *n9api.CloudWatchMetric {
+func marshalCloudWatchMetric(s *schema.Set) *v1alpha.CloudWatchMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1163,10 +1194,10 @@ func marshalCloudWatchMetric(s *schema.Set) *n9api.CloudWatchMetric {
 	}
 
 	dimensions := metric["dimensions"].(*schema.Set)
-	var metricDimensions []n9api.CloudWatchMetricDimension
+	var metricDimensions []v1alpha.CloudWatchMetricDimension
 
 	if dimensions.Len() > 0 {
-		metricDimensions = make([]n9api.CloudWatchMetricDimension, dimensions.Len())
+		metricDimensions = make([]v1alpha.CloudWatchMetricDimension, dimensions.Len())
 	}
 
 	for idx, dimension := range dimensions.List() {
@@ -1174,13 +1205,13 @@ func marshalCloudWatchMetric(s *schema.Set) *n9api.CloudWatchMetric {
 		name := n9Dimension["name"].(string)
 		value := n9Dimension["value"].(string)
 
-		metricDimensions[idx] = n9api.CloudWatchMetricDimension{
+		metricDimensions[idx] = v1alpha.CloudWatchMetricDimension{
 			Name:  &name,
 			Value: &value,
 		}
 	}
 
-	return &n9api.CloudWatchMetric{
+	return &v1alpha.CloudWatchMetric{
 		Region:     &region,
 		Namespace:  namespace,
 		MetricName: metricName,
@@ -1191,16 +1222,22 @@ func marshalCloudWatchMetric(s *schema.Set) *n9api.CloudWatchMetric {
 	}
 }
 
-func unmarshalCloudWatchMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalCloudWatchMetric(metric interface{}) map[string]interface{} {
+	cwMetric, ok := metric.(*v1alpha.CloudWatchMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["region"] = metric["region"]
-	res["namespace"] = metric["namespace"]
-	res["metric_name"] = metric["metricName"]
-	res["stat"] = metric["stat"]
-	res["sql"] = metric["sql"]
-	res["json"] = metric["json"]
-	res["dimensions"] = metric["dimensions"]
-
+	res["region"] = cwMetric.Region
+	res["namespace"] = cwMetric.Namespace
+	res["metric_name"] = cwMetric.MetricName
+	res["stat"] = cwMetric.Stat
+	res["sql"] = cwMetric.SQL
+	res["json"] = cwMetric.JSON
+	dim, _ := json.Marshal(cwMetric.Dimensions)
+	var dimensions any
+	json.Unmarshal(dim, &dimensions)
+	res["dimensions"] = dimensions
 	return res
 }
 
@@ -1229,21 +1266,25 @@ func schemaMetricDatadog() map[string]*schema.Schema {
 	}
 }
 
-func marshalDatadogMetric(s *schema.Set) *n9api.DatadogMetric {
+func marshalDatadogMetric(s *schema.Set) *v1alpha.DatadogMetric {
 	if s.Len() == 0 {
 		return nil
 	}
 
 	metric := s.List()[0].(map[string]interface{})
 	query := metric["query"].(string)
-	return &n9api.DatadogMetric{
+	return &v1alpha.DatadogMetric{
 		Query: &query,
 	}
 }
 
-func unmarshalDatadogMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalDatadogMetric(metric interface{}) map[string]interface{} {
+	ddMetric, ok := metric.(*v1alpha.DatadogMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["query"] = metric["query"]
+	res["query"] = ddMetric.Query
 
 	return res
 }
@@ -1273,7 +1314,7 @@ func schemaMetricDynatrace() map[string]*schema.Schema {
 	}
 }
 
-func marshalDynatraceMetric(s *schema.Set) *n9api.DynatraceMetric {
+func marshalDynatraceMetric(s *schema.Set) *v1alpha.DynatraceMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1281,14 +1322,18 @@ func marshalDynatraceMetric(s *schema.Set) *n9api.DynatraceMetric {
 	metric := s.List()[0].(map[string]interface{})
 
 	selector := metric["metric_selector"].(string)
-	return &n9api.DynatraceMetric{
+	return &v1alpha.DynatraceMetric{
 		MetricSelector: &selector,
 	}
 }
 
-func unmarshalDynatraceMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalDynatraceMetric(metric interface{}) map[string]interface{} {
+	dMetric, ok := metric.(*v1alpha.DynatraceMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["metric_selector"] = metric["metricSelector"]
+	res["metric_selector"] = dMetric.MetricSelector
 
 	return res
 }
@@ -1324,7 +1369,7 @@ func schemaMetricElasticsearch() map[string]*schema.Schema {
 	}
 }
 
-func marshalElasticsearchMetric(s *schema.Set) *n9api.ElasticsearchMetric {
+func marshalElasticsearchMetric(s *schema.Set) *v1alpha.ElasticsearchMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1333,16 +1378,20 @@ func marshalElasticsearchMetric(s *schema.Set) *n9api.ElasticsearchMetric {
 
 	index := metric["index"].(string)
 	query := metric["query"].(string)
-	return &n9api.ElasticsearchMetric{
+	return &v1alpha.ElasticsearchMetric{
 		Index: &index,
 		Query: &query,
 	}
 }
 
-func unmarshalElasticsearchMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalElasticsearchMetric(metric interface{}) map[string]interface{} {
+	esMetric, ok := metric.(*v1alpha.ElasticsearchMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["index"] = metric["index"]
-	res["query"] = metric["query"]
+	res["index"] = esMetric.Index
+	res["query"] = esMetric.Query
 
 	return res
 }
@@ -1378,23 +1427,27 @@ func schemaMetricGCM() map[string]*schema.Schema {
 	}
 }
 
-func marshalGCMMetric(s *schema.Set) *n9api.GCMMetric {
+func marshalGCMMetric(s *schema.Set) *v1alpha.GCMMetric {
 	if s.Len() == 0 {
 		return nil
 	}
 
 	metric := s.List()[0].(map[string]interface{})
 
-	return &n9api.GCMMetric{
+	return &v1alpha.GCMMetric{
 		ProjectID: metric["project_id"].(string),
 		Query:     metric["query"].(string),
 	}
 }
 
-func unmarshalGCMMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalGCMMetric(metric interface{}) map[string]interface{} {
+	gMetric, ok := metric.(*v1alpha.GCMMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["project_id"] = metric["projectId"]
-	res["query"] = metric["query"]
+	res["project_id"] = gMetric.ProjectID
+	res["query"] = gMetric.Query
 
 	return res
 }
@@ -1425,7 +1478,7 @@ func schemaMetricGrafanaLoki() map[string]*schema.Schema {
 	}
 }
 
-func marshalGrafanaLokiMetric(s *schema.Set) *n9api.GrafanaLokiMetric {
+func marshalGrafanaLokiMetric(s *schema.Set) *v1alpha.GrafanaLokiMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1433,14 +1486,18 @@ func marshalGrafanaLokiMetric(s *schema.Set) *n9api.GrafanaLokiMetric {
 	metric := s.List()[0].(map[string]interface{})
 
 	logql := metric["logql"].(string)
-	return &n9api.GrafanaLokiMetric{
+	return &v1alpha.GrafanaLokiMetric{
 		Logql: &logql,
 	}
 }
 
-func unmarshalGrafanaLokiMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalGrafanaLokiMetric(metric interface{}) map[string]interface{} {
+	glMetric, ok := metric.(*v1alpha.GrafanaLokiMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["logql"] = metric["logql"]
+	res["logql"] = glMetric.Logql
 
 	return res
 }
@@ -1470,7 +1527,7 @@ func schemaMetricGraphite() map[string]*schema.Schema {
 	}
 }
 
-func marshalGraphiteMetric(s *schema.Set) *n9api.GraphiteMetric {
+func marshalGraphiteMetric(s *schema.Set) *v1alpha.GraphiteMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1478,14 +1535,18 @@ func marshalGraphiteMetric(s *schema.Set) *n9api.GraphiteMetric {
 	metric := s.List()[0].(map[string]interface{})
 
 	metricPath := metric["metric_path"].(string)
-	return &n9api.GraphiteMetric{
+	return &v1alpha.GraphiteMetric{
 		MetricPath: &metricPath,
 	}
 }
 
-func unmarshalGraphiteMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalGraphiteMetric(metric interface{}) map[string]interface{} {
+	gMetric, ok := metric.(*v1alpha.GraphiteMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["metric_path"] = metric["metricPath"]
+	res["metric_path"] = gMetric.MetricPath
 
 	return res
 }
@@ -1515,7 +1576,7 @@ func schemaMetricInfluxDB() map[string]*schema.Schema {
 	}
 }
 
-func marshalInfluxDBMetric(s *schema.Set) *n9api.InfluxDBMetric {
+func marshalInfluxDBMetric(s *schema.Set) *v1alpha.InfluxDBMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1523,14 +1584,18 @@ func marshalInfluxDBMetric(s *schema.Set) *n9api.InfluxDBMetric {
 	metric := s.List()[0].(map[string]interface{})
 
 	query := metric["query"].(string)
-	return &n9api.InfluxDBMetric{
+	return &v1alpha.InfluxDBMetric{
 		Query: &query,
 	}
 }
 
-func unmarshalInfluxDBMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalInfluxDBMetric(metric interface{}) map[string]interface{} {
+	idbMetric, ok := metric.(*v1alpha.InfluxDBMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["query"] = metric["query"]
+	res["query"] = idbMetric.Query
 
 	return res
 }
@@ -1666,21 +1731,21 @@ func schemaMetricInstana() map[string]*schema.Schema {
 	}
 }
 
-func marshalInstanaMetric(s *schema.Set) *n9api.InstanaMetric {
+func marshalInstanaMetric(s *schema.Set) *v1alpha.InstanaMetric {
 	if s.Len() == 0 {
 		return nil
 	}
 
 	metric := s.List()[0].(map[string]interface{})
 
-	return &n9api.InstanaMetric{
+	return &v1alpha.InstanaMetric{
 		MetricType:     metric["metric_type"].(string),
 		Infrastructure: marshalInstanaInfrastructureMetric(metric["infrastructure"].(*schema.Set)),
 		Application:    marshalInstanaApplicationMetric(metric["application"].(*schema.Set)),
 	}
 }
 
-func marshalInstanaInfrastructureMetric(s *schema.Set) *n9api.InstanaInfrastructureMetricType {
+func marshalInstanaInfrastructureMetric(s *schema.Set) *v1alpha.InstanaInfrastructureMetricType {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1695,7 +1760,7 @@ func marshalInstanaInfrastructureMetric(s *schema.Set) *n9api.InstanaInfrastruct
 		snapshotID = &value
 	}
 
-	return &n9api.InstanaInfrastructureMetricType{
+	return &v1alpha.InstanaInfrastructureMetricType{
 		MetricRetrievalMethod: infrastructure["metric_retrieval_method"].(string),
 		Query:                 query,
 		SnapshotID:            snapshotID,
@@ -1704,20 +1769,20 @@ func marshalInstanaInfrastructureMetric(s *schema.Set) *n9api.InstanaInfrastruct
 	}
 }
 
-func marshalInstanaApplicationMetric(s *schema.Set) *n9api.InstanaApplicationMetricType {
+func marshalInstanaApplicationMetric(s *schema.Set) *v1alpha.InstanaApplicationMetricType {
 	if s.Len() == 0 {
 		return nil
 	}
 	application := s.List()[0].(map[string]interface{})
 
-	var includeInternal *bool
+	var includeInternal bool
 	if value, ok := application["include_internal"].(bool); ok {
-		includeInternal = &value
+		includeInternal = value
 	}
 
-	var includeSynthetic *bool
+	var includeSynthetic bool
 	if value, ok := application["include_synthetic"].(bool); ok {
-		includeSynthetic = &value
+		includeSynthetic = value
 	}
 
 	var groupBy = application["group_by"].(*schema.Set).List()[0].(map[string]interface{})
@@ -1726,10 +1791,10 @@ func marshalInstanaApplicationMetric(s *schema.Set) *n9api.InstanaApplicationMet
 		tagSecondLevelKey = &value
 	}
 
-	return &n9api.InstanaApplicationMetricType{
+	return &v1alpha.InstanaApplicationMetricType{
 		MetricID:    application["metric_id"].(string),
 		Aggregation: application["aggregation"].(string),
-		GroupBy: n9api.InstanaApplicationMetricGroupBy{
+		GroupBy: v1alpha.InstanaApplicationMetricGroupBy{
 			Tag:               groupBy["tag"].(string),
 			TagEntity:         groupBy["tag_entity"].(string),
 			TagSecondLevelKey: tagSecondLevelKey,
@@ -1740,46 +1805,49 @@ func marshalInstanaApplicationMetric(s *schema.Set) *n9api.InstanaApplicationMet
 	}
 }
 
-func unmarshalInstanaMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalInstanaMetric(metric interface{}) map[string]interface{} {
+	iMetric, ok := metric.(*v1alpha.InstanaMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["metric_type"] = metric["metricType"]
-	res["infrastructure"] = unmarshalInstanaInfrastructureMetric(metric)
-	res["application"] = unmarshalInstanaApplicationMetric(metric)
+	res["metric_type"] = iMetric.MetricType
+	res["infrastructure"] = unmarshalInstanaInfrastructureMetric(iMetric)
+	res["application"] = unmarshalInstanaApplicationMetric(iMetric)
 
 	return res
 }
 
-func unmarshalInstanaInfrastructureMetric(metric map[string]interface{}) *schema.Set {
-	if infrastructure, ok := metric["infrastructure"].(map[string]interface{}); ok {
+func unmarshalInstanaInfrastructureMetric(metric *v1alpha.InstanaMetric) *schema.Set {
+	if infrastructure := metric.Infrastructure; infrastructure != nil {
 		infrastructureTF := map[string]interface{}{
-			"metric_retrieval_method": infrastructure["metricRetrievalMethod"],
-			"query":                   infrastructure["query"],
-			"snapshot_id":             infrastructure["snapshotId"],
-			"metric_id":               infrastructure["metricId"],
-			"plugin_id":               infrastructure["pluginId"],
+			"metric_retrieval_method": infrastructure.MetricRetrievalMethod,
+			"query":                   infrastructure.Query,
+			"snapshot_id":             infrastructure.SnapshotID,
+			"metric_id":               infrastructure.MetricID,
+			"plugin_id":               infrastructure.PluginID,
 		}
 		return schema.NewSet(oneElementSet, []interface{}{infrastructureTF})
 	}
-
 	return nil
 }
 
-func unmarshalInstanaApplicationMetric(metric map[string]interface{}) *schema.Set {
-	if application, ok := metric["application"].(map[string]interface{}); ok {
+func unmarshalInstanaApplicationMetric(metric *v1alpha.InstanaMetric) *schema.Set {
+	if application := metric.Application; application != nil {
 		applicationTF := map[string]interface{}{
-			"metric_id":   application["metricId"],
-			"aggregation": application["aggregation"],
+			"metric_id":   application.MetricID,
+			"aggregation": application.Aggregation,
 			"group_by": schema.NewSet(oneElementSet, []interface{}{map[string]interface{}{
-				"tag":                  application["groupBy"].(map[string]interface{})["tag"],
-				"tag_entity":           application["groupBy"].(map[string]interface{})["tagEntity"],
-				"tag_second_level_key": application["groupBy"].(map[string]interface{})["tagSecondLevelKey"]}}),
-			"api_query":         application["apiQuery"],
-			"include_internal":  application["includeInternal"],
-			"include_synthetic": application["includeSynthetic"],
+				"tag":                  application.GroupBy.Tag,
+				"tag_entity":           application.GroupBy.TagEntity,
+				"tag_second_level_key": application.GroupBy.TagSecondLevelKey,
+			}}),
+			"api_query":         application.APIQuery,
+			"include_internal":  application.IncludeInternal,
+			"include_synthetic": application.IncludeSynthetic,
 		}
 		return schema.NewSet(oneElementSet, []interface{}{applicationTF})
 	}
-
 	return nil
 }
 
@@ -1823,7 +1891,7 @@ func schemaMetricLightstep() map[string]*schema.Schema {
 	}
 }
 
-func marshalLightstepMetric(s *schema.Set) *n9api.LightstepMetric {
+func marshalLightstepMetric(s *schema.Set) *v1alpha.LightstepMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1849,7 +1917,7 @@ func marshalLightstepMetric(s *schema.Set) *n9api.LightstepMetric {
 		percentile = &p
 	}
 
-	return &n9api.LightstepMetric{
+	return &v1alpha.LightstepMetric{
 		StreamID:   streamID,
 		TypeOfData: &typeOfData,
 		Percentile: percentile,
@@ -1857,12 +1925,16 @@ func marshalLightstepMetric(s *schema.Set) *n9api.LightstepMetric {
 	}
 }
 
-func unmarshalLightstepMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalLightstepMetric(metric interface{}) map[string]interface{} {
+	lMetric, ok := metric.(*v1alpha.LightstepMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["percentile"] = metric["percentile"]
-	res["stream_id"] = metric["streamId"]
-	res["type_of_data"] = metric["typeOfData"]
-	res["uql"] = metric["uql"]
+	res["percentile"] = lMetric.Percentile
+	res["stream_id"] = lMetric.StreamID
+	res["type_of_data"] = lMetric.TypeOfData
+	res["uql"] = lMetric.UQL
 
 	return res
 }
@@ -1892,7 +1964,7 @@ func schemaMetricNewRelic() map[string]*schema.Schema {
 	}
 }
 
-func marshalNewRelicMetric(s *schema.Set) *n9api.NewRelicMetric {
+func marshalNewRelicMetric(s *schema.Set) *v1alpha.NewRelicMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1900,14 +1972,18 @@ func marshalNewRelicMetric(s *schema.Set) *n9api.NewRelicMetric {
 	metric := s.List()[0].(map[string]interface{})
 
 	nrql := metric["nrql"].(string)
-	return &n9api.NewRelicMetric{
+	return &v1alpha.NewRelicMetric{
 		NRQL: &nrql,
 	}
 }
 
-func unmarshalNewRelicMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalNewRelicMetric(metric interface{}) map[string]interface{} {
+	nrMetric, ok := metric.(*v1alpha.NewRelicMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["nrql"] = metric["nrql"]
+	res["nrql"] = nrMetric.NRQL
 
 	return res
 }
@@ -1937,7 +2013,7 @@ func schemaMetricOpenTSDB() map[string]*schema.Schema {
 	}
 }
 
-func marshalOpenTSDBMetric(s *schema.Set) *n9api.OpenTSDBMetric {
+func marshalOpenTSDBMetric(s *schema.Set) *v1alpha.OpenTSDBMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1945,14 +2021,18 @@ func marshalOpenTSDBMetric(s *schema.Set) *n9api.OpenTSDBMetric {
 	metric := s.List()[0].(map[string]interface{})
 
 	query := metric["query"].(string)
-	return &n9api.OpenTSDBMetric{
+	return &v1alpha.OpenTSDBMetric{
 		Query: &query,
 	}
 }
 
-func unmarshalOpentsdbMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalOpentsdbMetric(metric interface{}) map[string]interface{} {
+	oMetric, ok := metric.(*v1alpha.OpenTSDBMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["query"] = metric["query"]
+	res["query"] = oMetric.Query
 
 	return res
 }
@@ -1992,7 +2072,7 @@ func schemaMetricPingdom() map[string]*schema.Schema {
 	}
 }
 
-func marshalPingdomMetric(s *schema.Set) *n9api.PingdomMetric {
+func marshalPingdomMetric(s *schema.Set) *v1alpha.PingdomMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -2011,18 +2091,22 @@ func marshalPingdomMetric(s *schema.Set) *n9api.PingdomMetric {
 	if value, ok := metric["status"].(string); ok && value != "" {
 		status = &value
 	}
-	return &n9api.PingdomMetric{
+	return &v1alpha.PingdomMetric{
 		CheckID:   checkID,
 		CheckType: checkType,
 		Status:    status,
 	}
 }
 
-func unmarshalPingdomMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalPingdomMetric(metric interface{}) map[string]interface{} {
+	pMetric, ok := metric.(*v1alpha.PingdomMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["check_id"] = metric["checkId"]
-	res["check_type"] = metric["checkType"]
-	res["status"] = metric["status"]
+	res["check_id"] = pMetric.CheckID
+	res["check_type"] = pMetric.CheckType
+	res["status"] = pMetric.Status
 
 	return res
 }
@@ -2053,21 +2137,25 @@ func schemaMetricPrometheus() map[string]*schema.Schema {
 	}
 }
 
-func marshalPrometheusMetric(s *schema.Set) *n9api.PrometheusMetric {
+func marshalPrometheusMetric(s *schema.Set) *v1alpha.PrometheusMetric {
 	if s.Len() == 0 {
 		return nil
 	}
 
 	metric := s.List()[0].(map[string]interface{})
 	query := metric["promql"].(string)
-	return &n9api.PrometheusMetric{
+	return &v1alpha.PrometheusMetric{
 		PromQL: &query,
 	}
 }
 
-func unmarshalPrometheusMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalPrometheusMetric(metric interface{}) map[string]interface{} {
+	pMetric, ok := metric.(*v1alpha.PrometheusMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["promql"] = metric["promql"]
+	res["promql"] = pMetric.PromQL
 
 	return res
 }
@@ -2113,7 +2201,7 @@ func schemaMetricRedshift() map[string]*schema.Schema {
 	}
 }
 
-func marshalRedshiftMetric(s *schema.Set) *n9api.RedshiftMetric {
+func marshalRedshiftMetric(s *schema.Set) *v1alpha.RedshiftMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -2124,7 +2212,7 @@ func marshalRedshiftMetric(s *schema.Set) *n9api.RedshiftMetric {
 	databaseName := metric["database_name"].(string)
 	query := metric["query"].(string)
 
-	return &n9api.RedshiftMetric{
+	return &v1alpha.RedshiftMetric{
 		Region:       &region,
 		ClusterID:    &clusterID,
 		DatabaseName: &databaseName,
@@ -2132,12 +2220,16 @@ func marshalRedshiftMetric(s *schema.Set) *n9api.RedshiftMetric {
 	}
 }
 
-func unmarshalRedshiftMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalRedshiftMetric(metric interface{}) map[string]interface{} {
+	rMetric, ok := metric.(*v1alpha.RedshiftMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["region"] = metric["region"]
-	res["cluster_id"] = metric["clusterId"]
-	res["database_name"] = metric["databaseName"]
-	res["query"] = metric["query"]
+	res["region"] = rMetric.Region
+	res["cluster_id"] = rMetric.ClusterID
+	res["database_name"] = rMetric.DatabaseName
+	res["query"] = rMetric.Query
 
 	return res
 }
@@ -2167,7 +2259,7 @@ func schemaMetricSplunk() map[string]*schema.Schema {
 	}
 }
 
-func marshalSplunkMetric(s *schema.Set) *n9api.SplunkMetric {
+func marshalSplunkMetric(s *schema.Set) *v1alpha.SplunkMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -2175,14 +2267,18 @@ func marshalSplunkMetric(s *schema.Set) *n9api.SplunkMetric {
 	metric := s.List()[0].(map[string]interface{})
 
 	query := metric["query"].(string)
-	return &n9api.SplunkMetric{
+	return &v1alpha.SplunkMetric{
 		Query: &query,
 	}
 }
 
-func unmarshalSplunkMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalSplunkMetric(metric interface{}) map[string]interface{} {
+	sMetric, ok := metric.(*v1alpha.SplunkMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["query"] = metric["query"]
+	res["query"] = sMetric.Query
 
 	return res
 }
@@ -2213,7 +2309,7 @@ func schemaMetricSplunkObservability() map[string]*schema.Schema {
 	}
 }
 
-func marshalSplunkObservabilityMetric(s *schema.Set) *n9api.SplunkObservabilityMetric {
+func marshalSplunkObservabilityMetric(s *schema.Set) *v1alpha.SplunkObservabilityMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -2221,14 +2317,18 @@ func marshalSplunkObservabilityMetric(s *schema.Set) *n9api.SplunkObservabilityM
 	metric := s.List()[0].(map[string]interface{})
 
 	program := metric["program"].(string)
-	return &n9api.SplunkObservabilityMetric{
+	return &v1alpha.SplunkObservabilityMetric{
 		Program: &program,
 	}
 }
 
-func unmarshalSplunkObservabilityMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalSplunkObservabilityMetric(metric interface{}) map[string]interface{} {
+	soMetric, ok := metric.(*v1alpha.SplunkObservabilityMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["program"] = metric["program"]
+	res["program"] = soMetric.Program
 
 	return res
 }
@@ -2274,7 +2374,7 @@ func schemaMetricSumologic() map[string]*schema.Schema {
 	}
 }
 
-func marshalSumologicMetric(s *schema.Set) *n9api.SumoLogicMetric {
+func marshalSumologicMetric(s *schema.Set) *v1alpha.SumoLogicMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -2291,7 +2391,7 @@ func marshalSumologicMetric(s *schema.Set) *n9api.SumoLogicMetric {
 	if value, ok := metric["rollup"].(string); ok && value != "" {
 		rollup = &value
 	}
-	return &n9api.SumoLogicMetric{
+	return &v1alpha.SumoLogicMetric{
 		Type:         &metricType,
 		Query:        &query,
 		Quantization: quantization,
@@ -2299,12 +2399,16 @@ func marshalSumologicMetric(s *schema.Set) *n9api.SumoLogicMetric {
 	}
 }
 
-func unmarshalSumologicMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalSumologicMetric(metric interface{}) map[string]interface{} {
+	sMetric, ok := metric.(*v1alpha.SumoLogicMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["type"] = metric["type"]
-	res["query"] = metric["query"]
-	res["quantization"] = metric["quantization"]
-	res["rollup"] = metric["rollup"]
+	res["type"] = sMetric.Type
+	res["query"] = sMetric.Query
+	res["quantization"] = sMetric.Quantization
+	res["rollup"] = sMetric.Rollup
 
 	return res
 }
@@ -2335,7 +2439,7 @@ func schemaMetricThousandEyes() map[string]*schema.Schema {
 	}
 }
 
-func marshalThousandEyesMetric(s *schema.Set) *n9api.ThousandEyesMetric {
+func marshalThousandEyesMetric(s *schema.Set) *v1alpha.ThousandEyesMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -2343,14 +2447,18 @@ func marshalThousandEyesMetric(s *schema.Set) *n9api.ThousandEyesMetric {
 	metric := s.List()[0].(map[string]interface{})
 
 	testID := int64(metric["test_id"].(int))
-	return &n9api.ThousandEyesMetric{
+	return &v1alpha.ThousandEyesMetric{
 		TestID: &testID,
 	}
 }
 
-func unmarshalThousandeyesMetric(metric map[string]interface{}) map[string]interface{} {
+func unmarshalThousandeyesMetric(metric interface{}) map[string]interface{} {
+	teMetric, ok := metric.(*v1alpha.ThousandEyesMetric)
+	if !ok {
+		return nil
+	}
 	res := make(map[string]interface{})
-	res["test_id"] = metric["testID"]
+	res["test_id"] = teMetric.TestID
 
 	return res
 }

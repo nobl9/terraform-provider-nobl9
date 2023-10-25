@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
 )
 
 func TestAcc_Nobl9Project(t *testing.T) {
@@ -15,7 +15,7 @@ func TestAcc_Nobl9Project(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: ProviderFactory(),
-		CheckDestroy:      CheckDestroy("nobl9_project", n9api.ObjectProject),
+		CheckDestroy:      CheckDestroy("nobl9_project", manifest.KindProject),
 		Steps: []resource.TestStep{
 			{
 				Config: testProjectConfig(name),
@@ -36,8 +36,8 @@ func TestAcc_NewNobl9ProjectReference(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: ProviderFactory(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			CheckDestroy("nobl9_agent", n9api.ObjectAgent),
-			CheckDestroy("nobl9_project", n9api.ObjectProject),
+			CheckDestroy("nobl9_agent", manifest.KindAgent),
+			CheckDestroy("nobl9_project", manifest.KindProject),
 		),
 		Steps: []resource.TestStep{
 			{

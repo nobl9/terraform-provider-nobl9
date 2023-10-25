@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
 )
 
 func TestAcc_Nobl9RoleBinding(t *testing.T) {
@@ -26,7 +26,7 @@ func TestAcc_Nobl9RoleBinding(t *testing.T) {
 			resource.ParallelTest(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_role_binding", n9api.ObjectRoleBinding),
+				CheckDestroy:      CheckDestroy("nobl9_role_binding", manifest.KindRoleBinding),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),

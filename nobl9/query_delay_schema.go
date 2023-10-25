@@ -1,14 +1,11 @@
 package nobl9
 
 import (
-	"encoding/json"
-	"strconv"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 const queryDelayConfigKey = "query_delay"
@@ -40,27 +37,33 @@ func schemaQueryDelay() *schema.Schema {
 	}
 }
 
-func marshalQueryDelay(d *schema.ResourceData) *n9api.QueryDelayDuration {
+func marshalQueryDelay(d *schema.ResourceData) *v1alpha.QueryDelay {
 	queryDelay := d.Get(queryDelayConfigKey).(*schema.Set)
 	if queryDelay.Len() > 0 {
 		qd := queryDelay.List()[0].(map[string]interface{})
-		return &n9api.QueryDelayDuration{
-			Unit:  qd["unit"].(string),
-			Value: json.Number(strconv.Itoa(qd["value"].(int))),
+
+		valueQueryDelayDuration := qd["value"].(int)
+		return &v1alpha.QueryDelay{
+			QueryDelayDuration: v1alpha.QueryDelayDuration{
+				Value: &valueQueryDelayDuration,
+				Unit:  v1alpha.QueryDelayDurationUnit(qd["unit"].(string)),
+			},
 		}
 	}
 	return nil
 }
 
-func unmarshalQueryDelay(d *schema.ResourceData, qd *n9api.QueryDelayDuration) (diags diag.Diagnostics) {
+func unmarshalQueryDelay(d *schema.ResourceData, qd *v1alpha.QueryDelay) diag.Diagnostics {
 	if qd == nil {
-		return
+		return nil
 	}
 	config := map[string]interface{}{
-		"unit":  qd.Unit,
 		"value": qd.Value,
+		"unit":  qd.Unit,
 	}
 	err := d.Set(queryDelayConfigKey, schema.NewSet(oneElementSet, []interface{}{config}))
-	diags = appendError(diags, err)
-	return
+	if err != nil {
+		return appendError(diag.Diagnostics{}, err)
+	}
+	return nil
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
 )
 
 func TestAcc_Nobl9AlertPolicy(t *testing.T) {
@@ -30,7 +30,7 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 				ProviderFactories: ProviderFactory(),
 				CheckDestroy: destroyMultiple(
 					[]string{"nobl9_alert_policy", "nobl9_alert_method_webhook"},
-					[]n9api.Object{n9api.ObjectAlertPolicy, n9api.ObjectAlertMethod},
+					[]manifest.Kind{manifest.KindAlertPolicy, manifest.KindAlertMethod},
 				),
 				Steps: []resource.TestStep{
 					{
@@ -49,13 +49,13 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 	}
 }
 
-func destroyMultiple(rsTypes []string, objectTypes []n9api.Object) resource.TestCheckFunc {
+func destroyMultiple(rsTypes []string, kinds []manifest.Kind) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		if len(rsTypes) != len(objectTypes) {
-			return fmt.Errorf("resource_types (%v) must match objectTypes (%v)", rsTypes, objectTypes)
+		if len(rsTypes) != len(kinds) {
+			return fmt.Errorf("resource_types (%v) must match objectTypes (%v)", rsTypes, kinds)
 		}
 		for i := 0; i < len(rsTypes); i++ {
-			CheckDestroy(rsTypes[i], objectTypes[i])
+			CheckDestroy(rsTypes[i], kinds[i])
 		}
 		return nil
 	}
