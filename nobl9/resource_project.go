@@ -8,6 +8,7 @@ import (
 
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 )
 
 func resourceProject() *schema.Resource {
@@ -29,27 +30,27 @@ func resourceProject() *schema.Resource {
 	}
 }
 
-func marshalProject(d *schema.ResourceData) (*v1alpha.Project, diag.Diagnostics) {
+func marshalProject(d *schema.ResourceData) (*v1alphaProject.Project, diag.Diagnostics) {
 	labelsMarshalled, diags := getMarshalledLabels(d)
 	if diags.HasError() {
 		return nil, diags
 	}
 
-	return &v1alpha.Project{
+	return &v1alphaProject.Project{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindProject,
-		Metadata: v1alpha.ProjectMetadata{
+		Metadata: v1alphaProject.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: d.Get("display_name").(string),
 			Labels:      labelsMarshalled,
 		},
-		Spec: v1alpha.ProjectSpec{
+		Spec: v1alphaProject.Spec{
 			Description: d.Get("description").(string),
 		},
 	}, diags
 }
 
-func unmarshalProject(d *schema.ResourceData, objects []v1alpha.Project) diag.Diagnostics {
+func unmarshalProject(d *schema.ResourceData, objects []v1alphaProject.Project) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -104,7 +105,7 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalProject(d, manifest.FilterByKind[v1alpha.Project](objects))
+	return unmarshalProject(d, manifest.FilterByKind[v1alphaProject.Project](objects))
 }
 
 func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

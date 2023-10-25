@@ -8,6 +8,7 @@ import (
 
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 )
 
 func resourceService() *schema.Resource {
@@ -38,7 +39,7 @@ func resourceService() *schema.Resource {
 	}
 }
 
-func marshalService(d *schema.ResourceData) (*v1alpha.Service, diag.Diagnostics) {
+func marshalService(d *schema.ResourceData) (*v1alphaService.Service, diag.Diagnostics) {
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
@@ -49,22 +50,22 @@ func marshalService(d *schema.ResourceData) (*v1alpha.Service, diag.Diagnostics)
 		return nil, diags
 	}
 
-	return &v1alpha.Service{
+	return &v1alphaService.Service{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindService,
-		Metadata: v1alpha.ServiceMetadata{
+		Metadata: v1alphaService.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
 			Labels:      labelsMarshalled,
 		},
-		Spec: v1alpha.ServiceSpec{
+		Spec: v1alphaService.Spec{
 			Description: d.Get("description").(string),
 		},
 	}, diags
 }
 
-func unmarshalService(d *schema.ResourceData, objects []v1alpha.Service) diag.Diagnostics {
+func unmarshalService(d *schema.ResourceData, objects []v1alphaService.Service) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -129,7 +130,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalService(d, manifest.FilterByKind[v1alpha.Service](objects))
+	return unmarshalService(d, manifest.FilterByKind[v1alphaService.Service](objects))
 }
 
 func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

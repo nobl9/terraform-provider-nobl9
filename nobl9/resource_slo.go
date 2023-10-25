@@ -1613,12 +1613,12 @@ func schemaMetricInstana() map[string]*schema.Schema {
 		value := v.(string)
 		var diags diag.Diagnostics
 		if value != appType && value != infraType {
-			diag := diag.Diagnostic{
+			diagnostic := diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  "wrong value",
 				Detail:   fmt.Sprintf("%q is not %q or %q", value, appType, infraType),
 			}
-			diags = append(diags, diag)
+			diags = append(diags, diagnostic)
 		}
 		return diags
 	}
