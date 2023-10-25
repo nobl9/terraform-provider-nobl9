@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
 	"sort"
 	"time"
 
@@ -1102,6 +1103,23 @@ func schemaMetricCloudwatch() map[string]*schema.Schema {
 				"(https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
+					"account_id": {
+						Type:     schema.TypeString,
+						Optional: true,
+						ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+							value := i.(string)
+							var diags diag.Diagnostics
+							if m, err := regexp.MatchString(`^[0-9]{12}$`, value); !m || err != nil {
+								diags = append(diags, diag.Diagnostic{
+									Severity: diag.Error,
+									Summary:  "account_id must be 12-digit identifier",
+								})
+							}
+
+							return diags
+						},
+						Description: "AccountID used with cross-account observability feature",
+					},
 					"region": {
 						Type:        schema.TypeString,
 						Required:    true,
@@ -1173,6 +1191,11 @@ func marshalCloudWatchMetric(s *schema.Set) *v1alpha.CloudWatchMetric {
 		namespace = &value
 	}
 
+	var accountID *string
+	if value := metric["account_id"].(string); value != "" {
+		accountID = &value
+	}
+
 	var metricName *string
 	if value := metric["metric_name"].(string); value != "" {
 		metricName = &value
@@ -1213,6 +1236,7 @@ func marshalCloudWatchMetric(s *schema.Set) *v1alpha.CloudWatchMetric {
 
 	return &v1alpha.CloudWatchMetric{
 		Region:     &region,
+		AccountID:  accountID,
 		Namespace:  namespace,
 		MetricName: metricName,
 		Stat:       stat,
@@ -1229,6 +1253,7 @@ func unmarshalCloudWatchMetric(metric interface{}) map[string]interface{} {
 	}
 	res := make(map[string]interface{})
 	res["region"] = cwMetric.Region
+	res["account_id"] = cwMetric.AccountID
 	res["namespace"] = cwMetric.Namespace
 	res["metric_name"] = cwMetric.MetricName
 	res["stat"] = cwMetric.Stat
