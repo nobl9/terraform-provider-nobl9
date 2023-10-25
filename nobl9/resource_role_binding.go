@@ -15,6 +15,8 @@ import (
 	"github.com/nobl9/nobl9-go/sdk"
 )
 
+const wildcardProject = "*"
+
 //nolint:lll
 func resourceRoleBinding() *schema.Resource {
 	return &schema.Resource{
