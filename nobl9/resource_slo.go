@@ -1236,7 +1236,7 @@ func unmarshalCloudWatchMetric(metric interface{}) map[string]interface{} {
 	res["json"] = cwMetric.JSON
 	dim, _ := json.Marshal(cwMetric.Dimensions)
 	var dimensions any
-	json.Unmarshal(dim, &dimensions)
+	_ = json.Unmarshal(dim, &dimensions)
 	res["dimensions"] = dimensions
 	return res
 }
