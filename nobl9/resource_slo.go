@@ -70,8 +70,8 @@ func resourceObjective() *schema.Resource {
 			"count_metrics": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				Description: "Compares two time series, indicating the ratio of the count of good or bad values to" +
-					" total values. Exactly one of good or bad series must be filled.",
+				Description: "Compares two time series, calculating the ratio of either good or bad values to the" +
+					" total number of values. Fill either the 'good' or 'bad' series, but not both.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"good": {
