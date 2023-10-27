@@ -31,7 +31,7 @@ func resourceProject() *schema.Resource {
 }
 
 func marshalProject(d *schema.ResourceData) (*v1alphaProject.Project, diag.Diagnostics) {
-	labelsMarshalled, diags := getMarshalledLabels(d)
+	labelsMarshaled, diags := getMarshaledLabels(d)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -42,7 +42,7 @@ func marshalProject(d *schema.ResourceData) (*v1alphaProject.Project, diag.Diagn
 		Metadata: v1alphaProject.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: d.Get("display_name").(string),
-			Labels:      labelsMarshalled,
+			Labels:      labelsMarshaled,
 		},
 		Spec: v1alphaProject.Spec{
 			Description: d.Get("description").(string),

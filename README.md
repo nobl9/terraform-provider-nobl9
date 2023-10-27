@@ -21,8 +21,6 @@ terraform {
 }
 
 provider "nobl9" {
-  organization = "test"
-  project = "test"
   client_id = "<CLIENT_ID>"
   client_secret = "<CLIENT_SECRET>"
 }
