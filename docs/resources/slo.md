@@ -190,7 +190,7 @@ Required:
 
 Optional:
 
-- `count_metrics` (Block Set) Compares two time series, indicating the ratio of the count of good or bad values to total values. Exactly one of good or bad series must be filled. (see [below for nested schema](#nestedblock--objective--count_metrics))
+- `count_metrics` (Block Set) Compares two time series, calculating the ratio of either good or bad values to the total number of values. Fill either the 'good' or 'bad' series, but not both. (see [below for nested schema](#nestedblock--objective--count_metrics))
 - `name` (String) Objective's name. This field is computed if not provided.
 - `op` (String) Type of logical operation
 - `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
