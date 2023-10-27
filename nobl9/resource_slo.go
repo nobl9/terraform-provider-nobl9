@@ -457,7 +457,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alpha.SLO, diag.Diagnostics) {
 		attachments = d.Get("attachments")
 	}
 	displayName, _ := d.Get("display_name").(string)
-	labelsMarshalled, diags := getMarshalledLabels(d)
+	labelsMarshaled, diags := getMarshaledLabels(d)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -468,7 +468,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alpha.SLO, diag.Diagnostics) {
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
-			Labels:      labelsMarshalled,
+			Labels:      labelsMarshaled,
 		},
 		Spec: v1alpha.SLOSpec{
 			Description:     d.Get("description").(string),
@@ -1261,7 +1261,7 @@ func unmarshalCloudWatchMetric(metric interface{}) map[string]interface{} {
 	res["json"] = cwMetric.JSON
 	dim, _ := json.Marshal(cwMetric.Dimensions)
 	var dimensions any
-	json.Unmarshal(dim, &dimensions)
+	_ = json.Unmarshal(dim, &dimensions)
 	res["dimensions"] = dimensions
 	return res
 }
