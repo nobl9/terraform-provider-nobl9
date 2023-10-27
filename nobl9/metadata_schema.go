@@ -174,7 +174,7 @@ func schemaDescription() *schema.Schema {
 	}
 }
 
-func getMarshalledLabels(d *schema.ResourceData) (v1alpha.Labels, diag.Diagnostics) {
+func getMarshaledLabels(d *schema.ResourceData) (v1alpha.Labels, diag.Diagnostics) {
 	var labels []interface{}
 	if labelsData := d.Get("label"); labelsData != nil {
 		labels = labelsData.([]interface{})

@@ -123,7 +123,7 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alpha.AlertPolicy, diag.Diag
 		displayName = dn.(string)
 	}
 
-	labelsMarshalled, diags := getMarshalledLabels(d)
+	labelsMarshaled, diags := getMarshaledLabels(d)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -135,7 +135,7 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alpha.AlertPolicy, diag.Diag
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
-			Labels:      labelsMarshalled,
+			Labels:      labelsMarshaled,
 		},
 		Spec: v1alpha.AlertPolicySpec{
 			Description:  d.Get("description").(string),

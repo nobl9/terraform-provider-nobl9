@@ -24,9 +24,10 @@ jobs:
       - name: Unshallow
         run: git fetch --prune --unshallow
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.18
+          go-version-file: go.mod
+          check-latest: true
       - name: Import GPG key
         id: import_gpg
         uses:  crazy-max/ghaction-import-gpg@v5
@@ -36,7 +37,7 @@ jobs:
       - name: setup github
         run: git config --global url."https://n9-machine-user:${{ secrets.GH_TOKEN }}@github.com".insteadOf "https://github.com"
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2.9.1
+        uses: goreleaser/goreleaser-action@v5.0.0
         with:
           version: latest
           args: release --rm-dist

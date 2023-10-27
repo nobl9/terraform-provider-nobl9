@@ -67,11 +67,11 @@ func marshalAnomalyConfig(anomalyConfigRaw interface{}) *v1alpha.AnomalyConfig {
 	}
 	noDataAnomalyConfig := noDataAnomalyConfigSet.List()[0].(map[string]interface{})
 	noDataAlertMethods := noDataAnomalyConfig["alert_method"].([]interface{})
-	marshalledAlertMethods := marshalAnomalyConfigAlertMethods(noDataAlertMethods)
+	marshaledAlertMethods := marshalAnomalyConfigAlertMethods(noDataAlertMethods)
 
 	return &v1alpha.AnomalyConfig{
 		NoData: &v1alpha.AnomalyConfigNoData{
-			AlertMethods: marshalledAlertMethods,
+			AlertMethods: marshaledAlertMethods,
 		},
 	}
 }
