@@ -45,7 +45,7 @@ func marshalService(d *schema.ResourceData) (*v1alphaService.Service, diag.Diagn
 		displayName = dn.(string)
 	}
 
-	labelsMarshalled, diags := getMarshalledLabels(d)
+	labelsMarshaled, diags := getMarshaledLabels(d)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -57,7 +57,7 @@ func marshalService(d *schema.ResourceData) (*v1alphaService.Service, diag.Diagn
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
-			Labels:      labelsMarshalled,
+			Labels:      labelsMarshaled,
 		},
 		Spec: v1alphaService.Spec{
 			Description: d.Get("description").(string),
