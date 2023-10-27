@@ -23,6 +23,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-cloudwatch-with-sql", testCloudWatchWithSQL},
 		{"test-cloudwatch-with-stat", testCloudWatchWithStat},
 		{"test-cloudwatch-with-stat-and-cross-account", testCloudWatchWithStatAndCrossAccount},
+		{"test-cloudwatch-with-bad-over-total", testCloudWatchWithBadOverTotal},
 		{"test-composite-occurrences", testCompositeSLOOccurrences},
 		{"test-composite-time-slices", testCompositeSLOTimeSlices},
 		{"test-datadog", testDatadogSLO},
@@ -507,6 +508,94 @@ resource "nobl9_slo" ":name" {
       }
     }
   }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testCloudWatchWithBadOverTotal(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testCloudWatchAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+    project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    count_metrics {
+      incremental = true
+      bad {
+        cloudwatch {
+          region = "eu-central-1"
+          namespace = "namespace"
+          metric_name = "metric_name"
+          stat        = "Sum"
+          dimensions {
+            name  = "name1"
+            value = "value1"
+          }
+          dimensions {
+            name  = "name2"
+            value = "value3"
+          }
+        }
+      }
+      total {
+        cloudwatch {
+          region = "eu-central-1"
+          namespace = "namespace"
+          metric_name = "metric_name"
+          stat        = "Sum"
+          dimensions {
+            name  = "name1"
+            value = "value1"
+          }
+          dimensions {
+            name  = "name2"
+            value = "value3"
+          }
+        }
+      }
+    }
+  }
+  
 
   time_window {
     count      = 10
