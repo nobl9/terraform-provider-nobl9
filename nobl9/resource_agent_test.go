@@ -126,6 +126,32 @@ resource "nobl9_agent" "%s" {
 `, name, name, testProject)
 }
 
+func testCloudWatchDirectBeta(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_direct_cloudwatch" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  release_channel = "beta"
+  role_arn = "test"
+  historical_data_retrieval {
+   default_duration {
+	  unit  = "Day"
+	  value = 0
+	}
+	max_duration {
+	  unit  = "Day"
+	  value = 15
+	}
+  }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
+}
+`, name, name, testProject)
+}
+
 func testDatadogAgent(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_agent" "%s" {

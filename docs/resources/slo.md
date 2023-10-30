@@ -269,6 +269,7 @@ Required:
 
 Optional:
 
+- `account_id` (String) AccountID used with cross-account observability feature
 - `dimensions` (Block Set, Max: 10) Set of name/value pairs that is a part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch--dimensions))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
@@ -566,6 +567,7 @@ Required:
 
 Optional:
 
+- `account_id` (String) AccountID used with cross-account observability feature
 - `dimensions` (Block Set, Max: 10) Set of name/value pairs that is a part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch--dimensions))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
@@ -871,6 +873,7 @@ Required:
 
 Optional:
 
+- `account_id` (String) AccountID used with cross-account observability feature
 - `dimensions` (Block Set, Max: 10) Set of name/value pairs that is a part of the identity of a metric (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch--dimensions))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
