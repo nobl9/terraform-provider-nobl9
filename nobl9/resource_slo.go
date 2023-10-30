@@ -649,13 +649,11 @@ func marshalCountMetrics(countMetricsTf map[string]interface{}) *v1alpha.CountMe
 		TotalMetric: marshalMetric(total),
 	}
 
-	if len(countMetrics["good"].(*schema.Set).List()) > 0 {
-		good := countMetrics["good"].(*schema.Set).List()[0].(map[string]interface{})
-		spec.GoodMetric = marshalMetric(good)
+	if good := countMetrics["good"].(*schema.Set).List(); len(good) > 0 {
+		spec.GoodMetric = marshalMetric(good[0].(map[string]interface{}))
 	}
-	if len(countMetrics["bad"].(*schema.Set).List()) > 0 {
-		bad := countMetrics["bad"].(*schema.Set).List()[0].(map[string]interface{})
-		spec.BadMetric = marshalMetric(bad)
+	if bad := countMetrics["bad"].(*schema.Set).List(); len(bad) > 0 {
+		spec.BadMetric = marshalMetric(bad[0].(map[string]interface{}))
 	}
 
 	return spec
