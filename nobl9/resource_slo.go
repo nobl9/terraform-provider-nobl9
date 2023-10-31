@@ -68,13 +68,30 @@ func resourceObjective() *schema.Resource {
 	res := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"count_metrics": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "Compares two time series, indicating the ratio of the count of good values to total values.",
+				Type:     schema.TypeSet,
+				Optional: true,
+				Description: "Compares two time series, calculating the ratio of either good or bad values to the" +
+					" total number of values. Fill either the 'good' or 'bad' series, but not both.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"good":  schemaMetricSpec(),
-						"total": schemaMetricSpec(),
+						"good": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Description: "Configuration for good time series metrics.",
+							Elem:        schemaMetricSpec(),
+						},
+						"bad": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Description: "Configuration for bad time series metrics. ",
+							Elem:        schemaMetricSpec(),
+						},
+						"total": {
+							Type:        schema.TypeSet,
+							Required:    true,
+							Description: "Configuration for metric source",
+							Elem:        schemaMetricSpec(),
+						},
 						"incremental": {
 							Type:        schema.TypeBool,
 							Required:    true,
@@ -89,7 +106,12 @@ func resourceObjective() *schema.Resource {
 				Description: "Raw data is used to compare objective values.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"query": schemaMetricSpec(),
+						"query": {
+							Type:        schema.TypeSet,
+							Required:    true,
+							Description: "Configuration for metric source",
+							Elem:        schemaMetricSpec(),
+						},
 					},
 				},
 			},
@@ -397,7 +419,7 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func schemaMetricSpec() *schema.Schema {
+func schemaMetricSpec() *schema.Resource {
 	metricSchemaDefinitions := []map[string]*schema.Schema{
 		schemaMetricAmazonPrometheus(),
 		schemaMetricAppDynamics(),
@@ -429,13 +451,8 @@ func schemaMetricSpec() *schema.Schema {
 		}
 	}
 
-	return &schema.Schema{
-		Type:        schema.TypeSet,
-		Required:    true,
-		Description: "Configuration for metric source",
-		Elem: &schema.Resource{
-			Schema: metricSchema,
-		},
+	return &schema.Resource{
+		Schema: metricSchema,
 	}
 }
 
@@ -625,13 +642,21 @@ func marshalCountMetrics(countMetricsTf map[string]interface{}) *v1alpha.CountMe
 	countMetrics := countMetricsSet.List()[0].(map[string]interface{})
 
 	incremental := countMetrics["incremental"].(bool)
-	good := countMetrics["good"].(*schema.Set).List()[0].(map[string]interface{})
+
 	total := countMetrics["total"].(*schema.Set).List()[0].(map[string]interface{})
-	return &v1alpha.CountMetricsSpec{
+	spec := &v1alpha.CountMetricsSpec{
 		Incremental: &incremental,
-		GoodMetric:  marshalMetric(good),
 		TotalMetric: marshalMetric(total),
 	}
+
+	if good := countMetrics["good"].(*schema.Set).List(); len(good) > 0 {
+		spec.GoodMetric = marshalMetric(good[0].(map[string]interface{}))
+	}
+	if bad := countMetrics["bad"].(*schema.Set).List(); len(bad) > 0 {
+		spec.BadMetric = marshalMetric(bad[0].(map[string]interface{}))
+	}
+
+	return spec
 }
 
 func marshalMetric(metric map[string]interface{}) *v1alpha.MetricSpec {
@@ -813,8 +838,13 @@ func unmarshalObjectives(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
 			cm := objective.CountMetrics
 			countMetricsTF := make(map[string]interface{})
 			countMetricsTF["incremental"] = cm.Incremental
-			good := unmarshalSLOMetric(cm.GoodMetric)
-			countMetricsTF["good"] = good
+
+			if cm.GoodMetric != nil {
+				countMetricsTF["good"] = unmarshalSLOMetric(cm.GoodMetric)
+			}
+			if cm.BadMetric != nil {
+				countMetricsTF["bad"] = unmarshalSLOMetric(cm.BadMetric)
+			}
 			total := unmarshalSLOMetric(cm.TotalMetric)
 			countMetricsTF["total"] = total
 			objectiveTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
