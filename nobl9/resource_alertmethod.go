@@ -210,6 +210,14 @@ func (i alertMethodPagerDuty) GetDescription() string {
 }
 
 func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
+	sendResolutionSchema := map[string]*schema.Schema{
+		"message": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "A message that will be attached to your 'all clear' notification.",
+		},
+	}
+
 	return map[string]*schema.Schema{
 		"integration_key": {
 			Type:        schema.TypeString,
@@ -217,6 +225,14 @@ func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
 			Description: "PagerDuty Integration Key. For more details, check [Services and integrations](https://support.pagerduty.com/docs/services-and-integrations).",
 			Sensitive:   true,
 			Computed:    true,
+		},
+		"send_resolution": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Sends a notification after the cooldown period is over.",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem:        &schema.Resource{Schema: sendResolutionSchema},
 		},
 	}
 }
@@ -226,7 +242,26 @@ func (i alertMethodPagerDuty) MarshalSpec(d *schema.ResourceData) v1alpha.AlertM
 		Description: d.Get("description").(string),
 		PagerDuty: &v1alpha.PagerDutyAlertMethod{
 			IntegrationKey: d.Get("integration_key").(string),
+			SendResolution: marshalSendResolution(d.Get("send_resolution")),
 		},
+	}
+}
+
+func marshalSendResolution(sendResolutionRaw interface{}) *v1alpha.SendResolution {
+	if sendResolutionRaw == nil {
+		return nil
+	}
+
+	sendResolutionSet := sendResolutionRaw.(*schema.Set)
+	if sendResolutionSet.Len() == 0 {
+		return nil
+	}
+
+	sendResolution := sendResolutionSet.List()[0].(map[string]interface{})
+	message := sendResolution["message"].(string)
+
+	return &v1alpha.SendResolution{
+		Message: &message,
 	}
 }
 
