@@ -15,11 +15,13 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 		configFunc func(string) string
 	}{
 		{"test-amazonprometheus", testAmazonPrometheusAgent},
+		{"test-amazonprometheus-historical-data-retrieval", testAmazonPrometheusAgentHistoricalDataRetrieval},
 		{"test-appd", testAppDynamicsAgent},
 		{"test-bigquery", testBigQueryAgent},
 		{"test-cloudwatch", testCloudWatchAgent},
 		{"test-ddog", testDatadogAgent},
 		{"test-dynatrace", testDynatraceAgent},
+		{"test-dynatrace-without-query-delay", testDynatraceAgentWithoutQueryDelay},
 		{"test-elasticsearch", testElasticsearchAgent},
 		{"test-gcm", testGoogleCloudMonitoringAgent},
 		{"test-grafanaloki", testGrafanaLokiAgent},
@@ -70,6 +72,36 @@ resource "nobl9_agent" "%s" {
   query_delay {
     unit = "Minute"
     value = 6
+  }
+}
+`, name, name, testProject)
+}
+
+func testAmazonPrometheusAgentHistoricalDataRetrieval(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "amazon_prometheus"
+  amazon_prometheus_config {
+    url = "http://web.net"
+    region = "eu-central-1"
+  }
+  release_channel = "stable"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
+  historical_data_retrieval {
+	default_duration {
+		unit = "Minute"
+    	value = 10
+	}
+	max_duration {
+		unit = "Hour"
+		value = 19
+	}
   }
 }
 `, name, name, testProject)
@@ -186,6 +218,21 @@ resource "nobl9_agent" "%s" {
     unit = "Minute"
     value = 6
   }
+}
+`, name, name, testProject)
+}
+
+func testDynatraceAgentWithoutQueryDelay(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  source_of = ["Metrics", "Services"]
+  agent_type = "dynatrace"
+  dynatrace_config {
+    url = "http://web.net"
+  }
+  release_channel = "stable"
 }
 `, name, name, testProject)
 }
