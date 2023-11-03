@@ -22,10 +22,10 @@ resource "nobl9_project" "this" {
 }
 
 resource "nobl9_agent" "this" {
-  name      =  "${nobl9_project.this.name}-prom-agent"
-  project   = nobl9_project.this.name
-  source_of = ["Metrics", "Services"]
-  agent_type = "prometheus"
+  name            = "${nobl9_project.this.name}-prom-agent"
+  project         = nobl9_project.this.name
+  source_of       = ["Metrics", "Services"]
+  agent_type      = "prometheus"
   release_channel = "stable"
   prometheus_config {
     url = "http://web.net"
@@ -57,6 +57,7 @@ resource "nobl9_agent" "this" {
 - `gcm_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-agent) (see [below for nested schema](#nestedblock--gcm_config))
 - `grafana_loki_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#grafana-loki-agent) (see [below for nested schema](#nestedblock--grafana_loki_config))
 - `graphite_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#graphite-agent) (see [below for nested schema](#nestedblock--graphite_config))
+- `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
 - `influxdb_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#influxdb-agent) (see [below for nested schema](#nestedblock--influxdb_config))
 - `instana_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/instana#instana-agent) (see [below for nested schema](#nestedblock--instana_config))
 - `lightstep_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-agent) (see [below for nested schema](#nestedblock--lightstep_config))
@@ -146,6 +147,33 @@ Required:
 Required:
 
 - `url` (String) API URL endpoint to the Graphite's instance.
+
+
+<a id="nestedblock--historical_data_retrieval"></a>
+### Nested Schema for `historical_data_retrieval`
+
+Required:
+
+- `default_duration` (Block List, Min: 1) Used by default for any SLOs connected to this data source. (see [below for nested schema](#nestedblock--historical_data_retrieval--default_duration))
+- `max_duration` (Block List, Min: 1) Defines the maximum period for which data can be retrieved. (see [below for nested schema](#nestedblock--historical_data_retrieval--max_duration))
+
+<a id="nestedblock--historical_data_retrieval--default_duration"></a>
+### Nested Schema for `historical_data_retrieval.default_duration`
+
+Required:
+
+- `unit` (String) Must be one of Minute, Hour, or Day.
+- `value` (Number) Must be an integer greater than or equal to 0.
+
+
+<a id="nestedblock--historical_data_retrieval--max_duration"></a>
+### Nested Schema for `historical_data_retrieval.max_duration`
+
+Required:
+
+- `unit` (String) Must be one of Minute, Hour, or Day.
+- `value` (Number) Must be an integer greater than or equal to 0.
+
 
 
 <a id="nestedblock--influxdb_config"></a>

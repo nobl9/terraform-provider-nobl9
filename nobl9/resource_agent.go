@@ -74,6 +74,7 @@ func agentSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Status of the created agent.",
 		},
+		historicalDataRetrievalConfigKey: getHistoricalDataRetrievalSchema()[historicalDataRetrievalConfigKey],
 	}
 
 	agentSchemaDefinitions := []map[string]*schema.Schema{
@@ -218,32 +219,33 @@ func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
 			Labels:      labelsMarshaled,
 		},
 		Spec: v1alpha.AgentSpec{
-			Description:         d.Get("description").(string),
-			SourceOf:            sourceOfStr,
-			AmazonPrometheus:    marshalAgentAmazonPrometheus(d, diags),
-			AppDynamics:         marshalAgentAppDynamics(d, diags),
-			BigQuery:            marshalAgentBigQuery(d),
-			CloudWatch:          marshalAgentCloudWatch(d),
-			Datadog:             marshalAgentDatadog(d, diags),
-			Dynatrace:           marshalAgentDynatrace(d, diags),
-			Elasticsearch:       marshalAgentElasticsearch(d, diags),
-			GCM:                 marshalAgentGCM(d),
-			GrafanaLoki:         marshalAgentGrafanaLoki(d, diags),
-			Graphite:            marshalAgentGraphite(d, diags),
-			InfluxDB:            marshalAgentInfluxDB(d, diags),
-			Instana:             marshalAgentInstana(d, diags),
-			Lightstep:           marshalAgentLightstep(d, diags),
-			NewRelic:            marshalAgentNewRelic(d, diags),
-			OpenTSDB:            marshalAgentOpenTSDB(d, diags),
-			Prometheus:          marshalAgentPrometheus(d, diags),
-			Pingdom:             marshalAgentPingdom(d),
-			Redshift:            marshalAgentRedshift(d),
-			Splunk:              marshalAgentSplunk(d, diags),
-			SplunkObservability: marshalAgentSplunkObservability(d, diags),
-			SumoLogic:           marshalAgentSumoLogic(d, diags),
-			ThousandEyes:        marshalAgentThousandEyes(d),
-			QueryDelay:          marshalQueryDelay(d),
-			ReleaseChannel:      marshalReleaseChannel(d, diags),
+			Description:             d.Get("description").(string),
+			SourceOf:                sourceOfStr,
+			AmazonPrometheus:        marshalAgentAmazonPrometheus(d, diags),
+			AppDynamics:             marshalAgentAppDynamics(d, diags),
+			BigQuery:                marshalAgentBigQuery(d),
+			CloudWatch:              marshalAgentCloudWatch(d),
+			Datadog:                 marshalAgentDatadog(d, diags),
+			Dynatrace:               marshalAgentDynatrace(d, diags),
+			Elasticsearch:           marshalAgentElasticsearch(d, diags),
+			GCM:                     marshalAgentGCM(d),
+			GrafanaLoki:             marshalAgentGrafanaLoki(d, diags),
+			Graphite:                marshalAgentGraphite(d, diags),
+			InfluxDB:                marshalAgentInfluxDB(d, diags),
+			Instana:                 marshalAgentInstana(d, diags),
+			Lightstep:               marshalAgentLightstep(d, diags),
+			NewRelic:                marshalAgentNewRelic(d, diags),
+			OpenTSDB:                marshalAgentOpenTSDB(d, diags),
+			Prometheus:              marshalAgentPrometheus(d, diags),
+			Pingdom:                 marshalAgentPingdom(d),
+			Redshift:                marshalAgentRedshift(d),
+			Splunk:                  marshalAgentSplunk(d, diags),
+			SplunkObservability:     marshalAgentSplunkObservability(d, diags),
+			SumoLogic:               marshalAgentSumoLogic(d, diags),
+			ThousandEyes:            marshalAgentThousandEyes(d),
+			QueryDelay:              marshalQueryDelay(d),
+			ReleaseChannel:          marshalReleaseChannel(d, diags),
+			HistoricalDataRetrieval: marshalHistoricalDataRetrieval(d),
 		},
 	}, diags
 }
@@ -266,6 +268,7 @@ func unmarshalAgent(d *schema.ResourceData, agents []v1alpha.Agent) diag.Diagnos
 
 	diags = appendError(diags, err)
 
+	unmarshalHistoricalDataRetrieval(d, agent.Spec.HistoricalDataRetrieval)
 	set(d, "name", agent.Metadata.Name, &diags)
 	set(d, "display_name", agent.Metadata.DisplayName, &diags)
 	set(d, "project", agent.Metadata.Project, &diags)
