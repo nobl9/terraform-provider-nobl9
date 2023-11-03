@@ -18,6 +18,8 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 		{"test-webhook", "webhook", testWebhookTemplateConfig},
 		{"test-webhook-fields", "webhook", testWebhookTemplateFieldsConfig},
 		{"test-pagerduty", "pagerduty", testPagerDutyConfig},
+		{"test-pagerduty-send-resolution", "pagerduty", testPagerDutyWithSendResolutionConfig},
+		{"test-pagerduty-send-resolution-message", "pagerduty", testPagerDutyWithSendResolutionWithMessageConfig},
 		{"test-slack", "slack", testSlackConfig},
 		{"test-discord", "discord", testDiscordConfig},
 		{"test-opsgenie", "opsgenie", testOpsgenieConfig},
@@ -76,6 +78,35 @@ resource "nobl9_alert_method_pagerduty" "%s" {
   project         = "%s"
   description     = "paderduty"
   integration_key = "84dfcdf19dad8f6c82b7e22afa024065"
+}
+`, name, name, testProject)
+}
+
+func testPagerDutyWithSendResolutionConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_pagerduty" "%s" {
+  name            = "%s"
+  project         = "%s"
+  description     = "paderduty"
+  integration_key = "84dfcdf19dad8f6c82b7e22afa024065"
+
+  send_resolution {
+    message = "Alert is now resolved"
+  }
+}
+`, name, name, testProject)
+}
+
+func testPagerDutyWithSendResolutionWithMessageConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_pagerduty" "%s" {
+  name            = "%s"
+  project         = "%s"
+  description     = "paderduty"
+  integration_key = "84dfcdf19dad8f6c82b7e22afa024065"
+
+  send_resolution {
+  }
 }
 `, name, name, testProject)
 }
