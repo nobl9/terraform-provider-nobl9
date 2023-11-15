@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
@@ -15,7 +16,11 @@ func schemaReleaseChannel() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
+		Computed:    true,
 		Description: "Release channel of the created datasource [stable/beta]",
+		ValidateDiagFunc: validation.ToDiagFunc(
+			validation.StringInSlice([]string{"stable", "beta"}, false),
+		),
 	}
 }
 
