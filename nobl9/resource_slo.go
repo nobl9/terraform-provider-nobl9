@@ -423,6 +423,7 @@ func schemaMetricSpec() *schema.Resource {
 	metricSchemaDefinitions := []map[string]*schema.Schema{
 		schemaMetricAmazonPrometheus(),
 		schemaMetricAppDynamics(),
+		schemaMetricAzureMonitor(),
 		schemaMetricBigQuery(),
 		schemaMetricCloudwatch(),
 		schemaMetricDatadog(),
@@ -909,6 +910,7 @@ func unmarshalSLOMetric(spec *v1alpha.MetricSpec) *schema.Set {
 	}{
 		{amazonPrometheusMetric, "AmazonPrometheus", unmarshalAmazonPrometheusMetric},
 		{appDynamicsMetric, "AppDynamics", unmarshalAppdynamicsMetric},
+		{azureMonitorMetric, "AzureMonitor", unmarshalAzureMonitorMetric},
 		{bigQueryMetric, "BigQuery", unmarshalBigqueryMetric},
 		{cloudwatchMetric, "CloudWatch", unmarshalCloudWatchMetric},
 		{datadogMetric, "Datadog", unmarshalDatadogMetric},
@@ -1052,6 +1054,118 @@ func unmarshalAppdynamicsMetric(metric interface{}) map[string]interface{} {
 	res["application_name"] = adMetric.ApplicationName
 	res["metric_path"] = adMetric.MetricPath
 
+	return res
+}
+
+/**
+ * Azure Monitor Metric
+ * https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor
+ */
+const azureMonitorMetric = "azuremonitor"
+
+func schemaMetricAzureMonitor() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		appDynamicsMetric: {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Description: "[Configuration documentation]" +
+				"(https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"resource_id": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Name of the added application",
+					},
+					"metric_namespace": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Namespace of the metric",
+					},
+					"metric_name": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Name of the metric",
+					},
+					"aggregation": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Aggregation type",
+					},
+					"dimensions": {
+						Type:        schema.TypeSet,
+						Optional:    true,
+						Description: "Dimensions of the metric",
+						MinItems:    1,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"name": {
+									Type: schema.TypeString,
+								},
+								"value": {
+									Type: schema.TypeString,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAzureMonitorMetric(s *schema.Set) *v1alpha.AzureMonitorMetric {
+	if s.Len() == 0 {
+		return nil
+	}
+
+	metric := s.List()[0].(map[string]interface{})
+
+	resourceID := metric["resource_id"].(string)
+	metricNamespace := metric["metric_namespace"].(string)
+	metricName := metric["metric_name"].(string)
+	aggregation := metric["aggregation"].(string)
+
+	dimensions := metric["dimensions"].(*schema.Set)
+	var metricDimensions []v1alpha.AzureMonitorMetricDimension
+
+	if dimensions.Len() > 0 {
+		metricDimensions = make([]v1alpha.AzureMonitorMetricDimension, dimensions.Len())
+	}
+
+	for idx, dimension := range dimensions.List() {
+		n9Dimension := dimension.(map[string]interface{})
+		name := n9Dimension["name"].(string)
+		value := n9Dimension["value"].(string)
+		metricDimensions[idx] = v1alpha.AzureMonitorMetricDimension{
+			Name:  &name,
+			Value: &value,
+		}
+	}
+
+	return &v1alpha.AzureMonitorMetric{
+		ResourceID:      resourceID,
+		MetricNamespace: metricNamespace,
+		MetricName:      metricName,
+		Aggregation:     aggregation,
+		Dimensions:      metricDimensions,
+	}
+}
+
+func unmarshalAzureMonitorMetric(metric interface{}) map[string]interface{} {
+	amMetric, ok := metric.(*v1alpha.AzureMonitorMetric)
+	if !ok {
+		return nil
+	}
+	res := make(map[string]interface{})
+	res["resource_id"] = amMetric.ResourceID
+	res["metric_namespace"] = amMetric.MetricNamespace
+	res["metric_name"] = amMetric.MetricName
+	res["aggregation"] = amMetric.Aggregation
+	dim, _ := json.Marshal(amMetric.Dimensions)
+	var dimensions any
+	_ = json.Unmarshal(dim, &dimensions)
+	res["dimensions"] = dimensions
 	return res
 }
 
