@@ -664,6 +664,7 @@ func marshalMetric(metric map[string]interface{}) *v1alpha.MetricSpec {
 	return &v1alpha.MetricSpec{
 		AmazonPrometheus:    marshalAmazonPrometheusMetric(metric[amazonPrometheusMetric].(*schema.Set)),
 		AppDynamics:         marshalAppDynamicsMetric(metric[appDynamicsMetric].(*schema.Set)),
+		AzureMonitor:        marshalAzureMonitorMetric(metric[azureMonitorMetric].(*schema.Set)),
 		BigQuery:            marshalBigQueryMetric(metric[bigQueryMetric].(*schema.Set)),
 		CloudWatch:          marshalCloudWatchMetric(metric[cloudwatchMetric].(*schema.Set)),
 		Datadog:             marshalDatadogMetric(metric[datadogMetric].(*schema.Set)),

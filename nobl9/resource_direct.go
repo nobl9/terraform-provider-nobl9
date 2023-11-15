@@ -304,18 +304,19 @@ func (s azureMonitorDirectSpec) GetSchema() map[string]*schema.Schema {
 	azureMonitorSchema := map[string]*schema.Schema{
 		"tenant_id": {
 			Type:        schema.TypeString,
-			Description: "Azure Tenant ID.",
+			Description: "[required] | Azure Tenant ID.",
 			Required:    true,
 		},
 		"client_id": {
 			Type:        schema.TypeString,
-			Description: "Azure Application (client) ID.",
+			Description: "[required] | Azure Application (client) ID.",
 			Required:    true,
 		},
 		"client_secret": {
 			Type:        schema.TypeString,
-			Description: "Azure Application (client) Secret.",
+			Description: "[required] | Azure Application (client) Secret.",
 			Computed:    true,
+			Optional:    true,
 			Sensitive:   true,
 			ValidateDiagFunc: validation.ToDiagFunc(
 				validation.StringIsNotEmpty,
