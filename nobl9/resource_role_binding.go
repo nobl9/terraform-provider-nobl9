@@ -126,7 +126,7 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 
 	roleBinding := marshalRoleBinding(d)
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, []manifest.Object{roleBinding}, false)
+		err := client.ApplyObjects(ctx, []manifest.Object{roleBinding})
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)

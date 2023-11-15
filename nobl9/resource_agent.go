@@ -125,7 +125,7 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	resultAgent := manifest.SetDefaultProject([]manifest.Object{agent}, config.Project)
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, resultAgent, false)
+		err := client.ApplyObjects(ctx, resultAgent)
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)

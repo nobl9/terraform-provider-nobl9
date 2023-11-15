@@ -68,7 +68,9 @@ func Provider() *schema.Provider {
 			},
 		},
 
-		DataSourcesMap: map[string]*schema.Resource{},
+		DataSourcesMap: map[string]*schema.Resource{
+			"nobl9_aws_iam_role_external_id": dataSourceAWSIAMRoleAuthExternalID(),
+		},
 
 		ResourcesMap: map[string]*schema.Resource{
 			"nobl9_service":                                 resourceService(),

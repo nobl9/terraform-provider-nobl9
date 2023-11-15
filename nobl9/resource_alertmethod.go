@@ -92,7 +92,7 @@ func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.Res
 	}
 	am := a.marshalAlertMethod(d)
 	resultAm := manifest.SetDefaultProject([]manifest.Object{am}, config.Project)
-	err := client.ApplyObjects(ctx, resultAm, false)
+	err := client.ApplyObjects(ctx, resultAm)
 	if err != nil {
 		return diag.Errorf("could not add agent: %s", err.Error())
 	}

@@ -76,6 +76,19 @@ func CheckObjectCreated(name string) resource.TestCheckFunc {
 	}
 }
 
+func CheckStateContainData(key string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[key]
+		if !ok {
+			return fmt.Errorf("not found: %s", key)
+		}
+		if len(rs.String()) == 0 {
+			return fmt.Errorf("data not set")
+		}
+		return nil
+	}
+}
+
 func CheckDestroy(rsType string, kind manifest.Kind) func(s *terraform.State) error {
 	return func(s *terraform.State) error {
 		config, ok := testProvider.Meta().(ProviderConfig)

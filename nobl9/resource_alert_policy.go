@@ -278,7 +278,7 @@ func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta 
 		return diags
 	}
 	resultAp := manifest.SetDefaultProject([]manifest.Object{ap}, config.Project)
-	err := client.ApplyObjects(ctx, resultAp, false)
+	err := client.ApplyObjects(ctx, resultAp)
 	if err != nil {
 		return diag.Errorf("could not add alertPolicy: %s", err.Error())
 	}

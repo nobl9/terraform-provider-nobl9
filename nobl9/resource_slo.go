@@ -360,7 +360,7 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	resultSlo := manifest.SetDefaultProject([]manifest.Object{slo}, config.Project)
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, resultSlo, false)
+		err := client.ApplyObjects(ctx, resultSlo)
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
