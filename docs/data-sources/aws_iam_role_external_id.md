@@ -3,12 +3,12 @@
 page_title: "nobl9_aws_iam_role_external_id Data Source - terraform-provider-nobl9"
 subcategory: ""
 description: |-
-  Cross account IAM roles https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cross-account-iam-roles-new
+  Returns external ID and AWS account ID that can be used to create cross-account IAM roles in AWS https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cross-account-iam-roles-new.
 ---
 
 # nobl9_aws_iam_role_external_id (Data Source)
 
-[Cross account IAM roles](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cross-account-iam-roles-new)
+Returns external ID and AWS account ID that can be used to create [cross-account IAM roles in AWS](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cross-account-iam-roles-new).
 
 
 

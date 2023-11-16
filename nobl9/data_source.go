@@ -10,7 +10,8 @@ import (
 
 func dataSourceAWSIAMRoleAuthExternalID() *schema.Resource {
 	return &schema.Resource{
-		Description: "[Cross account IAM roles](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cross-account-iam-roles-new)",
+		Description: "Returns external ID and AWS account ID that can be used to create [cross-account IAM roles " +
+			"in AWS](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cross-account-iam-roles-new).",
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
