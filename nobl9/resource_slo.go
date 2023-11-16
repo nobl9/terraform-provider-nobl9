@@ -1066,7 +1066,7 @@ const azureMonitorMetric = "azuremonitor"
 
 func schemaMetricAzureMonitor() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		appDynamicsMetric: {
+		azureMonitorMetric: {
 			Type:     schema.TypeSet,
 			Optional: true,
 			Description: "[Configuration documentation]" +
@@ -1101,10 +1101,14 @@ func schemaMetricAzureMonitor() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"name": {
-									Type: schema.TypeString,
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "Name",
 								},
 								"value": {
-									Type: schema.TypeString,
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "Value",
 								},
 							},
 						},
