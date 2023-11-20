@@ -262,12 +262,12 @@ Required:
 
 - `aggregation` (String) Aggregation type
 - `metric_name` (String) Name of the metric
-- `metric_namespace` (String) Namespace of the metric
 - `resource_id` (String) Name of the added application
 
 Optional:
 
 - `dimensions` (Block Set) Dimensions of the metric (see [below for nested schema](#nestedblock--objective--count_metrics--total--azuremonitor--dimensions))
+- `metric_namespace` (String) Namespace of the metric
 
 <a id="nestedblock--objective--count_metrics--total--azuremonitor--dimensions"></a>
 ### Nested Schema for `objective.count_metrics.total.azuremonitor.dimensions`
@@ -585,12 +585,12 @@ Required:
 
 - `aggregation` (String) Aggregation type
 - `metric_name` (String) Name of the metric
-- `metric_namespace` (String) Namespace of the metric
 - `resource_id` (String) Name of the added application
 
 Optional:
 
 - `dimensions` (Block Set) Dimensions of the metric (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azuremonitor--dimensions))
+- `metric_namespace` (String) Namespace of the metric
 
 <a id="nestedblock--objective--count_metrics--bad--azuremonitor--dimensions"></a>
 ### Nested Schema for `objective.count_metrics.bad.azuremonitor.dimensions`
@@ -908,12 +908,12 @@ Required:
 
 - `aggregation` (String) Aggregation type
 - `metric_name` (String) Name of the metric
-- `metric_namespace` (String) Namespace of the metric
 - `resource_id` (String) Name of the added application
 
 Optional:
 
 - `dimensions` (Block Set) Dimensions of the metric (see [below for nested schema](#nestedblock--objective--count_metrics--good--azuremonitor--dimensions))
+- `metric_namespace` (String) Namespace of the metric
 
 <a id="nestedblock--objective--count_metrics--good--azuremonitor--dimensions"></a>
 ### Nested Schema for `objective.count_metrics.good.azuremonitor.dimensions`
@@ -1239,12 +1239,12 @@ Required:
 
 - `aggregation` (String) Aggregation type
 - `metric_name` (String) Name of the metric
-- `metric_namespace` (String) Namespace of the metric
 - `resource_id` (String) Name of the added application
 
 Optional:
 
 - `dimensions` (Block Set) Dimensions of the metric (see [below for nested schema](#nestedblock--objective--raw_metric--query--azuremonitor--dimensions))
+- `metric_namespace` (String) Namespace of the metric
 
 <a id="nestedblock--objective--raw_metric--query--azuremonitor--dimensions"></a>
 ### Nested Schema for `objective.raw_metric.query.azuremonitor.dimensions`

@@ -1080,7 +1080,7 @@ func schemaMetricAzureMonitor() map[string]*schema.Schema {
 					},
 					"metric_namespace": {
 						Type:        schema.TypeString,
-						Required:    true,
+						Optional:    true,
 						Description: "Namespace of the metric",
 					},
 					"metric_name": {
