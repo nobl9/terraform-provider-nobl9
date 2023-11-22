@@ -14,7 +14,7 @@ Returns external ID and AWS account ID that can be used to create [cross-account
 
 ```terraform
 data "nobl9_aws_iam_role_external_id" "this" {
-  name = "my-slo-name"
+  name = "my-datasource-name"
 }
 ```
 
