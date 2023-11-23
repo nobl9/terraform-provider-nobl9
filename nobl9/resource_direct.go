@@ -87,7 +87,7 @@ func (dr directResource) resourceDirectApply(
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, []manifest.Object{n9Direct}, false)
+		err := client.ApplyObjects(ctx, []manifest.Object{n9Direct})
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
