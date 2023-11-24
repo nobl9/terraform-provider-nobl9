@@ -1062,7 +1062,7 @@ func unmarshalAppdynamicsMetric(metric interface{}) map[string]interface{} {
  * Azure Monitor Metric
  * https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor
  */
-const azureMonitorMetric = "azuremonitor"
+const azureMonitorMetric = "azure_monitor"
 
 func schemaMetricAzureMonitor() map[string]*schema.Schema {
 	return map[string]*schema.Schema{

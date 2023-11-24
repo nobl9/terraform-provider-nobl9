@@ -18,7 +18,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 	}{
 		{"test-amazonprometheus", testAmazonPrometheusSLO},
 		{"test-appdynamics", testAppdynamicsSLO},
-		{"test-azuremonitor", testAzureMonitorSLO},
+		{"test-azure-monitor", testAzureMonitorSLO},
 		{"test-bigquery", testBigQuerySLO},
 		{"test-cloudwatch-with-json", testCloudWatchWithJSON},
 		{"test-cloudwatch-with-sql", testCloudWatchWithSQL},
@@ -261,7 +261,7 @@ resource "nobl9_slo" ":name" {
     op           = "lt"
     raw_metric {
       query {
-        azuremonitor {
+        azure_monitor {
           resource_id = "/subscriptions/9c26f90e-24bb-4d20-a648-c6e3e1cde26a/resourceGroups/azure-monitor-test-sources/providers/microsoft.insights/components/n9-web-app"
           metric_namespace = ""
           metric_name = "requests/duration"

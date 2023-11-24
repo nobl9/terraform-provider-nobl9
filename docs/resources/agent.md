@@ -47,7 +47,7 @@ resource "nobl9_agent" "this" {
 
 - `amazon_prometheus_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#ams-prometheus-agent) (see [below for nested schema](#nestedblock--amazon_prometheus_config))
 - `appdynamics_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-agent) (see [below for nested schema](#nestedblock--appdynamics_config))
-- `azuremonitor_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-agent) (see [below for nested schema](#nestedblock--azuremonitor_config))
+- `azure_monitor_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-agent) (see [below for nested schema](#nestedblock--azure_monitor_config))
 - `bigquery_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-agent) (see [below for nested schema](#nestedblock--bigquery_config))
 - `cloudwatch_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-agent) (see [below for nested schema](#nestedblock--cloudwatch_config))
 - `datadog_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#datadog-agent) (see [below for nested schema](#nestedblock--datadog_config))
@@ -98,8 +98,8 @@ Required:
 - `url` (String) Base URL to the AppDynamics Controller.
 
 
-<a id="nestedblock--azuremonitor_config"></a>
-### Nested Schema for `azuremonitor_config`
+<a id="nestedblock--azure_monitor_config"></a>
+### Nested Schema for `azure_monitor_config`
 
 Required:
 

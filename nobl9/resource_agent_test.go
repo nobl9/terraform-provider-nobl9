@@ -133,8 +133,8 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   source_of = ["Metrics", "Services"]
-  agent_type = "azuremonitor"
-  azuremonitor_config {
+  agent_type = "azure_monitor"
+  azure_monitor_config {
     tenant_id = "40ad1f5f-7025-4056-9b90-9f49617423ac"
   }
   release_channel = "beta"

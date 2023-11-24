@@ -475,8 +475,8 @@ func marshalAgentAppDynamics(d *schema.ResourceData, diags diag.Diagnostics) *v1
  * Azure Monitor Agent
  * https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-agent
  */
-const azureMonitorAgentType = "azuremonitor"
-const azureMonitorAgentConfigKey = "azuremonitor_config"
+const azureMonitorAgentType = "azure_monitor"
+const azureMonitorAgentConfigKey = "azure_monitor_config"
 
 func schemaAgentAzureMonitor() map[string]*schema.Schema {
 	return map[string]*schema.Schema{

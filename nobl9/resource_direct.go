@@ -296,7 +296,7 @@ func (s appDynamicsDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alph
 
 // Azure Monitor Direct
 // https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-direct
-const azureMonitorDirectType = "azuremonitor"
+const azureMonitorDirectType = "azure_monitor"
 
 type azureMonitorDirectSpec struct{}
 
