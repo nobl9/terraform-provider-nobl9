@@ -86,6 +86,7 @@ func Provider() *schema.Provider {
 			"nobl9_alert_method_msteams":                    resourceAlertMethodFactory(alertMethodTeams{}),
 			"nobl9_alert_method_email":                      resourceAlertMethodFactory(alertMethodEmail{}),
 			"nobl9_direct_" + appDynamicsDirectType:         resourceDirectFactory(appDynamicsDirectSpec{}),
+			"nobl9_direct_" + azureMonitorDirectType:        resourceDirectFactory(azureMonitorDirectSpec{}),
 			"nobl9_direct_" + bigqueryDirectType:            resourceDirectFactory(bigqueryDirectSpec{}),
 			"nobl9_direct_" + cloudWatchDirectType:          resourceDirectFactory(cloudWatchDirectSpec{}),
 			"nobl9_direct_" + datadogDirectType:             resourceDirectFactory(datadogDirectSpec{}),
