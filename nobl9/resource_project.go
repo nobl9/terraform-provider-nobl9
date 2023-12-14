@@ -87,7 +87,7 @@ func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta inte
 		return diags
 	}
 	resultProject := manifest.SetDefaultProject([]manifest.Object{project}, config.Project)
-	err := client.ApplyObjects(ctx, resultProject, false)
+	err := client.ApplyObjects(ctx, resultProject)
 	if err != nil {
 		return diag.Errorf("could not add project: %s", err.Error())
 	}

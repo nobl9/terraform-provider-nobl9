@@ -26,6 +26,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 		{"test-gcm", testGoogleCloudMonitoringAgent},
 		{"test-grafanaloki", testGrafanaLokiAgent},
 		{"test-graphite", testGraphiteAgent},
+		{"test-honeycomb", testHoneycombAgent},
 		{"test-influxdb", testInfluxDBAgent},
 		{"test-instana", testInstanaAgent},
 		{"test-lightstep", testLightstepAgent},
@@ -287,6 +288,22 @@ resource "nobl9_agent" "%s" {
     unit = "Minute"
     value = 6
   }
+}
+`, name, name, testProject)
+}
+
+func testHoneycombAgent(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+	name      = "%s"
+	project   = "%s"
+	source_of = ["Metrics", "Services"]
+	agent_type = "honeycomb"
+	release_channel = "beta"
+	query_delay {
+	  unit = "Minute"
+	  value = 6
+	}
 }
 `, name, name, testProject)
 }

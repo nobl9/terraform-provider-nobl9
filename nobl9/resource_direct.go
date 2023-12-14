@@ -87,7 +87,7 @@ func (dr directResource) resourceDirectApply(
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, []manifest.Object{n9Direct}, false)
+		err := client.ApplyObjects(ctx, []manifest.Object{n9Direct})
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
@@ -527,6 +527,48 @@ func (s gcmDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
 
 func (s gcmDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "description", spec.Description, &diags)
+	return
+}
+
+// Honeycomb Direct
+// https://docs.nobl9.com/Sources/honeycomba#honeycomb-direct
+const honeycombDirectType = "honeycomb"
+
+type honeycombDirectSpec struct{}
+
+func (h honeycombDirectSpec) GetSchema() map[string]*schema.Schema {
+	honeycombSchema := map[string]*schema.Schema{
+		"api_key": {
+			Type:        schema.TypeString,
+			Description: "[required] | Honeycomb API Key.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
+		},
+	}
+	setLogCollectionSchema(honeycombSchema)
+	setHistoricalDataRetrievalSchema(honeycombSchema)
+	return honeycombSchema
+}
+
+// FIXME PC-10671: URL.
+func (h honeycombDirectSpec) GetDescription() string {
+	return "[Honeycomb Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/honeycomb#hc-direct)."
+}
+
+func (h honeycombDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		Honeycomb: &v1alpha.HoneycombDirectConfig{
+			APIKey: d.Get("api_key").(string),
+		},
+	}
+}
+
+func (h honeycombDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "api_key", spec.Honeycomb.APIKey, &diags)
 	return
 }
 

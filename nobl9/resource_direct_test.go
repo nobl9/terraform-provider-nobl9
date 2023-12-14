@@ -21,6 +21,7 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 		{datadogDirectType, testDatadogDirect},
 		{dynatraceDirectType, testDynatraceDirect},
 		{gcmDirectType, testGoogleCloudMonitoringDirect},
+		{honeycombDirectType, testHoneycombDirect},
 		{influxdbDirectType, testInfluxDBDirect},
 		{instanaDirectType, testInstanaDirect},
 		{lightstepDirectType, testLightstepDirect},
@@ -201,6 +202,35 @@ resource "nobl9_direct_%s" "%s" {
     unit = "Minute"
     value = 6
   }
+}
+`, directType, name, name, testProject)
+}
+
+// FIXME PC-10671: Fix indent. Check query delay value.
+func testHoneycombDirect(directType, name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_direct_%s" "%s" {
+	  name = "%s"
+	  project = "%s"
+	  description = "desc"
+	  source_of = ["Metrics", "Services"]
+	api_key = "secret"
+	log_collection_enabled = true
+	release_channel = "beta"
+	historical_data_retrieval {
+	  default_duration  {
+		unit = "Day"
+		value = 7
+	  }
+	  max_duration {
+		unit = "Day"
+		value = 7
+	  }
+	}
+	query_delay {
+	  unit = "Minute"
+	  value = 6
+	}
 }
 `, directType, name, name, testProject)
 }

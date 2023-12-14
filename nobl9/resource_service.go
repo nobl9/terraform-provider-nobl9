@@ -108,7 +108,7 @@ func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta inte
 		return diags
 	}
 	resultService := manifest.SetDefaultProject([]manifest.Object{service}, config.Project)
-	err := client.ApplyObjects(ctx, resultService, false)
+	err := client.ApplyObjects(ctx, resultService)
 	if err != nil {
 		return diag.Errorf("could not add service: %s", err.Error())
 	}

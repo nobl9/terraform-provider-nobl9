@@ -88,6 +88,7 @@ func agentSchema() map[string]*schema.Schema {
 		schemaAgentGCM(),
 		schemaAgentGrafanaLoki(),
 		schemaAgentGraphite(),
+		schemaAgentHoneycomb(),
 		schemaAgentInfluxDB(),
 		schemaAgentInstana(),
 		schemaAgentLightstep(),
@@ -125,7 +126,7 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	resultAgent := manifest.SetDefaultProject([]manifest.Object{agent}, config.Project)
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, resultAgent, false)
+		err := client.ApplyObjects(ctx, resultAgent)
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
@@ -231,6 +232,7 @@ func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
 			GCM:                     marshalAgentGCM(d),
 			GrafanaLoki:             marshalAgentGrafanaLoki(d, diags),
 			Graphite:                marshalAgentGraphite(d, diags),
+			Honeycomb:               marshalAgentHoneycomb(d),
 			InfluxDB:                marshalAgentInfluxDB(d, diags),
 			Instana:                 marshalAgentInstana(d, diags),
 			Lightstep:               marshalAgentLightstep(d, diags),
@@ -293,6 +295,7 @@ func unmarshalAgent(d *schema.ResourceData, agents []v1alpha.Agent) diag.Diagnos
 		{gcmAgentConfigKey, agentSpecJSONName(spec.GCM, diags)},
 		{grafanalokiAgentConfigKey, agentSpecJSONName(spec.GrafanaLoki, diags)},
 		{graphiteAgentConfigKey, agentSpecJSONName(spec.Graphite, diags)},
+		{honeycombAgentConfigKey, agentSpecJSONName(spec.Honeycomb, diags)},
 		{influxdbAgentConfigKey, agentSpecJSONName(spec.InfluxDB, diags)},
 		{instanaAgentConfigKey, agentSpecJSONName(spec.Instana, diags)},
 		{lightstepAgentConfigKey, agentSpecJSONName(spec.Lightstep, diags)},
@@ -758,6 +761,36 @@ func marshalAgentGraphite(d *schema.ResourceData, diags diag.Diagnostics) *v1alp
 	return &v1alpha.GraphiteAgentConfig{
 		URL: data["url"].(string),
 	}
+}
+
+/**
+ * Honeycomb Agent
+ * https://docs.nobl9.com/Sources/honeycomb#honeycomb-agent
+ */
+const honeycombAgentType = "honeycomb"
+const honeycombAgentConfigKey = "honeycomb_config"
+
+// FIXME PC-10671: is it ok?
+func schemaAgentHoneycomb() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		honeycombAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#hc-agent)", // FIXME PC-10671: URL.
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Description: "Agent configuration is not required.",
+			},
+		},
+	}
+}
+
+func marshalAgentHoneycomb(d *schema.ResourceData) *v1alpha.HoneycombAgentConfig {
+	if !isAgentType(d, honeycombAgentType) {
+		return nil
+	}
+	return &v1alpha.HoneycombAgentConfig{}
 }
 
 /**

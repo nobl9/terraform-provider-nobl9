@@ -89,6 +89,7 @@ func Provider() *schema.Provider {
 			"nobl9_direct_" + datadogDirectType:             resourceDirectFactory(datadogDirectSpec{}),
 			"nobl9_direct_" + dynatraceDirectType:           resourceDirectFactory(dynatraceDirectSpec{}),
 			"nobl9_direct_" + gcmDirectType:                 resourceDirectFactory(gcmDirectSpec{}),
+			"nobl9_direct_" + honeycombDirectType:           resourceDirectFactory(honeycombDirectSpec{}),
 			"nobl9_direct_" + influxdbDirectType:            resourceDirectFactory(influxdbDirectSpec{}),
 			"nobl9_direct_" + instanaDirectType:             resourceDirectFactory(instanaDirectSpec{}),
 			"nobl9_direct_" + lightstepDirectType:           resourceDirectFactory(lightstepDirectSpec{}),
