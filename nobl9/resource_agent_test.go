@@ -304,6 +304,22 @@ func testHoneycombAgent(name string) string {
 resource "nobl9_agent" "%s" {
 	name      = "%s"
 	project   = "%s"
+	source_of = ["Metrics", "Services"]
+	agent_type = "honeycomb"
+	release_channel = "beta"
+	query_delay {
+	  unit = "Minute"
+	  value = 6
+	}
+}
+`, name, name, testProject)
+}
+
+func testHoneycombAgent(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+	name      = "%s"
+	project   = "%s"
 	agent_type = "honeycomb"
 	release_channel = "beta"
 	query_delay {

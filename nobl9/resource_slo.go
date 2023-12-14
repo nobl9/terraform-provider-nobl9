@@ -1737,6 +1737,76 @@ func unmarshalGraphiteMetric(metric interface{}) map[string]interface{} {
 	return res
 }
 
+// FIXME PC-10671: URL.
+/**
+ * Honeycomb Metric
+ * https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb
+ */
+const honeycombMetric = "honeycomb"
+
+// FIXME PC-10671: Check Schema descriptions.
+// TODO PC-10671: SDK has separate validation for Calculation types COUNT and CONCURRENCY as they do not require for attribute.
+// TODO PC-10671: But if we will remove Calculation, then I think it won't be needed.
+func schemaMetricHoneycomb() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		honeycombMetric: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"dataset": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Dataset name",
+					},
+					"calculation": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Calculation type",
+					},
+					"attribute": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Column name",
+					},
+				},
+			},
+		},
+	}
+}
+
+// FIXME PC-10671: Check if this func is correct.
+func marshalHoneycombMetric(s *schema.Set) *v1alphaSLO.HoneycombMetric {
+	if s.Len() == 0 {
+		return nil
+	}
+
+	metric := s.List()[0].(map[string]interface{})
+
+	dataset := metric["dataset"].(string)
+	calculation := metric["calculation"].(string)
+	attribute := metric["attribute"].(string)
+	return &v1alphaSLO.HoneycombMetric{
+		Dataset:     dataset,
+		Calculation: calculation,
+		Attribute:   attribute,
+	}
+}
+
+// FIXME PC-10671: Check if this func is correct.
+func unmarshalHoneycombMetric(metric interface{}) map[string]interface{} {
+	hMetric, ok := metric.(*v1alphaSLO.HoneycombMetric)
+	if !ok {
+		return nil
+	}
+	res := make(map[string]interface{})
+	res["dataset"] = hMetric.Dataset
+	res["calculation"] = hMetric.Calculation
+	res["attribute"] = hMetric.Attribute
+	return res
+}
+
 /**
  * Honeycomb Metric
  * https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb
