@@ -43,7 +43,6 @@ resource "nobl9_direct_datadog" "test-datadog" {
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `site` (String) `com` or `eu`, Datadog SaaS instance, which corresponds to one of Datadog's two locations (https://www.datadoghq.com/ in the U.S. or https://datadoghq.eu/ in the European Union).
-- `source_of` (List of String) Source of Metrics and/or Services.
 
 ### Optional
 

@@ -41,17 +41,6 @@ func agentSchema() map[string]*schema.Schema {
 		"display_name": schemaDisplayName(),
 		"project":      schemaProject(),
 		"description":  schemaDescription(),
-		"source_of": {
-			Type:        schema.TypeList,
-			Required:    true,
-			MinItems:    1,
-			MaxItems:    2,
-			Description: "Source of Metrics and/or Services.",
-			Elem: &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "Source of Metrics or Services",
-			},
-		},
 		agentTypeKey: {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -194,12 +183,6 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 }
 
 func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
-	sourceOf := d.Get("source_of").([]interface{})
-	sourceOfStr := make([]string, len(sourceOf))
-	for i, s := range sourceOf {
-		sourceOfStr[i] = s.(string)
-	}
-
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
@@ -221,7 +204,6 @@ func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
 		},
 		Spec: v1alpha.AgentSpec{
 			Description:             d.Get("description").(string),
-			SourceOf:                sourceOfStr,
 			AmazonPrometheus:        marshalAgentAmazonPrometheus(d, diags),
 			AppDynamics:             marshalAgentAppDynamics(d, diags),
 			BigQuery:                marshalAgentBigQuery(d),
@@ -331,8 +313,6 @@ func unmarshalAgentConfig(
 	var diags diag.Diagnostics
 
 	// err := d.Set("agent_type", spec[""]) TODO
-	err := d.Set("source_of", agent.Spec.SourceOf)
-	diags = appendError(diags, err)
 
 	spec, err := json.Marshal(&agent.Spec)
 	diags = appendError(diags, err)

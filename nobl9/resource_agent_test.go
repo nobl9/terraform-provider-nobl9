@@ -63,7 +63,6 @@ func testAmazonPrometheusAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "amazon_prometheus"
   amazon_prometheus_config {
     url = "http://web.net"
@@ -83,7 +82,6 @@ func testAmazonPrometheusAgentHistoricalDataRetrieval(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "amazon_prometheus"
   amazon_prometheus_config {
     url = "http://web.net"
@@ -113,7 +111,6 @@ func testAppDynamicsAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "appdynamics"
   appdynamics_config {
     url = "http://web.net"
@@ -132,7 +129,6 @@ func testBigQueryAgent(name string) string {
 resource "nobl9_agent" "%s" {
  name      = "%s"
  project   = "%s"
- source_of = ["Metrics", "Services"]
  agent_type = "bigquery"
  release_channel = "stable"
  query_delay {
@@ -148,7 +144,6 @@ func testCloudWatchAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "cloudwatch"
   release_channel = "stable"
   query_delay {
@@ -164,7 +159,6 @@ func testCloudWatchDirectBeta(name string) string {
 resource "nobl9_direct_cloudwatch" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   release_channel = "beta"
   role_arn = "test"
   historical_data_retrieval {
@@ -190,7 +184,6 @@ func testDatadogAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "datadog"
   release_channel = "stable"
   datadog_config {
@@ -209,7 +202,6 @@ func testDynatraceAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "dynatrace"
   dynatrace_config {
     url = "http://web.net"
@@ -228,7 +220,6 @@ func testDynatraceAgentWithoutQueryDelay(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "dynatrace"
   dynatrace_config {
     url = "http://web.net"
@@ -243,7 +234,6 @@ func testElasticsearchAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "elasticsearch"
   elasticsearch_config {
     url = "http://web.net"
@@ -262,7 +252,6 @@ func testGoogleCloudMonitoringAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "gcm"
   release_channel = "beta"
   query_delay {
@@ -278,7 +267,6 @@ func testGrafanaLokiAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "grafana_loki"
   grafana_loki_config {
     url = "http://web.net"
@@ -297,7 +285,6 @@ func testHoneycombAgent(name string) string {
 resource "nobl9_agent" "%s" {
 	name      = "%s"
 	project   = "%s"
-	source_of = ["Metrics", "Services"]
 	agent_type = "honeycomb"
 	release_channel = "beta"
 	query_delay {
@@ -313,7 +300,7 @@ func testGraphiteAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
+
   agent_type = "graphite"
   graphite_config {
     url = "http://web.net"
@@ -332,7 +319,6 @@ func testInfluxDBAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "influxdb"
   influxdb_config {
     url = "http://web.net"
@@ -351,7 +337,6 @@ func testInstanaAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "instana"
   instana_config {
     url = "http://web.net"
@@ -370,7 +355,6 @@ func testLightstepAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "lightstep"
   lightstep_config {
     organization = "acme"
@@ -390,7 +374,6 @@ func testNewrelicAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "newrelic"
   newrelic_config {
     account_id = 1234
@@ -409,7 +392,6 @@ func testOpenTSDBAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "opentsdb"
   opentsdb_config {
     url = "http://web.net"
@@ -428,7 +410,6 @@ func testPingdomAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "pingdom"
   release_channel = "beta"
   query_delay {
@@ -444,7 +425,6 @@ func testPrometheusAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "prometheus"
   prometheus_config {
 	url = "http://web.net"
@@ -463,7 +443,6 @@ func testRedshiftAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "redshift"
   release_channel = "beta"
   query_delay {
@@ -479,7 +458,6 @@ func testSplunkAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "splunk"
   splunk_config {
     url = "http://web.net"
@@ -498,7 +476,6 @@ func testSplunkObservabilityAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "splunk_observability"
   splunk_observability_config {
     realm = "eu"
@@ -517,7 +494,6 @@ func testSumoLogicAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics"]
   agent_type = "sumologic"
   sumologic_config {
     url = "http://web.net"
@@ -536,7 +512,6 @@ func testThousandEyesAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-  source_of = ["Metrics", "Services"]
   agent_type = "thousandeyes"
   release_channel = "beta"
   query_delay {

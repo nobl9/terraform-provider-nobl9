@@ -36,7 +36,6 @@ resource "nobl9_direct_appdynamics" "test-appdynamics" {
 - `client_name` (String) AppDynamics Client Name.
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services.
 - `url` (String) Base URL to the AppDynamics Controller.
 
 ### Optional

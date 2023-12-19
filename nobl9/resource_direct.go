@@ -30,21 +30,10 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 	i := directResource{directSpecResource: directSpec}
 	r := &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"name":         schemaName(),
-			"display_name": schemaDisplayName(),
-			"project":      schemaProject(),
-			"description":  schemaDescription(),
-			"source_of": {
-				Type:        schema.TypeList,
-				Required:    true,
-				MinItems:    1,
-				MaxItems:    2,
-				Description: "Source of Metrics and/or Services.",
-				Elem: &schema.Schema{
-					Type:        schema.TypeString,
-					Description: "Source of Metrics or Services.",
-				},
-			},
+			"name":              schemaName(),
+			"display_name":      schemaDisplayName(),
+			"project":           schemaProject(),
+			"description":       schemaDescription(),
 			releaseChannel:      schemaReleaseChannel(),
 			queryDelayConfigKey: schemaQueryDelay(),
 			"status": {
@@ -158,19 +147,12 @@ func (dr directResource) resourceDirectDelete(
 }
 
 func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alpha.Direct, diag.Diagnostics) {
-	sourceOf := d.Get("source_of").([]interface{})
-	sourceOfStr := make([]string, len(sourceOf))
-	for i, s := range sourceOf {
-		sourceOfStr[i] = s.(string)
-	}
-
 	labelsMarshaled, diags := getMarshaledLabels(d)
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	spec := dr.MarshalSpec(d)
-	spec.SourceOf = sourceOfStr
 	spec.Description = d.Get("description").(string)
 	spec.HistoricalDataRetrieval = marshalHistoricalDataRetrieval(d)
 	spec.QueryDelay = marshalQueryDelay(d)
@@ -568,7 +550,7 @@ func (h honeycombDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectS
 }
 
 func (h honeycombDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
-	set(d, "api_key", spec.Honeycomb.APIKey, &diags)
+	set(d, "description", spec.Description, &diags)
 	return
 }
 

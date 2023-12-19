@@ -522,8 +522,9 @@ func marshalComposite(d *schema.ResourceData) *v1alphaSLO.Composite {
 			}
 		}
 
+		budgetTarget := compositeTf["target"].(float64)
 		return &v1alphaSLO.Composite{
-			BudgetTarget:      compositeTf["target"].(*float64),
+			BudgetTarget:      &budgetTarget,
 			BurnRateCondition: burnRateCondition,
 		}
 	}
@@ -592,6 +593,7 @@ func marshalObjectives(d *schema.ResourceData) []v1alphaSLO.Objective {
 	objectives := make([]v1alphaSLO.Objective, len(objectivesSchema))
 	for i, o := range objectivesSchema {
 		objective := o.(map[string]interface{})
+		value := objective["value"].(float64)
 		target := objective["target"].(float64)
 		timeSliceTarget := objective["time_slice_target"].(float64)
 		var timeSliceTargetPtr *float64
@@ -603,7 +605,7 @@ func marshalObjectives(d *schema.ResourceData) []v1alphaSLO.Objective {
 		objectives[i] = v1alphaSLO.Objective{
 			ObjectiveBase: v1alphaSLO.ObjectiveBase{
 				DisplayName: objective["display_name"].(string),
-				Value:       objective["value"].(*float64),
+				Value:       &value,
 				Name:        objective["name"].(string),
 			},
 			BudgetTarget:    &target,
@@ -937,8 +939,6 @@ func unmarshalSLOMetric(spec *v1alphaSLO.MetricSpec) *schema.Set {
 
 	res := make(map[string]interface{})
 
-	// Using reflect here is good enough for the time being.
-	// This provider will get entirely rewritten to the new terraform-plugin-sdk version soon.
 	v := reflect.ValueOf(spec).Elem()
 	for _, name := range supportedMetrics {
 		field := v.FieldByName(name.specFieldName)
@@ -1628,11 +1628,6 @@ func schemaMetricHoneycomb() map[string]*schema.Schema {
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"dataset": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Dataset name",
-					},
 					"calculation": {
 						Type:        schema.TypeString,
 						Required:    true,
@@ -1654,14 +1649,10 @@ func marshalHoneycombMetric(s *schema.Set) *v1alphaSLO.HoneycombMetric {
 	if s.Len() == 0 {
 		return nil
 	}
-
 	metric := s.List()[0].(map[string]interface{})
-
-	dataset := metric["dataset"].(string)
 	calculation := metric["calculation"].(string)
 	attribute := metric["attribute"].(string)
 	return &v1alphaSLO.HoneycombMetric{
-		Dataset:     dataset,
 		Calculation: calculation,
 		Attribute:   attribute,
 	}
@@ -1674,7 +1665,6 @@ func unmarshalHoneycombMetric(metric interface{}) map[string]interface{} {
 		return nil
 	}
 	res := make(map[string]interface{})
-	res["dataset"] = hMetric.Dataset
 	res["calculation"] = hMetric.Calculation
 	res["attribute"] = hMetric.Attribute
 	return res

@@ -44,7 +44,6 @@ resource "nobl9_direct_lightstep" "test-lightstep" {
 - `lightstep_project` (String) Name of the Lightstep project.
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services.
 
 ### Optional
 

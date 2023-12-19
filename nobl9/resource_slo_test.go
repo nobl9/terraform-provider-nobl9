@@ -1120,7 +1120,7 @@ resource "nobl9_slo" ":name" {
 		values = ["dev", "staging", "prod"]
 	  }
 	
-	budgeting_method = "Occurences"
+	budgeting_method = "Occurrences"
 
 	objective {
 		display_name = "obj1"
@@ -1131,7 +1131,6 @@ resource "nobl9_slo" ":name" {
 		raw_metric {
 			query {
 				honeycomb {
-					dataset = "sequence-of-numbers"
 					calculation = "SUM"
 					attribute = "test-column"
 				}

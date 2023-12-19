@@ -224,6 +224,7 @@ Optional:
 - `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--total--gcm))
 - `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--total--grafana_loki))
 - `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--total--graphite))
+- `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--honeycomb))
 - `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--influxdb))
 - `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana))
 - `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--total--lightstep))
@@ -339,6 +340,15 @@ Required:
 Required:
 
 - `metric_path` (String) Path to the metrics
+
+
+<a id="nestedblock--objective--count_metrics--total--honeycomb"></a>
+### Nested Schema for `objective.count_metrics.total.honeycomb`
+
+Required:
+
+- `attribute` (String) Column name
+- `calculation` (String) Calculation type
 
 
 <a id="nestedblock--objective--count_metrics--total--influxdb"></a>
@@ -522,6 +532,7 @@ Optional:
 - `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--gcm))
 - `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--grafana_loki))
 - `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--graphite))
+- `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--honeycomb))
 - `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--influxdb))
 - `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--instana))
 - `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--lightstep))
@@ -637,6 +648,15 @@ Required:
 Required:
 
 - `metric_path` (String) Path to the metrics
+
+
+<a id="nestedblock--objective--count_metrics--bad--honeycomb"></a>
+### Nested Schema for `objective.count_metrics.bad.honeycomb`
+
+Required:
+
+- `attribute` (String) Column name
+- `calculation` (String) Calculation type
 
 
 <a id="nestedblock--objective--count_metrics--bad--influxdb"></a>
@@ -820,6 +840,7 @@ Optional:
 - `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--good--gcm))
 - `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--good--grafana_loki))
 - `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--good--graphite))
+- `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--honeycomb))
 - `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--influxdb))
 - `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana))
 - `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--good--lightstep))
@@ -935,6 +956,15 @@ Required:
 Required:
 
 - `metric_path` (String) Path to the metrics
+
+
+<a id="nestedblock--objective--count_metrics--good--honeycomb"></a>
+### Nested Schema for `objective.count_metrics.good.honeycomb`
+
+Required:
+
+- `attribute` (String) Column name
+- `calculation` (String) Calculation type
 
 
 <a id="nestedblock--objective--count_metrics--good--influxdb"></a>
@@ -1126,6 +1156,7 @@ Optional:
 - `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--raw_metric--query--gcm))
 - `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--raw_metric--query--grafana_loki))
 - `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--raw_metric--query--graphite))
+- `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--raw_metric--query--honeycomb))
 - `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--raw_metric--query--influxdb))
 - `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana))
 - `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--raw_metric--query--lightstep))
@@ -1241,6 +1272,15 @@ Required:
 Required:
 
 - `metric_path` (String) Path to the metrics
+
+
+<a id="nestedblock--objective--raw_metric--query--honeycomb"></a>
+### Nested Schema for `objective.raw_metric.query.honeycomb`
+
+Required:
+
+- `attribute` (String) Column name
+- `calculation` (String) Calculation type
 
 
 <a id="nestedblock--objective--raw_metric--query--influxdb"></a>

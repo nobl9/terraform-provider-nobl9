@@ -41,7 +41,6 @@ resource "nobl9_agent" "this" {
 - `agent_type` (String) The type of the Agent. Check [Supported Agent types | Nobl9 Documentation](https://docs.nobl9.com/Sources/)
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services.
 
 ### Optional
 
@@ -58,6 +57,7 @@ resource "nobl9_agent" "this" {
 - `grafana_loki_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#grafana-loki-agent) (see [below for nested schema](#nestedblock--grafana_loki_config))
 - `graphite_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#graphite-agent) (see [below for nested schema](#nestedblock--graphite_config))
 - `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
+- `honeycomb_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#hc-agent) (see [below for nested schema](#nestedblock--honeycomb_config))
 - `influxdb_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#influxdb-agent) (see [below for nested schema](#nestedblock--influxdb_config))
 - `instana_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/instana#instana-agent) (see [below for nested schema](#nestedblock--instana_config))
 - `lightstep_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-agent) (see [below for nested schema](#nestedblock--lightstep_config))
@@ -174,6 +174,10 @@ Required:
 - `unit` (String) Must be one of Minute, Hour, or Day.
 - `value` (Number) Must be an integer greater than or equal to 0.
 
+
+
+<a id="nestedblock--honeycomb_config"></a>
+### Nested Schema for `honeycomb_config`
 
 
 <a id="nestedblock--influxdb_config"></a>
