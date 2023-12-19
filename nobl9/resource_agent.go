@@ -794,13 +794,12 @@ func marshalAgentGraphite(d *schema.ResourceData, diags diag.Diagnostics) *v1alp
 const honeycombAgentType = "honeycomb"
 const honeycombAgentConfigKey = "honeycomb_config"
 
-// FIXME PC-10671: is it ok?
 func schemaAgentHoneycomb() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		honeycombAgentConfigKey: {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#hc-agent)", // FIXME PC-10671: URL.
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#hc-agent)",
 			MinItems:    1,
 			MaxItems:    1,
 			Elem: &schema.Resource{

@@ -592,7 +592,6 @@ func (h honeycombDirectSpec) GetSchema() map[string]*schema.Schema {
 	return honeycombSchema
 }
 
-// FIXME PC-10671: URL.
 func (h honeycombDirectSpec) GetDescription() string {
 	return "[Honeycomb Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/honeycomb#hc-direct)."
 }

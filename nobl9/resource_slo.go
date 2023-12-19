@@ -1123,7 +1123,7 @@ func schemaMetricAzureMonitor() map[string]*schema.Schema {
 	}
 }
 
-func marshalAzureMonitorMetric(s *schema.Set) *v1alpha.AzureMonitorMetric {
+func marshalAzureMonitorMetric(s *schema.Set) *v1alphaSLO.AzureMonitorMetric {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -1136,23 +1136,23 @@ func marshalAzureMonitorMetric(s *schema.Set) *v1alpha.AzureMonitorMetric {
 	aggregation := metric["aggregation"].(string)
 
 	dimensions := metric["dimensions"].(*schema.Set)
-	var metricDimensions []v1alpha.AzureMonitorMetricDimension
+	var metricDimensions []v1alphaSLO.AzureMonitorMetricDimension
 
 	if dimensions.Len() > 0 {
-		metricDimensions = make([]v1alpha.AzureMonitorMetricDimension, dimensions.Len())
+		metricDimensions = make([]v1alphaSLO.AzureMonitorMetricDimension, dimensions.Len())
 	}
 
 	for idx, dimension := range dimensions.List() {
 		n9Dimension := dimension.(map[string]interface{})
 		name := n9Dimension["name"].(string)
 		value := n9Dimension["value"].(string)
-		metricDimensions[idx] = v1alpha.AzureMonitorMetricDimension{
+		metricDimensions[idx] = v1alphaSLO.AzureMonitorMetricDimension{
 			Name:  &name,
 			Value: &value,
 		}
 	}
 
-	return &v1alpha.AzureMonitorMetric{
+	return &v1alphaSLO.AzureMonitorMetric{
 		ResourceID:      resourceID,
 		MetricNamespace: metricNamespace,
 		MetricName:      metricName,
@@ -1162,7 +1162,7 @@ func marshalAzureMonitorMetric(s *schema.Set) *v1alpha.AzureMonitorMetric {
 }
 
 func unmarshalAzureMonitorMetric(metric interface{}) map[string]interface{} {
-	amMetric, ok := metric.(*v1alpha.AzureMonitorMetric)
+	amMetric, ok := metric.(*v1alphaSLO.AzureMonitorMetric)
 	if !ok {
 		return nil
 	}
@@ -1729,16 +1729,12 @@ func unmarshalGraphiteMetric(metric interface{}) map[string]interface{} {
 	return res
 }
 
-// FIXME PC-10671: URL.
 /**
  * Honeycomb Metric
  * https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb
  */
 const honeycombMetric = "honeycomb"
 
-// FIXME PC-10671: Check Schema descriptions.
-// TODO PC-10671: SDK has separate validation for Calculation types COUNT and CONCURRENCY as they do not require for attribute.
-// TODO PC-10671: But if we will remove Calculation, then I think it won't be needed.
 func schemaMetricHoneycomb() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		honeycombMetric: {
@@ -1763,7 +1759,6 @@ func schemaMetricHoneycomb() map[string]*schema.Schema {
 	}
 }
 
-// FIXME PC-10671: Check if this func is correct.
 func marshalHoneycombMetric(s *schema.Set) *v1alphaSLO.HoneycombMetric {
 	if s.Len() == 0 {
 		return nil
@@ -1777,7 +1772,6 @@ func marshalHoneycombMetric(s *schema.Set) *v1alphaSLO.HoneycombMetric {
 	}
 }
 
-// FIXME PC-10671: Check if this func is correct.
 func unmarshalHoneycombMetric(metric interface{}) map[string]interface{} {
 	hMetric, ok := metric.(*v1alphaSLO.HoneycombMetric)
 	if !ok {
