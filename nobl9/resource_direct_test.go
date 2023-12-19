@@ -230,7 +230,6 @@ resource "nobl9_direct_%s" "%s" {
 `, directType, name, name, testProject)
 }
 
-// FIXME PC-10671: Fix indent. Check query delay value.
 func testHoneycombDirect(directType, name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_direct_%s" "%s" {

@@ -1737,16 +1737,12 @@ func unmarshalGraphiteMetric(metric interface{}) map[string]interface{} {
 	return res
 }
 
-// FIXME PC-10671: URL.
 /**
  * Honeycomb Metric
  * https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb
  */
 const honeycombMetric = "honeycomb"
 
-// FIXME PC-10671: Check Schema descriptions.
-// TODO PC-10671: SDK has separate validation for Calculation types COUNT and CONCURRENCY as they do not require for attribute.
-// TODO PC-10671: But if we will remove Calculation, then I think it won't be needed.
 func schemaMetricHoneycomb() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		honeycombMetric: {
@@ -1771,7 +1767,6 @@ func schemaMetricHoneycomb() map[string]*schema.Schema {
 	}
 }
 
-// FIXME PC-10671: Check if this func is correct.
 func marshalHoneycombMetric(s *schema.Set) *v1alphaSLO.HoneycombMetric {
 	if s.Len() == 0 {
 		return nil
@@ -1785,7 +1780,6 @@ func marshalHoneycombMetric(s *schema.Set) *v1alphaSLO.HoneycombMetric {
 	}
 }
 
-// FIXME PC-10671: Check if this func is correct.
 func unmarshalHoneycombMetric(metric interface{}) map[string]interface{} {
 	hMetric, ok := metric.(*v1alphaSLO.HoneycombMetric)
 	if !ok {
