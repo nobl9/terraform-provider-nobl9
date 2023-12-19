@@ -69,6 +69,7 @@ func agentSchema() map[string]*schema.Schema {
 	agentSchemaDefinitions := []map[string]*schema.Schema{
 		schemaAgentAmazonPrometheus(),
 		schemaAgentAppDynamics(),
+		schemaAgentAzureMonitor(),
 		schemaAgentBigQuery(),
 		schemaAgentCloudWatch(),
 		schemaAgentDatadog(),
@@ -206,6 +207,7 @@ func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
 			Description:             d.Get("description").(string),
 			AmazonPrometheus:        marshalAgentAmazonPrometheus(d, diags),
 			AppDynamics:             marshalAgentAppDynamics(d, diags),
+			AzureMonitor:            marshalAgentAzureMonitor(d, diags),
 			BigQuery:                marshalAgentBigQuery(d),
 			CloudWatch:              marshalAgentCloudWatch(d),
 			Datadog:                 marshalAgentDatadog(d, diags),
@@ -269,6 +271,7 @@ func unmarshalAgent(d *schema.ResourceData, agents []v1alpha.Agent) diag.Diagnos
 	}{
 		{amazonPrometheusAgentConfigKey, agentSpecJSONName(spec.AmazonPrometheus, diags)},
 		{appDynamicsAgentConfigKey, agentSpecJSONName(spec.AppDynamics, diags)},
+		{azureMonitorAgentConfigKey, agentSpecJSONName(spec.AzureMonitor, diags)},
 		{bigqueryAgentConfigKey, agentSpecJSONName(spec.BigQuery, diags)},
 		{cloudWatchAgentConfigKey, agentSpecJSONName(spec.CloudWatch, diags)},
 		{datadogAgentConfigKey, agentSpecJSONName(spec.Datadog, diags)},
@@ -448,6 +451,47 @@ func marshalAgentAppDynamics(d *schema.ResourceData, diags diag.Diagnostics) *v1
 	url := data["url"].(string)
 	return &v1alpha.AppDynamicsAgentConfig{
 		URL: url,
+	}
+}
+
+/**
+ * Azure Monitor Agent
+ * https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-agent
+ */
+const azureMonitorAgentType = "azure_monitor"
+const azureMonitorAgentConfigKey = "azure_monitor_config"
+
+func schemaAgentAzureMonitor() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		azureMonitorAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"tenant_id": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Azure Tenant Id.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentAzureMonitor(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.AzureMonitorAgentConfig {
+	data := getAgentResourceData(d, azureMonitorAgentType, azureMonitorAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	tenantID := data["tenant_id"].(string)
+	return &v1alpha.AzureMonitorAgentConfig{
+		TenantID: tenantID,
 	}
 }
 

@@ -276,6 +276,62 @@ func (s appDynamicsDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alph
 	return
 }
 
+// Azure Monitor Direct
+// https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-direct
+const azureMonitorDirectType = "azure_monitor"
+
+type azureMonitorDirectSpec struct{}
+
+func (s azureMonitorDirectSpec) GetSchema() map[string]*schema.Schema {
+	azureMonitorSchema := map[string]*schema.Schema{
+		"tenant_id": {
+			Type:        schema.TypeString,
+			Description: "[required] | Azure Tenant ID.",
+			Required:    true,
+		},
+		"client_id": {
+			Type:        schema.TypeString,
+			Description: "[required] | Azure Application (client) ID.",
+			Required:    true,
+		},
+		"client_secret": {
+			Type:        schema.TypeString,
+			Description: "[required] | Azure Application (client) Secret.",
+			Computed:    true,
+			Optional:    true,
+			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
+		},
+	}
+	setLogCollectionSchema(azureMonitorSchema)
+	setHistoricalDataRetrievalSchema(azureMonitorSchema)
+
+	return azureMonitorSchema
+}
+
+func (s azureMonitorDirectSpec) GetDescription() string {
+	return "[Azure Monitor Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-direct)"
+}
+
+func (s azureMonitorDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
+	return v1alpha.DirectSpec{
+		AzureMonitor: &v1alpha.AzureMonitorDirectConfig{
+			TenantID:     d.Get("tenant_id").(string),
+			ClientID:     d.Get("client_id").(string),
+			ClientSecret: d.Get("client_secret").(string),
+		},
+	}
+}
+
+func (s azureMonitorDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
+	set(d, "tenant_id", spec.AzureMonitor.TenantID, &diags)
+	set(d, "client_id", spec.AzureMonitor.ClientID, &diags)
+	set(d, "client_secret", spec.AzureMonitor.ClientSecret, &diags)
+	return
+}
+
 // BigQuery Direct
 // https://docs.nobl9.com/Sources/bigquery#bigquery-direct
 const bigqueryDirectType = "bigquery"

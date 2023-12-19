@@ -216,6 +216,7 @@ Optional:
 
 - `amazon_prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--total--amazon_prometheus))
 - `appdynamics` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--total--appdynamics))
+- `azure_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_monitor))
 - `bigquery` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--total--bigquery))
 - `cloudwatch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch))
 - `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--total--datadog))
@@ -253,6 +254,30 @@ Required:
 
 - `application_name` (String) Name of the added application
 - `metric_path` (String) Path to the metrics
+
+
+<a id="nestedblock--objective--count_metrics--total--azure_monitor"></a>
+### Nested Schema for `objective.count_metrics.total.azure_monitor`
+
+Required:
+
+- `aggregation` (String) Aggregation type
+- `metric_name` (String) Name of the metric
+- `resource_id` (String) Name of the added application
+
+Optional:
+
+- `dimensions` (Block Set) Dimensions of the metric (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_monitor--dimensions))
+- `metric_namespace` (String) Namespace of the metric
+
+<a id="nestedblock--objective--count_metrics--total--azure_monitor--dimensions"></a>
+### Nested Schema for `objective.count_metrics.total.azure_monitor.dimensions`
+
+Required:
+
+- `name` (String) Name
+- `value` (String) Value
+
 
 
 <a id="nestedblock--objective--count_metrics--total--bigquery"></a>
@@ -524,6 +549,7 @@ Optional:
 
 - `amazon_prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--amazon_prometheus))
 - `appdynamics` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--appdynamics))
+- `azure_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_monitor))
 - `bigquery` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--bigquery))
 - `cloudwatch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--cloudwatch))
 - `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--datadog))
@@ -561,6 +587,30 @@ Required:
 
 - `application_name` (String) Name of the added application
 - `metric_path` (String) Path to the metrics
+
+
+<a id="nestedblock--objective--count_metrics--bad--azure_monitor"></a>
+### Nested Schema for `objective.count_metrics.bad.azure_monitor`
+
+Required:
+
+- `aggregation` (String) Aggregation type
+- `metric_name` (String) Name of the metric
+- `resource_id` (String) Name of the added application
+
+Optional:
+
+- `dimensions` (Block Set) Dimensions of the metric (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_monitor--dimensions))
+- `metric_namespace` (String) Namespace of the metric
+
+<a id="nestedblock--objective--count_metrics--bad--azure_monitor--dimensions"></a>
+### Nested Schema for `objective.count_metrics.bad.azure_monitor.dimensions`
+
+Required:
+
+- `name` (String) Name
+- `value` (String) Value
+
 
 
 <a id="nestedblock--objective--count_metrics--bad--bigquery"></a>
@@ -832,6 +882,7 @@ Optional:
 
 - `amazon_prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good--amazon_prometheus))
 - `appdynamics` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--good--appdynamics))
+- `azure_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_monitor))
 - `bigquery` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good--bigquery))
 - `cloudwatch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch))
 - `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--good--datadog))
@@ -869,6 +920,30 @@ Required:
 
 - `application_name` (String) Name of the added application
 - `metric_path` (String) Path to the metrics
+
+
+<a id="nestedblock--objective--count_metrics--good--azure_monitor"></a>
+### Nested Schema for `objective.count_metrics.good.azure_monitor`
+
+Required:
+
+- `aggregation` (String) Aggregation type
+- `metric_name` (String) Name of the metric
+- `resource_id` (String) Name of the added application
+
+Optional:
+
+- `dimensions` (Block Set) Dimensions of the metric (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_monitor--dimensions))
+- `metric_namespace` (String) Namespace of the metric
+
+<a id="nestedblock--objective--count_metrics--good--azure_monitor--dimensions"></a>
+### Nested Schema for `objective.count_metrics.good.azure_monitor.dimensions`
+
+Required:
+
+- `name` (String) Name
+- `value` (String) Value
+
 
 
 <a id="nestedblock--objective--count_metrics--good--bigquery"></a>
@@ -1148,6 +1223,7 @@ Optional:
 
 - `amazon_prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--raw_metric--query--amazon_prometheus))
 - `appdynamics` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--raw_metric--query--appdynamics))
+- `azure_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_monitor))
 - `bigquery` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--raw_metric--query--bigquery))
 - `cloudwatch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch))
 - `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--raw_metric--query--datadog))
@@ -1185,6 +1261,30 @@ Required:
 
 - `application_name` (String) Name of the added application
 - `metric_path` (String) Path to the metrics
+
+
+<a id="nestedblock--objective--raw_metric--query--azure_monitor"></a>
+### Nested Schema for `objective.raw_metric.query.azure_monitor`
+
+Required:
+
+- `aggregation` (String) Aggregation type
+- `metric_name` (String) Name of the metric
+- `resource_id` (String) Name of the added application
+
+Optional:
+
+- `dimensions` (Block Set) Dimensions of the metric (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_monitor--dimensions))
+- `metric_namespace` (String) Namespace of the metric
+
+<a id="nestedblock--objective--raw_metric--query--azure_monitor--dimensions"></a>
+### Nested Schema for `objective.raw_metric.query.azure_monitor.dimensions`
+
+Required:
+
+- `name` (String) Name
+- `value` (String) Value
+
 
 
 <a id="nestedblock--objective--raw_metric--query--bigquery"></a>
