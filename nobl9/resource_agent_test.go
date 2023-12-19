@@ -304,7 +304,6 @@ func testHoneycombAgent(name string) string {
 resource "nobl9_agent" "%s" {
 	name      = "%s"
 	project   = "%s"
-	source_of = ["Metrics", "Services"]
 	agent_type = "honeycomb"
 	release_channel = "beta"
 	query_delay {

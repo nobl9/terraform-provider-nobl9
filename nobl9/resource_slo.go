@@ -1755,11 +1755,6 @@ func schemaMetricHoneycomb() map[string]*schema.Schema {
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"dataset": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Dataset name",
-					},
 					"calculation": {
 						Type:        schema.TypeString,
 						Required:    true,
@@ -1781,14 +1776,10 @@ func marshalHoneycombMetric(s *schema.Set) *v1alphaSLO.HoneycombMetric {
 	if s.Len() == 0 {
 		return nil
 	}
-
 	metric := s.List()[0].(map[string]interface{})
-
-	dataset := metric["dataset"].(string)
 	calculation := metric["calculation"].(string)
 	attribute := metric["attribute"].(string)
 	return &v1alphaSLO.HoneycombMetric{
-		Dataset:     dataset,
 		Calculation: calculation,
 		Attribute:   attribute,
 	}
@@ -1801,7 +1792,6 @@ func unmarshalHoneycombMetric(metric interface{}) map[string]interface{} {
 		return nil
 	}
 	res := make(map[string]interface{})
-	res["dataset"] = hMetric.Dataset
 	res["calculation"] = hMetric.Calculation
 	res["attribute"] = hMetric.Attribute
 	return res

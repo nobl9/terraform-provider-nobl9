@@ -661,7 +661,7 @@ func (h honeycombDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectS
 }
 
 func (h honeycombDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
-	set(d, "api_key", spec.Honeycomb.APIKey, &diags)
+	set(d, "description", spec.Description, &diags)
 	return
 }
 

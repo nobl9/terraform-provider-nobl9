@@ -234,10 +234,9 @@ resource "nobl9_direct_%s" "%s" {
 func testHoneycombDirect(directType, name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_direct_%s" "%s" {
-	  name = "%s"
-	  project = "%s"
-	  description = "desc"
-	  source_of = ["Metrics", "Services"]
+	name = "%s"
+	project = "%s"
+	description = "desc"
 	api_key = "secret"
 	log_collection_enabled = true
 	release_channel = "beta"
