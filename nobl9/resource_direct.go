@@ -651,15 +651,15 @@ func (h honeycombDirectSpec) GetDescription() string {
 	return "[Honeycomb Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/honeycomb#hc-direct)."
 }
 
-func (h honeycombDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.DirectSpec {
-	return v1alpha.DirectSpec{
-		Honeycomb: &v1alpha.HoneycombDirectConfig{
+func (h honeycombDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+	return v1alphaDirect.Spec{
+		Honeycomb: &v1alphaDirect.HoneycombConfig{
 			APIKey: d.Get("api_key").(string),
 		},
 	}
 }
 
-func (h honeycombDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
+func (h honeycombDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
 	set(d, "description", spec.Description, &diags)
 	return
 }
