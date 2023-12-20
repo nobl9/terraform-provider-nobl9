@@ -263,6 +263,7 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       query {
         azure_monitor {
+          data_type = "metrics"
           resource_id = "/subscriptions/9c26f90e-24bb-4d20-a648-c6e3e1cde26a/resourceGroups/azure-monitor-test-sources/providers/microsoft.insights/components/n9-web-app"
           metric_namespace = ""
           metric_name = "requests/duration"

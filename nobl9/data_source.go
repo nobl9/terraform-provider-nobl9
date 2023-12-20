@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	"github.com/nobl9/nobl9-go/sdk/models"
 )
 
 func dataSourceAWSIAMRoleAuthExternalID() *schema.Resource {
@@ -56,7 +56,7 @@ func dataSourceAWSIAMRoleAuthExternalIDDRead(
 
 func unmarshallDataSourceAWSIAMRoleAuthExternalID(
 	d *schema.ResourceData,
-	objects *v1alpha.AWSIAMRoleAuthExternalIDs,
+	objects *models.AWSIAMRoleAuthExternalIDs,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 

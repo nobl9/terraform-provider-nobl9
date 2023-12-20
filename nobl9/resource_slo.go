@@ -1077,6 +1077,11 @@ func schemaMetricAzureMonitor() map[string]*schema.Schema {
 				"(https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
+					"data_type": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Specifies source: 'metrics' or 'logs",
+					},
 					"resource_id": {
 						Type:        schema.TypeString,
 						Required:    true,
@@ -1130,6 +1135,7 @@ func marshalAzureMonitorMetric(s *schema.Set) *v1alphaSLO.AzureMonitorMetric {
 
 	metric := s.List()[0].(map[string]interface{})
 
+	dataType := metric["data_type"].(string)
 	resourceID := metric["resource_id"].(string)
 	metricNamespace := metric["metric_namespace"].(string)
 	metricName := metric["metric_name"].(string)
@@ -1153,6 +1159,7 @@ func marshalAzureMonitorMetric(s *schema.Set) *v1alphaSLO.AzureMonitorMetric {
 	}
 
 	return &v1alphaSLO.AzureMonitorMetric{
+		DataType:        dataType,
 		ResourceID:      resourceID,
 		MetricNamespace: metricNamespace,
 		MetricName:      metricName,
@@ -1167,6 +1174,7 @@ func unmarshalAzureMonitorMetric(metric interface{}) map[string]interface{} {
 		return nil
 	}
 	res := make(map[string]interface{})
+	res["data_type"] = amMetric.DataType
 	res["resource_id"] = amMetric.ResourceID
 	res["metric_namespace"] = amMetric.MetricNamespace
 	res["metric_name"] = amMetric.MetricName
