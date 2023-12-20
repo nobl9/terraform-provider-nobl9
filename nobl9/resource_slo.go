@@ -1080,7 +1080,7 @@ func schemaMetricAzureMonitor() map[string]*schema.Schema {
 					"data_type": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Specifies source: 'metrics' or 'logs",
+						Description: "Specifies source: 'metrics' or 'logs'",
 					},
 					"resource_id": {
 						Type:        schema.TypeString,

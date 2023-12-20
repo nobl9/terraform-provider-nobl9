@@ -262,6 +262,7 @@ Required:
 Required:
 
 - `aggregation` (String) Aggregation type
+- `data_type` (String) Specifies source: 'metrics' or 'logs'
 - `metric_name` (String) Name of the metric
 - `resource_id` (String) Name of the added application
 
@@ -595,6 +596,7 @@ Required:
 Required:
 
 - `aggregation` (String) Aggregation type
+- `data_type` (String) Specifies source: 'metrics' or 'logs'
 - `metric_name` (String) Name of the metric
 - `resource_id` (String) Name of the added application
 
@@ -928,6 +930,7 @@ Required:
 Required:
 
 - `aggregation` (String) Aggregation type
+- `data_type` (String) Specifies source: 'metrics' or 'logs'
 - `metric_name` (String) Name of the metric
 - `resource_id` (String) Name of the added application
 
@@ -1269,6 +1272,7 @@ Required:
 Required:
 
 - `aggregation` (String) Aggregation type
+- `data_type` (String) Specifies source: 'metrics' or 'logs'
 - `metric_name` (String) Name of the metric
 - `resource_id` (String) Name of the added application
 
