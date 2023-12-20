@@ -16,6 +16,7 @@ import (
 
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	v1alphaAgent "github.com/nobl9/nobl9-go/manifest/v1alpha/agent"
 	"github.com/nobl9/nobl9-go/sdk"
 )
 
@@ -155,7 +156,7 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalAgent(d, manifest.FilterByKind[v1alpha.Agent](objects))
+	return unmarshalAgent(d, manifest.FilterByKind[v1alphaAgent.Agent](objects))
 }
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -183,27 +184,22 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	return nil
 }
 
-func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
+func marshalAgent(d *schema.ResourceData) (*v1alphaAgent.Agent, diag.Diagnostics) {
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
 	}
 
-	labelsMarshaled, diags := getMarshaledLabels(d)
-	if diags.HasError() {
-		return nil, diags
-	}
-
-	return &v1alpha.Agent{
+	var diags diag.Diagnostics
+	return &v1alphaAgent.Agent{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindAgent,
-		Metadata: v1alpha.AgentMetadata{
+		Metadata: v1alphaAgent.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
-			Labels:      labelsMarshaled,
 		},
-		Spec: v1alpha.AgentSpec{
+		Spec: v1alphaAgent.Spec{
 			Description:             d.Get("description").(string),
 			AmazonPrometheus:        marshalAgentAmazonPrometheus(d, diags),
 			AppDynamics:             marshalAgentAppDynamics(d, diags),
@@ -236,7 +232,7 @@ func marshalAgent(d *schema.ResourceData) (*v1alpha.Agent, diag.Diagnostics) {
 	}, diags
 }
 
-func unmarshalAgent(d *schema.ResourceData, agents []v1alpha.Agent) diag.Diagnostics {
+func unmarshalAgent(d *schema.ResourceData, agents []v1alphaAgent.Agent) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if len(agents) != 1 {
@@ -258,13 +254,10 @@ func unmarshalAgent(d *schema.ResourceData, agents []v1alpha.Agent) diag.Diagnos
 	set(d, "name", agent.Metadata.Name, &diags)
 	set(d, "display_name", agent.Metadata.DisplayName, &diags)
 	set(d, "project", agent.Metadata.Project, &diags)
-	if len(agent.Metadata.Labels) > 0 {
-		set(d, "label", agent.Metadata.Labels, &diags)
-	}
 
 	diags = append(diags, unmarshalQueryDelay(d, agent.Spec.QueryDelay)...)
 	diags = append(diags, unmarshalReleaseChannel(d, agent.Spec.ReleaseChannel)...)
-	spec := v1alpha.AgentSpec{}
+	spec := v1alphaAgent.Spec{}
 	supportedAgents := []struct {
 		hclName  string
 		jsonName string
@@ -310,7 +303,7 @@ func unmarshalAgent(d *schema.ResourceData, agents []v1alpha.Agent) diag.Diagnos
 
 func unmarshalAgentConfig(
 	d *schema.ResourceData,
-	agent v1alpha.Agent,
+	agent v1alphaAgent.Agent,
 	hclName,
 	jsonName string) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
@@ -325,7 +318,7 @@ func unmarshalAgentConfig(
 	diags = appendError(diags, err)
 
 	switch jsonName {
-	case agentSpecJSONName(v1alpha.AgentSpec{}.NewRelic, diags):
+	case agentSpecJSONName(v1alphaAgent.Spec{}.NewRelic, diags):
 		unmarshalDiags := unmarshalNewRelicAgentSpec(d, agent)
 		diags = append(diags, unmarshalDiags...)
 	default:
@@ -337,7 +330,7 @@ func unmarshalAgentConfig(
 }
 
 func agentSpecJSONName(agentSpecField any, diags diag.Diagnostics) string {
-	agentSpec := v1alpha.AgentSpec{}
+	agentSpec := v1alphaAgent.Spec{}
 	getAgentSpecFieldName := func() string {
 		var name string
 		val := reflect.Indirect(reflect.ValueOf(agentSpec))
@@ -400,14 +393,14 @@ func schemaAgentAmazonPrometheus() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentAmazonPrometheus(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.AmazonPrometheusAgentConfig {
+func marshalAgentAmazonPrometheus(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.AmazonPrometheusConfig {
 	data := getAgentResourceData(d, amazonPrometheusAgentType, amazonPrometheusAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.AmazonPrometheusAgentConfig{
+	return &v1alphaAgent.AmazonPrometheusConfig{
 		URL:    data["url"].(string),
 		Region: data["region"].(string),
 	}
@@ -441,7 +434,7 @@ func schemaAgentAppDynamics() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentAppDynamics(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.AppDynamicsAgentConfig {
+func marshalAgentAppDynamics(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.AppDynamicsConfig {
 	data := getAgentResourceData(d, appDynamicsAgentType, appDynamicsAgentConfigKey, diags)
 
 	if data == nil {
@@ -449,7 +442,7 @@ func marshalAgentAppDynamics(d *schema.ResourceData, diags diag.Diagnostics) *v1
 	}
 
 	url := data["url"].(string)
-	return &v1alpha.AppDynamicsAgentConfig{
+	return &v1alphaAgent.AppDynamicsConfig{
 		URL: url,
 	}
 }
@@ -482,7 +475,7 @@ func schemaAgentAzureMonitor() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentAzureMonitor(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.AzureMonitorAgentConfig {
+func marshalAgentAzureMonitor(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.AzureMonitorConfig {
 	data := getAgentResourceData(d, azureMonitorAgentType, azureMonitorAgentConfigKey, diags)
 
 	if data == nil {
@@ -490,7 +483,7 @@ func marshalAgentAzureMonitor(d *schema.ResourceData, diags diag.Diagnostics) *v
 	}
 
 	tenantID := data["tenant_id"].(string)
-	return &v1alpha.AzureMonitorAgentConfig{
+	return &v1alphaAgent.AzureMonitorConfig{
 		TenantID: tenantID,
 	}
 }
@@ -517,12 +510,12 @@ func schemaAgentBigQuery() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentBigQuery(d *schema.ResourceData) *v1alpha.BigQueryAgentConfig {
+func marshalAgentBigQuery(d *schema.ResourceData) *v1alphaAgent.BigQueryConfig {
 	if !isAgentType(d, bigqueryAgentType) {
 		return nil
 	}
 
-	return &v1alpha.BigQueryAgentConfig{}
+	return &v1alphaAgent.BigQueryConfig{}
 }
 
 /**
@@ -547,12 +540,12 @@ func schemaAgentCloudWatch() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentCloudWatch(d *schema.ResourceData) *v1alpha.CloudWatchAgentConfig {
+func marshalAgentCloudWatch(d *schema.ResourceData) *v1alphaAgent.CloudWatchConfig {
 	if !isAgentType(d, cloudWatchAgentType) {
 		return nil
 	}
 
-	return &v1alpha.CloudWatchAgentConfig{}
+	return &v1alphaAgent.CloudWatchConfig{}
 }
 
 /**
@@ -584,14 +577,14 @@ func schemaAgentDatadog() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentDatadog(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.DatadogAgentConfig {
+func marshalAgentDatadog(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.DatadogConfig {
 	data := getAgentResourceData(d, datadogAgentType, datadogAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.DatadogAgentConfig{
+	return &v1alphaAgent.DatadogConfig{
 		Site: data["site"].(string),
 	}
 }
@@ -624,14 +617,14 @@ func schemaAgentDynatrace() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentDynatrace(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.DynatraceAgentConfig {
+func marshalAgentDynatrace(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.DynatraceConfig {
 	data := getAgentResourceData(d, dynatraceAgentType, dynatraceAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.DynatraceAgentConfig{
+	return &v1alphaAgent.DynatraceConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -664,14 +657,14 @@ func schemaAgentElasticsearch() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentElasticsearch(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.ElasticsearchAgentConfig {
+func marshalAgentElasticsearch(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.ElasticsearchConfig {
 	data := getAgentResourceData(d, elasticsearchAgentType, elasticsearchAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.ElasticsearchAgentConfig{
+	return &v1alphaAgent.ElasticsearchConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -699,12 +692,12 @@ func schemaAgentGCM() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentGCM(d *schema.ResourceData) *v1alpha.GCMAgentConfig {
+func marshalAgentGCM(d *schema.ResourceData) *v1alphaAgent.GCMConfig {
 	if !isAgentType(d, gcmAgentType) {
 		return nil
 	}
 
-	return &v1alpha.GCMAgentConfig{}
+	return &v1alphaAgent.GCMConfig{}
 }
 
 /**
@@ -735,14 +728,14 @@ func schemaAgentGrafanaLoki() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentGrafanaLoki(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.GrafanaLokiAgentConfig {
+func marshalAgentGrafanaLoki(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.GrafanaLokiConfig {
 	data := getAgentResourceData(d, grafanalokiAgentType, grafanalokiAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.GrafanaLokiAgentConfig{
+	return &v1alphaAgent.GrafanaLokiConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -775,14 +768,14 @@ func schemaAgentGraphite() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentGraphite(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.GraphiteAgentConfig {
+func marshalAgentGraphite(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.GraphiteConfig {
 	data := getAgentResourceData(d, graphiteAgentType, graphiteAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.GraphiteAgentConfig{
+	return &v1alphaAgent.GraphiteConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -809,11 +802,11 @@ func schemaAgentHoneycomb() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentHoneycomb(d *schema.ResourceData) *v1alpha.HoneycombAgentConfig {
+func marshalAgentHoneycomb(d *schema.ResourceData) *v1alphaAgent.HoneycombConfig {
 	if !isAgentType(d, honeycombAgentType) {
 		return nil
 	}
-	return &v1alpha.HoneycombAgentConfig{}
+	return &v1alphaAgent.HoneycombConfig{}
 }
 
 /**
@@ -844,14 +837,14 @@ func schemaAgentInfluxDB() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentInfluxDB(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.InfluxDBAgentConfig {
+func marshalAgentInfluxDB(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.InfluxDBConfig {
 	data := getAgentResourceData(d, influxdbAgentType, influxdbAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.InfluxDBAgentConfig{
+	return &v1alphaAgent.InfluxDBConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -884,14 +877,14 @@ func schemaAgentInstana() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentInstana(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.InstanaAgentConfig {
+func marshalAgentInstana(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.InstanaConfig {
 	data := getAgentResourceData(d, instanaAgentType, instanaAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.InstanaAgentConfig{
+	return &v1alphaAgent.InstanaConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -930,14 +923,14 @@ func schemaAgentLightstep() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentLightstep(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.LightstepAgentConfig {
+func marshalAgentLightstep(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.LightstepConfig {
 	data := getAgentResourceData(d, lightstepAgentType, lightstepAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.LightstepAgentConfig{
+	return &v1alphaAgent.LightstepConfig{
 		Organization: data["organization"].(string),
 		Project:      data["project"].(string),
 	}
@@ -971,7 +964,7 @@ func schemaAgentNewRelic() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentNewRelic(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.NewRelicAgentConfig {
+func marshalAgentNewRelic(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.NewRelicConfig {
 	data := getAgentResourceData(d, newRelicAgentType, newRelicAgentConfigKey, diags)
 	if data == nil {
 		return nil
@@ -982,9 +975,22 @@ func marshalAgentNewRelic(d *schema.ResourceData, diags diag.Diagnostics) *v1alp
 		diags = appendError(diags, err)
 		return nil
 	}
-	return &v1alpha.NewRelicAgentConfig{
+	return &v1alphaAgent.NewRelicConfig{
 		AccountID: accID,
 	}
+}
+
+func unmarshalNewRelicAgentSpec(d *schema.ResourceData, agent v1alphaAgent.Agent) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if agent.Spec.NewRelic != nil {
+		accountID := agent.Spec.NewRelic.AccountID
+		accountIDVal := map[string]interface{}{"account_id": fmt.Sprint(accountID)}
+		err := d.Set(newRelicAgentConfigKey, schema.NewSet(oneElementSet, []interface{}{accountIDVal}))
+		diags = appendError(diags, err)
+		return diags
+	}
+	diags = appendError(diags, fmt.Errorf("missing newrelic agent spec"))
+	return diags
 }
 
 /**
@@ -1014,14 +1020,14 @@ func schemaAgentOpenTSDB() map[string]*schema.Schema {
 		}}
 }
 
-func marshalAgentOpenTSDB(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.OpenTSDBAgentConfig {
+func marshalAgentOpenTSDB(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.OpenTSDBConfig {
 	data := getAgentResourceData(d, opentsdbAgentType, opentsdbAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.OpenTSDBAgentConfig{
+	return &v1alphaAgent.OpenTSDBConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -1047,12 +1053,12 @@ func schemaAgentPingdom() map[string]*schema.Schema {
 		}}
 }
 
-func marshalAgentPingdom(d *schema.ResourceData) *v1alpha.PingdomAgentConfig {
+func marshalAgentPingdom(d *schema.ResourceData) *v1alphaAgent.PingdomConfig {
 	if !isAgentType(d, pingdomAgentType) {
 		return nil
 	}
 
-	return &v1alpha.PingdomAgentConfig{}
+	return &v1alphaAgent.PingdomConfig{}
 }
 
 /**
@@ -1083,16 +1089,15 @@ func schemaAgentPrometheus() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentPrometheus(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.PrometheusAgentConfig {
+func marshalAgentPrometheus(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.PrometheusConfig {
 	data := getAgentResourceData(d, prometheusAgentType, prometheusAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	url := data["url"].(string)
-	return &v1alpha.PrometheusAgentConfig{
-		URL: &url,
+	return &v1alphaAgent.PrometheusConfig{
+		URL: data["url"].(string),
 	}
 }
 
@@ -1119,25 +1124,12 @@ func schemaAgentRedshift() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentRedshift(d *schema.ResourceData) *v1alpha.RedshiftAgentConfig {
+func marshalAgentRedshift(d *schema.ResourceData) *v1alphaAgent.RedshiftConfig {
 	if !isAgentType(d, redshiftAgentType) {
 		return nil
 	}
 
-	return &v1alpha.RedshiftAgentConfig{}
-}
-
-func unmarshalNewRelicAgentSpec(d *schema.ResourceData, agent v1alpha.Agent) diag.Diagnostics {
-	var diags diag.Diagnostics
-	if agent.Spec.NewRelic != nil {
-		accountID := agent.Spec.NewRelic.AccountID
-		accountIDVal := map[string]interface{}{"account_id": fmt.Sprint(accountID)}
-		err := d.Set(newRelicAgentConfigKey, schema.NewSet(oneElementSet, []interface{}{accountIDVal}))
-		diags = appendError(diags, err)
-		return diags
-	}
-	diags = appendError(diags, fmt.Errorf("missing newrelic agent spec"))
-	return diags
+	return &v1alphaAgent.RedshiftConfig{}
 }
 
 /**
@@ -1168,14 +1160,14 @@ func schemaAgentSplunk() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentSplunk(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.SplunkAgentConfig {
+func marshalAgentSplunk(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.SplunkConfig {
 	data := getAgentResourceData(d, splunkAgentType, splunkAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.SplunkAgentConfig{
+	return &v1alphaAgent.SplunkConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -1211,14 +1203,14 @@ func schemaAgentSplunkObservability() map[string]*schema.Schema {
 
 func marshalAgentSplunkObservability(
 	d *schema.ResourceData,
-	diags diag.Diagnostics) *v1alpha.SplunkObservabilityAgentConfig {
+	diags diag.Diagnostics) *v1alphaAgent.SplunkObservabilityConfig {
 	data := getAgentResourceData(d, splunkObservabilityAgentType, splunkObservabilityAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.SplunkObservabilityAgentConfig{
+	return &v1alphaAgent.SplunkObservabilityConfig{
 		Realm: data["realm"].(string),
 	}
 }
@@ -1251,14 +1243,14 @@ func schemaAgentSumoLogic() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentSumoLogic(d *schema.ResourceData, diags diag.Diagnostics) *v1alpha.SumoLogicAgentConfig {
+func marshalAgentSumoLogic(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.SumoLogicConfig {
 	data := getAgentResourceData(d, sumologicAgentType, sumologicAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &v1alpha.SumoLogicAgentConfig{
+	return &v1alphaAgent.SumoLogicConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -1285,12 +1277,12 @@ func schemaAgentThousandEyes() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentThousandEyes(d *schema.ResourceData) *v1alpha.ThousandEyesAgentConfig {
+func marshalAgentThousandEyes(d *schema.ResourceData) *v1alphaAgent.ThousandEyesConfig {
 	if !isAgentType(d, thousandeyesAgentType) {
 		return nil
 	}
 
-	return &v1alpha.ThousandEyesAgentConfig{}
+	return &v1alphaAgent.ThousandEyesConfig{}
 }
 
 func getAgentResourceData(

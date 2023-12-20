@@ -292,7 +292,9 @@ func (s azureMonitorDirectSpec) GetSchema() map[string]*schema.Schema {
 		"client_id": {
 			Type:        schema.TypeString,
 			Description: "[required] | Azure Application (client) ID.",
-			Required:    true,
+			Computed:    true,
+			Optional:    true,
+			Sensitive:   true,
 		},
 		"client_secret": {
 			Type:        schema.TypeString,
@@ -327,8 +329,6 @@ func (s azureMonitorDirectSpec) MarshalSpec(d *schema.ResourceData) v1alpha.Dire
 
 func (s azureMonitorDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.DirectSpec) (diags diag.Diagnostics) {
 	set(d, "tenant_id", spec.AzureMonitor.TenantID, &diags)
-	set(d, "client_id", spec.AzureMonitor.ClientID, &diags)
-	set(d, "client_secret", spec.AzureMonitor.ClientSecret, &diags)
 	return
 }
 

@@ -8,13 +8,14 @@ import (
 
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	v1alphaAM "github.com/nobl9/nobl9-go/manifest/v1alpha/alertmethod"
 )
 
 type alertMethodProvider interface {
 	GetSchema() map[string]*schema.Schema
 	GetDescription() string
-	MarshalSpec(data *schema.ResourceData) v1alpha.AlertMethodSpec
-	UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics
+	MarshalSpec(data *schema.ResourceData) v1alphaAM.Spec
+	UnmarshalSpec(d *schema.ResourceData, spec v1alphaAM.Spec) diag.Diagnostics
 }
 
 func resourceAlertMethodFactory(provider alertMethodProvider) *schema.Resource {
@@ -47,12 +48,12 @@ type alertMethod struct {
 	alertMethodProvider
 }
 
-func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) *v1alpha.AlertMethod {
+func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) *v1alphaAM.AlertMethod {
 	displayName, _ := d.Get("display_name").(string)
-	return &v1alpha.AlertMethod{
+	return &v1alphaAM.AlertMethod{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindAlertMethod,
-		Metadata: v1alpha.AlertMethodMetadata{
+		Metadata: v1alphaAM.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
@@ -61,7 +62,7 @@ func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) *v1alpha.AlertMe
 	}
 }
 
-func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []v1alpha.AlertMethod) diag.Diagnostics {
+func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []v1alphaAM.AlertMethod) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -115,7 +116,7 @@ func (a alertMethod) resourceAlertMethodRead(ctx context.Context, d *schema.Reso
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return a.unmarshalAlertMethod(d, manifest.FilterByKind[v1alpha.AlertMethod](objects))
+	return a.unmarshalAlertMethod(d, manifest.FilterByKind[v1alphaAM.AlertMethod](objects))
 }
 
 func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -169,7 +170,7 @@ func (i alertMethodWebhook) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodWebhook) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
+func (i alertMethodWebhook) MarshalSpec(d *schema.ResourceData) v1alphaAM.Spec {
 	fields := d.Get("template_fields").([]interface{})
 	templateFields := make([]string, len(fields))
 	for i, field := range fields {
@@ -181,9 +182,9 @@ func (i alertMethodWebhook) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMet
 		templateFields = nil
 	}
 
-	return v1alpha.AlertMethodSpec{
+	return v1alphaAM.Spec{
 		Description: d.Get("description").(string),
-		Webhook: &v1alpha.WebhookAlertMethod{
+		Webhook: &v1alphaAM.WebhookAlertMethod{
 			URL:            d.Get("url").(string),
 			Template:       template,
 			TemplateFields: templateFields,
@@ -191,7 +192,7 @@ func (i alertMethodWebhook) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMet
 	}
 }
 
-func (i alertMethodWebhook) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+func (i alertMethodWebhook) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAM.Spec) diag.Diagnostics {
 	config := spec.Webhook
 	var diags diag.Diagnostics
 
@@ -237,17 +238,17 @@ func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodPagerDuty) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
-	return v1alpha.AlertMethodSpec{
+func (i alertMethodPagerDuty) MarshalSpec(d *schema.ResourceData) v1alphaAM.Spec {
+	return v1alphaAM.Spec{
 		Description: d.Get("description").(string),
-		PagerDuty: &v1alpha.PagerDutyAlertMethod{
+		PagerDuty: &v1alphaAM.PagerDutyAlertMethod{
 			IntegrationKey: d.Get("integration_key").(string),
 			SendResolution: marshalSendResolution(d.Get("send_resolution")),
 		},
 	}
 }
 
-func marshalSendResolution(sendResolutionRaw interface{}) *v1alpha.SendResolution {
+func marshalSendResolution(sendResolutionRaw interface{}) *v1alphaAM.SendResolution {
 	if sendResolutionRaw == nil {
 		return nil
 	}
@@ -260,12 +261,12 @@ func marshalSendResolution(sendResolutionRaw interface{}) *v1alpha.SendResolutio
 	sendResolution := sendResolutionSet.List()[0].(map[string]interface{})
 	message := sendResolution["message"].(string)
 
-	return &v1alpha.SendResolution{
+	return &v1alphaAM.SendResolution{
 		Message: &message,
 	}
 }
 
-func (i alertMethodPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+func (i alertMethodPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAM.Spec) diag.Diagnostics {
 	// pager duty has only one, secret field
 	return nil
 }
@@ -288,16 +289,16 @@ func (i alertMethodSlack) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodSlack) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
-	return v1alpha.AlertMethodSpec{
+func (i alertMethodSlack) MarshalSpec(d *schema.ResourceData) v1alphaAM.Spec {
+	return v1alphaAM.Spec{
 		Description: d.Get("description").(string),
-		Slack: &v1alpha.SlackAlertMethod{
+		Slack: &v1alphaAM.SlackAlertMethod{
 			URL: d.Get("url").(string),
 		},
 	}
 }
 
-func (i alertMethodSlack) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+func (i alertMethodSlack) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAM.Spec) diag.Diagnostics {
 	// slack has only one, secret field
 	return nil
 }
@@ -320,16 +321,16 @@ func (i alertMethodDiscord) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodDiscord) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
-	return v1alpha.AlertMethodSpec{
+func (i alertMethodDiscord) MarshalSpec(d *schema.ResourceData) v1alphaAM.Spec {
+	return v1alphaAM.Spec{
 		Description: d.Get("description").(string),
-		Discord: &v1alpha.DiscordAlertMethod{
+		Discord: &v1alphaAM.DiscordAlertMethod{
 			URL: d.Get("url").(string),
 		},
 	}
 }
 
-func (i alertMethodDiscord) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+func (i alertMethodDiscord) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAM.Spec) diag.Diagnostics {
 	// discord has only one, secret field
 	return nil
 }
@@ -357,17 +358,17 @@ func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodOpsgenie) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
-	return v1alpha.AlertMethodSpec{
+func (i alertMethodOpsgenie) MarshalSpec(d *schema.ResourceData) v1alphaAM.Spec {
+	return v1alphaAM.Spec{
 		Description: d.Get("description").(string),
-		Opsgenie: &v1alpha.OpsgenieAlertMethod{
+		Opsgenie: &v1alphaAM.OpsgenieAlertMethod{
 			Auth: d.Get("auth").(string),
 			URL:  d.Get("url").(string),
 		},
 	}
 }
 
-func (i alertMethodOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+func (i alertMethodOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAM.Spec) diag.Diagnostics {
 	config := spec.Opsgenie
 	var diags diag.Diagnostics
 
@@ -405,10 +406,10 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodServiceNow) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
-	return v1alpha.AlertMethodSpec{
+func (i alertMethodServiceNow) MarshalSpec(d *schema.ResourceData) v1alphaAM.Spec {
+	return v1alphaAM.Spec{
 		Description: d.Get("description").(string),
-		ServiceNow: &v1alpha.ServiceNowAlertMethod{
+		ServiceNow: &v1alphaAM.ServiceNowAlertMethod{
 			Username:     d.Get("username").(string),
 			Password:     d.Get("password").(string),
 			InstanceName: d.Get("instance_name").(string),
@@ -416,7 +417,7 @@ func (i alertMethodServiceNow) MarshalSpec(d *schema.ResourceData) v1alpha.Alert
 	}
 }
 
-func (i alertMethodServiceNow) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+func (i alertMethodServiceNow) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAM.Spec) diag.Diagnostics {
 	config := spec.ServiceNow
 	var diags diag.Diagnostics
 
@@ -461,10 +462,10 @@ func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodJira) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
-	return v1alpha.AlertMethodSpec{
+func (i alertMethodJira) MarshalSpec(d *schema.ResourceData) v1alphaAM.Spec {
+	return v1alphaAM.Spec{
 		Description: d.Get("description").(string),
-		Jira: &v1alpha.JiraAlertMethod{
+		Jira: &v1alphaAM.JiraAlertMethod{
 			URL:        d.Get("url").(string),
 			Username:   d.Get("username").(string),
 			APIToken:   d.Get("apitoken").(string),
@@ -473,7 +474,7 @@ func (i alertMethodJira) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethod
 	}
 }
 
-func (i alertMethodJira) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+func (i alertMethodJira) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAM.Spec) diag.Diagnostics {
 	config := spec.Jira
 	var diags diag.Diagnostics
 
@@ -505,16 +506,16 @@ func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodTeams) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
-	return v1alpha.AlertMethodSpec{
+func (i alertMethodTeams) MarshalSpec(d *schema.ResourceData) v1alphaAM.Spec {
+	return v1alphaAM.Spec{
 		Description: d.Get("description").(string),
-		Teams: &v1alpha.TeamsAlertMethod{
+		Teams: &v1alphaAM.TeamsAlertMethod{
 			URL: d.Get("url").(string),
 		},
 	}
 }
 
-func (i alertMethodTeams) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+func (i alertMethodTeams) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAM.Spec) diag.Diagnostics {
 	// teams has only one, secret field
 	return nil
 }
@@ -566,10 +567,10 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMethodSpec {
-	return v1alpha.AlertMethodSpec{
+func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) v1alphaAM.Spec {
+	return v1alphaAM.Spec{
 		Description: d.Get("description").(string),
-		Email: &v1alpha.EmailAlertMethod{
+		Email: &v1alphaAM.EmailAlertMethod{
 			To:      toStringSlice(d.Get("to").([]interface{})),
 			Cc:      toStringSlice(d.Get("cc").([]interface{})),
 			Bcc:     toStringSlice(d.Get("bcc").([]interface{})),
@@ -579,7 +580,7 @@ func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) v1alpha.AlertMetho
 	}
 }
 
-func (i alertMethodEmail) UnmarshalSpec(d *schema.ResourceData, spec v1alpha.AlertMethodSpec) diag.Diagnostics {
+func (i alertMethodEmail) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAM.Spec) diag.Diagnostics {
 	config := spec.Email
 	var diags diag.Diagnostics
 

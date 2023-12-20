@@ -89,9 +89,8 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   tenant_id = "45e4c1ed-5b6b-4555-a693-6ab7f15f3d6e"
-  client_id = "fc084039-fee4-4583-8903-d0e409892c66"
+  client_id = "secret"
   client_secret = "secret"
   log_collection_enabled = true
   release_channel = "beta"
@@ -438,7 +437,7 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  url = "https://main.nobl9.dev"
+  url = "https://web.net"
   access_id = "secret"
   access_key = "secret"
   log_collection_enabled = true
