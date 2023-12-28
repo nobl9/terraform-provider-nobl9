@@ -228,18 +228,14 @@ labelsLoop:
 func unmarshalLabels(labelsRaw v1alpha.Labels) interface{} {
 	resultLabels := make([]map[string]interface{}, 0)
 
-	if labelsRaw != nil {
-		for labelKey, labelValuesRaw := range labelsRaw {
-			var labelValuesStr []string
-			for _, labelValueRaw := range labelValuesRaw {
-				labelValuesStr = append(labelValuesStr, labelValueRaw)
-			}
-			labelKeyWithValues := make(map[string]interface{})
-			labelKeyWithValues["key"] = labelKey
-			labelKeyWithValues["values"] = labelValuesStr
+	for labelKey, labelValuesRaw := range labelsRaw {
+		var labelValuesStr []string
+		labelValuesStr = append(labelValuesStr, labelValuesRaw...)
+		labelKeyWithValues := make(map[string]interface{})
+		labelKeyWithValues["key"] = labelKey
+		labelKeyWithValues["values"] = labelValuesStr
 
-			resultLabels = append(resultLabels, labelKeyWithValues)
-		}
+		resultLabels = append(resultLabels, labelKeyWithValues)
 	}
 
 	return resultLabels
