@@ -1,3 +1,4 @@
+// Entry point of the Nobl9 Terraform Provider.
 package main
 
 import (

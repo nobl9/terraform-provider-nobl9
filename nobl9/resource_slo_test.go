@@ -10,6 +10,7 @@ import (
 	"github.com/nobl9/nobl9-go/manifest"
 )
 
+//nolint:tparallel
 func TestAcc_Nobl9SLO(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
@@ -74,6 +75,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 	}
 }
 
+//nolint:tparallel
 func TestAcc_Nobl9SLOErrors(t *testing.T) {
 	t.Parallel()
 	cases := []struct {

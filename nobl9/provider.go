@@ -141,7 +141,9 @@ var (
 	once         sync.Once
 )
 
+//nolint:unparam
 func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	once.Do(func() {
 		options := []sdk.ConfigOption{
 			sdk.ConfigOptionWithCredentials(providerConfig.ClientID, providerConfig.ClientSecret),
@@ -178,5 +180,5 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 			panic(err)
 		}
 	})
-	return sharedClient, nil
+	return sharedClient, diags
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
+//nolint:tparallel
 func TestMarshalAnomalyConfig(t *testing.T) {
 	testCases := []struct {
 		name                 string
@@ -148,6 +149,7 @@ func TestMarshalAnomalyConfig(t *testing.T) {
 	}
 }
 
+//nolint:tparallel
 func TestMarshalAnomalyConfigAlertMethods(t *testing.T) {
 	testCases := []struct {
 		name          string
