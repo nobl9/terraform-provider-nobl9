@@ -373,8 +373,11 @@ Required:
 
 Required:
 
-- `attribute` (String) Column name
 - `calculation` (String) Calculation type
+
+Optional:
+
+- `attribute` (String) Column name - required for all calculation types besides 'CONCURRENCY' and 'COUNT'
 
 
 <a id="nestedblock--objective--count_metrics--total--influxdb"></a>
@@ -707,8 +710,11 @@ Required:
 
 Required:
 
-- `attribute` (String) Column name
 - `calculation` (String) Calculation type
+
+Optional:
+
+- `attribute` (String) Column name - required for all calculation types besides 'CONCURRENCY' and 'COUNT'
 
 
 <a id="nestedblock--objective--count_metrics--bad--influxdb"></a>
@@ -1041,8 +1047,11 @@ Required:
 
 Required:
 
-- `attribute` (String) Column name
 - `calculation` (String) Calculation type
+
+Optional:
+
+- `attribute` (String) Column name - required for all calculation types besides 'CONCURRENCY' and 'COUNT'
 
 
 <a id="nestedblock--objective--count_metrics--good--influxdb"></a>
@@ -1383,8 +1392,11 @@ Required:
 
 Required:
 
-- `attribute` (String) Column name
 - `calculation` (String) Calculation type
+
+Optional:
+
+- `attribute` (String) Column name - required for all calculation types besides 'CONCURRENCY' and 'COUNT'
 
 
 <a id="nestedblock--objective--raw_metric--query--influxdb"></a>
