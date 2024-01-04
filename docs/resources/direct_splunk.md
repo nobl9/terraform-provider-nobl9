@@ -17,7 +17,6 @@ resource "nobl9_direct_splunk" "test-splunk" {
   name         = "test-splunk"
   project      = "terraform"
   description  = "desc"
-  source_of    = ["Metrics", "Services"]
   url          = "https://web.net"
   access_token = "secret"
   log_collection_enabled = true
