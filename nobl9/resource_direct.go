@@ -31,10 +31,24 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 	i := directResource{directSpecResource: directSpec}
 	r := &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"name":              schemaName(),
-			"display_name":      schemaDisplayName(),
-			"project":           schemaProject(),
-			"description":       schemaDescription(),
+			"name":         schemaName(),
+			"display_name": schemaDisplayName(),
+			"project":      schemaProject(),
+			"description":  schemaDescription(),
+			"source_of": {
+				// TODO PC-10671: Add deprecation info here.
+				// TODO PC-10671: Check if required is still needed.
+				Deprecated:  "source_of is Deprecated and not used anywhere. You can safely remove it from your configuration file.",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MinItems:    1,
+				MaxItems:    2,
+				Description: "Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.",
+				Elem: &schema.Schema{
+					Type:        schema.TypeString,
+					Description: "Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.",
+				},
+			},
 			releaseChannel:      schemaReleaseChannel(),
 			queryDelayConfigKey: schemaQueryDelay(),
 			"status": {

@@ -50,6 +50,7 @@ resource "nobl9_direct_cloudwatch" "test-cloudwatch" {
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
 - `role_arn` (String, Sensitive) [required] | ARN of the AWS IAM Role to assume.
+- `source_of` (List of String, Deprecated) Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.
 
 ### Read-Only
 

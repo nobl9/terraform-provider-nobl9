@@ -41,6 +41,7 @@ resource "nobl9_direct_redshift" "test-redshift" {
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
 - `role_arn` (String, Sensitive) [required] | ARN of the AWS IAM Role to assume.
 - `secret_arn` (String, Sensitive) AWS Secret ARN.
+- `source_of` (List of String, Deprecated) Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.
 
 ### Read-Only
 
