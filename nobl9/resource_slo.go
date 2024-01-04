@@ -1758,8 +1758,8 @@ func schemaMetricHoneycomb() map[string]*schema.Schema {
 					},
 					"attribute": {
 						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Column name",
+						Optional:    true,
+						Description: "Column name - required for all calculation types besides 'CONCURRENCY' and 'COUNT'",
 					},
 				},
 			},
