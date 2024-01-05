@@ -319,7 +319,6 @@ func testGraphiteAgent(name string) string {
 resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
-
   agent_type = "graphite"
   graphite_config {
     url = "http://web.net"

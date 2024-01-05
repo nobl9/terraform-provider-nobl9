@@ -42,6 +42,18 @@ func agentSchema() map[string]*schema.Schema {
 		"display_name": schemaDisplayName(),
 		"project":      schemaProject(),
 		"description":  schemaDescription(),
+		"source_of": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MinItems:    1,
+			MaxItems:    2,
+			Deprecated:  "'source_of' is deprecated and not used anywhere. You can safely remove it from your configuration file.",
+			Description: "This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.",
+			Elem: &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.",
+			},
+		},
 		agentTypeKey: {
 			Type:        schema.TypeString,
 			Required:    true,
