@@ -555,14 +555,14 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 		"subject": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Deprecated:  "Email Subject is Deprecated as of Nobl9 1.57 release. It's not used for email generation. You can safely remove it from your configuration file.",
-			Description: "Deprecated value that was used as the subject of email alert. It's not used anywhere but kept for backward compatibility.",
+			Deprecated:  "'subject' indicated the email alert's subject. It has been deprecated since the Nobl9 1.57 release and is no longer used to generate emails. You can safely remove it from your configuration file.",
+			Description: "This value was used as the email alert's subject. 'subject' is deprecated and not used anywhere; however, its' kept for backward compatibility.",
 		},
 		"body": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Deprecated:  "Email Body is Deprecated as of Nobl9 1.57 release. It's not used for email generation. You can safely remove it from your configuration file.",
-			Description: "Deprecated value that was used as the body template of email alert. It's not used anywhere but kept for backward compatibility.",
+			Deprecated:  "'body' indicated the email alert's body. It has been deprecated since the Nobl9 1.57 release and is no longer used to generate emails. You can safely remove it from your configuration file.",
+			Description: "This value was used as the template for the email alert's body. 'body' is deprecated and not used anywhere; however, its' kept for backward compatibility.",
 		},
 	}
 }

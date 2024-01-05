@@ -36,15 +36,15 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
 			"source_of": {
-				Deprecated:  "source_of is Deprecated and not used anywhere. You can safely remove it from your configuration file.",
 				Type:        schema.TypeList,
 				Optional:    true,
 				MinItems:    1,
 				MaxItems:    2,
-				Description: "Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.",
+				Deprecated:  "'source_of' is deprecated and not used anywhere. You can safely remove it from your configuration file.",
+				Description: "This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.",
 				Elem: &schema.Schema{
 					Type:        schema.TypeString,
-					Description: "Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.",
+					Description: "This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.",
 				},
 			},
 			releaseChannel:      schemaReleaseChannel(),

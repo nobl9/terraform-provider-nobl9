@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_redshift (Resource)
 
-Amazon Redshift is a managed scalable database warehouse where Nobl9 users can store their metrics information. Nobl9 connects with Amazon Redshift to collect SLI measurements and compare them to SLO targets.
+Amazon Redshift is a managed scalable database warehouse where Nobl9 users can store their metrics information. Nobl9 connects to Amazon Redshift for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Amazon Redshift Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-direct).
 
@@ -40,7 +40,7 @@ resource "nobl9_direct_redshift" "test-redshift" {
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
 - `role_arn` (String, Sensitive) [required] | ARN of the AWS IAM Role to assume.
 - `secret_arn` (String, Sensitive) AWS Secret ARN.
-- `source_of` (List of String, Deprecated) Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

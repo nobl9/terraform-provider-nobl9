@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_pingdom (Resource)
 
-Pingdom is a website monitoring software solution that gives users real-time, quality insights into the uptime and performance of their websites. After adding Pingdom as a data source in Nobl9, users can configure SLOs to check the overall performance status of their sites. Nobl9 connects with Pingdom to collect SLI measurements and compare them to SLO targets.
+Pingdom is a website monitoring software solution that gives users real-time, quality insights into the uptime and performance of their websites. After adding Pingdom as a data source in Nobl9, users can configure SLOs to check the overall performance status of their sites. Nobl9 connects to Pingdom for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Pingdom Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/pingdom#pingdom-direct).
 
@@ -38,7 +38,7 @@ resource "nobl9_direct_pingdom" "test-pingdom" {
 - `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
-- `source_of` (List of String, Deprecated) Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

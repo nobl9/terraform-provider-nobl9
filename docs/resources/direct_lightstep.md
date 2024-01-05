@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_lightstep (Resource)
 
-Lightstep is an observability platform that enables distributed tracing, that can be used to rapidly pinpoint the causes of failures and poor performance across the deeply complex dependencies among services, teams, and workloads in modern production systems. Nobl9 integration with Lightstep enables organizations to establish service level objectives from performance data captured through distributed traces in the Lightstep platform. Nobl9 connects with Lightstep to collect SLI measurements and compare them to SLO targets.
+Lightstep is an observability platform that enables distributed tracing, that can be used to rapidly pinpoint the causes of failures and poor performance across the deeply complex dependencies among services, teams, and workloads in modern production systems. Nobl9 integration with Lightstep enables organizations to establish service level objectives from performance data captured through distributed traces in the Lightstep platform. Nobl9 connects to Lightstep for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Lightstep Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-direct).
 
@@ -53,7 +53,7 @@ resource "nobl9_direct_lightstep" "test-lightstep" {
 - `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
-- `source_of` (List of String, Deprecated) Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

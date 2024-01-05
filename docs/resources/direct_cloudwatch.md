@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_cloudwatch (Resource)
 
-Amazon CloudWatch is a monitoring and observability service and a repository that aggregates data from more than 70 AWS data sources. CloudWatch also allows users to publish custom metrics from their services. Creating SLOs using this data is a powerful tool to monitor large portfolios of products. Nobl9 connects with Amazon CloudWatch to collect SLI measurements and compare them to SLO targets.
+Amazon CloudWatch is a monitoring and observability service and a repository that aggregates data from more than 70 AWS data sources. CloudWatch also allows users to publish custom metrics from their services. Creating SLOs using this data is a powerful tool to monitor large portfolios of products. Nobl9 connects to Amazon CloudWatch for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Amazon CloudWatch Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct)
 
@@ -49,7 +49,7 @@ resource "nobl9_direct_cloudwatch" "test-cloudwatch" {
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
 - `role_arn` (String, Sensitive) [required] | ARN of the AWS IAM Role to assume.
-- `source_of` (List of String, Deprecated) Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

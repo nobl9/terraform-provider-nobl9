@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_thousandeyes (Resource)
 
-ThousandEyes monitors the performance of both local and wide-area networks. ThousandEyes combines Internet and WAN visibility, browser synthetics, end-user monitoring, and Internet Insights to deliver a holistic view of your hybrid digital ecosystem – across cloud, SaaS, and the Internet. It's a SaaS-based tool that helps troubleshoot application delivery and maps Internet performance. Nobl9 connects with ThousandEyes to collect SLI measurements and compare them to SLO targets.
+ThousandEyes monitors the performance of both local and wide-area networks. ThousandEyes combines Internet and WAN visibility, browser synthetics, end-user monitoring, and Internet Insights to deliver a holistic view of your hybrid digital ecosystem – across cloud, SaaS, and the Internet. It's a SaaS-based tool that helps troubleshoot application delivery and maps Internet performance. Nobl9 connects to ThousandEyes for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [ThousandEyes Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-direct).
 
@@ -38,7 +38,7 @@ resource "nobl9_direct_thousandeyes" "test-thousandeyes" {
 - `oauth_bearer_token` (String, Sensitive) [required] | ThousandEyes OAuth Bearer Token.
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
-- `source_of` (List of String, Deprecated) Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_influxdb (Resource)
 
-InfluxDB is an open source time series database platform that enables users to collect, process, and analyze data to optimize their infrastructure. Nobl9 connects with InfluxDB to collect SLI measurements and compare them to SLO targets.
+InfluxDB is an open source time series database platform that enables users to collect, process, and analyze data to optimize their infrastructure. Nobl9 connects to InfluxDB for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [InfluxDB Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/influxdb#influxdb-direct).
 
@@ -42,7 +42,7 @@ resource "nobl9_direct_influxdb" "test-influxdb" {
 - `organization_id` (String, Sensitive) [required] | InfluxDB Organization ID.
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
-- `source_of` (List of String, Deprecated) Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_bigquery (Resource)
 
-Google BigQuery is a serverless data warehouse that enables scalable analysis over petabytes of data. It is a Platform as a Service that supports querying using ANSI SQL. BigQuery integration with Nobl9 enables users to turn their big data into valuable business insights. Nobl9 connects with BigQuery to collect SLI measurements and compare them to SLO targets.
+Google BigQuery is a serverless data warehouse that enables scalable analysis over petabytes of data. It is a Platform as a Service that supports querying using ANSI SQL. BigQuery integration with Nobl9 enables users to turn their big data into valuable business insights. Nobl9 connects to BigQuery for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [BigQuery Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-direct)
 
@@ -38,7 +38,7 @@ resource "nobl9_direct_bigquery" "test-bigquery" {
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
 - `service_account_key` (String, Sensitive) [required] | Service Account Key.
-- `source_of` (List of String, Deprecated) Deprecated value that was used to indicate whether the field was a source of Metrics and/or Services. It's not used anywhere but kept for backward compatibility.
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 
