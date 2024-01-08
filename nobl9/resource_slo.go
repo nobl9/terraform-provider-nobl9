@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 
@@ -1078,34 +1079,40 @@ func schemaMetricAzureMonitor() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"data_type": {
-						Type:        schema.TypeString,
-						Required:    true,
+						Type:     schema.TypeString,
+						Required: true,
+						ValidateDiagFunc: validation.ToDiagFunc(
+							validation.StringInSlice([]string{
+								v1alphaSLO.AzureMonitorDataTypeMetrics,
+								v1alphaSLO.AzureMonitorDataTypeLogs,
+							}, false),
+						),
 						Description: "Specifies source: 'metrics' or 'logs'",
 					},
 					"resource_id": {
 						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Name of the added application",
+						Optional:    true,
+						Description: "Identifier of the Azure Cloud resource [Required for metrics]",
 					},
 					"metric_namespace": {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "Namespace of the metric",
+						Description: "Namespace of the metric [Optional for metrics]",
 					},
 					"metric_name": {
 						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Name of the metric",
+						Optional:    true,
+						Description: "Name of the metric [Required for metrics]",
 					},
 					"aggregation": {
 						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Aggregation type",
+						Optional:    true,
+						Description: "Aggregation type [Required for metrics]",
 					},
 					"dimensions": {
 						Type:        schema.TypeSet,
 						Optional:    true,
-						Description: "Dimensions of the metric",
+						Description: "Dimensions of the metric [Optional for metrics]",
 						MinItems:    1,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -1122,6 +1129,35 @@ func schemaMetricAzureMonitor() map[string]*schema.Schema {
 							},
 						},
 					},
+					"workspace": {
+						Type:        schema.TypeSet,
+						Optional:    true,
+						Description: "Log analytics workspace [Required for logs]",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"subscription_id": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "Subscription ID of the workspace",
+								},
+								"resource_group": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "Resource group of the workspace",
+								},
+								"workspace_id": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "ID of the workspace",
+								},
+							},
+						},
+					},
+					"kql_query": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Logs query in Kusto Query Language [Required for logs]",
+					},
 				},
 			},
 		},
@@ -1134,38 +1170,40 @@ func marshalAzureMonitorMetric(s *schema.Set) *v1alphaSLO.AzureMonitorMetric {
 	}
 
 	metric := s.List()[0].(map[string]interface{})
-
 	dataType := metric["data_type"].(string)
-	resourceID := metric["resource_id"].(string)
-	metricNamespace := metric["metric_namespace"].(string)
-	metricName := metric["metric_name"].(string)
-	aggregation := metric["aggregation"].(string)
-
-	dimensions := metric["dimensions"].(*schema.Set)
-	var metricDimensions []v1alphaSLO.AzureMonitorMetricDimension
-
-	if dimensions.Len() > 0 {
-		metricDimensions = make([]v1alphaSLO.AzureMonitorMetricDimension, dimensions.Len())
-	}
-
-	for idx, dimension := range dimensions.List() {
-		n9Dimension := dimension.(map[string]interface{})
-		name := n9Dimension["name"].(string)
-		value := n9Dimension["value"].(string)
-		metricDimensions[idx] = v1alphaSLO.AzureMonitorMetricDimension{
-			Name:  &name,
-			Value: &value,
+	result := v1alphaSLO.AzureMonitorMetric{DataType: dataType}
+	if dataType == v1alphaSLO.AzureMonitorDataTypeMetrics {
+		result.ResourceID = metric["resource_id"].(string)
+		result.MetricNamespace = metric["metric_namespace"].(string)
+		result.MetricName = metric["metric_name"].(string)
+		result.Aggregation = metric["aggregation"].(string)
+		dimensions := metric["dimensions"].(*schema.Set)
+		var metricDimensions []v1alphaSLO.AzureMonitorMetricDimension
+		if dimensions.Len() > 0 {
+			metricDimensions = make([]v1alphaSLO.AzureMonitorMetricDimension, dimensions.Len())
+		}
+		for idx, dimension := range dimensions.List() {
+			n9Dimension := dimension.(map[string]interface{})
+			name := n9Dimension["name"].(string)
+			value := n9Dimension["value"].(string)
+			metricDimensions[idx] = v1alphaSLO.AzureMonitorMetricDimension{
+				Name:  &name,
+				Value: &value,
+			}
+		}
+		result.Dimensions = metricDimensions
+	} else if dataType == v1alphaSLO.AzureMonitorDataTypeLogs {
+		result.KQLQuery = metric["kql_query"].(string)
+		workspace := metric["workspace"].(*schema.Set).List()[0].(map[string]interface{})
+		if workspace != nil {
+			result.Workspace = &v1alphaSLO.AzureMonitorMetricLogAnalyticsWorkspace{
+				SubscriptionID: workspace["subscription_id"].(string),
+				ResourceGroup:  workspace["resource_group"].(string),
+				WorkspaceID:    workspace["workspace_id"].(string),
+			}
 		}
 	}
-
-	return &v1alphaSLO.AzureMonitorMetric{
-		DataType:        dataType,
-		ResourceID:      resourceID,
-		MetricNamespace: metricNamespace,
-		MetricName:      metricName,
-		Aggregation:     aggregation,
-		Dimensions:      metricDimensions,
-	}
+	return &result
 }
 
 func unmarshalAzureMonitorMetric(metric interface{}) map[string]interface{} {
@@ -1183,6 +1221,14 @@ func unmarshalAzureMonitorMetric(metric interface{}) map[string]interface{} {
 	var dimensions any
 	_ = json.Unmarshal(dim, &dimensions)
 	res["dimensions"] = dimensions
+	res["kql_query"] = amMetric.KQLQuery
+	if amMetric.Workspace != nil {
+		res["workspace"] = schema.NewSet(oneElementSet, []interface{}{map[string]interface{}{
+			"subscription_id": amMetric.Workspace.SubscriptionID,
+			"resource_group":  amMetric.Workspace.ResourceGroup,
+			"workspace_id":    amMetric.Workspace.WorkspaceID,
+		}})
+	}
 	return res
 }
 

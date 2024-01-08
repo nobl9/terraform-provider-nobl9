@@ -261,15 +261,17 @@ Required:
 
 Required:
 
-- `aggregation` (String) Aggregation type
 - `data_type` (String) Specifies source: 'metrics' or 'logs'
-- `metric_name` (String) Name of the metric
-- `resource_id` (String) Name of the added application
 
 Optional:
 
-- `dimensions` (Block Set) Dimensions of the metric (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_monitor--dimensions))
-- `metric_namespace` (String) Namespace of the metric
+- `aggregation` (String) Aggregation type [Required for metrics]
+- `dimensions` (Block Set) Dimensions of the metric [Optional for metrics] (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_monitor--dimensions))
+- `kql_query` (String) Logs query in Kusto Query Language [Required for logs]
+- `metric_name` (String) Name of the metric [Required for metrics]
+- `metric_namespace` (String) Namespace of the metric [Optional for metrics]
+- `resource_id` (String) Identifier of the Azure Cloud resource [Required for metrics]
+- `workspace` (Block Set) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_monitor--workspace))
 
 <a id="nestedblock--objective--count_metrics--total--azure_monitor--dimensions"></a>
 ### Nested Schema for `objective.count_metrics.total.azure_monitor.dimensions`
@@ -278,6 +280,16 @@ Required:
 
 - `name` (String) Name
 - `value` (String) Value
+
+
+<a id="nestedblock--objective--count_metrics--total--azure_monitor--workspace"></a>
+### Nested Schema for `objective.count_metrics.total.azure_monitor.workspace`
+
+Required:
+
+- `resource_group` (String) Resource group of the workspace
+- `subscription_id` (String) Subscription ID of the workspace
+- `workspace_id` (String) ID of the workspace
 
 
 
@@ -598,15 +610,17 @@ Required:
 
 Required:
 
-- `aggregation` (String) Aggregation type
 - `data_type` (String) Specifies source: 'metrics' or 'logs'
-- `metric_name` (String) Name of the metric
-- `resource_id` (String) Name of the added application
 
 Optional:
 
-- `dimensions` (Block Set) Dimensions of the metric (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_monitor--dimensions))
-- `metric_namespace` (String) Namespace of the metric
+- `aggregation` (String) Aggregation type [Required for metrics]
+- `dimensions` (Block Set) Dimensions of the metric [Optional for metrics] (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_monitor--dimensions))
+- `kql_query` (String) Logs query in Kusto Query Language [Required for logs]
+- `metric_name` (String) Name of the metric [Required for metrics]
+- `metric_namespace` (String) Namespace of the metric [Optional for metrics]
+- `resource_id` (String) Identifier of the Azure Cloud resource [Required for metrics]
+- `workspace` (Block Set) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_monitor--workspace))
 
 <a id="nestedblock--objective--count_metrics--bad--azure_monitor--dimensions"></a>
 ### Nested Schema for `objective.count_metrics.bad.azure_monitor.dimensions`
@@ -615,6 +629,16 @@ Required:
 
 - `name` (String) Name
 - `value` (String) Value
+
+
+<a id="nestedblock--objective--count_metrics--bad--azure_monitor--workspace"></a>
+### Nested Schema for `objective.count_metrics.bad.azure_monitor.workspace`
+
+Required:
+
+- `resource_group` (String) Resource group of the workspace
+- `subscription_id` (String) Subscription ID of the workspace
+- `workspace_id` (String) ID of the workspace
 
 
 
@@ -935,15 +959,17 @@ Required:
 
 Required:
 
-- `aggregation` (String) Aggregation type
 - `data_type` (String) Specifies source: 'metrics' or 'logs'
-- `metric_name` (String) Name of the metric
-- `resource_id` (String) Name of the added application
 
 Optional:
 
-- `dimensions` (Block Set) Dimensions of the metric (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_monitor--dimensions))
-- `metric_namespace` (String) Namespace of the metric
+- `aggregation` (String) Aggregation type [Required for metrics]
+- `dimensions` (Block Set) Dimensions of the metric [Optional for metrics] (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_monitor--dimensions))
+- `kql_query` (String) Logs query in Kusto Query Language [Required for logs]
+- `metric_name` (String) Name of the metric [Required for metrics]
+- `metric_namespace` (String) Namespace of the metric [Optional for metrics]
+- `resource_id` (String) Identifier of the Azure Cloud resource [Required for metrics]
+- `workspace` (Block Set) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_monitor--workspace))
 
 <a id="nestedblock--objective--count_metrics--good--azure_monitor--dimensions"></a>
 ### Nested Schema for `objective.count_metrics.good.azure_monitor.dimensions`
@@ -952,6 +978,16 @@ Required:
 
 - `name` (String) Name
 - `value` (String) Value
+
+
+<a id="nestedblock--objective--count_metrics--good--azure_monitor--workspace"></a>
+### Nested Schema for `objective.count_metrics.good.azure_monitor.workspace`
+
+Required:
+
+- `resource_group` (String) Resource group of the workspace
+- `subscription_id` (String) Subscription ID of the workspace
+- `workspace_id` (String) ID of the workspace
 
 
 
@@ -1280,15 +1316,17 @@ Required:
 
 Required:
 
-- `aggregation` (String) Aggregation type
 - `data_type` (String) Specifies source: 'metrics' or 'logs'
-- `metric_name` (String) Name of the metric
-- `resource_id` (String) Name of the added application
 
 Optional:
 
-- `dimensions` (Block Set) Dimensions of the metric (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_monitor--dimensions))
-- `metric_namespace` (String) Namespace of the metric
+- `aggregation` (String) Aggregation type [Required for metrics]
+- `dimensions` (Block Set) Dimensions of the metric [Optional for metrics] (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_monitor--dimensions))
+- `kql_query` (String) Logs query in Kusto Query Language [Required for logs]
+- `metric_name` (String) Name of the metric [Required for metrics]
+- `metric_namespace` (String) Namespace of the metric [Optional for metrics]
+- `resource_id` (String) Identifier of the Azure Cloud resource [Required for metrics]
+- `workspace` (Block Set) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_monitor--workspace))
 
 <a id="nestedblock--objective--raw_metric--query--azure_monitor--dimensions"></a>
 ### Nested Schema for `objective.raw_metric.query.azure_monitor.dimensions`
@@ -1297,6 +1335,16 @@ Required:
 
 - `name` (String) Name
 - `value` (String) Value
+
+
+<a id="nestedblock--objective--raw_metric--query--azure_monitor--workspace"></a>
+### Nested Schema for `objective.raw_metric.query.azure_monitor.workspace`
+
+Required:
+
+- `resource_group` (String) Resource group of the workspace
+- `subscription_id` (String) Subscription ID of the workspace
+- `workspace_id` (String) ID of the workspace
 
 
 
