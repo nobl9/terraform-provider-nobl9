@@ -1194,8 +1194,9 @@ func marshalAzureMonitorMetric(s *schema.Set) *v1alphaSLO.AzureMonitorMetric {
 		result.Dimensions = metricDimensions
 	} else if dataType == v1alphaSLO.AzureMonitorDataTypeLogs {
 		result.KQLQuery = metric["kql_query"].(string)
-		workspace := metric["workspace"].(*schema.Set).List()[0].(map[string]interface{})
-		if workspace != nil {
+		wsList := metric["workspace"].(*schema.Set).List()
+		if len(wsList) > 0 {
+			workspace := wsList[0].(map[string]interface{})
 			result.Workspace = &v1alphaSLO.AzureMonitorMetricLogAnalyticsWorkspace{
 				SubscriptionID: workspace["subscription_id"].(string),
 				ResourceGroup:  workspace["resource_group"].(string),
@@ -1780,60 +1781,6 @@ func unmarshalGraphiteMetric(metric interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	res["metric_path"] = gMetric.MetricPath
 
-	return res
-}
-
-/**
- * Honeycomb Metric
- * https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb
- */
-const honeycombMetric = "honeycomb"
-
-func schemaMetricHoneycomb() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		honeycombMetric: {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb)",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"calculation": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Calculation type",
-					},
-					"attribute": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "Column name - required for all calculation types besides 'CONCURRENCY' and 'COUNT'",
-					},
-				},
-			},
-		},
-	}
-}
-
-func marshalHoneycombMetric(s *schema.Set) *v1alphaSLO.HoneycombMetric {
-	if s.Len() == 0 {
-		return nil
-	}
-	metric := s.List()[0].(map[string]interface{})
-	calculation := metric["calculation"].(string)
-	attribute := metric["attribute"].(string)
-	return &v1alphaSLO.HoneycombMetric{
-		Calculation: calculation,
-		Attribute:   attribute,
-	}
-}
-
-func unmarshalHoneycombMetric(metric interface{}) map[string]interface{} {
-	hMetric, ok := metric.(*v1alphaSLO.HoneycombMetric)
-	if !ok {
-		return nil
-	}
-	res := make(map[string]interface{})
-	res["calculation"] = hMetric.Calculation
-	res["attribute"] = hMetric.Attribute
 	return res
 }
 

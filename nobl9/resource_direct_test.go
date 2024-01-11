@@ -257,33 +257,6 @@ resource "nobl9_direct_%s" "%s" {
 `, directType, name, name, testProject)
 }
 
-func testHoneycombDirect(directType, name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_direct_%s" "%s" {
-	name = "%s"
-	project = "%s"
-	description = "desc"
-	api_key = "secret"
-	log_collection_enabled = true
-	release_channel = "beta"
-	historical_data_retrieval {
-	  default_duration  {
-		unit = "Day"
-		value = 7
-	  }
-	  max_duration {
-		unit = "Day"
-		value = 7
-	  }
-	}
-	query_delay {
-	  unit = "Minute"
-	  value = 6
-	}
-}
-`, directType, name, name, testProject)
-}
-
 func testInfluxDBDirect(directType, name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_direct_%s" "%s" {

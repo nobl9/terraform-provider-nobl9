@@ -623,47 +623,6 @@ func (h honeycombDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaD
 	return
 }
 
-// Honeycomb Direct
-// https://docs.nobl9.com/Sources/honeycomba#honeycomb-direct
-const honeycombDirectType = "honeycomb"
-
-type honeycombDirectSpec struct{}
-
-func (h honeycombDirectSpec) GetSchema() map[string]*schema.Schema {
-	honeycombSchema := map[string]*schema.Schema{
-		"api_key": {
-			Type:        schema.TypeString,
-			Description: "[required] | Honeycomb API Key.",
-			Optional:    true,
-			Computed:    true,
-			Sensitive:   true,
-			ValidateDiagFunc: validation.ToDiagFunc(
-				validation.StringIsNotEmpty,
-			),
-		},
-	}
-	setLogCollectionSchema(honeycombSchema)
-	setHistoricalDataRetrievalSchema(honeycombSchema)
-	return honeycombSchema
-}
-
-func (h honeycombDirectSpec) GetDescription() string {
-	return "[Honeycomb Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/honeycomb#hc-direct)."
-}
-
-func (h honeycombDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
-	return v1alphaDirect.Spec{
-		Honeycomb: &v1alphaDirect.HoneycombConfig{
-			APIKey: d.Get("api_key").(string),
-		},
-	}
-}
-
-func (h honeycombDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
-	set(d, "description", spec.Description, &diags)
-	return
-}
-
 // InfluxDB Direct
 // https://docs.nobl9.com/Sources/influxdb#influxdb-direct
 const influxdbDirectType = "influxdb"
