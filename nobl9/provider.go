@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"sync"
 
@@ -179,6 +180,7 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 		if err != nil {
 			panic(err)
 		}
+		sharedClient.SetUserAgent(fmt.Sprintf("terraform-%s", Version))
 	})
 	return sharedClient, diags
 }
