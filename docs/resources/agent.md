@@ -24,7 +24,6 @@ resource "nobl9_project" "this" {
 resource "nobl9_agent" "this" {
   name            = "${nobl9_project.this.name}-prom-agent"
   project         = nobl9_project.this.name
-  source_of       = ["Metrics", "Services"]
   agent_type      = "prometheus"
   release_channel = "stable"
   prometheus_config {
@@ -41,7 +40,6 @@ resource "nobl9_agent" "this" {
 - `agent_type` (String) The type of the Agent. Check [Supported Agent types | Nobl9 Documentation](https://docs.nobl9.com/Sources/)
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services.
 
 ### Optional
 
@@ -59,6 +57,7 @@ resource "nobl9_agent" "this" {
 - `grafana_loki_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#grafana-loki-agent) (see [below for nested schema](#nestedblock--grafana_loki_config))
 - `graphite_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#graphite-agent) (see [below for nested schema](#nestedblock--graphite_config))
 - `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
+- `honeycomb_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#hc-agent) (see [below for nested schema](#nestedblock--honeycomb_config))
 - `influxdb_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#influxdb-agent) (see [below for nested schema](#nestedblock--influxdb_config))
 - `instana_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/instana#instana-agent) (see [below for nested schema](#nestedblock--instana_config))
 - `lightstep_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-agent) (see [below for nested schema](#nestedblock--lightstep_config))
@@ -69,6 +68,7 @@ resource "nobl9_agent" "this" {
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `redshift_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-agent) (see [below for nested schema](#nestedblock--redshift_config))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 - `splunk_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent) (see [below for nested schema](#nestedblock--splunk_config))
 - `splunk_observability_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-agent) (see [below for nested schema](#nestedblock--splunk_observability_config))
 - `sumologic_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-agent) (see [below for nested schema](#nestedblock--sumologic_config))
@@ -183,6 +183,10 @@ Required:
 - `unit` (String) Must be one of Minute, Hour, or Day.
 - `value` (Number) Must be an integer greater than or equal to 0.
 
+
+
+<a id="nestedblock--honeycomb_config"></a>
+### Nested Schema for `honeycomb_config`
 
 
 <a id="nestedblock--influxdb_config"></a>

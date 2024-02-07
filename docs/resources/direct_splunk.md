@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_splunk (Resource)
 
-Splunk provides software for searching, monitoring, and analyzing machine-generated data via a Web-style interface. Nobl9 connects with Splunk to collect SLI measurements and compare them to SLO targets.
+Splunk provides software for searching, monitoring, and analyzing machine-generated data via a Web-style interface. Nobl9 connects to Splunk for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Splunk Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/splunk#splunk-direct).
 
@@ -17,7 +17,6 @@ resource "nobl9_direct_splunk" "test-splunk" {
   name         = "test-splunk"
   project      = "terraform"
   description  = "desc"
-  source_of    = ["Metrics", "Services"]
   url          = "https://web.net"
   access_token = "secret"
   log_collection_enabled = true
@@ -41,7 +40,6 @@ resource "nobl9_direct_splunk" "test-splunk" {
 
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services.
 - `url` (String) Base API URL to the Splunk Search app.
 
 ### Optional
@@ -53,6 +51,7 @@ resource "nobl9_direct_splunk" "test-splunk" {
 - `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

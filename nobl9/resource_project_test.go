@@ -50,7 +50,6 @@ func TestAcc_NewNobl9ProjectReference(t *testing.T) {
 					resource "nobl9_agent" "%s" {
 					 name      = "%s"
 					 project   = nobl9_project.%s.name
-					 source_of = ["Metrics", "Services"]
 					 agent_type = "bigquery"
 					 release_channel = "stable"
 					 query_delay {

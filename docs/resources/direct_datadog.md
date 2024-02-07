@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_datadog (Resource)
 
-Datadog is a cloud-scale application observability solution that monitors servers, databases, tools, and services. Nobl9 connects with Datadog to collect SLI measurements and compare them to SLO targets.
+Datadog is a cloud-scale application observability solution that monitors servers, databases, tools, and services. Nobl9 connects to Datadog for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Datadog Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/datadog#datadog-direct).
 
@@ -17,7 +17,6 @@ resource "nobl9_direct_datadog" "test-datadog" {
   name                   = "test-datadog"
   project                = "terraform"
   description            = "desc"
-  source_of              = ["Metrics", "Services"]
   site                   = "eu"
   api_key                = "secret"
   application_key        = "secret"
@@ -43,7 +42,6 @@ resource "nobl9_direct_datadog" "test-datadog" {
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `site` (String) `com` or `eu`, Datadog SaaS instance, which corresponds to one of Datadog's two locations (https://www.datadoghq.com/ in the U.S. or https://datadoghq.eu/ in the European Union).
-- `source_of` (List of String) Source of Metrics and/or Services.
 
 ### Optional
 
@@ -55,6 +53,7 @@ resource "nobl9_direct_datadog" "test-datadog" {
 - `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

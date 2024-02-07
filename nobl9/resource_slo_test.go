@@ -32,6 +32,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-dynatrace", testDynatraceSLO},
 		{"test-grafanaloki", testGrafanaLokiSLO},
 		{"test-graphite", testGraphiteSLO},
+		{"test-honeycomb", testHoneycombSLO},
 		{"test-influxdb", testInfluxDBSLO},
 		{"test-instana-infra", testInstanaInfrastructureSLO},
 		{"test-instana-app", testInstanaApplicationSLO},
@@ -264,6 +265,7 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       query {
         azure_monitor {
+          data_type = "metrics"
           resource_id = "/subscriptions/9c26f90e-24bb-4d20-a648-c6e3e1cde26a/resourceGroups/azure-monitor-test-sources/providers/microsoft.insights/components/n9-web-app"
           metric_namespace = ""
           metric_name = "requests/duration"
@@ -1165,6 +1167,65 @@ resource "nobl9_slo" ":name" {
 	config = strings.ReplaceAll(config, ":agentName", agentName)
 	config = strings.ReplaceAll(config, ":project", testProject)
 
+	return config
+}
+
+func testHoneycombSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config := testService(serviceName) +
+		testHoneycombAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+	  name         = ":name"
+	  display_name = ":name"
+	  project      = ":project"
+	  service      = nobl9_service.:serviceName.name
+	
+	  label {
+	   key = "team"
+	   values = ["green","sapphire"]
+	  }
+
+	  label {
+		key = "env"
+		values = ["dev", "staging", "prod"]
+	  }
+	
+	budgeting_method = "Occurrences"
+
+	objective {
+		display_name = "obj1"
+		name = "tf-objective-1"
+		target = 0.7
+		value = 1
+		op = "lt"
+		raw_metric {
+			query {
+				honeycomb {
+					calculation = "SUM"
+					attribute = "test-column"
+				}
+			}
+		}
+	}
+
+	time_window {
+		count = 10
+		is_rolling = true
+		unit = "Minute"
+	}
+
+	indicator {
+		name = nobl9_agent.:agentName.name
+		project = ":project"
+		kind = "Agent"
+	}
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
 	return config
 }
 

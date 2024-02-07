@@ -7,7 +7,6 @@ resource "nobl9_project" "this" {
 resource "nobl9_agent" "this" {
   name            = "${nobl9_project.this.name}-prom-agent"
   project         = nobl9_project.this.name
-  source_of       = ["Metrics", "Services"]
   agent_type      = "prometheus"
   release_channel = "stable"
   prometheus_config {

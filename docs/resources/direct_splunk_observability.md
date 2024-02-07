@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_splunk_observability (Resource)
 
-Splunk Observability allows users to search, monitor, and analyze machine-generated big data. Splunk Observability enables collecting and monitoring metrics, logs, and traces from common data sources. Data collection and monitoring in one place enables full-stack, end-to-end observability of the entire infrastructure. Nobl9 connects with Splunk Observability to collect SLI measurements and compare them to SLO targets.
+Splunk Observability allows users to search, monitor, and analyze machine-generated big data. Splunk Observability enables collecting and monitoring metrics, logs, and traces from common data sources. Data collection and monitoring in one place enables full-stack, end-to-end observability of the entire infrastructure. Nobl9 connects to Splunk Observability for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Splunk Observability Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-direct).
 
@@ -17,7 +17,6 @@ resource "nobl9_direct_splunk_observability" "test-splunkobservability" {
   name         = "test-splunkobservability"
   project      = "terraform"
   description  = "desc"
-  source_of    = ["Metrics", "Services"]
   realm        = "eu"
   access_token = "secret"
 }
@@ -31,7 +30,6 @@ resource "nobl9_direct_splunk_observability" "test-splunkobservability" {
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `realm` (String) SplunkObservability Realm.
-- `source_of` (List of String) Source of Metrics and/or Services.
 
 ### Optional
 
@@ -40,6 +38,7 @@ resource "nobl9_direct_splunk_observability" "test-splunkobservability" {
 - `display_name` (String) User-friendly display name of the resource.
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

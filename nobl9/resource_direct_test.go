@@ -22,6 +22,7 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 		{datadogDirectType, testDatadogDirect},
 		{dynatraceDirectType, testDynatraceDirect},
 		{gcmDirectType, testGoogleCloudMonitoringDirect},
+		{honeycombDirectType, testHoneycombDirect},
 		{influxdbDirectType, testInfluxDBDirect},
 		{instanaDirectType, testInstanaDirect},
 		{lightstepDirectType, testLightstepDirect},
@@ -58,7 +59,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   url = "https://web.net"
   account_name = "account name"
   client_secret = "secret"
@@ -89,9 +89,8 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   tenant_id = "45e4c1ed-5b6b-4555-a693-6ab7f15f3d6e"
-  client_id = "fc084039-fee4-4583-8903-d0e409892c66"
+  client_id = "secret"
   client_secret = "secret"
   log_collection_enabled = true
   release_channel = "beta"
@@ -119,8 +118,7 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
-  service_account_key = "secret"
+  service_account_key = "{}"
   log_collection_enabled = true
   release_channel = "beta"
   query_delay {
@@ -137,7 +135,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   role_arn = "secret"
   historical_data_retrieval {
     default_duration  {
@@ -165,7 +162,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   site = "eu"
   api_key = "secret"
   application_key = "secret"
@@ -195,7 +191,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   url = "https://web.net"
   dynatrace_token = "secret"
   log_collection_enabled = true
@@ -224,8 +219,7 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
-  service_account_key = "secret"
+  service_account_key = "{}"
   log_collection_enabled = true
   release_channel = "stable"
   query_delay {
@@ -236,13 +230,39 @@ resource "nobl9_direct_%s" "%s" {
 `, directType, name, name, testProject)
 }
 
+func testHoneycombDirect(directType, name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_direct_%s" "%s" {
+	name = "%s"
+	project = "%s"
+	description = "desc"
+	api_key = "secret"
+	log_collection_enabled = true
+	release_channel = "beta"
+	historical_data_retrieval {
+	  default_duration  {
+		unit = "Day"
+		value = 7
+	  }
+	  max_duration {
+		unit = "Day"
+		value = 7
+	  }
+	}
+	query_delay {
+	  unit = "Minute"
+	  value = 6
+	}
+}
+`, directType, name, name, testProject)
+}
+
 func testInfluxDBDirect(directType, name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   url = "https://web.net"
   api_token = "secret"
   organization_id = "secret"
@@ -262,7 +282,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   url = "https://web.net"
   api_token = "secret"
   log_collection_enabled = true
@@ -281,7 +300,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   lightstep_organization = "acme"
   lightstep_project = "project1"
   app_token = "secret"
@@ -311,7 +329,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   account_id = "1234"
   insights_query_key = "NRIQ-secret"
   log_collection_enabled = true
@@ -340,7 +357,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   api_token = "secret"
   log_collection_enabled = true
   release_channel = "stable"
@@ -358,7 +374,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   secret_arn = "aws:arn"
   role_arn = "secret"
   log_collection_enabled = true
@@ -377,7 +392,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   url = "https://web.net"
   access_token = "secret"
   log_collection_enabled = true
@@ -406,7 +420,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   realm = "eu"
   access_token = "secret"
   release_channel = "stable"
@@ -424,8 +437,7 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics"]
-  url = "http://web.net"
+  url = "https://web.net"
   access_id = "secret"
   access_key = "secret"
   log_collection_enabled = true
@@ -444,7 +456,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   oauth_bearer_token = "secret"
   log_collection_enabled = true
   release_channel = "stable"

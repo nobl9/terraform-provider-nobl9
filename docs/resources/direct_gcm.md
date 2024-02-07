@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_gcm (Resource)
 
-Google Cloud Monitoring (GCM) provides visibility into the performance, uptime, and overall health of cloud-powered applications. It collects metrics, events, and metadata from Google Cloud, hosted uptime probes, and application instrumentation. Nobl9 connects with GCM to collect SLI measurements and compare them to SLO targets.
+Google Cloud Monitoring (GCM) provides visibility into the performance, uptime, and overall health of cloud-powered applications. It collects metrics, events, and metadata from Google Cloud, hosted uptime probes, and application instrumentation. Nobl9 connects to GCM for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Google Cloud Monitoring Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-direct).
 
@@ -17,7 +17,6 @@ resource "nobl9_direct_gcm" "test-gcm" {
   name                   = "test-gcm"
   project                = "terraform"
   description            = "desc"
-  source_of              = ["Metrics", "Services"]
   service_account_key    = "secret"
   log_collection_enabled = true
 }
@@ -30,7 +29,6 @@ resource "nobl9_direct_gcm" "test-gcm" {
 
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services.
 
 ### Optional
 
@@ -40,6 +38,7 @@ resource "nobl9_direct_gcm" "test-gcm" {
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
 - `service_account_key` (String, Sensitive) [required] | Service Account Key.
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

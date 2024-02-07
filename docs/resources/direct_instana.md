@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_instana (Resource)
 
-Instana is an observability platform that delivers automated Application Performance Monitoring (APM), used for website, infrastructure, and application monitoring. Nobl9 connects with Instana to collect SLI measurements and compare them to SLO targets.
+Instana is an observability platform that delivers automated Application Performance Monitoring (APM), used for website, infrastructure, and application monitoring. Nobl9 connects to Instana for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Instana Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/instana#instana-direct).
 
@@ -17,7 +17,6 @@ resource "nobl9_direct_instana" "test-instana" {
   name        = "test-instana"
   project     = "terraform"
   description = "desc"
-  source_of   = ["Metrics", "Services"]
   url         = "https://web.net"
   api_token   = "secret"
   log_collection_enabled = true
@@ -31,7 +30,6 @@ resource "nobl9_direct_instana" "test-instana" {
 
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services.
 - `url` (String) Instana API URL.
 
 ### Optional
@@ -42,6 +40,7 @@ resource "nobl9_direct_instana" "test-instana" {
 - `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

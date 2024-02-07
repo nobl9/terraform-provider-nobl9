@@ -45,9 +45,9 @@ func marshalQueryDelay(d *schema.ResourceData) *v1alpha.QueryDelay {
 
 		valueQueryDelayDuration := qd["value"].(int)
 		return &v1alpha.QueryDelay{
-			QueryDelayDuration: v1alpha.QueryDelayDuration{
+			Duration: v1alpha.Duration{
 				Value: &valueQueryDelayDuration,
-				Unit:  v1alpha.QueryDelayDurationUnit(qd["unit"].(string)),
+				Unit:  v1alpha.DurationUnit(qd["unit"].(string)),
 			},
 		}
 	}

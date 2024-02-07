@@ -3,7 +3,7 @@ package nobl9
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 )
 
 func schemaAnomalyConfig() *schema.Schema {
@@ -54,7 +54,7 @@ func schemaAnomalyConfig() *schema.Schema {
 	}
 }
 
-func marshalAnomalyConfig(anomalyConfigRaw interface{}) *v1alpha.AnomalyConfig {
+func marshalAnomalyConfig(anomalyConfigRaw interface{}) *v1alphaSLO.AnomalyConfig {
 	anomalyConfigSet := anomalyConfigRaw.(*schema.Set)
 	if anomalyConfigSet.Len() == 0 {
 		return nil
@@ -69,22 +69,22 @@ func marshalAnomalyConfig(anomalyConfigRaw interface{}) *v1alpha.AnomalyConfig {
 	noDataAlertMethods := noDataAnomalyConfig["alert_method"].([]interface{})
 	marshaledAlertMethods := marshalAnomalyConfigAlertMethods(noDataAlertMethods)
 
-	return &v1alpha.AnomalyConfig{
-		NoData: &v1alpha.AnomalyConfigNoData{
+	return &v1alphaSLO.AnomalyConfig{
+		NoData: &v1alphaSLO.AnomalyConfigNoData{
 			AlertMethods: marshaledAlertMethods,
 		},
 	}
 }
 
-func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []v1alpha.AnomalyConfigAlertMethod {
-	alertMethodsAPI := make([]v1alpha.AnomalyConfigAlertMethod, 0)
+func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []v1alphaSLO.AnomalyConfigAlertMethod {
+	alertMethodsAPI := make([]v1alphaSLO.AnomalyConfigAlertMethod, 0)
 
 	for i := 0; i < len(alertMethodsTF); i++ {
 		if alertMethodsTF[i] == nil {
 			continue
 		}
 		alertMethodTF := alertMethodsTF[i].(map[string]interface{})
-		alertMethodsAPI = append(alertMethodsAPI, v1alpha.AnomalyConfigAlertMethod{
+		alertMethodsAPI = append(alertMethodsAPI, v1alphaSLO.AnomalyConfigAlertMethod{
 			Name:    alertMethodTF["name"].(string),
 			Project: alertMethodTF["project"].(string),
 		})
@@ -93,7 +93,7 @@ func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []v1alpha.An
 	return alertMethodsAPI
 }
 
-func unmarshalAnomalyConfig(d *schema.ResourceData, spec v1alpha.SLOSpec) error {
+func unmarshalAnomalyConfig(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 	if spec.AnomalyConfig == nil {
 		return nil
 	}

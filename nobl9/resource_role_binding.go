@@ -12,6 +12,7 @@ import (
 
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	v1alphaRb "github.com/nobl9/nobl9-go/manifest/v1alpha/rolebinding"
 	"github.com/nobl9/nobl9-go/sdk"
 )
 
@@ -56,20 +57,20 @@ func resourceRoleBinding() *schema.Resource {
 	}
 }
 
-func marshalRoleBinding(d *schema.ResourceData) *v1alpha.RoleBinding {
+func marshalRoleBinding(d *schema.ResourceData) *v1alphaRb.RoleBinding {
 	name := d.Get("name").(string)
 	if name == "" {
 		id, _ := uuid.NewUUID() // NewUUID returns always nil error
 		name = id.String()
 	}
 	userRoleBindingSpec := d.Get("user").(string)
-	return &v1alpha.RoleBinding{
+	return &v1alphaRb.RoleBinding{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindRoleBinding,
-		Metadata: v1alpha.RoleBindingMetadata{
+		Metadata: v1alphaRb.Metadata{
 			Name: name,
 		},
-		Spec: v1alpha.RoleBindingSpec{
+		Spec: v1alphaRb.Spec{
 			User:       &userRoleBindingSpec,
 			RoleRef:    d.Get("role_ref").(string),
 			ProjectRef: d.Get("project_ref").(string),
@@ -77,7 +78,7 @@ func marshalRoleBinding(d *schema.ResourceData) *v1alpha.RoleBinding {
 	}
 }
 
-func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alpha.RoleBinding) diag.Diagnostics {
+func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRb.RoleBinding) diag.Diagnostics {
 	_, isProjectRole := d.GetOk("project_ref")
 	roleBindingP := findRoleBindingByType(isProjectRole, objects)
 	if roleBindingP == nil {
@@ -102,7 +103,7 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alpha.RoleBinding)
 	return diags
 }
 
-func findRoleBindingByType(projectRole bool, objects []v1alpha.RoleBinding) *v1alpha.RoleBinding {
+func findRoleBindingByType(projectRole bool, objects []v1alphaRb.RoleBinding) *v1alphaRb.RoleBinding {
 	for _, object := range objects {
 		if projectRole && containsProjectRef(object) {
 			return &object
@@ -113,7 +114,7 @@ func findRoleBindingByType(projectRole bool, objects []v1alpha.RoleBinding) *v1a
 	return nil
 }
 
-func containsProjectRef(obj v1alpha.RoleBinding) bool {
+func containsProjectRef(obj v1alphaRb.RoleBinding) bool {
 	return obj.Spec.ProjectRef != ""
 }
 
@@ -156,7 +157,7 @@ func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta i
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalRoleBinding(d, manifest.FilterByKind[v1alpha.RoleBinding](objects))
+	return unmarshalRoleBinding(d, manifest.FilterByKind[v1alphaRb.RoleBinding](objects))
 }
 
 func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

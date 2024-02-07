@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_redshift (Resource)
 
-Amazon Redshift is a managed scalable database warehouse where Nobl9 users can store their metrics information. Nobl9 connects with Amazon Redshift to collect SLI measurements and compare them to SLO targets.
+Amazon Redshift is a managed scalable database warehouse where Nobl9 users can store their metrics information. Nobl9 connects to Amazon Redshift for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Amazon Redshift Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-direct).
 
@@ -17,7 +17,6 @@ resource "nobl9_direct_redshift" "test-redshift" {
   name                   = "test-redshift"
   project                = "terraform"
   description            = "desc"
-  source_of              = ["Metrics", "Services"]
   secret_arn             = "aws:arn"
   role_arn               = "secret"
   log_collection_enabled = true
@@ -31,7 +30,6 @@ resource "nobl9_direct_redshift" "test-redshift" {
 
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services.
 
 ### Optional
 
@@ -42,6 +40,7 @@ resource "nobl9_direct_redshift" "test-redshift" {
 - `release_channel` (String) Release channel of the created datasource [stable/beta]
 - `role_arn` (String, Sensitive) [required] | ARN of the AWS IAM Role to assume.
 - `secret_arn` (String, Sensitive) AWS Secret ARN.
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 
