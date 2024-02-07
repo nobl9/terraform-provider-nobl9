@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"sync"
 
@@ -142,7 +143,9 @@ var (
 	once         sync.Once
 )
 
+//nolint:unparam
 func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	once.Do(func() {
 		options := []sdk.ConfigOption{
 			sdk.ConfigOptionWithCredentials(providerConfig.ClientID, providerConfig.ClientSecret),
@@ -178,6 +181,7 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 		if err != nil {
 			panic(err)
 		}
+		sharedClient.SetUserAgent(fmt.Sprintf("terraform-%s", Version))
 	})
-	return sharedClient, nil
+	return sharedClient, diags
 }

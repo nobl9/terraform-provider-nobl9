@@ -1372,9 +1372,9 @@ func marshalCloudWatchMetric(s *schema.Set) *v1alphaSLO.CloudWatchMetric {
 		sql = &value
 	}
 
-	var json *string
+	var jsonStrP *string
 	if value := metric["json"].(string); value != "" {
-		json = &value
+		jsonStrP = &value
 	}
 
 	dimensions := metric["dimensions"].(*schema.Set)
@@ -1403,7 +1403,7 @@ func marshalCloudWatchMetric(s *schema.Set) *v1alphaSLO.CloudWatchMetric {
 		Stat:       stat,
 		Dimensions: metricDimensions,
 		SQL:        sql,
-		JSON:       json,
+		JSON:       jsonStrP,
 	}
 }
 

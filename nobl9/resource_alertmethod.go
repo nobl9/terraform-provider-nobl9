@@ -590,8 +590,10 @@ func (i alertMethodEmail) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAM.S
 	diags = appendError(diags, err)
 	err = d.Set("bcc", config.Bcc)
 	diags = appendError(diags, err)
+	//nolint:staticcheck
 	err = d.Set("subject", config.Subject)
 	diags = appendError(diags, err)
+	//nolint:staticcheck
 	err = d.Set("body", config.Body)
 	diags = appendError(diags, err)
 

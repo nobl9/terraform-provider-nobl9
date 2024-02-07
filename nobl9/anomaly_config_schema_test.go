@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+//nolint:tparallel
 func TestMarshalAnomalyConfig(t *testing.T) {
 	testCases := []struct {
 		name                 string
@@ -147,6 +148,7 @@ func TestMarshalAnomalyConfig(t *testing.T) {
 	}
 }
 
+//nolint:tparallel
 func TestMarshalAnomalyConfigAlertMethods(t *testing.T) {
 	testCases := []struct {
 		name          string

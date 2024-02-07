@@ -138,6 +138,7 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 		project := d.Get("project").(string)
 		agentsData, err := client.GetAgentCredentials(ctx, project, agent.Metadata.Name)
+		diags = appendError(diags, err)
 		err = d.Set("client_id", agentsData.ClientID)
 		diags = appendError(diags, err)
 		err = d.Set("client_secret", agentsData.ClientSecret)
@@ -985,7 +986,7 @@ func marshalAgentNewRelic(d *schema.ResourceData, diags diag.Diagnostics) *v1alp
 
 	accID, err := strconv.Atoi(data["account_id"].(string))
 	if err != nil {
-		diags = appendError(diags, err)
+		appendError(diags, err)
 		return nil
 	}
 	return &v1alphaAgent.NewRelicConfig{
