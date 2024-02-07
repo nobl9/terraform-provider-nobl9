@@ -8,6 +8,8 @@ description: |-
 
 Honeycomb is an observability platform that integrates system metrics with high-cardinality application data for in-depth analysis and swift debugging of complex software systems. Nobl9 connects to Honeycomb for SLI measurement collection and comparison with SLO targets.
 
+To access this integration, contact support@nobl9.com.
+
 For more information, refer to [Honeycomb Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/honeycomb#hc-direct).
 
 ## Example Usage

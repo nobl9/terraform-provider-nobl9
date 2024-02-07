@@ -1740,6 +1740,7 @@ func unmarshalGraphiteMetric(metric interface{}) map[string]interface{} {
 /**
  * Honeycomb Metric
  * https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb
+ * To access this integration, contact support@nobl9.com.
  */
 const honeycombMetric = "honeycomb"
 
