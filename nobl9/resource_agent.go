@@ -197,6 +197,7 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	return nil
 }
 
+//nolint:unparam
 func marshalAgent(d *schema.ResourceData) (*v1alphaAgent.Agent, diag.Diagnostics) {
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
