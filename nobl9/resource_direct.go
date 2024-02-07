@@ -159,6 +159,7 @@ func (dr directResource) resourceDirectDelete(
 	return nil
 }
 
+//nolint:unparam
 func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alphaDirect.Direct, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
