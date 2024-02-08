@@ -117,10 +117,7 @@ func agentSchema() map[string]*schema.Schema {
 
 func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
 
 	agent, diags := marshalAgent(d)
 	if diags.HasError() {
@@ -157,10 +154,8 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 
 func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	project := d.Get("project").(string)
 	if project == "" {
 		project = config.Project
@@ -174,10 +169,8 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	project := d.Get("project").(string)
 	if project == "" {
 		project = config.Project

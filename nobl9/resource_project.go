@@ -78,10 +78,8 @@ func unmarshalProject(d *schema.ResourceData, objects []v1alphaProject.Project) 
 
 func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	project, diags := marshalProject(d)
 	if diags.HasError() {
 		return diags
@@ -97,10 +95,8 @@ func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta inte
 
 func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	objects, err := client.GetObjects(ctx, d.Id(), manifest.KindProject, nil, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -110,10 +106,8 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	err := client.DeleteObjectsByName(ctx, d.Id(), manifest.KindProject, false, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

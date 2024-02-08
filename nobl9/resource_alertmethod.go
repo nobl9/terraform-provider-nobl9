@@ -87,10 +87,8 @@ func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []v1al
 //nolint:lll
 func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	am := a.marshalAlertMethod(d)
 	resultAm := manifest.SetDefaultProject([]manifest.Object{am}, config.Project)
 	err := client.ApplyObjects(ctx, resultAm)
@@ -104,10 +102,8 @@ func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.Res
 //nolint:lll
 func (a alertMethod) resourceAlertMethodRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	project := d.Get("project").(string)
 	if project == "" {
 		project = config.Project
@@ -121,10 +117,8 @@ func (a alertMethod) resourceAlertMethodRead(ctx context.Context, d *schema.Reso
 
 func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	project := d.Get("project").(string)
 	if project == "" {
 		project = config.Project

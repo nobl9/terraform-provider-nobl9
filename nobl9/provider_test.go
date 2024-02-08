@@ -95,10 +95,7 @@ func CheckDestroy(rsType string, kind manifest.Kind) func(s *terraform.State) er
 		if !ok {
 			return fmt.Errorf("could not cast data to ProviderConfig")
 		}
-		client, ds := getClient(config)
-		if ds.HasError() {
-			return fmt.Errorf("unable create client when deleting objects")
-		}
+		client := getClient(config)
 
 		ctx := context.Background()
 		for _, rs := range s.RootModule().Resources {

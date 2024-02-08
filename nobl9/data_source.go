@@ -39,10 +39,7 @@ func dataSourceAWSIAMRoleAuthExternalIDDRead(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
 	directName := d.Get("name").(string)
 	objects, err := client.GetDirectIAMRoleIDs(ctx, client.Config.Project, directName)
 	if err != nil {

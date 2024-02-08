@@ -99,10 +99,8 @@ func unmarshalService(d *schema.ResourceData, objects []v1alphaService.Service) 
 
 func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	service, diags := marshalService(d)
 	if diags.HasError() {
 		return diags
@@ -118,10 +116,8 @@ func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta inte
 
 func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	project := d.Get("project").(string)
 	if project == "" {
 		project = config.Project
@@ -135,10 +131,8 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	project := d.Get("project").(string)
 	if project == "" {
 		project = config.Project

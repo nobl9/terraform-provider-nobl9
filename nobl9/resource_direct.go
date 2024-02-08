@@ -78,10 +78,7 @@ func (dr directResource) resourceDirectApply(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
 
 	n9Direct, diags := dr.marshalDirect(d)
 	if diags.HasError() {
@@ -114,10 +111,7 @@ func (dr directResource) resourceDirectRead(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
 
 	project := d.Get("project").(string)
 	if project == "" {
@@ -137,10 +131,7 @@ func (dr directResource) resourceDirectDelete(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
 
 	project := d.Get("project").(string)
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
