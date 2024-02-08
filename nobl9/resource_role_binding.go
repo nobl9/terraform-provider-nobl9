@@ -31,19 +31,26 @@ func resourceRoleBinding() *schema.Resource {
 			},
 			"display_name": schemaDisplayName(),
 			"user": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Users**).",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Access Controls** > **Users**).",
+				ConflictsWith: []string{"group_ref"},
+			},
+			"group_ref": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Group name that can be retrieved from the Nobl9 UI (**Settings** > **Access Controls** > **Groups**) or using sloctl `get usergroups` command.",
+				ConflictsWith: []string{"user"},
 			},
 			"role_ref": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Role name; the role that you want the user to assume.",
+				Description: "Role name; the role that you want the user or group to assume.",
 			},
 			"project_ref": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Project name, the project in which we want the user to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.",
+				Description: "Project name, the project in which we want the user or group to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.",
 			},
 		},
 		CreateContext: resourceRoleBindingApply,
@@ -63,7 +70,17 @@ func marshalRoleBinding(d *schema.ResourceData) *v1alphaRb.RoleBinding {
 		id, _ := uuid.NewUUID() // NewUUID returns always nil error
 		name = id.String()
 	}
-	userRoleBindingSpec := d.Get("user").(string)
+
+	var user *string
+	if userValue := d.Get("user").(string); userValue != "" {
+		user = &userValue
+	}
+
+	var groupRef *string
+	if groupRefValue := d.Get("group_ref").(string); groupRefValue != "" {
+		groupRef = &groupRefValue
+	}
+
 	return &v1alphaRb.RoleBinding{
 		APIVersion: v1alpha.APIVersion,
 		Kind:       manifest.KindRoleBinding,
@@ -71,7 +88,8 @@ func marshalRoleBinding(d *schema.ResourceData) *v1alphaRb.RoleBinding {
 			Name: name,
 		},
 		Spec: v1alphaRb.Spec{
-			User:       &userRoleBindingSpec,
+			User:       user,
+			GroupRef:   groupRef,
 			RoleRef:    d.Get("role_ref").(string),
 			ProjectRef: d.Get("project_ref").(string),
 		},
@@ -94,6 +112,8 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRb.RoleBindin
 
 	spec := roleBinding.Spec
 	err = d.Set("user", spec.User)
+	diags = appendError(diags, err)
+	err = d.Set("group_ref", spec.GroupRef)
 	diags = appendError(diags, err)
 	err = d.Set("role_ref", spec.RoleRef)
 	diags = appendError(diags, err)
@@ -136,7 +156,7 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 		}
 		return nil
 	}); err != nil {
-		return diag.Errorf("could not add project: %s", err.Error())
+		return diag.Errorf("could not add role binding: %s", err.Error())
 	}
 
 	d.SetId(roleBinding.Metadata.Name)

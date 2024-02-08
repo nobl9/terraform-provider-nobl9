@@ -16,9 +16,11 @@ There are two levels of permissions, the organization level and the project leve
 
 For more details, refer to the [Role Binding configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#rolebinding).
 
--> **NOTE** To configure RBAC through Terraform, you must provide `role_ref` and `user` values:
+-> **NOTE** To configure RBAC through Terraform, you must provide `role_ref` and either `user` or `group_ref` values:
 
-- `user` is a User ID from Okta. You can retrieve it from **Settings** > **Account and Settings** > **Users** in the Nobl9 UI.
+- `user` is a User ID from Okta. You can retrieve it from **Settings** > **Access Controls** > **Users** in the Nobl9 UI.
+
+- `group_ref` is a Group name. You can retrieve it from **Settings** > **Access Controls** > **Groups** in the Nobl9 UI or using sloctl `get usergroups` command.
 
 - `role_ref` must be an existing role name that you want the user to assume. If you don't specify the optional `project_ref` value, `role_ref` must contain an Organization Role.
 
