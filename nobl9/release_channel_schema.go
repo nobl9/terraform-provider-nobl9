@@ -27,14 +27,14 @@ func schemaReleaseChannel() *schema.Schema {
 	}
 }
 
-func marshalReleaseChannel(d *schema.ResourceData, diags diag.Diagnostics) v1alpha.ReleaseChannel {
+func marshalReleaseChannel(d *schema.ResourceData, diags *diag.Diagnostics) v1alpha.ReleaseChannel {
 	rc, ok := d.Get(releaseChannel).(string)
 	if !ok {
 		return 0
 	}
 	result, err := v1alpha.ParseReleaseChannel(rc)
 	if err != nil {
-		appendError(diags, fmt.Errorf("invalid release channel '%s'", rc))
+		*diags = appendError(*diags, fmt.Errorf("invalid release channel '%s'", rc))
 		return 0
 	}
 	return result
