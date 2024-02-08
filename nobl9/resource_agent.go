@@ -275,30 +275,30 @@ func unmarshalAgent(d *schema.ResourceData, agents []v1alphaAgent.Agent) diag.Di
 		hclName  string
 		jsonName string
 	}{
-		{amazonPrometheusAgentConfigKey, agentSpecJSONName(spec.AmazonPrometheus, diags)},
-		{appDynamicsAgentConfigKey, agentSpecJSONName(spec.AppDynamics, diags)},
-		{azureMonitorAgentConfigKey, agentSpecJSONName(spec.AzureMonitor, diags)},
-		{bigqueryAgentConfigKey, agentSpecJSONName(spec.BigQuery, diags)},
-		{cloudWatchAgentConfigKey, agentSpecJSONName(spec.CloudWatch, diags)},
-		{datadogAgentConfigKey, agentSpecJSONName(spec.Datadog, diags)},
-		{dynatraceAgentConfigKey, agentSpecJSONName(spec.Dynatrace, diags)},
-		{elasticsearchAgentConfigKey, agentSpecJSONName(spec.Elasticsearch, diags)},
-		{gcmAgentConfigKey, agentSpecJSONName(spec.GCM, diags)},
-		{grafanalokiAgentConfigKey, agentSpecJSONName(spec.GrafanaLoki, diags)},
-		{graphiteAgentConfigKey, agentSpecJSONName(spec.Graphite, diags)},
-		{honeycombAgentConfigKey, agentSpecJSONName(spec.Honeycomb, diags)},
-		{influxdbAgentConfigKey, agentSpecJSONName(spec.InfluxDB, diags)},
-		{instanaAgentConfigKey, agentSpecJSONName(spec.Instana, diags)},
-		{lightstepAgentConfigKey, agentSpecJSONName(spec.Lightstep, diags)},
-		{newRelicAgentConfigKey, agentSpecJSONName(spec.NewRelic, diags)},
-		{opentsdbAgentConfigKey, agentSpecJSONName(spec.OpenTSDB, diags)},
-		{pingdomAgentConfigKey, agentSpecJSONName(spec.Pingdom, diags)},
-		{prometheusAgentConfigKey, agentSpecJSONName(spec.Prometheus, diags)},
-		{redshiftAgentConfigKey, agentSpecJSONName(spec.Redshift, diags)},
-		{splunkAgentConfigKey, agentSpecJSONName(spec.Splunk, diags)},
-		{splunkObservabilityAgentConfigKey, agentSpecJSONName(spec.SplunkObservability, diags)},
-		{sumologicAgentConfigKey, agentSpecJSONName(spec.SumoLogic, diags)},
-		{thousandeyesAgentConfigKey, agentSpecJSONName(spec.ThousandEyes, diags)},
+		{amazonPrometheusAgentConfigKey, agentSpecJSONName(spec.AmazonPrometheus, &diags)},
+		{appDynamicsAgentConfigKey, agentSpecJSONName(spec.AppDynamics, &diags)},
+		{azureMonitorAgentConfigKey, agentSpecJSONName(spec.AzureMonitor, &diags)},
+		{bigqueryAgentConfigKey, agentSpecJSONName(spec.BigQuery, &diags)},
+		{cloudWatchAgentConfigKey, agentSpecJSONName(spec.CloudWatch, &diags)},
+		{datadogAgentConfigKey, agentSpecJSONName(spec.Datadog, &diags)},
+		{dynatraceAgentConfigKey, agentSpecJSONName(spec.Dynatrace, &diags)},
+		{elasticsearchAgentConfigKey, agentSpecJSONName(spec.Elasticsearch, &diags)},
+		{gcmAgentConfigKey, agentSpecJSONName(spec.GCM, &diags)},
+		{grafanalokiAgentConfigKey, agentSpecJSONName(spec.GrafanaLoki, &diags)},
+		{graphiteAgentConfigKey, agentSpecJSONName(spec.Graphite, &diags)},
+		{honeycombAgentConfigKey, agentSpecJSONName(spec.Honeycomb, &diags)},
+		{influxdbAgentConfigKey, agentSpecJSONName(spec.InfluxDB, &diags)},
+		{instanaAgentConfigKey, agentSpecJSONName(spec.Instana, &diags)},
+		{lightstepAgentConfigKey, agentSpecJSONName(spec.Lightstep, &diags)},
+		{newRelicAgentConfigKey, agentSpecJSONName(spec.NewRelic, &diags)},
+		{opentsdbAgentConfigKey, agentSpecJSONName(spec.OpenTSDB, &diags)},
+		{pingdomAgentConfigKey, agentSpecJSONName(spec.Pingdom, &diags)},
+		{prometheusAgentConfigKey, agentSpecJSONName(spec.Prometheus, &diags)},
+		{redshiftAgentConfigKey, agentSpecJSONName(spec.Redshift, &diags)},
+		{splunkAgentConfigKey, agentSpecJSONName(spec.Splunk, &diags)},
+		{splunkObservabilityAgentConfigKey, agentSpecJSONName(spec.SplunkObservability, &diags)},
+		{sumologicAgentConfigKey, agentSpecJSONName(spec.SumoLogic, &diags)},
+		{thousandeyesAgentConfigKey, agentSpecJSONName(spec.ThousandEyes, &diags)},
 	}
 
 	for _, name := range supportedAgents {
@@ -331,7 +331,7 @@ func unmarshalAgentConfig(
 	diags = appendError(diags, err)
 
 	switch jsonName {
-	case agentSpecJSONName(v1alphaAgent.Spec{}.NewRelic, diags):
+	case agentSpecJSONName(v1alphaAgent.Spec{}.NewRelic, &diags):
 		unmarshalDiags := unmarshalNewRelicAgentSpec(d, agent)
 		diags = append(diags, unmarshalDiags...)
 	default:
@@ -342,7 +342,7 @@ func unmarshalAgentConfig(
 	return true, diags
 }
 
-func agentSpecJSONName(agentSpecField any, diags diag.Diagnostics) string {
+func agentSpecJSONName(agentSpecField any, diags *diag.Diagnostics) string {
 	agentSpec := v1alphaAgent.Spec{}
 	getAgentSpecFieldName := func() string {
 		var name string
@@ -368,7 +368,7 @@ func agentSpecJSONName(agentSpecField any, diags diag.Diagnostics) string {
 		}
 	}
 
-	appendError(diags, fmt.Errorf("not supported agent type: %v", reflect.TypeOf(agentSpecField).String()))
+	*diags = appendError(*diags, fmt.Errorf("not supported agent type: %v", reflect.TypeOf(agentSpecField).String()))
 
 	return ""
 }
