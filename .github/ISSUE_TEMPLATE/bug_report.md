@@ -17,7 +17,7 @@ with provider and resource configs included.
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**System details (please complete the following information):**
+**System details (please complete the following information)**
 - OS (with version): [e.g. OS X 14.2.1, Ubuntu 22.04]
 - Terraform Provider Version [e.g. v0.22.0]
 - Terraform Version [e.g. v1.6.6]
