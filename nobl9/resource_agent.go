@@ -295,13 +295,11 @@ func unmarshalAgent(d *schema.ResourceData, agents []v1alphaAgent.Agent) diag.Di
 	}
 
 	for _, name := range supportedAgents {
-		ok, ds := unmarshalAgentConfig(d, agent, name.hclName, name.jsonName)
+		ds := unmarshalAgentConfig(d, agent, name.hclName, name.jsonName)
 		if ds.HasError() {
 			diags = append(diags, ds...)
 		}
-		if ok {
-			break
-		}
+		break
 	}
 
 	return diags
@@ -311,7 +309,7 @@ func unmarshalAgentConfig(
 	d *schema.ResourceData,
 	agent v1alphaAgent.Agent,
 	hclName,
-	jsonName string) (bool, diag.Diagnostics) {
+	jsonName string) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// err := d.Set("agent_type", spec[""]) TODO
@@ -332,7 +330,7 @@ func unmarshalAgentConfig(
 		diags = appendError(diags, err)
 	}
 
-	return true, diags
+	return diags
 }
 
 func agentSpecJSONName(agentSpecField any, diags *diag.Diagnostics) string {
