@@ -248,7 +248,7 @@ func oneElementSet(_ interface{}) int {
 }
 
 func set(d *schema.ResourceData, key string, value interface{}, diags *diag.Diagnostics) {
-	appendError(*diags, d.Set(key, value))
+	*diags = appendError(*diags, d.Set(key, value))
 }
 
 func appendError(d diag.Diagnostics, err error) diag.Diagnostics {
