@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"sync"
@@ -185,3 +186,5 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 	})
 	return sharedClient, diags
 }
+
+var errConcurrencyIssue = errors.New()

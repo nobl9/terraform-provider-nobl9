@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaRb "github.com/nobl9/nobl9-go/manifest/v1alpha/rolebinding"
 	"github.com/nobl9/nobl9-go/sdk"
+	v1 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 const wildcardProject = "*"
@@ -81,19 +81,18 @@ func marshalRoleBinding(d *schema.ResourceData) *v1alphaRb.RoleBinding {
 		groupRef = &groupRefValue
 	}
 
-	return &v1alphaRb.RoleBinding{
-		APIVersion: v1alpha.APIVersion,
-		Kind:       manifest.KindRoleBinding,
-		Metadata: v1alphaRb.Metadata{
+	roleBinding := v1alphaRb.New(
+		v1alphaRb.Metadata{
 			Name: name,
 		},
-		Spec: v1alphaRb.Spec{
+		v1alphaRb.Spec{
 			User:       user,
 			GroupRef:   groupRef,
 			RoleRef:    d.Get("role_ref").(string),
 			ProjectRef: d.Get("project_ref").(string),
 		},
-	}
+	)
+	return &roleBinding
 }
 
 func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRb.RoleBinding) diag.Diagnostics {
@@ -147,7 +146,7 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 
 	roleBinding := marshalRoleBinding(d)
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, []manifest.Object{roleBinding})
+		err := client.Objects().V1().Apply(ctx, []manifest.Object{roleBinding})
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
@@ -173,11 +172,14 @@ func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta i
 	if project == "" {
 		project = wildcardProject
 	}
-	objects, err := client.GetObjects(ctx, project, manifest.KindRoleBinding, nil, d.Id())
+	roleBindings, err := client.Objects().V1().GetV1alphaRoleBindings(ctx, v1.GetRoleBindingsRequest{
+		Project: project,
+		Names:   []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalRoleBinding(d, manifest.FilterByKind[v1alphaRb.RoleBinding](objects))
+	return unmarshalRoleBinding(d, roleBindings)
 }
 
 func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -193,7 +195,7 @@ func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(ctx, project, manifest.KindRoleBinding, false, d.Id())
+		err := client.Objects().V1().DeleteByName(ctx, manifest.KindRoleBinding, project, d.Id())
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)

@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaAM "github.com/nobl9/nobl9-go/manifest/v1alpha/alertmethod"
+	v1 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 type alertMethodProvider interface {
@@ -50,16 +50,15 @@ type alertMethod struct {
 
 func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) *v1alphaAM.AlertMethod {
 	displayName, _ := d.Get("display_name").(string)
-	return &v1alphaAM.AlertMethod{
-		APIVersion: v1alpha.APIVersion,
-		Kind:       manifest.KindAlertMethod,
-		Metadata: v1alphaAM.Metadata{
+	alertMethod := v1alphaAM.New(
+		v1alphaAM.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
 		},
-		Spec: a.MarshalSpec(d),
-	}
+		a.MarshalSpec(d),
+	)
+	return &alertMethod
 }
 
 func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []v1alphaAM.AlertMethod) diag.Diagnostics {
@@ -93,7 +92,7 @@ func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.Res
 	}
 	am := a.marshalAlertMethod(d)
 	resultAm := manifest.SetDefaultProject([]manifest.Object{am}, config.Project)
-	err := client.ApplyObjects(ctx, resultAm)
+	err := client.Objects().V1().Apply(ctx, resultAm)
 	if err != nil {
 		return diag.Errorf("could not add agent: %s", err.Error())
 	}
@@ -112,11 +111,14 @@ func (a alertMethod) resourceAlertMethodRead(ctx context.Context, d *schema.Reso
 	if project == "" {
 		project = config.Project
 	}
-	objects, err := client.GetObjects(ctx, project, manifest.KindAlertMethod, nil, d.Id())
+	alertMethods, err := client.Objects().V1().GetV1alphaAlertMethods(ctx, v1.GetAlertMethodsRequest{
+		Project: project,
+		Names:   []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return a.unmarshalAlertMethod(d, manifest.FilterByKind[v1alphaAM.AlertMethod](objects))
+	return a.unmarshalAlertMethod(d, alertMethods)
 }
 
 func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -129,7 +131,7 @@ func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta
 	if project == "" {
 		project = config.Project
 	}
-	err := client.DeleteObjectsByName(ctx, project, manifest.KindAlertMethod, false, d.Id())
+	err := client.Objects().V1().DeleteByName(ctx, manifest.KindAlertMethod, project, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

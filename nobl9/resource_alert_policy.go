@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaAP "github.com/nobl9/nobl9-go/manifest/v1alpha/alertpolicy"
+	v1 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 func resourceAlertPolicy() *schema.Resource {
@@ -129,22 +129,20 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alphaAP.AlertPolicy, diag.Di
 		return nil, diags
 	}
 
-	return &v1alphaAP.AlertPolicy{
-		APIVersion: v1alpha.APIVersion,
-		Kind:       manifest.KindAlertPolicy,
-		Metadata: v1alphaAP.Metadata{
+	alertPolicy := v1alphaAP.New(
+		v1alphaAP.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
 			Labels:      labelsMarshaled,
 		},
-		Spec: v1alphaAP.Spec{
+		v1alphaAP.Spec{
 			Description:  d.Get("description").(string),
 			Severity:     d.Get("severity").(string),
 			Conditions:   marshalAlertConditions(d),
 			AlertMethods: marshalAlertMethods(d),
-		},
-	}, diags
+		})
+	return &alertPolicy, diags
 }
 
 func marshalAlertMethods(d *schema.ResourceData) []v1alphaAP.AlertMethodRef {
@@ -277,7 +275,7 @@ func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta 
 		return diags
 	}
 	resultAp := manifest.SetDefaultProject([]manifest.Object{ap}, config.Project)
-	err := client.ApplyObjects(ctx, resultAp)
+	err := client.Objects().V1().Apply(ctx, resultAp)
 	if err != nil {
 		return diag.Errorf("could not add alertPolicy: %s", err.Error())
 	}
@@ -295,11 +293,14 @@ func resourceAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 	if project == "" {
 		project = config.Project
 	}
-	objects, err := client.GetObjects(ctx, project, manifest.KindAlertPolicy, nil, d.Id())
+	alertPolicies, err := client.Objects().V1().GetV1alphaAlertPolicies(ctx, v1.GetAlertPolicyRequest{
+		Project: project,
+		Names:   []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalAlertPolicy(d, manifest.FilterByKind[v1alphaAP.AlertPolicy](objects))
+	return unmarshalAlertPolicy(d, alertPolicies)
 }
 
 func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -312,7 +313,7 @@ func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta
 	if project == "" {
 		project = config.Project
 	}
-	err := client.DeleteObjectsByName(ctx, project, manifest.KindAlertPolicy, false, d.Id())
+	err := client.Objects().V1().DeleteByName(ctx, manifest.KindAlertPolicy, project, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

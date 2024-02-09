@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
+	v1 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
@@ -361,7 +362,7 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	resultSlo := manifest.SetDefaultProject([]manifest.Object{slo}, config.Project)
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, resultSlo)
+		err := client.Objects().V1().Apply(ctx, resultSlo)
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
@@ -387,11 +388,14 @@ func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface
 	if project == "" {
 		project = config.Project
 	}
-	objects, err := client.GetObjects(ctx, project, manifest.KindSLO, nil, d.Id())
+	slos, err := client.Objects().V1().GetV1alphaSLOs(ctx, v1.GetSLOsRequest{
+		Project: project,
+		Names:   []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalSLO(d, manifest.FilterByKind[v1alphaSLO.SLO](objects))
+	return unmarshalSLO(d, slos)
 }
 
 func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -406,7 +410,7 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(ctx, project, manifest.KindSLO, false, d.Id())
+		err := client.Objects().V1().DeleteByName(ctx, manifest.KindSLO, project, d.Id())
 		if err != nil {
 			if errors.Is(err, sdk.ErrConcurrencyIssue) {
 				return resource.RetryableError(err)
