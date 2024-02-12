@@ -11,9 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
-	v1alphaRb "github.com/nobl9/nobl9-go/manifest/v1alpha/rolebinding"
-	"github.com/nobl9/nobl9-go/sdk"
+	v1alphaRoleBinding "github.com/nobl9/nobl9-go/manifest/v1alpha/rolebinding"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 const wildcardProject = "*"
@@ -64,7 +63,7 @@ func resourceRoleBinding() *schema.Resource {
 	}
 }
 
-func marshalRoleBinding(d *schema.ResourceData) *v1alphaRb.RoleBinding {
+func marshalRoleBinding(d *schema.ResourceData) *v1alphaRoleBinding.RoleBinding {
 	name := d.Get("name").(string)
 	if name == "" {
 		id, _ := uuid.NewUUID() // NewUUID returns always nil error
@@ -81,22 +80,21 @@ func marshalRoleBinding(d *schema.ResourceData) *v1alphaRb.RoleBinding {
 		groupRef = &groupRefValue
 	}
 
-	return &v1alphaRb.RoleBinding{
-		APIVersion: v1alpha.APIVersion,
-		Kind:       manifest.KindRoleBinding,
-		Metadata: v1alphaRb.Metadata{
+	roleBinding := v1alphaRoleBinding.New(
+		v1alphaRoleBinding.Metadata{
 			Name: name,
 		},
-		Spec: v1alphaRb.Spec{
+		v1alphaRoleBinding.Spec{
 			User:       user,
 			GroupRef:   groupRef,
 			RoleRef:    d.Get("role_ref").(string),
 			ProjectRef: d.Get("project_ref").(string),
 		},
-	}
+	)
+	return &roleBinding
 }
 
-func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRb.RoleBinding) diag.Diagnostics {
+func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRoleBinding.RoleBinding) diag.Diagnostics {
 	_, isProjectRole := d.GetOk("project_ref")
 	roleBindingP := findRoleBindingByType(isProjectRole, objects)
 	if roleBindingP == nil {
@@ -123,7 +121,7 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRb.RoleBindin
 	return diags
 }
 
-func findRoleBindingByType(projectRole bool, objects []v1alphaRb.RoleBinding) *v1alphaRb.RoleBinding {
+func findRoleBindingByType(projectRole bool, objects []v1alphaRoleBinding.RoleBinding) *v1alphaRoleBinding.RoleBinding {
 	for _, object := range objects {
 		if projectRole && containsProjectRef(object) {
 			return &object
@@ -134,7 +132,7 @@ func findRoleBindingByType(projectRole bool, objects []v1alphaRb.RoleBinding) *v
 	return nil
 }
 
-func containsProjectRef(obj v1alphaRb.RoleBinding) bool {
+func containsProjectRef(obj v1alphaRoleBinding.RoleBinding) bool {
 	return obj.Spec.ProjectRef != ""
 }
 
@@ -147,9 +145,9 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 
 	roleBinding := marshalRoleBinding(d)
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, []manifest.Object{roleBinding})
+		err := client.Objects().V1().Apply(ctx, []manifest.Object{roleBinding})
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -173,11 +171,14 @@ func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta i
 	if project == "" {
 		project = wildcardProject
 	}
-	objects, err := client.GetObjects(ctx, project, manifest.KindRoleBinding, nil, d.Id())
+	roleBindings, err := client.Objects().V1().GetV1alphaRoleBindings(ctx, v1Objects.GetRoleBindingsRequest{
+		Project: project,
+		Names:   []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalRoleBinding(d, manifest.FilterByKind[v1alphaRb.RoleBinding](objects))
+	return unmarshalRoleBinding(d, roleBindings)
 }
 
 func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -193,9 +194,9 @@ func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(ctx, project, manifest.KindRoleBinding, false, d.Id())
+		err := client.Objects().V1().DeleteByName(ctx, manifest.KindRoleBinding, project, d.Id())
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)

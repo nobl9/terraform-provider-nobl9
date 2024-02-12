@@ -15,10 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
-	"github.com/nobl9/nobl9-go/sdk"
 )
 
 func resourceSLO() *schema.Resource {
@@ -361,9 +360,9 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	resultSlo := manifest.SetDefaultProject([]manifest.Object{slo}, config.Project)
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, resultSlo)
+		err := client.Objects().V1().Apply(ctx, resultSlo)
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -387,11 +386,14 @@ func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface
 	if project == "" {
 		project = config.Project
 	}
-	objects, err := client.GetObjects(ctx, project, manifest.KindSLO, nil, d.Id())
+	slos, err := client.Objects().V1().GetV1alphaSLOs(ctx, v1Objects.GetSLOsRequest{
+		Project: project,
+		Names:   []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalSLO(d, manifest.FilterByKind[v1alphaSLO.SLO](objects))
+	return unmarshalSLO(d, slos)
 }
 
 func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -406,9 +408,9 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(ctx, project, manifest.KindSLO, false, d.Id())
+		err := client.Objects().V1().DeleteByName(ctx, manifest.KindSLO, project, d.Id())
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -481,16 +483,14 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 	if diags.HasError() {
 		return nil, diags
 	}
-	return &v1alphaSLO.SLO{
-		APIVersion: v1alpha.APIVersion,
-		Kind:       manifest.KindSLO,
-		Metadata: v1alphaSLO.Metadata{
+	slo := v1alphaSLO.New(
+		v1alphaSLO.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
 			Labels:      labelsMarshaled,
 		},
-		Spec: v1alphaSLO.Spec{
+		v1alphaSLO.Spec{
 			Description:     d.Get("description").(string),
 			Service:         d.Get("service").(string),
 			BudgetingMethod: d.Get("budgeting_method").(string),
@@ -501,8 +501,8 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
 			Attachments:     marshalAttachments(attachments.([]interface{})),
 			AnomalyConfig:   marshalAnomalyConfig(d.Get("anomaly_config")),
-		},
-	}, diags
+		})
+	return &slo, diags
 }
 
 func marshalComposite(d *schema.ResourceData) *v1alphaSLO.Composite {

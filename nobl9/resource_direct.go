@@ -11,9 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaDirect "github.com/nobl9/nobl9-go/manifest/v1alpha/direct"
-	"github.com/nobl9/nobl9-go/sdk"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 type directResource struct {
@@ -89,9 +88,9 @@ func (dr directResource) resourceDirectApply(
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, []manifest.Object{n9Direct})
+		err := client.Objects().V1().Apply(ctx, []manifest.Object{n9Direct})
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -124,11 +123,14 @@ func (dr directResource) resourceDirectRead(
 		// project is empty when importing
 		project = config.Project
 	}
-	objects, err := client.GetObjects(ctx, project, manifest.KindDirect, nil, d.Id())
+	directs, err := client.Objects().V1().GetV1alphaDirects(ctx, v1Objects.GetDirectsRequest{
+		Project: project,
+		Names:   []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return dr.unmarshalDirect(d, manifest.FilterByKind[v1alphaDirect.Direct](objects))
+	return dr.unmarshalDirect(d, directs)
 }
 
 func (dr directResource) resourceDirectDelete(
@@ -144,9 +146,9 @@ func (dr directResource) resourceDirectDelete(
 
 	project := d.Get("project").(string)
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(ctx, project, manifest.KindDirect, false, d.Id())
+		err := client.Objects().V1().DeleteByName(ctx, manifest.KindDirect, project, d.Id())
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -179,16 +181,15 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alphaDirect.D
 		displayName = dn.(string)
 	}
 
-	return &v1alphaDirect.Direct{
-		APIVersion: v1alpha.APIVersion,
-		Kind:       manifest.KindDirect,
-		Metadata: v1alphaDirect.Metadata{
+	direct := v1alphaDirect.New(
+		v1alphaDirect.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
 		},
-		Spec: spec,
-	}, diags
+		spec,
+	)
+	return &direct, diags
 }
 
 func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []v1alphaDirect.Direct) diag.Diagnostics {
