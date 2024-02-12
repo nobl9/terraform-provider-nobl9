@@ -11,9 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	v1alphaRb "github.com/nobl9/nobl9-go/manifest/v1alpha/rolebinding"
-	"github.com/nobl9/nobl9-go/sdk"
-	v1 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	v1alphaRoleBinding "github.com/nobl9/nobl9-go/manifest/v1alpha/rolebinding"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 const wildcardProject = "*"
@@ -64,7 +63,7 @@ func resourceRoleBinding() *schema.Resource {
 	}
 }
 
-func marshalRoleBinding(d *schema.ResourceData) *v1alphaRb.RoleBinding {
+func marshalRoleBinding(d *schema.ResourceData) *v1alphaRoleBinding.RoleBinding {
 	name := d.Get("name").(string)
 	if name == "" {
 		id, _ := uuid.NewUUID() // NewUUID returns always nil error
@@ -81,11 +80,11 @@ func marshalRoleBinding(d *schema.ResourceData) *v1alphaRb.RoleBinding {
 		groupRef = &groupRefValue
 	}
 
-	roleBinding := v1alphaRb.New(
-		v1alphaRb.Metadata{
+	roleBinding := v1alphaRoleBinding.New(
+		v1alphaRoleBinding.Metadata{
 			Name: name,
 		},
-		v1alphaRb.Spec{
+		v1alphaRoleBinding.Spec{
 			User:       user,
 			GroupRef:   groupRef,
 			RoleRef:    d.Get("role_ref").(string),
@@ -95,7 +94,7 @@ func marshalRoleBinding(d *schema.ResourceData) *v1alphaRb.RoleBinding {
 	return &roleBinding
 }
 
-func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRb.RoleBinding) diag.Diagnostics {
+func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRoleBinding.RoleBinding) diag.Diagnostics {
 	_, isProjectRole := d.GetOk("project_ref")
 	roleBindingP := findRoleBindingByType(isProjectRole, objects)
 	if roleBindingP == nil {
@@ -122,7 +121,7 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRb.RoleBindin
 	return diags
 }
 
-func findRoleBindingByType(projectRole bool, objects []v1alphaRb.RoleBinding) *v1alphaRb.RoleBinding {
+func findRoleBindingByType(projectRole bool, objects []v1alphaRoleBinding.RoleBinding) *v1alphaRoleBinding.RoleBinding {
 	for _, object := range objects {
 		if projectRole && containsProjectRef(object) {
 			return &object
@@ -133,7 +132,7 @@ func findRoleBindingByType(projectRole bool, objects []v1alphaRb.RoleBinding) *v
 	return nil
 }
 
-func containsProjectRef(obj v1alphaRb.RoleBinding) bool {
+func containsProjectRef(obj v1alphaRoleBinding.RoleBinding) bool {
 	return obj.Spec.ProjectRef != ""
 }
 
@@ -172,7 +171,7 @@ func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta i
 	if project == "" {
 		project = wildcardProject
 	}
-	roleBindings, err := client.Objects().V1().GetV1alphaRoleBindings(ctx, v1.GetRoleBindingsRequest{
+	roleBindings, err := client.Objects().V1().GetV1alphaRoleBindings(ctx, v1Objects.GetRoleBindingsRequest{
 		Project: project,
 		Names:   []string{d.Id()},
 	})

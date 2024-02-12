@@ -16,8 +16,7 @@ import (
 
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaAgent "github.com/nobl9/nobl9-go/manifest/v1alpha/agent"
-	"github.com/nobl9/nobl9-go/sdk"
-	v1 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 const agentTypeKey = "agent_type"
@@ -165,7 +164,7 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	if project == "" {
 		project = config.Project
 	}
-	agents, err := client.Objects().V1().GetV1alphaAgents(ctx, v1.GetAgentsRequest{
+	agents, err := client.Objects().V1().GetV1alphaAgents(ctx, v1Objects.GetAgentsRequest{
 		Project: project,
 		Names:   []string{d.Id()},
 	})

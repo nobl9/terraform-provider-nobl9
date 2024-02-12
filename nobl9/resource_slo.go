@@ -15,11 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
-	v1 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
-	"github.com/nobl9/nobl9-go/sdk"
 )
 
 func resourceSLO() *schema.Resource {
@@ -388,7 +386,7 @@ func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface
 	if project == "" {
 		project = config.Project
 	}
-	slos, err := client.Objects().V1().GetV1alphaSLOs(ctx, v1.GetSLOsRequest{
+	slos, err := client.Objects().V1().GetV1alphaSLOs(ctx, v1Objects.GetSLOsRequest{
 		Project: project,
 		Names:   []string{d.Id()},
 	})
@@ -485,16 +483,14 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 	if diags.HasError() {
 		return nil, diags
 	}
-	return &v1alphaSLO.SLO{
-		APIVersion: v1alpha.APIVersion,
-		Kind:       manifest.KindSLO,
-		Metadata: v1alphaSLO.Metadata{
+	slo := v1alphaSLO.New(
+		v1alphaSLO.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
 			Labels:      labelsMarshaled,
 		},
-		Spec: v1alphaSLO.Spec{
+		v1alphaSLO.Spec{
 			Description:     d.Get("description").(string),
 			Service:         d.Get("service").(string),
 			BudgetingMethod: d.Get("budgeting_method").(string),
@@ -505,8 +501,8 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
 			Attachments:     marshalAttachments(attachments.([]interface{})),
 			AnomalyConfig:   marshalAnomalyConfig(d.Get("anomaly_config")),
-		},
-	}, diags
+		})
+	return &slo, diags
 }
 
 func marshalComposite(d *schema.ResourceData) *v1alphaSLO.Composite {

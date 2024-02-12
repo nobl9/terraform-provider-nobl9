@@ -12,8 +12,7 @@ import (
 
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaDirect "github.com/nobl9/nobl9-go/manifest/v1alpha/direct"
-	"github.com/nobl9/nobl9-go/sdk"
-	v1 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 type directResource struct {
@@ -124,7 +123,7 @@ func (dr directResource) resourceDirectRead(
 		// project is empty when importing
 		project = config.Project
 	}
-	directs, err := client.Objects().V1().GetV1alphaDirects(ctx, v1.GetDirectsRequest{
+	directs, err := client.Objects().V1().GetV1alphaDirects(ctx, v1Objects.GetDirectsRequest{
 		Project: project,
 		Names:   []string{d.Id()},
 	})

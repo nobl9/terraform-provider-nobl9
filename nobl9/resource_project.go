@@ -8,7 +8,7 @@ import (
 
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
-	v1 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 func resourceProject() *schema.Resource {
@@ -100,7 +100,7 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta inter
 	if ds != nil {
 		return ds
 	}
-	projects, err := client.Objects().V1().GetV1alphaProjects(ctx, v1.GetProjectsRequest{
+	projects, err := client.Objects().V1().GetV1alphaProjects(ctx, v1Objects.GetProjectsRequest{
 		Names: []string{d.Id()},
 	})
 	if err != nil {

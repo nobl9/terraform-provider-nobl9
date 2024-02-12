@@ -8,7 +8,7 @@ import (
 
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
-	v1 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 func resourceService() *schema.Resource {
@@ -124,7 +124,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 	if project == "" {
 		project = config.Project
 	}
-	services, err := client.Objects().V1().GetV1alphaServices(ctx, v1.GetServicesRequest{
+	services, err := client.Objects().V1().GetV1alphaServices(ctx, v1Objects.GetServicesRequest{
 		Project: project,
 		Names:   []string{d.Id()},
 	})
