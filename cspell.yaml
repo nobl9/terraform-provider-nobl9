@@ -25,17 +25,15 @@ ignorePaths:
   - CODEOWNERS
   - bin/**
 words:
-  - tsdbslo
-  - securego
-  - gopath
-  - dbslo
   - apdex
+  - dbslo
   - dynatrace
   - endef
   - gobin
   - goimports
   - golangci
   - golines
+  - gopath
   - gosec
   - govulncheck
   - ldflags
@@ -47,10 +45,12 @@ words:
   - opentsdb
   - plantuml
   - promql
+  - securego
   - sloctl
   - slos
   - tffile
   - tfplugindocs
   - tpng
+  - tsdbslo
   - vuln
   - vulns
