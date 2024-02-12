@@ -148,7 +148,7 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
 		err := client.Objects().V1().Apply(ctx, []manifest.Object{roleBinding})
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -197,7 +197,7 @@ func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.Objects().V1().DeleteByName(ctx, manifest.KindRoleBinding, project, d.Id())
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)

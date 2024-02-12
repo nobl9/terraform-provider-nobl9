@@ -131,7 +131,7 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
 		err := client.Objects().V1().Apply(ctx, resultAgent)
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -188,7 +188,7 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
 		err := client.Objects().V1().DeleteByName(ctx, manifest.KindAgent, project, d.Id())
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
