@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 func resourceService() *schema.Resource {
@@ -50,19 +50,17 @@ func marshalService(d *schema.ResourceData) (*v1alphaService.Service, diag.Diagn
 		return nil, diags
 	}
 
-	return &v1alphaService.Service{
-		APIVersion: v1alpha.APIVersion,
-		Kind:       manifest.KindService,
-		Metadata: v1alphaService.Metadata{
+	service := v1alphaService.New(
+		v1alphaService.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
 			Labels:      labelsMarshaled,
 		},
-		Spec: v1alphaService.Spec{
+		v1alphaService.Spec{
 			Description: d.Get("description").(string),
-		},
-	}, diags
+		})
+	return &service, diags
 }
 
 func unmarshalService(d *schema.ResourceData, objects []v1alphaService.Service) diag.Diagnostics {
@@ -108,7 +106,7 @@ func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta inte
 		return diags
 	}
 	resultService := manifest.SetDefaultProject([]manifest.Object{service}, config.Project)
-	err := client.ApplyObjects(ctx, resultService)
+	err := client.Objects().V1().Apply(ctx, resultService)
 	if err != nil {
 		return diag.Errorf("could not add service: %s", err.Error())
 	}
@@ -126,11 +124,14 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, meta inter
 	if project == "" {
 		project = config.Project
 	}
-	objects, err := client.GetObjects(ctx, project, manifest.KindService, nil, d.Id())
+	services, err := client.Objects().V1().GetV1alphaServices(ctx, v1Objects.GetServicesRequest{
+		Project: project,
+		Names:   []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalService(d, manifest.FilterByKind[v1alphaService.Service](objects))
+	return unmarshalService(d, services)
 }
 
 func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -143,7 +144,7 @@ func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta int
 	if project == "" {
 		project = config.Project
 	}
-	err := client.DeleteObjectsByName(ctx, project, manifest.KindService, false, d.Id())
+	err := client.Objects().V1().DeleteByName(ctx, manifest.KindService, project, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

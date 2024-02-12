@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 func resourceProject() *schema.Resource {
@@ -36,18 +36,17 @@ func marshalProject(d *schema.ResourceData) (*v1alphaProject.Project, diag.Diagn
 		return nil, diags
 	}
 
-	return &v1alphaProject.Project{
-		APIVersion: v1alpha.APIVersion,
-		Kind:       manifest.KindProject,
-		Metadata: v1alphaProject.Metadata{
+	project := v1alphaProject.New(
+		v1alphaProject.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: d.Get("display_name").(string),
 			Labels:      labelsMarshaled,
 		},
-		Spec: v1alphaProject.Spec{
+		v1alphaProject.Spec{
 			Description: d.Get("description").(string),
 		},
-	}, diags
+	)
+	return &project, diags
 }
 
 func unmarshalProject(d *schema.ResourceData, objects []v1alphaProject.Project) diag.Diagnostics {
@@ -87,7 +86,7 @@ func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta inte
 		return diags
 	}
 	resultProject := manifest.SetDefaultProject([]manifest.Object{project}, config.Project)
-	err := client.ApplyObjects(ctx, resultProject)
+	err := client.Objects().V1().Apply(ctx, resultProject)
 	if err != nil {
 		return diag.Errorf("could not add project: %s", err.Error())
 	}
@@ -101,11 +100,13 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta inter
 	if ds != nil {
 		return ds
 	}
-	objects, err := client.GetObjects(ctx, d.Id(), manifest.KindProject, nil, d.Id())
+	projects, err := client.Objects().V1().GetV1alphaProjects(ctx, v1Objects.GetProjectsRequest{
+		Names: []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalProject(d, manifest.FilterByKind[v1alphaProject.Project](objects))
+	return unmarshalProject(d, projects)
 }
 
 func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -114,7 +115,7 @@ func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta int
 	if ds != nil {
 		return ds
 	}
-	err := client.DeleteObjectsByName(ctx, d.Id(), manifest.KindProject, false, d.Id())
+	err := client.Objects().V1().DeleteByName(ctx, manifest.KindProject, "", d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

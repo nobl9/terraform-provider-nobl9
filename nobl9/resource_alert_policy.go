@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
-	v1alphaAP "github.com/nobl9/nobl9-go/manifest/v1alpha/alertpolicy"
+	v1alphaAlertPolicy "github.com/nobl9/nobl9-go/manifest/v1alpha/alertpolicy"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 func resourceAlertPolicy() *schema.Resource {
@@ -118,7 +118,7 @@ func transformAlertMethodsTo2DMap(alertMethods []interface{}) map[string]map[str
 	return result
 }
 
-func marshalAlertPolicy(d *schema.ResourceData) (*v1alphaAP.AlertPolicy, diag.Diagnostics) {
+func marshalAlertPolicy(d *schema.ResourceData) (*v1alphaAlertPolicy.AlertPolicy, diag.Diagnostics) {
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
@@ -129,31 +129,29 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alphaAP.AlertPolicy, diag.Di
 		return nil, diags
 	}
 
-	return &v1alphaAP.AlertPolicy{
-		APIVersion: v1alpha.APIVersion,
-		Kind:       manifest.KindAlertPolicy,
-		Metadata: v1alphaAP.Metadata{
+	alertPolicy := v1alphaAlertPolicy.New(
+		v1alphaAlertPolicy.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
 			Labels:      labelsMarshaled,
 		},
-		Spec: v1alphaAP.Spec{
+		v1alphaAlertPolicy.Spec{
 			Description:  d.Get("description").(string),
 			Severity:     d.Get("severity").(string),
 			Conditions:   marshalAlertConditions(d),
 			AlertMethods: marshalAlertMethods(d),
-		},
-	}, diags
+		})
+	return &alertPolicy, diags
 }
 
-func marshalAlertMethods(d *schema.ResourceData) []v1alphaAP.AlertMethodRef {
+func marshalAlertMethods(d *schema.ResourceData) []v1alphaAlertPolicy.AlertMethodRef {
 	methods := d.Get("alert_method").([]interface{})
-	resultConditions := make([]v1alphaAP.AlertMethodRef, len(methods))
+	resultConditions := make([]v1alphaAlertPolicy.AlertMethodRef, len(methods))
 	for i, m := range methods {
 		method := m.(map[string]interface{})
-		resultConditions[i] = v1alphaAP.AlertMethodRef{
-			Metadata: v1alphaAP.AlertMethodRefMetadata{
+		resultConditions[i] = v1alphaAlertPolicy.AlertMethodRef{
+			Metadata: v1alphaAlertPolicy.AlertMethodRefMetadata{
 				Name:    method["name"].(string),
 				Project: method["project"].(string),
 			},
@@ -162,9 +160,9 @@ func marshalAlertMethods(d *schema.ResourceData) []v1alphaAP.AlertMethodRef {
 	return resultConditions
 }
 
-func marshalAlertConditions(d *schema.ResourceData) []v1alphaAP.AlertCondition {
+func marshalAlertConditions(d *schema.ResourceData) []v1alphaAlertPolicy.AlertCondition {
 	conditions := d.Get("condition").([]interface{})
-	resultConditions := make([]v1alphaAP.AlertCondition, len(conditions))
+	resultConditions := make([]v1alphaAlertPolicy.AlertCondition, len(conditions))
 	for i, c := range conditions {
 		condition := c.(map[string]interface{})
 		value := condition["value"]
@@ -180,7 +178,7 @@ func marshalAlertConditions(d *schema.ResourceData) []v1alphaAP.AlertCondition {
 			op = "lte"
 		}
 
-		resultConditions[i] = v1alphaAP.AlertCondition{
+		resultConditions[i] = v1alphaAlertPolicy.AlertCondition{
 			Measurement:      measurement,
 			Value:            value,
 			LastsForDuration: condition["lasts_for"].(string),
@@ -191,7 +189,7 @@ func marshalAlertConditions(d *schema.ResourceData) []v1alphaAP.AlertCondition {
 	return resultConditions
 }
 
-func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alphaAP.AlertPolicy) diag.Diagnostics {
+func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alphaAlertPolicy.AlertPolicy) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -229,7 +227,7 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alphaAP.AlertPolic
 	return diags
 }
 
-func unmarshalAlertPolicyConditions(conditions []v1alphaAP.AlertCondition) interface{} {
+func unmarshalAlertPolicyConditions(conditions []v1alphaAlertPolicy.AlertCondition) interface{} {
 	resultConditions := make([]map[string]interface{}, len(conditions))
 	for i, condition := range conditions {
 		var value float64
@@ -251,7 +249,7 @@ func unmarshalAlertPolicyConditions(conditions []v1alphaAP.AlertCondition) inter
 	return resultConditions
 }
 
-func unmarshalAlertMethods(alertMethods []v1alphaAP.AlertMethodRef) interface{} {
+func unmarshalAlertMethods(alertMethods []v1alphaAlertPolicy.AlertMethodRef) interface{} {
 	resultMethods := make([]map[string]interface{}, len(alertMethods))
 
 	for i, method := range alertMethods {
@@ -277,7 +275,7 @@ func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta 
 		return diags
 	}
 	resultAp := manifest.SetDefaultProject([]manifest.Object{ap}, config.Project)
-	err := client.ApplyObjects(ctx, resultAp)
+	err := client.Objects().V1().Apply(ctx, resultAp)
 	if err != nil {
 		return diag.Errorf("could not add alertPolicy: %s", err.Error())
 	}
@@ -295,11 +293,14 @@ func resourceAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 	if project == "" {
 		project = config.Project
 	}
-	objects, err := client.GetObjects(ctx, project, manifest.KindAlertPolicy, nil, d.Id())
+	alertPolicies, err := client.Objects().V1().GetV1alphaAlertPolicies(ctx, v1Objects.GetAlertPolicyRequest{
+		Project: project,
+		Names:   []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalAlertPolicy(d, manifest.FilterByKind[v1alphaAP.AlertPolicy](objects))
+	return unmarshalAlertPolicy(d, alertPolicies)
 }
 
 func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -312,7 +313,7 @@ func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta
 	if project == "" {
 		project = config.Project
 	}
-	err := client.DeleteObjectsByName(ctx, project, manifest.KindAlertPolicy, false, d.Id())
+	err := client.Objects().V1().DeleteByName(ctx, manifest.KindAlertPolicy, project, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
