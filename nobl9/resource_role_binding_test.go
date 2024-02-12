@@ -45,7 +45,7 @@ func testProjectRoleBindingConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
   name        = "%s"
-  user        = "00u3lognksvI7G1r54x7xx"
+  user        = "test"
   role_ref    = "project-owner"
   project_ref = "%s"
 }
@@ -57,7 +57,7 @@ func testOrganizationRoleBindingConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
   name        = "%s"
-  user        = "00u3lognksvI7G1r54x7xx"
+  user        = "test"
   role_ref    = "organization-admin"
 }
 `, name, name)
@@ -67,7 +67,7 @@ resource "nobl9_role_binding" "%s" {
 func testRoleBindingWithoutName(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
-  user        = "00u3lognksvI7G1r54x7xx"
+  user        = "test"
   role_ref    = "project-owner"
   project_ref = "%s"
 }
@@ -87,7 +87,7 @@ resource "nobl9_role_binding" "%s" {
 func testRoleBindingWithoutGroup(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
-  user        = "00u3lognksvI7G1r54x7xx"
+  user        = "test"
   role_ref    = "project-owner"
   project_ref = "%s"
 }

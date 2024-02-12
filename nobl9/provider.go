@@ -63,8 +63,9 @@ func Provider() *schema.Provider {
 			},
 
 			"okta_auth_server": {
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				//cspell:ignore auseg9kiegWKEtJZC416
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_AUTH", "auseg9kiegWKEtJZC416"),
 				Description: "Authorization service configuration.",
 			},

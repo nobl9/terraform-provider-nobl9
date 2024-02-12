@@ -281,7 +281,7 @@ func marshalSendResolution(sendResolutionRaw interface{}) *v1alphaAlertMethod.Se
 	}
 }
 
-func (i alertMethodPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAlertMethod.Spec) diag.Diagnostics {
+func (i alertMethodPagerDuty) UnmarshalSpec(_ *schema.ResourceData, _ v1alphaAlertMethod.Spec) diag.Diagnostics {
 	// pager duty has only one, secret field
 	return nil
 }
@@ -313,7 +313,7 @@ func (i alertMethodSlack) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod
 	}
 }
 
-func (i alertMethodSlack) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAlertMethod.Spec) diag.Diagnostics {
+func (i alertMethodSlack) UnmarshalSpec(_ *schema.ResourceData, _ v1alphaAlertMethod.Spec) diag.Diagnostics {
 	// slack has only one, secret field
 	return nil
 }
@@ -345,7 +345,7 @@ func (i alertMethodDiscord) MarshalSpec(d *schema.ResourceData) v1alphaAlertMeth
 	}
 }
 
-func (i alertMethodDiscord) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAlertMethod.Spec) diag.Diagnostics {
+func (i alertMethodDiscord) UnmarshalSpec(_ *schema.ResourceData, _ v1alphaAlertMethod.Spec) diag.Diagnostics {
 	// discord has only one, secret field
 	return nil
 }
@@ -530,7 +530,7 @@ func (i alertMethodTeams) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod
 	}
 }
 
-func (i alertMethodTeams) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAlertMethod.Spec) diag.Diagnostics {
+func (i alertMethodTeams) UnmarshalSpec(_ *schema.ResourceData, _ v1alphaAlertMethod.Spec) diag.Diagnostics {
 	// teams has only one, secret field
 	return nil
 }

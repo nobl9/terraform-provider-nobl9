@@ -321,6 +321,7 @@ func (s azureMonitorDirectSpec) GetSchema() map[string]*schema.Schema {
 	return azureMonitorSchema
 }
 
+// nolint: lll
 func (s azureMonitorDirectSpec) GetDescription() string {
 	return "[Azure Monitor Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-direct)"
 }
@@ -409,6 +410,7 @@ func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
 	return cloudWatchSchema
 }
 
+// nolint: lll
 func (s cloudWatchDirectSpec) GetDescription() string {
 	return "[Amazon CloudWatch Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct)"
 }

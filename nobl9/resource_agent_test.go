@@ -16,7 +16,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 	}{
 		{"test-amazonprometheus", testAmazonPrometheusAgent},
 		{"test-amazonprometheus-historical-data-retrieval", testAmazonPrometheusAgentHistoricalDataRetrieval},
-		{"test-appd", testAppDynamicsAgent},
+		{"test-appdynamics", testAppDynamicsAgent},
 		{"test-azuremonitor", testAzureMonitorAgent},
 		{"test-bigquery", testBigQueryAgent},
 		{"test-cloudwatch", testCloudWatchAgent},
@@ -37,7 +37,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 		{"test-prometheus", testPrometheusAgent},
 		{"test-redshift", testRedshiftAgent},
 		{"test-splunk", testSplunkAgent},
-		{"test-splunkobs", testSplunkObservabilityAgent},
+		{"test-splunkObservability", testSplunkObservabilityAgent},
 		{"test-sumologic", testSumoLogicAgent},
 		{"test-thousandeyes", testThousandEyesAgent},
 	}

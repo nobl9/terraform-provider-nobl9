@@ -51,10 +51,10 @@ func dataSourceAWSIAMRoleAuthExternalIDDRead(
 
 	d.SetId(directName)
 
-	return unmarshallDataSourceAWSIAMRoleAuthExternalID(d, objects)
+	return unmarshalDataSourceAWSIAMRoleAuthExternalID(d, objects)
 }
 
-func unmarshallDataSourceAWSIAMRoleAuthExternalID(
+func unmarshalDataSourceAWSIAMRoleAuthExternalID(
 	d *schema.ResourceData,
 	objects *v1AuthData.IAMRoleIDs,
 ) diag.Diagnostics {
