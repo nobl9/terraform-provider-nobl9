@@ -19,6 +19,8 @@ GOLANGCI_LINT_VERSION := v1.55.2
 GOVULNCHECK_VERSION := v1.0.3
 # renovate datasource=go depName=golang.org/x/tools/cmd/goimports
 GOIMPORTS_VERSION := v0.17.0
+# renovate datasource=github-releases depName=segmentio/golines
+GOLINES_VERSION := v0.9.0
 
 # Check if the program is present in $PATH and install otherwise.
 # ${1} - oneOf{binary,yarn}
@@ -139,8 +141,10 @@ format: format/go format/cspell
 format/go:
 	echo "Formatting Go files..."
 	$(call _ensure_installed,binary,goimports)
+	$(call _ensure_installed,binary,golines)
 	go fmt ./...
 	$(BIN_DIR)/goimports -local=github.com/nobl9/terraform-provider-nobl9 -w .
+	$(BIN_DIR)/golines --ignore-generated -m 120 -w .
 
 ## Format cspell config file.
 format/cspell:
@@ -178,6 +182,11 @@ install/govulncheck:
 install/goimports:
 	echo "Installing goimports..."
 	$(call _install_go_binary,golang.org/x/tools/cmd/goimports@$(GOIMPORTS_VERSION))
+
+## Install golines (https://github.com/segmentio/golines).
+install/golines:
+	echo "Installing golines..."
+	$(call _install_go_binary,github.com/segmentio/golines@$(GOLINES_VERSION))
 
 .PHONY: help
 ## Print this help message.

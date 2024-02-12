@@ -335,7 +335,10 @@ func (s azureMonitorDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirec
 	}
 }
 
-func (s azureMonitorDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
+func (s azureMonitorDirectSpec) UnmarshalSpec(
+	d *schema.ResourceData,
+	spec v1alphaDirect.Spec,
+) (diags diag.Diagnostics) {
 	set(d, "tenant_id", spec.AzureMonitor.TenantID, &diags)
 	return
 }
@@ -1011,7 +1014,10 @@ func (s splunkObservabilityDirectSpec) MarshalSpec(d *schema.ResourceData) v1alp
 	}}
 }
 
-func (s splunkObservabilityDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
+func (s splunkObservabilityDirectSpec) UnmarshalSpec(
+	d *schema.ResourceData,
+	spec v1alphaDirect.Spec,
+) (diags diag.Diagnostics) {
 	set(d, "realm", spec.SplunkObservability.Realm, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
@@ -1109,7 +1115,10 @@ func (s thousandeyesDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirec
 	}}
 }
 
-func (s thousandeyesDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
+func (s thousandeyesDirectSpec) UnmarshalSpec(
+	d *schema.ResourceData,
+	spec v1alphaDirect.Spec,
+) (diags diag.Diagnostics) {
 	set(d, "description", spec.Description, &diags)
 	return
 }
