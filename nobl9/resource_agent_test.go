@@ -37,7 +37,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 		{"test-prometheus", testPrometheusAgent},
 		{"test-redshift", testRedshiftAgent},
 		{"test-splunk", testSplunkAgent},
-		{"test-splunkObservability", testSplunkObservabilityAgent},
+		{"test-splunk-observability", testSplunkObservabilityAgent},
 		{"test-sumologic", testSumoLogicAgent},
 		{"test-thousandeyes", testThousandEyesAgent},
 	}
