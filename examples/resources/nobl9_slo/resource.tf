@@ -58,7 +58,7 @@ resource "nobl9_slo" "this" {
       query {
         prometheus {
           promql = <<EOT
-          latency_west_c7{code="ALL",instance="localhost:3000",job="prometheus",service="globacount"}
+          latency_west_c7{code="ALL",instance="localhost:3000",job="prometheus",service="glob_account"}
           EOT
         }
       }

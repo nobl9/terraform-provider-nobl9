@@ -13,8 +13,8 @@ For more information, refer to [Splunk Observability Direct | Nobl9 Documentatio
 ## Example Usage
 
 ```terraform
-resource "nobl9_direct_splunk_observability" "test-splunkobservability" {
-  name         = "test-splunkobservability"
+resource "nobl9_direct_splunk_observability" "test-splunk-observability" {
+  name         = "test-splunk-observability"
   project      = "terraform"
   description  = "desc"
   realm        = "eu"

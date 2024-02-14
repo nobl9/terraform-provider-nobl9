@@ -41,7 +41,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-newrelic", testNewRelicSLO},
 		{"test-opentsdb", testOpenTSDBSLO},
 		{"test-pingdom", testPingdomSLO},
-		{"test-prom-full", testPrometheusSLOFULL},
+		{"test-prom-full", testPrometheusSLOFull},
 		{"test-prom-with-ap", testPrometheusSLOWithAlertPolicy},
 		{"test-prom-with-attachments-deprecated", testPrometheusWithAttachmentsDeprecated},
 		{"test-prom-with-attachment", testPrometheusWithAttachment},
@@ -204,7 +204,7 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       query {
         appdynamics {
-          application_name = "polakpotrafi"
+          application_name = "my_app"
           metric_path = "End User Experience|App|End User Response Time 95th percentile (ms)"
         }
       }
@@ -232,6 +232,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
+// nolint: lll
 func testAzureMonitorSLO(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
@@ -667,7 +668,7 @@ resource "nobl9_slo" ":name" {
       }
     }
   }
-  
+
 
   time_window {
     count      = 10
@@ -1180,7 +1181,7 @@ resource "nobl9_slo" ":name" {
 	  display_name = ":name"
 	  project      = ":project"
 	  service      = nobl9_service.:serviceName.name
-	
+
 	  label {
 	   key = "team"
 	   values = ["green","sapphire"]
@@ -1190,7 +1191,7 @@ resource "nobl9_slo" ":name" {
 		key = "env"
 		values = ["dev", "staging", "prod"]
 	  }
-	
+
 	budgeting_method = "Occurrences"
 
 	objective {
@@ -1487,7 +1488,7 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       query {
         lightstep {
-          stream_id = "DzpxcSRh"
+          stream_id = "id"
           type_of_data = "latency"
           percentile = 95
         }
@@ -1766,7 +1767,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testPrometheusSLOFULL(name string) string {
+func testPrometheusSLOFull(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	config :=
@@ -2739,15 +2740,15 @@ func testAnomalyConfigNoDataSameProject(name string) string {
 	config := testService(serviceName) +
 		testThousandEyesAgent(agentName) +
 		mockAlertMethod(alertMethodName, testProject) + `
-		
+
 		resource "nobl9_slo" ":name" {
 			name         = ":name"
 			display_name = ":name"
 			project      = ":project"
 			service      = nobl9_service.:serviceName.name
-		
+
 			budgeting_method = "Occurrences"
-		
+
 			objective {
 				display_name = "obj1"
 				name         = "tf-objective-1"
@@ -2762,19 +2763,19 @@ func testAnomalyConfigNoDataSameProject(name string) string {
 					}
 				}
 			}
-		
+
 			time_window {
 				count      = 10
 				is_rolling = true
 				unit       = "Minute"
 			}
-		
+
 			indicator {
 				name    = nobl9_agent.:agentName.name
 				project = ":project"
 				kind    = "Agent"
 			}
-		
+
 			anomaly_config {
 				no_data {
 					alert_method {
@@ -2803,15 +2804,15 @@ func testAnomalyConfigNoDataDifferentProject(name string) string {
 	config := testService(serviceName) +
 		testThousandEyesAgent(agentName) +
 		mockAlertMethod(alertMethodName, alertMethodProject) + `
-		
+
 		resource "nobl9_slo" ":name" {
 			name         = ":name"
 			display_name = ":name"
 			project      = ":project"
 			service      = nobl9_service.:serviceName.name
-		
+
 			budgeting_method = "Occurrences"
-		
+
 			objective {
 				display_name = "obj1"
 				name         = "tf-objective-1"
@@ -2826,19 +2827,19 @@ func testAnomalyConfigNoDataDifferentProject(name string) string {
 					}
 				}
 			}
-		
+
 			time_window {
 				count      = 10
 				is_rolling = true
 				unit       = "Minute"
 			}
-		
+
 			indicator {
 				name    = nobl9_agent.:agentName.name
 				project = ":project"
 				kind    = "Agent"
 			}
-		
+
 			anomaly_config {
 				no_data {
 					alert_method {

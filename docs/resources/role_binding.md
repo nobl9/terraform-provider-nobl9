@@ -29,9 +29,16 @@ Here's an example of RBAC resource configuration:
 ```terraform
 resource "nobl9_role_binding" "this" {
   name        = "my-role-binding"
-  user        = "1234567890asdfghjkl"
+  user        = "test"
   role_ref    = "project-owner"
-  project_ref = "1234567890asdfghjkl"
+  project_ref = "default"
+}
+
+resource "nobl9_role_binding" "this" {
+  name        = "group-role-binding"
+  group_ref   = "test"
+  role_ref    = "project-owner"
+  project_ref = "default"
 }
 ```
 
@@ -40,14 +47,15 @@ resource "nobl9_role_binding" "this" {
 
 ### Required
 
-- `role_ref` (String) Role name; the role that you want the user to assume.
-- `user` (String) Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Users**).
+- `role_ref` (String) Role name; the role that you want the user or group to assume.
 
 ### Optional
 
 - `display_name` (String) User-friendly display name of the resource.
+- `group_ref` (String) Group name that can be retrieved from the Nobl9 UI (**Settings** > **Access Controls** > **Groups**) or using sloctl `get usergroups` command.
 - `name` (String) Automatically generated, unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project_ref` (String) Project name, the project in which we want the user to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.
+- `project_ref` (String) Project name, the project in which we want the user or group to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.
+- `user` (String) Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Access Controls** > **Users**).
 
 ### Read-Only
 

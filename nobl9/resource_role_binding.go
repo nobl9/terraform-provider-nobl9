@@ -11,9 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
-	v1alphaRb "github.com/nobl9/nobl9-go/manifest/v1alpha/rolebinding"
-	"github.com/nobl9/nobl9-go/sdk"
+	v1alphaRoleBinding "github.com/nobl9/nobl9-go/manifest/v1alpha/rolebinding"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 const wildcardProject = "*"
@@ -31,19 +30,26 @@ func resourceRoleBinding() *schema.Resource {
 			},
 			"display_name": schemaDisplayName(),
 			"user": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Users**).",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Access Controls** > **Users**).",
+				ConflictsWith: []string{"group_ref"},
+			},
+			"group_ref": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Group name that can be retrieved from the Nobl9 UI (**Settings** > **Access Controls** > **Groups**) or using sloctl `get usergroups` command.",
+				ConflictsWith: []string{"user"},
 			},
 			"role_ref": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Role name; the role that you want the user to assume.",
+				Description: "Role name; the role that you want the user or group to assume.",
 			},
 			"project_ref": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Project name, the project in which we want the user to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.",
+				Description: "Project name, the project in which we want the user or group to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.",
 			},
 		},
 		CreateContext: resourceRoleBindingApply,
@@ -57,28 +63,38 @@ func resourceRoleBinding() *schema.Resource {
 	}
 }
 
-func marshalRoleBinding(d *schema.ResourceData) *v1alphaRb.RoleBinding {
+func marshalRoleBinding(d *schema.ResourceData) *v1alphaRoleBinding.RoleBinding {
 	name := d.Get("name").(string)
 	if name == "" {
 		id, _ := uuid.NewUUID() // NewUUID returns always nil error
 		name = id.String()
 	}
-	userRoleBindingSpec := d.Get("user").(string)
-	return &v1alphaRb.RoleBinding{
-		APIVersion: v1alpha.APIVersion,
-		Kind:       manifest.KindRoleBinding,
-		Metadata: v1alphaRb.Metadata{
+
+	var user *string
+	if userValue := d.Get("user").(string); userValue != "" {
+		user = &userValue
+	}
+
+	var groupRef *string
+	if groupRefValue := d.Get("group_ref").(string); groupRefValue != "" {
+		groupRef = &groupRefValue
+	}
+
+	roleBinding := v1alphaRoleBinding.New(
+		v1alphaRoleBinding.Metadata{
 			Name: name,
 		},
-		Spec: v1alphaRb.Spec{
-			User:       &userRoleBindingSpec,
+		v1alphaRoleBinding.Spec{
+			User:       user,
+			GroupRef:   groupRef,
 			RoleRef:    d.Get("role_ref").(string),
 			ProjectRef: d.Get("project_ref").(string),
 		},
-	}
+	)
+	return &roleBinding
 }
 
-func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRb.RoleBinding) diag.Diagnostics {
+func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRoleBinding.RoleBinding) diag.Diagnostics {
 	_, isProjectRole := d.GetOk("project_ref")
 	roleBindingP := findRoleBindingByType(isProjectRole, objects)
 	if roleBindingP == nil {
@@ -95,6 +111,8 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRb.RoleBindin
 	spec := roleBinding.Spec
 	err = d.Set("user", spec.User)
 	diags = appendError(diags, err)
+	err = d.Set("group_ref", spec.GroupRef)
+	diags = appendError(diags, err)
 	err = d.Set("role_ref", spec.RoleRef)
 	diags = appendError(diags, err)
 	err = d.Set("project_ref", spec.ProjectRef)
@@ -103,7 +121,7 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRb.RoleBindin
 	return diags
 }
 
-func findRoleBindingByType(projectRole bool, objects []v1alphaRb.RoleBinding) *v1alphaRb.RoleBinding {
+func findRoleBindingByType(projectRole bool, objects []v1alphaRoleBinding.RoleBinding) *v1alphaRoleBinding.RoleBinding {
 	for _, object := range objects {
 		if projectRole && containsProjectRef(object) {
 			return &object
@@ -114,7 +132,7 @@ func findRoleBindingByType(projectRole bool, objects []v1alphaRb.RoleBinding) *v
 	return nil
 }
 
-func containsProjectRef(obj v1alphaRb.RoleBinding) bool {
+func containsProjectRef(obj v1alphaRoleBinding.RoleBinding) bool {
 	return obj.Spec.ProjectRef != ""
 }
 
@@ -124,16 +142,16 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 
 	roleBinding := marshalRoleBinding(d)
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, []manifest.Object{roleBinding})
+		err := client.Objects().V1().Apply(ctx, []manifest.Object{roleBinding})
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
 		return nil
 	}); err != nil {
-		return diag.Errorf("could not add project: %s", err.Error())
+		return diag.Errorf("could not add role binding: %s", err.Error())
 	}
 
 	d.SetId(roleBinding.Metadata.Name)
@@ -148,11 +166,14 @@ func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta i
 	if project == "" {
 		project = wildcardProject
 	}
-	objects, err := client.GetObjects(ctx, project, manifest.KindRoleBinding, nil, d.Id())
+	roleBindings, err := client.Objects().V1().GetV1alphaRoleBindings(ctx, v1Objects.GetRoleBindingsRequest{
+		Project: project,
+		Names:   []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalRoleBinding(d, manifest.FilterByKind[v1alphaRb.RoleBinding](objects))
+	return unmarshalRoleBinding(d, roleBindings)
 }
 
 func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -165,9 +186,9 @@ func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(ctx, project, manifest.KindRoleBinding, false, d.Id())
+		err := client.Objects().V1().DeleteByName(ctx, manifest.KindRoleBinding, project, d.Id())
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)

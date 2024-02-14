@@ -3,6 +3,8 @@ package nobl9
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/url"
 	"os"
 	"testing"
 
@@ -11,6 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/sdk"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 //nolint:gochecknoglobals
@@ -103,7 +107,12 @@ func CheckDestroy(rsType string, kind manifest.Kind) func(s *terraform.State) er
 				continue
 			}
 
-			if _, err := client.GetObjects(ctx, testProject, kind, nil, rs.Primary.ID); err != nil {
+			if _, err := client.Objects().V1().Get(
+				ctx,
+				kind,
+				http.Header{sdk.HeaderProject: []string{testProject}},
+				url.Values{v1Objects.QueryKeyName: []string{rs.Primary.ID}},
+			); err != nil {
 				return err
 			}
 		}

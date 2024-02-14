@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/nobl9/nobl9-go/sdk/models"
+	v1AuthData "github.com/nobl9/nobl9-go/sdk/endpoints/authdata/v1"
 )
 
 func dataSourceAWSIAMRoleAuthExternalID() *schema.Resource {
@@ -41,19 +41,19 @@ func dataSourceAWSIAMRoleAuthExternalIDDRead(
 	config := meta.(ProviderConfig)
 	client := getClient(config)
 	directName := d.Get("name").(string)
-	objects, err := client.GetDirectIAMRoleIDs(ctx, client.Config.Project, directName)
+	objects, err := client.AuthData().V1().GetDirectIAMRoleIDs(ctx, client.Config.Project, directName)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(directName)
 
-	return unmarshallDataSourceAWSIAMRoleAuthExternalID(d, objects)
+	return unmarshalDataSourceAWSIAMRoleAuthExternalID(d, objects)
 }
 
-func unmarshallDataSourceAWSIAMRoleAuthExternalID(
+func unmarshalDataSourceAWSIAMRoleAuthExternalID(
 	d *schema.ResourceData,
-	objects *models.IAMRoleIDs,
+	objects *v1AuthData.IAMRoleIDs,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 	set(d, "external_id", objects.ExternalID, &diags)

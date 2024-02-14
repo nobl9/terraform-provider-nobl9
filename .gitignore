@@ -41,3 +41,8 @@ override.tf.json
 terraform.rc
 terraform
 dist/
+
+# JS
+node_modules/
+yarn.lock
+yarn-error.log

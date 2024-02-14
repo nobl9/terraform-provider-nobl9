@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"sync"
@@ -62,8 +63,9 @@ func Provider() *schema.Provider {
 			},
 
 			"okta_auth_server": {
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				//cspell:ignore auseg9kiegWKEtJZC416
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_AUTH", "auseg9kiegWKEtJZC416"),
 				Description: "Authorization service configuration.",
 			},
@@ -183,3 +185,6 @@ func getClient(providerConfig ProviderConfig) *sdk.Client {
 	})
 	return sharedClient
 }
+
+// TODO: Once we introduce a more structured approach to error handling in SDK, this should be removed.
+var errConcurrencyIssue = errors.New("operation failed due to concurrency issue but can be retried")

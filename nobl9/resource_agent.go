@@ -15,9 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaAgent "github.com/nobl9/nobl9-go/manifest/v1alpha/agent"
-	"github.com/nobl9/nobl9-go/sdk"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 const agentTypeKey = "agent_type"
@@ -126,15 +125,15 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	resultAgent := manifest.SetDefaultProject([]manifest.Object{agent}, config.Project)
 
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		err := client.ApplyObjects(ctx, resultAgent)
+		err := client.Objects().V1().Apply(ctx, resultAgent)
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
 		project := d.Get("project").(string)
-		agentsData, err := client.GetAgentCredentials(ctx, project, agent.Metadata.Name)
+		agentsData, err := client.AuthData().V1().GetAgentCredentials(ctx, project, agent.Metadata.Name)
 		diags = appendError(diags, err)
 		err = d.Set("client_id", agentsData.ClientID)
 		diags = appendError(diags, err)
@@ -160,11 +159,14 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	if project == "" {
 		project = config.Project
 	}
-	objects, err := client.GetObjects(ctx, project, manifest.KindAgent, nil, d.Id())
+	agents, err := client.Objects().V1().GetV1alphaAgents(ctx, v1Objects.GetAgentsRequest{
+		Project: project,
+		Names:   []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalAgent(d, manifest.FilterByKind[v1alphaAgent.Agent](objects))
+	return unmarshalAgent(d, agents)
 }
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -176,9 +178,9 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 		project = config.Project
 	}
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(ctx, project, manifest.KindAgent, false, d.Id())
+		err := client.Objects().V1().DeleteByName(ctx, manifest.KindAgent, project, d.Id())
 		if err != nil {
-			if errors.Is(err, sdk.ErrConcurrencyIssue) {
+			if errors.Is(err, errConcurrencyIssue) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -197,15 +199,13 @@ func marshalAgent(d *schema.ResourceData) (*v1alphaAgent.Agent, diag.Diagnostics
 	}
 
 	var diags diag.Diagnostics
-	return &v1alphaAgent.Agent{
-		APIVersion: v1alpha.APIVersion,
-		Kind:       manifest.KindAgent,
-		Metadata: v1alphaAgent.Metadata{
+	agent := v1alphaAgent.New(
+		v1alphaAgent.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
 		},
-		Spec: v1alphaAgent.Spec{
+		v1alphaAgent.Spec{
 			Description:             d.Get("description").(string),
 			AmazonPrometheus:        marshalAgentAmazonPrometheus(d, &diags),
 			AppDynamics:             marshalAgentAppDynamics(d, &diags),
@@ -234,8 +234,8 @@ func marshalAgent(d *schema.ResourceData) (*v1alphaAgent.Agent, diag.Diagnostics
 			QueryDelay:              marshalQueryDelay(d),
 			ReleaseChannel:          marshalReleaseChannel(d, &diags),
 			HistoricalDataRetrieval: marshalHistoricalDataRetrieval(d),
-		},
-	}, diags
+		})
+	return &agent, diags
 }
 
 func unmarshalAgent(d *schema.ResourceData, agents []v1alphaAgent.Agent) diag.Diagnostics {
