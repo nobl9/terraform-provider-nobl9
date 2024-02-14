@@ -321,6 +321,7 @@ func (s azureMonitorDirectSpec) GetSchema() map[string]*schema.Schema {
 	return azureMonitorSchema
 }
 
+// nolint: lll
 func (s azureMonitorDirectSpec) GetDescription() string {
 	return "[Azure Monitor Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-direct)"
 }
@@ -335,7 +336,10 @@ func (s azureMonitorDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirec
 	}
 }
 
-func (s azureMonitorDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
+func (s azureMonitorDirectSpec) UnmarshalSpec(
+	d *schema.ResourceData,
+	spec v1alphaDirect.Spec,
+) (diags diag.Diagnostics) {
 	set(d, "tenant_id", spec.AzureMonitor.TenantID, &diags)
 	return
 }
@@ -406,6 +410,7 @@ func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
 	return cloudWatchSchema
 }
 
+// nolint: lll
 func (s cloudWatchDirectSpec) GetDescription() string {
 	return "[Amazon CloudWatch Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct)"
 }
@@ -1011,7 +1016,10 @@ func (s splunkObservabilityDirectSpec) MarshalSpec(d *schema.ResourceData) v1alp
 	}}
 }
 
-func (s splunkObservabilityDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
+func (s splunkObservabilityDirectSpec) UnmarshalSpec(
+	d *schema.ResourceData,
+	spec v1alphaDirect.Spec,
+) (diags diag.Diagnostics) {
 	set(d, "realm", spec.SplunkObservability.Realm, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
@@ -1109,7 +1117,10 @@ func (s thousandeyesDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirec
 	}}
 }
 
-func (s thousandeyesDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
+func (s thousandeyesDirectSpec) UnmarshalSpec(
+	d *schema.ResourceData,
+	spec v1alphaDirect.Spec,
+) (diags diag.Diagnostics) {
 	set(d, "description", spec.Description, &diags)
 	return
 }

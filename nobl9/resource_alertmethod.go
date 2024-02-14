@@ -61,7 +61,10 @@ func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) *v1alphaAlertMet
 	return &alertMethod
 }
 
-func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []v1alphaAlertMethod.AlertMethod) diag.Diagnostics {
+func (a alertMethod) unmarshalAlertMethod(
+	d *schema.ResourceData,
+	objects []v1alphaAlertMethod.AlertMethod,
+) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -83,8 +86,13 @@ func (a alertMethod) unmarshalAlertMethod(d *schema.ResourceData, objects []v1al
 	return diags
 }
 
+//
 //nolint:lll
-func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (a alertMethod) resourceAlertMethodApply(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config)
 	if ds != nil {
@@ -100,8 +108,13 @@ func (a alertMethod) resourceAlertMethodApply(ctx context.Context, d *schema.Res
 	return a.resourceAlertMethodRead(ctx, d, meta)
 }
 
+//
 //nolint:lll
-func (a alertMethod) resourceAlertMethodRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (a alertMethod) resourceAlertMethodRead(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config)
 	if ds != nil {
@@ -268,7 +281,7 @@ func marshalSendResolution(sendResolutionRaw interface{}) *v1alphaAlertMethod.Se
 	}
 }
 
-func (i alertMethodPagerDuty) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAlertMethod.Spec) diag.Diagnostics {
+func (i alertMethodPagerDuty) UnmarshalSpec(_ *schema.ResourceData, _ v1alphaAlertMethod.Spec) diag.Diagnostics {
 	// pager duty has only one, secret field
 	return nil
 }
@@ -300,7 +313,7 @@ func (i alertMethodSlack) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod
 	}
 }
 
-func (i alertMethodSlack) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAlertMethod.Spec) diag.Diagnostics {
+func (i alertMethodSlack) UnmarshalSpec(_ *schema.ResourceData, _ v1alphaAlertMethod.Spec) diag.Diagnostics {
 	// slack has only one, secret field
 	return nil
 }
@@ -332,7 +345,7 @@ func (i alertMethodDiscord) MarshalSpec(d *schema.ResourceData) v1alphaAlertMeth
 	}
 }
 
-func (i alertMethodDiscord) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAlertMethod.Spec) diag.Diagnostics {
+func (i alertMethodDiscord) UnmarshalSpec(_ *schema.ResourceData, _ v1alphaAlertMethod.Spec) diag.Diagnostics {
 	// discord has only one, secret field
 	return nil
 }
@@ -517,7 +530,7 @@ func (i alertMethodTeams) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod
 	}
 }
 
-func (i alertMethodTeams) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAlertMethod.Spec) diag.Diagnostics {
+func (i alertMethodTeams) UnmarshalSpec(_ *schema.ResourceData, _ v1alphaAlertMethod.Spec) diag.Diagnostics {
 	// teams has only one, secret field
 	return nil
 }

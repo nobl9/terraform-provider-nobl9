@@ -82,7 +82,10 @@ func marshalHistoricalDataRetrieval(d *schema.ResourceData) *v1alpha.HistoricalD
 	}
 }
 
-func unmarshalHistoricalDataRetrieval(d *schema.ResourceData, h *v1alpha.HistoricalDataRetrieval) (diags diag.Diagnostics) {
+func unmarshalHistoricalDataRetrieval(
+	d *schema.ResourceData,
+	h *v1alpha.HistoricalDataRetrieval,
+) (diags diag.Diagnostics) {
 	if h == nil {
 		return
 	}

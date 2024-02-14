@@ -29,16 +29,16 @@ Here's an example of RBAC resource configuration:
 ```terraform
 resource "nobl9_role_binding" "this" {
   name        = "my-role-binding"
-  user        = "1234567890asdfghjkl"
+  user        = "test"
   role_ref    = "project-owner"
-  project_ref = "1234567890asdfghjkl"
+  project_ref = "default"
 }
 
 resource "nobl9_role_binding" "this" {
   name        = "group-role-binding"
-  group_ref   = "group-name-12345abcde"
+  group_ref   = "test"
   role_ref    = "project-owner"
-  project_ref = "1234567890asdfghjkl"
+  project_ref = "default"
 }
 ```
 

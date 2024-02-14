@@ -1,7 +1,5 @@
-Terraform `nobl9` Provider
+Terraform Nobl9 Provider
 =========================
-
-
 
 Requirements
 ------------
@@ -10,7 +8,8 @@ Requirements
 
 Example
 ----------------------
-```sh
+
+```terraform
 terraform {
   required_providers {
     nobl9 = {
@@ -34,12 +33,14 @@ resource "nobl9_service" "test" {
   project = "test"
 }
 ```
+
 Documentation
 -------------------
 
-Documentation is generated using the [tfplugindocs](https://github.com/hashicorp/terraform-plugin-docs) tool.
+Documentation is generated using the
+[tfplugindocs](https://github.com/hashicorp/terraform-plugin-docs) tool.
 In order to generate or update the docs run the following command:
 
-```
+```sh
 go generate
 ```

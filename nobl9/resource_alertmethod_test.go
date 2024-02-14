@@ -52,7 +52,7 @@ func testWebhookTemplateConfig(name string) string {
 resource "nobl9_alert_method_webhook" "%s" {
   name        = "%s"
   project     = "%s"
-  description = "wehbook"
+  description = "WebHook"
   url         = "http://web.net"
   template    = "SLO needs attention $slo_name"
 }
@@ -64,7 +64,7 @@ func testWebhookTemplateFieldsConfig(name string) string {
 resource "nobl9_alert_method_webhook" "%s" {
   name            = "%s"
   project         = "%s"
-  description	  = "wehbook"
+  description	  = "WebHook"
   url             = "http://web.net"
   template_fields = [ "slo_name", "slo_details_link" ]
 }
@@ -76,7 +76,7 @@ func testPagerDutyConfig(name string) string {
 resource "nobl9_alert_method_pagerduty" "%s" {
   name            = "%s"
   project         = "%s"
-  description     = "paderduty"
+  description     = "PagerDuty"
   integration_key = "84dfcdf19dad8f6c82b7e22afa024065"
 }
 `, name, name, testProject)
@@ -87,7 +87,7 @@ func testPagerDutyWithSendResolutionConfig(name string) string {
 resource "nobl9_alert_method_pagerduty" "%s" {
   name            = "%s"
   project         = "%s"
-  description     = "paderduty"
+  description     = "PagerDuty"
   integration_key = "84dfcdf19dad8f6c82b7e22afa024065"
 
   send_resolution {
@@ -102,7 +102,7 @@ func testPagerDutyWithSendResolutionWithMessageConfig(name string) string {
 resource "nobl9_alert_method_pagerduty" "%s" {
   name            = "%s"
   project         = "%s"
-  description     = "paderduty"
+  description     = "PagerDuty"
   integration_key = "84dfcdf19dad8f6c82b7e22afa024065"
 
   send_resolution {
@@ -152,7 +152,7 @@ resource "nobl9_alert_method_servicenow" "%s" {
   project        = "%s"
   description    = "servicenow"
   username       = "nobleUser"
-  password       = "very sercret"
+  password       = "very secret"
   instance_name  = "name"
 }
 `, name, name, testProject)
@@ -166,7 +166,7 @@ resource "nobl9_alert_method_jira" "%s" {
   description = "jira"
   url		  = "https://jira.com"
   username    = "nobleUser"
-  apitoken    = "very sercret"
+  apitoken    = "very secret"
   project_key = "PC"
 }
 `, name, name, testProject)

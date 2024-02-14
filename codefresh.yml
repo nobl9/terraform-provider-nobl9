@@ -19,8 +19,6 @@ hooks:
 
 stages:
   - "clone"
-  - "preload"
-  - "check"
   - "test"
 
 steps:
@@ -31,49 +29,6 @@ steps:
     revision: "${{CF_REVISION}}"
     git: "github"
     stage: "clone"
-
-  preload:
-    title: "Loading dependencies"
-    stage: preload
-    image: golang:1.20-alpine
-    working_directory: "${{clone}}"
-    environment:
-      - GOPATH=/codefresh/volume/go
-    commands:
-      - apk add --no-cache openssh-client git
-      - "mkdir -p ~/.ssh"
-      - "echo ${{GH_SSH_PUBLIC}} > ~/.ssh/id_ed25519.pub"
-      - "echo ${{GH_SSH_PRIVATE}} | base64 -d > /root/.ssh/id_ed25519"
-      - "chmod 644 ~/.ssh/id_ed25519.pub"
-      - "chmod 600 ~/.ssh/id_ed25519"
-      - "eval  $(ssh-agent -s)"
-      - "ssh-add ~/.ssh/id_ed25519"
-      - "ssh -T -oStrictHostKeyChecking=accept-new git@github.com || true"
-      - 'git config --global --add url."git@github.com:".insteadOf "https://github.com/"'
-      - go get -d -v
-      - go mod vendor
-
-  check:
-    title: "Checking GO Files"
-    type: "parallel"
-    stage: check
-    steps:
-      lint:
-        title: Lint
-        working_directory: "${{clone}}"
-        image: golangci/golangci-lint:v1.51.2
-        environment:
-          - GOPATH=/codefresh/volume/go
-        commands:
-          - golangci-lint run -v --timeout 10m
-      securityAnalysis:
-        title: Security Scan
-        working_directory: "${{clone}}"
-        image: 'securego/gosec:2.12.0'
-        environment:
-          - GOPATH=/codefresh/volume/go
-        commands:
-          - gosec -quiet -exclude-generated ./...
 
   test:
     title: "Running test"
