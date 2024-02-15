@@ -21,7 +21,7 @@ jobs:
     uses: ./.github/workflows/acc-tests.yml
     with:
       clientId: "${{ vars.TERRAFORM_NOBL9_CLIENT_ID }}"
-      project: ${{ vars.TERRAFORM_NOBL9_PROJECT }}
+      project: "${{ vars.TERRAFORM_NOBL9_PROJECT }}"
     secrets:
       clientSecret: "${{ secrets.TERRAFORM_NOBL9_CLIENT_SECRET }}"
   goreleaser:
