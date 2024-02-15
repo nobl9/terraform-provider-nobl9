@@ -43,7 +43,7 @@ func Provider() *schema.Provider {
 			"client_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_ID", nil),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_ID", ""),
 				Description: "the [Client ID](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.",
 			},
 
@@ -51,7 +51,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_SECRET", nil),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_SECRET", ""),
 				Description: "the [Client Secret](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.",
 			},
 
