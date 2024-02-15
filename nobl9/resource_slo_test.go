@@ -19,7 +19,8 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 	}{
 		{"test-amazonprometheus", testAmazonPrometheusSLO},
 		{"test-appdynamics", testAppdynamicsSLO},
-		{"test-azure-monitor", testAzureMonitorSLO},
+		{"test-azure-monitor-metrics", testAzureMonitorMetricsSLO},
+		{"test-azure-monitor-logs", testAzureMonitorLogsSLO},
 		{"test-bigquery", testBigQuerySLO},
 		{"test-cloudwatch-with-json", testCloudWatchWithJSON},
 		{"test-cloudwatch-with-sql", testCloudWatchWithSQL},
@@ -231,7 +232,7 @@ resource "nobl9_slo" ":name" {
 }
 
 // nolint: lll
-func testAzureMonitorSLO(name string) string {
+func testAzureMonitorMetricsSLO(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	config :=
@@ -273,6 +274,73 @@ resource "nobl9_slo" ":name" {
 		  	name = "request/resultCode"
 			value = "200"
          }
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+// nolint: lll
+func testAzureMonitorLogsSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testAzureMonitorAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        azure_monitor {
+          data_type = "logs"
+          workspace {
+			subscription_id = "9c26f90e-24bb-4d20-a648-c6e3e1cde26a"
+			resource_group = "azure-monitor-test-sources"
+			workspace_id = "e5da9ba8-cb8f-437e-aec0-61d21aab2bcd"
+          }
+          kql_query = "AppRequests | where AppRoleName == \"n9-web-app\" | summarize n9_value = avg(DurationMs) by bin(TimeGenerated, 15s) | project n9_time = TimeGenerated, n9_value"
         }
       }
     }

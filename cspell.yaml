@@ -36,6 +36,7 @@ words:
   - gopath
   - gosec
   - govulncheck
+  - kusto
   - ldflags
   - logql
   - msteams
