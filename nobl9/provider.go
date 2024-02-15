@@ -22,7 +22,7 @@ func Provider() *schema.Provider {
 			"ingest_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_URL", "https://app.nobl9.com/api"),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_URL", nil),
 				Description: "Nobl9 API URL.",
 			},
 
@@ -36,7 +36,7 @@ func Provider() *schema.Provider {
 			"project": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", sdk.DefaultProject),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", nil),
 				Description: "Nobl9 project used when importing resources.",
 			},
 
@@ -58,7 +58,7 @@ func Provider() *schema.Provider {
 			"okta_org_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_URL", "https://accounts.nobl9.com"),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_URL", nil),
 				Description: "Authorization service URL.",
 			},
 
@@ -66,7 +66,7 @@ func Provider() *schema.Provider {
 				Type:     schema.TypeString,
 				Optional: true,
 				//cspell:ignore auseg9kiegWKEtJZC416
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_AUTH", "auseg9kiegWKEtJZC416"),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_AUTH", nil),
 				Description: "Authorization service configuration.",
 			},
 		},

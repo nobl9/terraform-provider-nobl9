@@ -53,16 +53,18 @@ install: build
 build:
 	go build -ldflags $(BUILD_FLAGS) -o $(BINARY)
 
-.PHONY: test
+.PHONY: test test/unit test/acc
+## Run all tests.
+test: test/unit test/acc
+
 ## Run Go unit tests.
-test:
+test/unit:
 	go test -i $(TEST) || exit 1
 	echo $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
-.PHONY: testacc
-## Run acceptance tests.
-testacc:
-	cd nobl9 && TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
+## Run Terraform acceptance tests.
+test/acc:
+	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m nobl9/
 
 .PHONY: release-dry-run
 ## Run Goreleaser in dry-run mode.

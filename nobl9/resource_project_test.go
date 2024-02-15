@@ -13,7 +13,6 @@ func TestAcc_Nobl9Project(t *testing.T) {
 	name := "test-project"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: ProviderFactory(),
 		CheckDestroy:      CheckDestroy("nobl9_project", manifest.KindProject),
 		Steps: []resource.TestStep{
@@ -33,7 +32,6 @@ func TestAcc_NewNobl9ProjectReference(t *testing.T) {
 	name := "test-project"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: ProviderFactory(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			CheckDestroy("nobl9_agent", manifest.KindAgent),

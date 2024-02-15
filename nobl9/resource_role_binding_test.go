@@ -26,7 +26,6 @@ func TestAcc_Nobl9RoleBinding(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.ParallelTest(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
 				CheckDestroy:      CheckDestroy("nobl9_role_binding", manifest.KindRoleBinding),
 				Steps: []resource.TestStep{

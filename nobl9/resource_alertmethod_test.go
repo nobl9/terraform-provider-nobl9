@@ -33,7 +33,6 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.ParallelTest(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
 				CheckDestroy:      CheckDestroy("nobl9_alert_method_"+tc.resourceSuffix, manifest.KindAlertMethod),
 				Steps: []resource.TestStep{

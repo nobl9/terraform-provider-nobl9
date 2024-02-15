@@ -12,7 +12,6 @@ import (
 
 func TestAcc_Nobl9Service(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: ProviderFactory(),
 		CheckDestroy:      CheckDestroy("nobl9_service", manifest.KindService),
 		Steps: []resource.TestStep{

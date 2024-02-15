@@ -26,7 +26,6 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
 				CheckDestroy: destroyMultiple(
 					[]string{"nobl9_alert_policy", "nobl9_alert_method_webhook"},

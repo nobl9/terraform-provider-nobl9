@@ -18,7 +18,6 @@ func TestAcc_Nobl9DataSource(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
 				Steps: []resource.TestStep{
 					{

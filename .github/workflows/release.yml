@@ -35,6 +35,12 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: setup github
         run: git config --global url."https://n9-machine-user:${{ secrets.GH_TOKEN }}@github.com".insteadOf "https://github.com"
+      - name: Run acceptance tests
+        uses: ./.github/workflows/acc-tests.yml
+        with:
+          clientId: ${{ vars.TERRAFORM_NOBL9_CLIENT_ID }}
+          clientSecret: ${{ secrets.TERRAFORM_NOBL9_CLIENT_SECRET }}
+          project: ${{ vars.TERRAFORM_NOBL9_PROJECT }}
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5.0.0
         with:

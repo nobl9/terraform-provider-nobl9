@@ -63,7 +63,6 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
 				CheckDestroy:      CheckDestroy("nobl9_slo", manifest.KindSLO),
 				Steps: []resource.TestStep{
@@ -98,7 +97,6 @@ func TestAcc_Nobl9SLOErrors(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
 				CheckDestroy:      CheckDestroy("nobl9_slo.", manifest.KindSLO),
 				Steps: []resource.TestStep{

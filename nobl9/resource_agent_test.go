@@ -45,7 +45,6 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
 				CheckDestroy:      CheckDestroy("nobl9_agent", manifest.KindAgent),
 				Steps: []resource.TestStep{
