@@ -302,6 +302,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
+// nolint: lll
 func testAzureMonitorLogsSLO(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
