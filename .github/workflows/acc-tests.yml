@@ -35,7 +35,7 @@ jobs:
           cache: false
       - name: Run acceptance tests
         env:
-          TERRAFORM_NOBL9_CLIENT_ID: "${{ secrets.clientId }}"
+          TERRAFORM_NOBL9_CLIENT_ID: "${{ inputs.clientId }}"
           TERRAFORM_NOBL9_CLIENT_SECRET: "${{ secrets.clientSecret }}"
           TERRAFORM_NOBL9_OKTA_ORG_URL: "${{ inputs.oktaOrgUrl }}"
           TERRAFORM_NOBL9_OKTA_AUTH_SERVER: "${{ inputs.oktaAuthServer }}"
