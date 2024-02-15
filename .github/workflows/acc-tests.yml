@@ -1,0 +1,43 @@
+name: Acceptance tests
+on:
+  workflow_call:
+    inputs:
+      clientId:
+        description: Client ID to use for authentication
+        required: true
+        type: string
+      oktaOrgUrl:
+        description: Okta organization URL
+        required: false
+        type: string
+      oktaAuthServer:
+        description: Okta authentication server identifier
+        required: false
+        type: string
+      project:
+        description: Project name to create the tested objects in
+        required: false
+        type: string
+    secrets:
+      clientSecret:
+        description: Client secret to use for authentication
+        required: true
+jobs:
+  test:
+    name: Run acceptance tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Run acceptance tests
+        env:
+          TERRAFORM_NOBL9_CLIENT_ID: "${{ secrets.clientId }}"
+          TERRAFORM_NOBL9_CLIENT_SECRET: "${{ secrets.clientSecret }}"
+          TERRAFORM_NOBL9_OKTA_ORG_URL: "${{ inputs.oktaOrgUrl }}"
+          TERRAFORM_NOBL9_OKTA_AUTH_SERVER: "${{ inputs.oktaAuthServer }}"
+          TERRAFORM_NOBL9_PROJECT: "${{ inputs.project }}"
+        run: make test/acc

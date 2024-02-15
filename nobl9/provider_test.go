@@ -26,6 +26,9 @@ var (
 //nolint:gochecknoinits
 func init() {
 	testProject = os.Getenv("NOBL9_PROJECT")
+	if testProject == "" {
+		testProject = "default"
+	}
 }
 
 func ProviderFactory() map[string]func() (*schema.Provider, error) {
@@ -40,30 +43,6 @@ func ProviderFactory() map[string]func() (*schema.Provider, error) {
 func TestProvider(t *testing.T) {
 	if err := Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
-	}
-}
-
-func testAccPreCheck(t *testing.T) {
-	if err := os.Getenv("NOBL9_URL"); err == "" {
-		t.Fatal("NOBL9_URL must be set for acceptance tests")
-	}
-	if err := os.Getenv("NOBL9_ORG"); err == "" {
-		t.Fatal("NOBL9_ORG must be set for acceptance tests")
-	}
-	if err := os.Getenv("NOBL9_PROJECT"); err == "" {
-		t.Fatal("NOBL9_PROJECT must be set for acceptance tests")
-	}
-	if err := os.Getenv("NOBL9_CLIENT_ID"); err == "" {
-		t.Fatal("NOBL9_CLIENT_ID must be set for acceptance tests")
-	}
-	if err := os.Getenv("NOBL9_CLIENT_SECRET"); err == "" {
-		t.Fatal("NOBL9_CLIENT_SECRET must be set for acceptance tests")
-	}
-	if err := os.Getenv("NOBL9_OKTA_URL"); err == "" {
-		t.Fatal("NOBL9_OKTA_URL must be set for acceptance tests")
-	}
-	if err := os.Getenv("NOBL9_OKTA_AUTH"); err == "" {
-		t.Fatal("NOBL9_OKTA_AUTH must be set for acceptance tests")
 	}
 }
 

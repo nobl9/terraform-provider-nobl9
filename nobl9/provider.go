@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"sync"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -22,28 +23,28 @@ func Provider() *schema.Provider {
 			"ingest_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_URL", "https://app.nobl9.com/api"),
+				DefaultFunc: getEnvFunc("NOBL9_URL"),
 				Description: "Nobl9 API URL.",
 			},
 
 			"organization": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_ORG", nil),
+				DefaultFunc: getEnvFunc("NOBL9_ORG"),
 				Description: "Nobl9 [Organization ID](https://docs.nobl9.com/API_Documentation/api-endpoints-for-slo-annotations/#common-headers) that contains resources managed by the Nobl9 Terraform provider.",
 			},
 
 			"project": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", sdk.DefaultProject),
+				DefaultFunc: getEnvFunc("NOBL9_PROJECT"),
 				Description: "Nobl9 project used when importing resources.",
 			},
 
 			"client_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_ID", nil),
+				DefaultFunc: getEnvFunc("NOBL9_CLIENT_ID"),
 				Description: "the [Client ID](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.",
 			},
 
@@ -51,14 +52,14 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_SECRET", nil),
+				DefaultFunc: getEnvFunc("NOBL9_CLIENT_SECRET"),
 				Description: "the [Client Secret](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.",
 			},
 
 			"okta_org_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_URL", "https://accounts.nobl9.com"),
+				DefaultFunc: getEnvFunc("NOBL9_OKTA_URL"),
 				Description: "Authorization service URL.",
 			},
 
@@ -66,7 +67,7 @@ func Provider() *schema.Provider {
 				Type:     schema.TypeString,
 				Optional: true,
 				//cspell:ignore auseg9kiegWKEtJZC416
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_AUTH", "auseg9kiegWKEtJZC416"),
+				DefaultFunc: getEnvFunc("NOBL9_OKTA_AUTH"),
 				Description: "Authorization service configuration.",
 			},
 		},
@@ -135,7 +136,6 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 		OktaOrgURL:     data.Get("okta_org_url").(string),
 		OktaAuthServer: data.Get("okta_auth_server").(string),
 	}
-
 	return config, nil
 }
 
@@ -158,6 +158,7 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println(sdkConfig)
 		if providerConfig.IngestURL != "" {
 			sdkConfig.URL, err = url.Parse(providerConfig.IngestURL)
 			if err != nil {
@@ -190,3 +191,7 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 
 // TODO: Once we introduce a more structured approach to error handling in SDK, this should be removed.
 var errConcurrencyIssue = errors.New("operation failed due to concurrency issue but can be retried")
+
+func getEnvFunc(k string) schema.SchemaDefaultFunc {
+	return func() (interface{}, error) { return os.Getenv(k), nil }
+}
