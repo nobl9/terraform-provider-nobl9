@@ -145,9 +145,7 @@ var (
 	once         sync.Once
 )
 
-//nolint:unparam
-func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
-	var diags diag.Diagnostics
+func getClient(providerConfig ProviderConfig) *sdk.Client {
 	once.Do(func() {
 		options := []sdk.ConfigOption{
 			sdk.ConfigOptionWithCredentials(providerConfig.ClientID, providerConfig.ClientSecret),
@@ -185,7 +183,7 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 		}
 		sharedClient.SetUserAgent(fmt.Sprintf("terraform-%s", Version))
 	})
-	return sharedClient, diags
+	return sharedClient
 }
 
 // TODO: Once we introduce a more structured approach to error handling in SDK, this should be removed.

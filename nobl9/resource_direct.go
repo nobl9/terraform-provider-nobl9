@@ -77,10 +77,7 @@ func (dr directResource) resourceDirectApply(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
 
 	n9Direct, diags := dr.marshalDirect(d)
 	if diags.HasError() {
@@ -113,10 +110,7 @@ func (dr directResource) resourceDirectRead(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
 
 	project := d.Get("project").(string)
 	if project == "" {
@@ -139,10 +133,7 @@ func (dr directResource) resourceDirectDelete(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
 
 	project := d.Get("project").(string)
 	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
@@ -161,7 +152,6 @@ func (dr directResource) resourceDirectDelete(
 	return nil
 }
 
-//nolint:unparam
 func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alphaDirect.Direct, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -169,7 +159,7 @@ func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alphaDirect.D
 	spec.Description = d.Get("description").(string)
 	spec.HistoricalDataRetrieval = marshalHistoricalDataRetrieval(d)
 	spec.QueryDelay = marshalQueryDelay(d)
-	spec.ReleaseChannel = marshalReleaseChannel(d, diags)
+	spec.ReleaseChannel = marshalReleaseChannel(d, &diags)
 
 	if d.GetRawConfig().Type().HasAttribute(logCollectionConfigKey) &&
 		!d.GetRawConfig().GetAttr(logCollectionConfigKey).IsNull() {

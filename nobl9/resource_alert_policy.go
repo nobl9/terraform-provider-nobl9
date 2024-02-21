@@ -266,10 +266,8 @@ func unmarshalAlertMethods(alertMethods []v1alphaAlertPolicy.AlertMethodRef) int
 
 func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	ap, diags := marshalAlertPolicy(d)
 	if diags.HasError() {
 		return diags
@@ -285,10 +283,8 @@ func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta 
 
 func resourceAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	project := d.Get("project").(string)
 	if project == "" {
 		project = config.Project
@@ -305,10 +301,8 @@ func resourceAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 
 func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	project := d.Get("project").(string)
 	if project == "" {
 		project = config.Project

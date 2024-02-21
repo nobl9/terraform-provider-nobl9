@@ -94,11 +94,19 @@ func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta inte
 
 func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
+<<<<<<< HEAD
 	client := getClient(config)
 
+	objects, err := client.GetObjects(ctx, d.Id(), manifest.KindProject, nil, d.Id())
+=======
+	client, ds := getClient(config)
+	if ds != nil {
+		return ds
+	}
 	projects, err := client.Objects().V1().GetV1alphaProjects(ctx, v1Objects.GetProjectsRequest{
 		Names: []string{d.Id()},
 	})
+>>>>>>> origin/main
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -107,9 +115,17 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-  client := getClient(config)
+<<<<<<< HEAD
+	client := getClient(config)
 
+	err := client.DeleteObjectsByName(ctx, d.Id(), manifest.KindProject, false, d.Id())
+=======
+	client, ds := getClient(config)
+	if ds != nil {
+		return ds
+	}
 	err := client.Objects().V1().DeleteByName(ctx, manifest.KindProject, "", d.Id())
+>>>>>>> origin/main
 	if err != nil {
 		return diag.FromErr(err)
 	}
