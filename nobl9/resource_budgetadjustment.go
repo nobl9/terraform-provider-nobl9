@@ -160,7 +160,7 @@ func marshalFilters(filters interface{}) budgetadjustment.Filters {
 	}
 	slos := filtersSet.List()[0].(map[string]interface{})["slos"].(*schema.Set)
 
-	var sloRef []budgetadjustment.SLORef
+	sloRef := make([]budgetadjustment.SLORef, 0, slos.Len())
 	for _, filter := range slos.List() {
 		f := filter.(map[string]interface{})["slo"].([]interface{})[0].(map[string]interface{})
 		slo := budgetadjustment.SLORef{
@@ -225,7 +225,7 @@ func unmarshalBudgetAdjustment(d *schema.ResourceData, objects []budgetadjustmen
 }
 
 func unmarshalFilters(d *schema.ResourceData, filters budgetadjustment.Filters) error {
-	var slos []map[string]interface{}
+	slos := make([]map[string]interface{}, 0, len(filters.SLOs))
 	for _, slo := range filters.SLOs {
 		sloMap := map[string]interface{}{
 			"name":    slo.Name,
