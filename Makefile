@@ -7,7 +7,7 @@ NAMESPACE=nobl9
 NAME=nobl9
 BIN_DIR=./bin
 BINARY=$(BIN_DIR)/terraform-provider-$(NAME)
-VERSION=0.23.116
+VERSION=0.23.0
 BUILD_FLAGS="-X github.com/nobl9/terraform-provider-nobl9/nobl9.Version=$(VERSION)"
 OS_ARCH?=linux_amd64
 
