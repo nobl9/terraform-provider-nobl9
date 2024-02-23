@@ -47,11 +47,18 @@ func schemaBudgetAdjustment() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			ValidateDiagFunc: validateDuration,
+			Description: "The duration of the budget adjustment event. " +
+				"The expected value is a string in time duration string format. " +
+				"Duration must be defined with 1 minute precision." +
+				"Example: `1h10m`",
 		},
 		"rrule": {
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: validateRrule,
+			Description: "The recurrence rule for the budget adjustment event. " +
+				"The expected value is a string in RRULE format. " +
+				"Example: `FREQ=MONTHLY;BYMONTHDAY=1`",
 		},
 		"filters": {
 			Type:     schema.TypeSet,
