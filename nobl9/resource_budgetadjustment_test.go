@@ -22,11 +22,11 @@ func TestAcc_Nobl9BudgetAdjustments(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.ParallelTest(t, resource.TestCase{
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_budget_adjustment_"+tc.name, manifest.KindBudgetAdjustment),
+				CheckDestroy:      CheckDestroy("nobl9_budget_adjustment", manifest.KindBudgetAdjustment),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
-						Check:  CheckObjectCreated(fmt.Sprintf("nobl9_budget_adjustment_.%s", tc.name)),
+						Check:  CheckObjectCreated(fmt.Sprintf("nobl9_budget_adjustment.%s", tc.name)),
 					},
 				},
 			})
@@ -58,7 +58,6 @@ resource "nobl9_budget_adjustment" "%s" {
   name              = "%s"
   first_event_start = "2022-01-01T00:00:00Z"
   duration          = "1h"
-  rrule             = "FREQ=MONTHLY"
   filters {
     slos {
       slo {
@@ -77,7 +76,6 @@ resource "nobl9_budget_adjustment" "%s" {
   name              = "%s"
   first_event_start = "2022-01-01T00:00:00Z"
   duration          = "1h"
-  rrule             = "FREQ=MONTHLY"
   filters {
     slos {
       slo {

@@ -39,6 +39,9 @@ func schemaBudgetAdjustment() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			ValidateDiagFunc: validateDateTime,
+			Description: "The time of the first event start. " +
+				"The expected value is a string with date in RFC3339 format. " +
+				"Example: `2022-12-31T00:00:00Z`",
 		},
 		"duration": {
 			Type:             schema.TypeString,
@@ -159,10 +162,10 @@ func marshalFilters(filters interface{}) budgetadjustment.Filters {
 		return budgetadjustment.Filters{}
 	}
 	slos := filtersSet.List()[0].(map[string]interface{})["slos"].(*schema.Set)
-
-	sloRef := make([]budgetadjustment.SLORef, 0, slos.Len())
-	for _, filter := range slos.List() {
-		f := filter.(map[string]interface{})["slo"].([]interface{})[0].(map[string]interface{})
+	slosList := slos.List()[0].(map[string]interface{})["slo"].([]interface{})
+	sloRef := make([]budgetadjustment.SLORef, 0, len(slosList))
+	for _, filter := range slosList {
+		f := filter.(map[string]interface{})
 		slo := budgetadjustment.SLORef{
 			Name:    f["name"].(string),
 			Project: f["project"].(string),
@@ -264,5 +267,6 @@ func resourceBudgetAdjustmentDelete(ctx context.Context, d *schema.ResourceData,
 	}); err != nil {
 		return diag.FromErr(err)
 	}
+
 	return nil
 }
