@@ -61,8 +61,9 @@ func schemaBudgetAdjustment() map[string]*schema.Schema {
 				"Example: `FREQ=MONTHLY;BYMONTHDAY=1`",
 		},
 		"filters": {
-			Type:     schema.TypeSet,
-			Optional: true,
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Filters are used to select SLOs for the budget adjustment event.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"slos": {
@@ -71,9 +72,10 @@ func schemaBudgetAdjustment() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"slo": {
-									Type:     schema.TypeList,
-									MinItems: 1,
-									Required: true,
+									Type:        schema.TypeList,
+									MinItems:    1,
+									Required:    true,
+									Description: "SLO where budget adjustment event will be applied.",
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"name":    schemaName(),

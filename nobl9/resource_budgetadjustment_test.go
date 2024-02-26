@@ -53,29 +53,35 @@ resource "nobl9_budget_adjustment" "%s" {
 }
 
 func testBudgetAdjustmentRecurringEvent(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_budget_adjustment" "%s" {
+	return fmt.Sprintf(`resource "nobl9_budget_adjustment" "%s" {
   name              = "%s"
   first_event_start = "2022-01-01T00:00:00Z"
   duration          = "1h"
+  rrule             = "FREQ=MONTHLY;BYMONTHDAY=1"
   filters {
     slos {
       slo {
-        name    = "ratio-slo"
-        project = "default"
+        name    = "cloudwatch-ratio-slo"
+        project = "cloudwatch"
+      }
+      slo {
+        name    = "cloudwatch-ratio-slo2"
+        project = "cloudwatch"
       }
     }
   }
-}
-`, name, name)
+}`, name, name)
 }
 
 func testBudgetAdjustmentRecurringEventMultipleSlo(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_budget_adjustment" "%s" {
   name              = "%s"
+  display_name      = "Recurring budget adjustment for the first day of the month."
   first_event_start = "2022-01-01T00:00:00Z"
+  description       = "Recurring budget adjustment for the first day of the month."
   duration          = "1h"
+  rrule             = "FREQ=MONTHLY;BYMONTHDAY=1"
   filters {
     slos {
       slo {
