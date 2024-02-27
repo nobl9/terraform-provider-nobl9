@@ -82,9 +82,9 @@ resource "nobl9_alert_policy" "this" {
 ### Optional
 
 - `alert_method` (Block List) (see [below for nested schema](#nestedblock--alert_method))
+- `cool_down` (String) An interval measured from the last time stamp when all alert policy conditions were satisfied before alert is marked as resolved
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `cool_down` (String) An interval measured from the last time stamp when all alert policy conditions were satisfied before alert is marked as resolved.
 
 ### Read-Only
 
@@ -99,10 +99,10 @@ Required:
 
 Optional:
 
+- `alerting_window` (String) Duration over which the burn rate is evaluated.
 - `lasts_for` (String) Indicates how long a given condition needs to be valid to mark the condition as true.
 - `value` (Number) For `averageBurnRate`, it indicates how fast the error budget is burning. For `burnedBudget`, it tells how much error budget is already burned.
 - `value_string` (String) Used with `timeToBurnBudget` or `timeToBurnEntireBudget`, indicates when the budget would be exhausted. The expected value is a string in time duration string format.
-- `alerting_window` (String) Duration over which the burn rate is evaluated.
 
 
 <a id="nestedblock--alert_method"></a>
