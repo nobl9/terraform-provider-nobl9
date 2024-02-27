@@ -24,6 +24,11 @@ func resourceAlertPolicy() *schema.Resource {
 				Required:    true,
 				Description: "Alert severity. One of `Low` | `Medium` | `High`.",
 			},
+			"cool_down": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "An interval measured from the last time stamp when all alert policy conditions were satisfied.",
+			},
 			//nolint:lll
 			"condition": {
 				Type:        schema.TypeList,
@@ -52,6 +57,11 @@ func resourceAlertPolicy() *schema.Resource {
 							Optional:    true,
 							Description: "Indicates how long a given condition needs to be valid to mark the condition as true.",
 							Default:     "0m",
+						},
+						"alerting_window": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Duration over which the burn rate is evaluated.",
 						},
 					},
 				},
@@ -137,10 +147,11 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alphaAlertPolicy.AlertPolicy
 			Labels:      labelsMarshaled,
 		},
 		v1alphaAlertPolicy.Spec{
-			Description:  d.Get("description").(string),
-			Severity:     d.Get("severity").(string),
-			Conditions:   marshalAlertConditions(d),
-			AlertMethods: marshalAlertMethods(d),
+			Description:      d.Get("description").(string),
+			Severity:         d.Get("severity").(string),
+			CoolDownDuration: d.Get("cool_down").(string),
+			Conditions:       marshalAlertConditions(d),
+			AlertMethods:     marshalAlertMethods(d),
 		})
 	return &alertPolicy, diags
 }
@@ -182,6 +193,7 @@ func marshalAlertConditions(d *schema.ResourceData) []v1alphaAlertPolicy.AlertCo
 			Measurement:      measurement,
 			Value:            value,
 			LastsForDuration: condition["lasts_for"].(string),
+			AlertingWindow:   condition["alerting_window"].(string),
 			Operator:         op,
 		}
 	}
@@ -215,6 +227,8 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alphaAlertPolicy.A
 	diags = appendError(diags, err)
 	err = d.Set("severity", spec.Severity)
 	diags = appendError(diags, err)
+	err = d.Set("cool_down", spec.CoolDownDuration)
+	diags = appendError(diags, err)
 
 	conditions := spec.Conditions
 	err = d.Set("condition", unmarshalAlertPolicyConditions(conditions))
@@ -239,10 +253,11 @@ func unmarshalAlertPolicyConditions(conditions []v1alphaAlertPolicy.AlertConditi
 			valueStr = v
 		}
 		resultConditions[i] = map[string]interface{}{
-			"measurement":  condition.Measurement,
-			"value":        value,
-			"value_string": valueStr,
-			"lasts_for":    condition.LastsForDuration,
+			"measurement":     condition.Measurement,
+			"value":           value,
+			"value_string":    valueStr,
+			"lasts_for":       condition.LastsForDuration,
+			"alerting_window": condition.AlertingWindow,
 		}
 	}
 
