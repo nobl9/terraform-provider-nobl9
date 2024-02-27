@@ -29,3 +29,22 @@ resource "nobl9_alert_policy" "this" {
   }
 }
 
+resource "nobl9_alert_policy" "this" {
+  name         = "${nobl9_project.this.name}-slow-burn"
+  project      = nobl9_project.this.name
+  display_name = "${nobl9_project.this.display_name} Slow burn (1x12h and 2x15min)"
+  severity     = "Low"
+  description  = "The budget is slowly exhausting and not recovering."
+
+  condition {
+    measurement  = "averageBurnRate"
+    value = "1"
+    alerting_window    = "12h"
+  }
+
+  condition {
+    measurement  = "averageBurnRate"
+    value = "2"
+    alerting_window    = "15m"
+  }
+}
