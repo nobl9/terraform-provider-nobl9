@@ -57,7 +57,6 @@ func resourceAlertPolicy() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Indicates how long a given condition needs to be valid to mark the condition as true.",
-							Default:     "0m",
 						},
 						"alerting_window": {
 							Type:        schema.TypeString,
