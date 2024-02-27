@@ -21,7 +21,10 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 		{"alert-policy-with-multi-alert-method", testAlertPolicyWithMultipleAlertMethods},
 		{"alert-policy-with-multi-alert-method-reverse", testAlertPolicyWithMultipleAlertMethodsReverseOrder},
 		{"alert-policy-with-time-to-burn-entire-budget", testAlertPolicyWithTimeToBurnEntireBudgetCondition},
-		{"alert-policy-with-average-burn-rate-and-alerting-window", testAlertPolicyWithAverageBurnRateAndAlertingWindow},
+		{
+			"alert-policy-with-average-burn-rate-and-alerting-window",
+			testAlertPolicyWithAverageBurnRateAndAlertingWindow,
+		},
 		{"alert-policy-with-average-burn-rate-and-lasts-for", testAlertPolicyWithAverageBurnRateAndLastsFor},
 	}
 
