@@ -25,9 +25,10 @@ func resourceAlertPolicy() *schema.Resource {
 				Description: "Alert severity. One of `Low` | `Medium` | `High`.",
 			},
 			"cool_down": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "An interval measured from the last time stamp when all alert policy conditions were satisfied.",
+				Type:     schema.TypeString,
+				Optional: true,
+				//nolint:lll
+				Description: "An interval measured from the last time stamp when all alert policy conditions were satisfied before alert is marked as resolved",
 			},
 			//nolint:lll
 			"condition": {

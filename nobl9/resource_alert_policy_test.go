@@ -259,13 +259,13 @@ resource "nobl9_alert_policy" "%s" {
   
   condition {
 	  measurement = "averageBurnRate"
-	  value 	  = 3
+	  value 	  = 1
 	  alerting_window	  = "1h"
 	}
 
   condition {
 	  measurement  = "averageBurnRate"
-	  value_string = "1h"
+	  value = "2"
 	  alerting_window	   = "15m"
 	}
 }
@@ -282,14 +282,8 @@ resource "nobl9_alert_policy" "%s" {
   
   condition {
 	  measurement = "averageBurnRate"
-	  value 	  = 3
-	  lasts_for	  = "1h"
-	}
-
-  condition {
-	  measurement  = "averageBurnRate"
-	  value_string = "1h"
-	  lasts_for	   = "15m"
+	  value 	  = 2
+	  lasts_for	  = "10m"
 	}
 }
 `, name, name, testProject)
