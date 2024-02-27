@@ -259,7 +259,6 @@ resource "nobl9_alert_policy" "%s" {
   project    = "%s"
   severity   = "Medium"
   cool_down  = "5m"
-  
   condition {
 	  measurement = "averageBurnRate"
 	  value 	  = 1
@@ -282,7 +281,6 @@ resource "nobl9_alert_policy" "%s" {
   project    = "%s"
   severity   = "Medium"
   cool_down  = "5m"
-  
   condition {
 	  measurement = "averageBurnRate"
 	  value 	  = 2
