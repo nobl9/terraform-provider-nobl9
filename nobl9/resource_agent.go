@@ -797,7 +797,6 @@ func marshalAgentGraphite(d *schema.ResourceData, diags diag.Diagnostics) *v1alp
 /**
  * Honeycomb Agent
  * https://docs.nobl9.com/Sources/honeycomb#honeycomb-agent
- * To access this integration, contact support@nobl9.com.
  */
 const honeycombAgentType = "honeycomb"
 const honeycombAgentConfigKey = "honeycomb_config"
