@@ -1,0 +1,22 @@
+---
+page_title: "Resources"
+description: |-
+  The Nobl9 provider provides utilities for working with Nobl9 API.
+---
+
+{{/* This template serves as a starting point for documentation generation, and can be customized with hardcoded values and/or doc gen templates.
+
+For example, the {{ .SchemaMarkdown }} template can be used to replace manual schema documentation if descriptions of schema attributes are added in the provider source code. */ -}}
+
+# NOBL9 Provider
+
+There are many types of resources in the Nobl9 platform, which you can configure via:
+- UI (https://app.nobl9.com)
+- [sloctl](https://docs.nobl9.com/sloctl-user-guide/)
+- Nobl9 Terraform Provider
+
+## Unsupported Resources
+
+There are couple of resources that cannot be configured using Terraform Provider. Their creation and management are limited to sloctl/UI. This is the list that are not supported in this provider:
+- [SLO Annotations](https://docs.nobl9.com/Features/SLO_Annotations/)
+- Alert Silences
