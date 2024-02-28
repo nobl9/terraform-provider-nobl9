@@ -22,12 +22,6 @@ For more details, refer to the {{ .Description | trimspace }}.
 
 - `role_ref` must be an existing role name that you want the user to assume. If you don't specify the optional `project_ref` value, `role_ref` must contain an Organization Role.
 
-## Example Usage
-
-Here's an example of RBAC resource configuration:
-
-{{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
-
 {{ .SchemaMarkdown | trimspace }}
 
 ## Useful Links

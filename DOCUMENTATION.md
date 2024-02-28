@@ -22,7 +22,7 @@ Documentation is created using the
   - `examples/provider/provider.tf` is the example that will be rendered
     on the main page on
     [provider documentation](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs#schema).
-  - `examples/resources/<resource_name>/resource.tf` will be rendered for every
+  - `examples/resources/<resource_name>/example_1.tf` will be rendered for every
     resource on their documentation page, e.g.
     <!-- markdownlint-disable MD034 -->
     https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo.
