@@ -202,6 +202,26 @@ func schemaSLO() map[string]*schema.Schema {
 				},
 			},
 		},
+		"compositeV2": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Composite SLOs are used to combine multiple SLOs into a single SLO.", // TODO PC-12014: to establish.
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"max_delay": {
+						Type:        schema.TypeInt, // TODO PC-12014: int, float or something else?
+						Required:    true,
+						Description: "Maximum delay",
+					},
+					"components": {
+						Type:        schema.TypeSet,
+						Required:    true, // TODO PC-12014: to establish.
+						Description: "Component SLOs of the Composite SLO",
+						Elem:        schemaCompositeV2Components(),
+					},
+				},
+			},
+		},
 		"budgeting_method": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -954,6 +974,57 @@ func unmarshalSLOMetric(spec *v1alphaSLO.MetricSpec) *schema.Set {
 	}
 
 	return schema.NewSet(oneElementSet, []interface{}{res})
+}
+
+func schemaCompositeV2Components() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"project": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the project",
+			},
+			"slo": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the SLO",
+			},
+			"objective": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the objective of the SLO",
+			},
+			"weight": {
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "Weight of the component",
+			},
+			"when_delayed": {
+				Type:        schema.TypeSet,
+				Required:    true,
+				Description: "How to interpret the delayed data",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"count_as_good": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Count delayed data as good",
+						},
+						"count_as_bad": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Count delayed data as bad",
+						},
+						"ignore": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Ignore delayed data",
+						},
+					},
+				},
+			},
+		},
+	}
 }
 
 /**
