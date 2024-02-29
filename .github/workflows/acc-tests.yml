@@ -29,6 +29,9 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          repository: nobl9/terraform-provider-nobl9
+          ref: main
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod

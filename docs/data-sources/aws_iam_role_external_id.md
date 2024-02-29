@@ -30,5 +30,3 @@ data "nobl9_aws_iam_role_external_id" "this" {
 - `account_id` (String) External ID
 - `external_id` (String) Nobl9 AWS Account ID
 - `id` (String) The ID of this resource.
-
-
