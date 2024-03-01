@@ -36,7 +36,7 @@ resource "nobl9_alert_policy" "this" {
   display_name = "${nobl9_project.this.display_name} Front Page Latency"
   severity     = "High"
   description  = "Alert when page latency is > 2000 and error budget would be exhausted"
-  cool_down    = "5m"
+  cooldown    = "5m"
 
   condition {
     measurement  = "timeToBurnBudget"
@@ -55,7 +55,7 @@ resource "nobl9_alert_policy" "this" {
   display_name = "${nobl9_project.this.display_name} Slow Burn (1x12h and 2x15min)"
   severity     = "Low"
   description  = "The budget is slowly exhausting and not recovering."
-  cool_down    = "5m"
+  cooldown    = "5m"
 
   condition {
     measurement  = "averageBurnRate"
@@ -76,7 +76,7 @@ resource "nobl9_alert_policy" "this" {
   display_name = "${nobl9_project.this.display_name} Fast Burn (20x5min)"
   severity     = "High"
   description  = "There’s been a significant spike in burn rate over a brief period."
-  cool_down    = "5m"
+  cooldown    = "5m"
 
   condition {
     measurement  = "averageBurnRate"
@@ -99,7 +99,7 @@ resource "nobl9_alert_policy" "this" {
 ### Optional
 
 - `alert_method` (Block List) (see [below for nested schema](#nestedblock--alert_method))
-- `cool_down` (String) An interval measured from the last time stamp when all alert policy conditions were satisfied before alert is marked as resolved
+- `cooldown` (String) An interval measured from the last time stamp when all alert policy conditions were satisfied before alert is marked as resolved
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 

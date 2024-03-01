@@ -24,7 +24,7 @@ func resourceAlertPolicy() *schema.Resource {
 				Required:    true,
 				Description: "Alert severity. One of `Low` | `Medium` | `High`.",
 			},
-			"cool_down": {
+			"cooldown": {
 				Type:     schema.TypeString,
 				Optional: true,
 				//nolint:lll
@@ -149,7 +149,7 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alphaAlertPolicy.AlertPolicy
 		v1alphaAlertPolicy.Spec{
 			Description:      d.Get("description").(string),
 			Severity:         d.Get("severity").(string),
-			CoolDownDuration: d.Get("cool_down").(string),
+			CoolDownDuration: d.Get("cooldown").(string),
 			Conditions:       marshalAlertConditions(d),
 			AlertMethods:     marshalAlertMethods(d),
 		})
@@ -227,7 +227,7 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alphaAlertPolicy.A
 	diags = appendError(diags, err)
 	err = d.Set("severity", spec.Severity)
 	diags = appendError(diags, err)
-	err = d.Set("cool_down", spec.CoolDownDuration)
+	err = d.Set("cooldown", spec.CoolDownDuration)
 	diags = appendError(diags, err)
 
 	conditions := spec.Conditions
