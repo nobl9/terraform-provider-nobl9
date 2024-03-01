@@ -36,7 +36,7 @@ resource "nobl9_alert_policy" "this" {
   display_name = "${nobl9_project.this.display_name} Front Page Latency"
   severity     = "High"
   description  = "Alert when page latency is > 2000 and error budget would be exhausted"
-  cooldown    = "5m"
+  cooldown     = "5m"
 
   condition {
     measurement  = "timeToBurnBudget"
@@ -55,18 +55,18 @@ resource "nobl9_alert_policy" "this" {
   display_name = "${nobl9_project.this.display_name} Slow Burn (1x12h and 2x15min)"
   severity     = "Low"
   description  = "The budget is slowly exhausting and not recovering."
-  cooldown    = "5m"
+  cooldown     = "5m"
 
   condition {
-    measurement  = "averageBurnRate"
-    value = "1"
-    alerting_window    = "12h"
+    measurement     = "averageBurnRate"
+    value           = "1"
+    alerting_window = "12h"
   }
 
   condition {
-    measurement  = "averageBurnRate"
-    value = "2"
-    alerting_window    = "15m"
+    measurement     = "averageBurnRate"
+    value           = "2"
+    alerting_window = "15m"
   }
 }
 
@@ -76,12 +76,12 @@ resource "nobl9_alert_policy" "this" {
   display_name = "${nobl9_project.this.display_name} Fast Burn (20x5min)"
   severity     = "High"
   description  = "There’s been a significant spike in burn rate over a brief period."
-  cooldown    = "5m"
+  cooldown     = "5m"
 
   condition {
-    measurement  = "averageBurnRate"
-    value = "20"
-    alerting_window    = "5m"
+    measurement     = "averageBurnRate"
+    value           = "20"
+    alerting_window = "5m"
   }
 }
 ```
