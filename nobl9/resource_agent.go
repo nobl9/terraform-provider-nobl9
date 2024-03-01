@@ -935,7 +935,7 @@ func schemaAgentLightstep() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "Lightstep API URL",
+						Description: "Lightstep API URL. Nobl9 will use https://api.lightstep.com if empty.",
 					},
 				},
 			},

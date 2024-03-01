@@ -215,7 +215,7 @@ Required:
 
 Optional:
 
-- `url` (String) Lightstep API URL
+- `url` (String) Lightstep API URL. Nobl9 will use https://api.lightstep.com if empty.
 
 
 <a id="nestedblock--newrelic_config"></a>
