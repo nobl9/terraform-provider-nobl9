@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_budget_adjustment (Resource)
 
-An **Budget Adjustment** some description
+The budget adjustment feature allows you to define future periods where planned maintenance, releases, and similar activities won't affect your budget in specific SLOs.
 
 For more details, refer to the [Budget adjustment configuration documentation](https://docs.nobl9.com/yaml-guide#budget-adjustment).
 
@@ -54,8 +54,8 @@ resource "nobl9_budget_adjustment" "recurring-budget-adjustment-event" {
 
 ### Required
 
-- `duration` (String) The duration of the budget adjustment event. The expected value is a string in time duration string format. Duration must be defined with 1 minute precision.Example: `1h10m`
-- `first_event_start` (String) The time of the first event start. The expected value is a string with date in RFC3339 format. Example: `2022-12-31T00:00:00Z`
+- `duration` (String) The duration of the budget adjustment event. The expected value for this field is a string formatted as a time duration. The duration must be defined with a precision of 1 minute. Example: `1h10m`
+- `first_event_start` (String) The time at which the first event is scheduled to start. The expected value must be a string representing the date and time in RFC3339 format. Example: `2022-12-31T00:00:00Z`
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 
 ### Optional

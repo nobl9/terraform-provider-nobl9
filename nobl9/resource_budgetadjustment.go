@@ -39,8 +39,8 @@ func schemaBudgetAdjustment() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			ValidateDiagFunc: validateDateTime,
-			Description: "The time of the first event start. " +
-				"The expected value is a string with date in RFC3339 format. " +
+			Description: "The time at which the first event is scheduled to start. " +
+				"The expected value must be a string representing the date and time in RFC3339 format. " +
 				"Example: `2022-12-31T00:00:00Z`",
 		},
 		"duration": {
@@ -48,8 +48,8 @@ func schemaBudgetAdjustment() map[string]*schema.Schema {
 			Required:         true,
 			ValidateDiagFunc: validateDuration,
 			Description: "The duration of the budget adjustment event. " +
-				"The expected value is a string in time duration string format. " +
-				"Duration must be defined with 1 minute precision." +
+				"The expected value for this field is a string formatted as a time duration. " +
+				"The duration must be defined with a precision of 1 minute. " +
 				"Example: `1h10m`",
 		},
 		"rrule": {
