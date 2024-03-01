@@ -22,6 +22,7 @@ jobs:
     with:
       clientId: "${{ vars.TERRAFORM_NOBL9_CLIENT_ID }}"
       project: "${{ vars.TERRAFORM_NOBL9_PROJECT }}"
+      ref: "${{ github.ref_name }}"
     secrets:
       clientSecret: "${{ secrets.TERRAFORM_NOBL9_CLIENT_SECRET }}"
   goreleaser:
@@ -53,3 +54,4 @@ jobs:
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GORELEASER_CURRENT_TAG: ${{ github.ref_name }}
