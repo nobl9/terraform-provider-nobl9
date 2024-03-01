@@ -213,6 +213,10 @@ Required:
 - `organization` (String) Organization name registered in Lightstep.
 - `project` (String) Name of the Lightstep project.
 
+Optional:
+
+- `url` (String) Lightstep API URL
+
 
 <a id="nestedblock--newrelic_config"></a>
 ### Nested Schema for `newrelic_config`
