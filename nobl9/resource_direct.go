@@ -583,7 +583,6 @@ func (s gcmDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.
 
 // Honeycomb Direct
 // https://docs.nobl9.com/Sources/honeycomba#honeycomb-direct
-// To access this integration, contact support@nobl9.com.
 const honeycombDirectType = "honeycomb"
 
 type honeycombDirectSpec struct{}
