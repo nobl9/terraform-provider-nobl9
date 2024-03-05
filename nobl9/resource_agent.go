@@ -931,6 +931,11 @@ func schemaAgentLightstep() map[string]*schema.Schema {
 						Required:    true,
 						Description: "Name of the Lightstep project.",
 					},
+					"url": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Lightstep API URL. Nobl9 will use https://api.lightstep.com if empty.",
+					},
 				},
 			},
 		},
@@ -947,6 +952,7 @@ func marshalAgentLightstep(d *schema.ResourceData, diags diag.Diagnostics) *v1al
 	return &v1alphaAgent.LightstepConfig{
 		Organization: data["organization"].(string),
 		Project:      data["project"].(string),
+		URL:          data["url"].(string),
 	}
 }
 
