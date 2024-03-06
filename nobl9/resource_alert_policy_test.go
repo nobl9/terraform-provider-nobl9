@@ -15,12 +15,17 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 		name       string
 		configFunc func(name string) string
 	}{
-		{"alert-policy", testAlertPolicyWithoutIntegration},
-		{"alert-policy-with-alert-method", testAlertPolicyWithIntegration},
-		{"alert-policy-with-multi-alert-method", testAlertPolicyWithMultipleIntegration},
-		// This is coming from SRE-738 where the order of the alert methods was always showing a diff
-		{"alert-policy-with-multi-alert-method-reverse", testAlertPolicyWithMultipleIntegrationReverseOrder},
+		{"alert-policy", testAlertPolicyWithoutAnyAlertMethod},
+		{"alert-policy-with-cool-down", testAlertPolicyWithCoolDown},
+		{"alert-policy-with-alert-method", testAlertPolicyWithAlertMethod},
+		{"alert-policy-with-multi-alert-method", testAlertPolicyWithMultipleAlertMethods},
+		{"alert-policy-with-multi-alert-method-reverse", testAlertPolicyWithMultipleAlertMethodsReverseOrder},
 		{"alert-policy-with-time-to-burn-entire-budget", testAlertPolicyWithTimeToBurnEntireBudgetCondition},
+		{
+			"alert-policy-with-average-burn-rate-and-alerting-window",
+			testAlertPolicyWithAverageBurnRateAndAlertingWindow,
+		},
+		{"alert-policy-with-average-burn-rate-and-lasts-for", testAlertPolicyWithAverageBurnRateAndLastsFor},
 	}
 
 	for _, tc := range cases {
@@ -60,7 +65,7 @@ func destroyMultiple(rsTypes []string, kinds []manifest.Kind) resource.TestCheck
 	}
 }
 
-func testAlertPolicyWithoutIntegration(name string) string {
+func testAlertPolicyWithoutAnyAlertMethod(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_alert_policy" "%s" {
   name       = "%s"
@@ -87,7 +92,7 @@ resource "nobl9_alert_policy" "%s" {
 `, name, name, testProject)
 }
 
-func testAlertPolicyWithIntegration(name string) string {
+func testAlertPolicyWithAlertMethod(name string) string {
 	return testWebhookTemplateConfig(name+"-am") +
 		fmt.Sprintf(`
 resource "nobl9_alert_policy" "%s" {
@@ -120,7 +125,7 @@ resource "nobl9_alert_policy" "%s" {
 `, name, name, testProject, testProject, name)
 }
 
-func testAlertPolicyWithMultipleIntegration(name string) string {
+func testAlertPolicyWithMultipleAlertMethods(name string) string {
 	return testWebhookTemplateConfig(name+"-am") +
 		testWebhookTemplateConfig(name+"-am-two") +
 		fmt.Sprintf(`
@@ -159,7 +164,7 @@ resource "nobl9_alert_policy" "%s" {
 `, name, name, testProject, testProject, name, testProject, name)
 }
 
-func testAlertPolicyWithMultipleIntegrationReverseOrder(name string) string {
+func testAlertPolicyWithMultipleAlertMethodsReverseOrder(name string) string {
 	return testWebhookTemplateConfig(name+"-am") +
 		testWebhookTemplateConfig(name+"-am-two") +
 		fmt.Sprintf(`
@@ -215,6 +220,72 @@ resource "nobl9_alert_policy" "%s" {
     measurement  = "timeToBurnEntireBudget"
     value_string = "1h"
   }
+}
+`, name, name, testProject)
+}
+
+func testAlertPolicyWithCoolDown(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_policy" "%s" {
+  name       = "%s"
+  project    = "%s"
+  severity   = "Medium"
+  cooldown  = "15m"
+
+  condition {
+	  measurement = "burnedBudget"
+	  value 	  = 0.9
+	}
+
+  condition {
+	  measurement = "averageBurnRate"
+	  value 	  = 3
+	  lasts_for	  = "1m"
+	}
+
+  condition {
+	  measurement  = "timeToBurnBudget"
+	  value_string = "1h"
+	  lasts_for	   = "300s"
+	}
+}
+`, name, name, testProject)
+}
+
+func testAlertPolicyWithAverageBurnRateAndAlertingWindow(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_policy" "%s" {
+  name       = "%s"
+  project    = "%s"
+  severity   = "Medium"
+  cooldown  = "5m"
+  condition {
+	  measurement = "averageBurnRate"
+	  value 	  = 1
+	  alerting_window	  = "1h"
+	}
+
+  condition {
+	  measurement  = "averageBurnRate"
+	  value = "2"
+	  alerting_window	   = "15m"
+	}
+}
+`, name, name, testProject)
+}
+
+func testAlertPolicyWithAverageBurnRateAndLastsFor(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_policy" "%s" {
+  name       = "%s"
+  project    = "%s"
+  severity   = "Medium"
+  cooldown  = "5m"
+  condition {
+	  measurement = "averageBurnRate"
+	  value 	  = 2
+	  lasts_for	  = "10m"
+	}
 }
 `, name, name, testProject)
 }
