@@ -761,6 +761,11 @@ func (s lightstepDirectSpec) GetSchema() map[string]*schema.Schema {
 				validation.StringIsNotEmpty,
 			),
 		},
+		"url": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Lightstep API URL. Nobl9 will use https://api.lightstep.com if empty.",
+		},
 	}
 	setHistoricalDataRetrievalSchema(lightstepSchema)
 	setLogCollectionSchema(lightstepSchema)
@@ -774,6 +779,7 @@ func (s lightstepDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.S
 			AppToken:     d.Get("app_token").(string),
 			Organization: d.Get("lightstep_organization").(string),
 			Project:      d.Get("lightstep_project").(string),
+			URL:          d.Get("url").(string),
 		},
 	}
 }
@@ -782,6 +788,7 @@ func (s lightstepDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaD
 	set(d, "lightstep_organization", spec.Lightstep.Organization, &diags)
 	set(d, "lightstep_project", spec.Lightstep.Project, &diags)
 	set(d, "description", spec.Description, &diags)
+	set(d, "url", spec.Lightstep.URL, &diags)
 	return
 }
 

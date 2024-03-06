@@ -181,8 +181,8 @@ github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RR
 github.com/mitchellh/reflectwalk v1.0.0/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zxSIeXaQ=
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
-github.com/nobl9/nobl9-go v0.78.1-0.20240305064856-97e3685f6924 h1:03FbWVxRzB0/p+ZhFUYWs0v5FPMixpfQ8AUWR1Yeffk=
-github.com/nobl9/nobl9-go v0.78.1-0.20240305064856-97e3685f6924/go.mod h1:mYgav7wQHhpTzs53KdyPnaY5eapqJJJTX+S5sJq5t90=
+github.com/nobl9/nobl9-go v0.78.1-0.20240305144417-5332fc9ea955 h1:5XQupNwaeoLNTwwusil59tCGKCLz+BVc/q1y0ilknYc=
+github.com/nobl9/nobl9-go v0.78.1-0.20240305144417-5332fc9ea955/go.mod h1:mYgav7wQHhpTzs53KdyPnaY5eapqJJJTX+S5sJq5t90=
 github.com/oklog/run v1.1.0 h1:GEenZ1cK0+q0+wsJew9qUg/DyD8k3JzYsZAi5gYi2mA=
 github.com/oklog/run v1.1.0/go.mod h1:sVPdnTZT1zYwAJeCMu2Th4T21pA3FPOQRfWjQlk7DVU=
 github.com/pjbgf/sha1cd v0.3.0 h1:4D5XXmUUBUl/xQ6IjCkEAbqXskkq/4O7LmGn0AqMDs4=
