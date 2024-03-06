@@ -18,6 +18,11 @@ on:
         description: Project name to create the tested objects in
         required: false
         type: string
+      ref:
+        description: Reference branch, tag or commit SHA to checkout
+        required: false
+        type: string
+        default: main
     secrets:
       clientSecret:
         description: Client secret to use for authentication
@@ -31,7 +36,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: nobl9/terraform-provider-nobl9
-          ref: main
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
