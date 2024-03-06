@@ -58,6 +58,10 @@ func resourceAlertPolicy() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Indicates how long a given condition needs to be valid to mark the condition as true.",
+							DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+								// To be backward compatible with lasts for with default=0m that was set before.
+								return oldValue == "0m" && newValue == ""
+							},
 						},
 						"alerting_window": {
 							Type:        schema.TypeString,
@@ -193,8 +197,10 @@ func marshalAlertConditions(d *schema.ResourceData) []v1alphaAlertPolicy.AlertCo
 		lastsFor := condition["lasts_for"].(string)
 		alertingWindow := condition["alerting_window"].(string)
 
-		if lastsFor == "" && alertingWindow == "" {
-			lastsFor = "0m"
+		if lastsFor == "0m" && alertingWindow != "" {
+			// To be backward compatible with lasts for with default=0m that was set before, when user
+			// wants to switch to use alerting_window instead of lasts_for.
+			lastsFor = ""
 		}
 
 		resultConditions[i] = v1alphaAlertPolicy.AlertCondition{
