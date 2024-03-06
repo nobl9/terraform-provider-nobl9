@@ -10,11 +10,6 @@ on:
         description: Client secret to use for authentication
         type: string
         required: true
-      ref:
-        description: Reference branch, tag or commit SHA to checkout
-        required: true
-        type: string
-        default: main
       oktaOrgUrl:
         description: Okta organization URL
         required: false
@@ -33,7 +28,7 @@ jobs:
     uses: ./.github/workflows/acc-tests.yml
     with:
       clientId: "${{ inputs.clientId }}"
-      ref: "${{ inputs.ref }}"
+      ref: "${{ github.ref_name }}"
       oktaOrgUrl: "${{ inputs.oktaOrgUrl }}"
       oktaAuthServer: "${{ inputs.oktaAuthServer }}"
       project: "${{ inputs.project }}"
