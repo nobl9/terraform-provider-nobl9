@@ -1,0 +1,41 @@
+name: Acceptance tests dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      clientId:
+        description: Client ID to use for authentication
+        required: true
+        type: string
+      clientSecret:
+        description: Client secret to use for authentication
+        type: string
+        required: true
+      ref:
+        description: Reference branch, tag or commit SHA to checkout
+        required: true
+        type: string
+        default: main
+      oktaOrgUrl:
+        description: Okta organization URL
+        required: false
+        type: string
+      oktaAuthServer:
+        description: Okta authentication server identifier
+        required: false
+        type: string
+      project:
+        description: Project name to create the tested objects in
+        required: false
+        type: string
+        default: default
+jobs:
+  test:
+    uses: ./.github/workflows/acc-tests.yml
+    with:
+      clientId: "${{ inputs.clientId }}"
+      ref: "${{ inputs.ref }}"
+      oktaOrgUrl: "${{ inputs.oktaOrgUrl }}"
+      oktaAuthServer: "${{ inputs.oktaAuthServer }}"
+      project: "${{ inputs.project }}"
+    secrets:
+      clientSecret: "${{ inputs.clientSecret }}"
