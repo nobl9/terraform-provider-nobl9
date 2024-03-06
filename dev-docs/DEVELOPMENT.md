@@ -43,10 +43,11 @@ If you want to run the tests manually against a different environment, you can
 run the following command:
 
 ```shell
-TERRAFORM_NOBL9_CLIENT_ID=<client_id> \
-TERRAFORM_NOBL9_CLIENT_SECRET=<client_secret> \
-TERRAFORM_NOBL9_OKTA_URL=https://accounts.nobl9.dev \
-TERRAFORM_NOBL9_OKTA_AUTH=<dev_auth_server> \
+NOBL9_CLIENT_ID=<client_id> \
+NOBL9_CLIENT_SECRET=<client_secret> \
+NOBL9_OKTA_URL=https://accounts.nobl9.dev \
+NOBL9_OKTA_AUTH=<dev_auth_server> \
+NOBL9_URL=<ingest_server_url> \
 make test/acc
 ```
 
