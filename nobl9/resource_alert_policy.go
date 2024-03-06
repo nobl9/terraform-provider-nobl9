@@ -27,6 +27,7 @@ func resourceAlertPolicy() *schema.Resource {
 			"cooldown": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Default:  "5m",
 				//nolint:lll
 				Description: "An interval measured from the last time stamp when all alert policy conditions were satisfied before alert is marked as resolved",
 			},
@@ -189,11 +190,18 @@ func marshalAlertConditions(d *schema.ResourceData) []v1alphaAlertPolicy.AlertCo
 			op = "lte"
 		}
 
+		lastsFor := condition["lasts_for"].(string)
+		alertingWindow := condition["alerting_window"].(string)
+
+		if lastsFor == "" && alertingWindow == "" {
+			lastsFor = "0m"
+		}
+
 		resultConditions[i] = v1alphaAlertPolicy.AlertCondition{
 			Measurement:      measurement,
 			Value:            value,
-			LastsForDuration: condition["lasts_for"].(string),
-			AlertingWindow:   condition["alerting_window"].(string),
+			LastsForDuration: lastsFor,
+			AlertingWindow:   alertingWindow,
 			Operator:         op,
 		}
 	}
