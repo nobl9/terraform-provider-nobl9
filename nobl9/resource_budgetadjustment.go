@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha/budgetadjustment"
@@ -129,13 +129,13 @@ func resourceBudgetAdjustmentApply(ctx context.Context, d *schema.ResourceData, 
 
 	budgetAdjustment := marshalBudgetAdjustment(d)
 
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
+	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *retry.RetryError {
 		err := client.Objects().V1().Apply(ctx, []manifest.Object{budgetAdjustment})
 		if err != nil {
 			if errors.Is(err, errConcurrencyIssue) {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	}); err != nil {
@@ -264,13 +264,13 @@ func resourceBudgetAdjustmentDelete(ctx context.Context, d *schema.ResourceData,
 		return ds
 	}
 
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
+	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *retry.RetryError {
 		err := client.Objects().V1().DeleteByName(ctx, manifest.KindBudgetAdjustment, "", d.Id())
 		if err != nil {
 			if errors.Is(err, errConcurrencyIssue) {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	}); err != nil {
