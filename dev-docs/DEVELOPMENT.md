@@ -52,6 +52,16 @@ NOBL9_URL=<ingest_server_url> \
 make test/acc
 ```
 
+## Generating documentation
+
+Documentation is generated using the
+[tfplugindocs](https://github.com/hashicorp/terraform-plugin-docs) tool.
+In order to generate or update the docs run the following command:
+
+```sh
+make generate
+```
+
 ## How to use local provider in Terraform
 
 ### Installing
