@@ -32,7 +32,8 @@ and makes local debugging easier.
 
 Terraform Provider is mainly tested with acceptance tests, which are plain Go
 tests run with an overlay of Terraform SDK orchestration.
-You can run them with `make test/acc` (recommended).
+You can run them with `make test/acc` (recommended) or from GitHub by dispatching
+[this workflow](https://github.com/nobl9/terraform-provider-nobl9/actions/workflows/acc-tests-dispatch.yml).
 More on acceptance tests can be found
 [here](https://developer.hashicorp.com/terraform/plugin/sdkv2/testing/acceptance-tests).
 
