@@ -65,6 +65,7 @@ func diffSuppressListStringOrder(attribute string) func(
 	}
 }
 
+// TODO PC-12014: Composites V2 schema will need to be moved to here, since its specification is under "Objective" in SDK.
 func resourceObjective() *schema.Resource {
 	res := &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -202,6 +203,7 @@ func schemaSLO() map[string]*schema.Schema {
 				},
 			},
 		},
+		// TODO PC-12014: This will have to be moved to schema of the "Objective".
 		"compositeV2": {
 			Type:        schema.TypeSet,
 			Optional:    true,
@@ -610,6 +612,7 @@ func marshalIndicator(d *schema.ResourceData) v1alphaSLO.Indicator {
 	return resultIndicator
 }
 
+// TODO PC-12014: probably needs Composite V2 changes here too.
 func marshalObjectives(d *schema.ResourceData) []v1alphaSLO.Objective {
 	objectivesSchema := d.Get("objective").(*schema.Set).List()
 	objectives := make([]v1alphaSLO.Objective, len(objectivesSchema))
@@ -849,6 +852,8 @@ func unmarshalTimeWindow(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 	return d.Set("time_window", tw)
 }
 
+// TODO PC-12014: probably need Composite V2 changes here, after moving Composite V2 schema from SLO to Objective.
+// TODO PC-12014: Look at TODO at the Composite V2 schema first.
 func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 	objectives := spec.Objectives
 	objectivesTF := make([]interface{}, len(objectives))
@@ -900,6 +905,7 @@ func objectiveHash(objective interface{}) int {
 	)
 	return schema.HashString(indicator)
 }
+
 func unmarshalComposite(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 	if spec.Composite != nil {
 		composite := spec.Composite
@@ -976,6 +982,7 @@ func unmarshalSLOMetric(spec *v1alphaSLO.MetricSpec) *schema.Set {
 	return schema.NewSet(oneElementSet, []interface{}{res})
 }
 
+// TODO PC-12014: It's just a sketch, might need changes.
 func schemaCompositeV2Components() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
