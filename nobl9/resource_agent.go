@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/manifest"
@@ -127,13 +127,13 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 	resultAgent := manifest.SetDefaultProject([]manifest.Object{agent}, config.Project)
 
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
+	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *retry.RetryError {
 		err := client.Objects().V1().Apply(ctx, resultAgent)
 		if err != nil {
 			if errors.Is(err, errConcurrencyIssue) {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		project := d.Get("project").(string)
 		agentsData, err := client.AuthData().V1().GetAgentCredentials(ctx, project, agent.Metadata.Name)
@@ -184,13 +184,13 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	if project == "" {
 		project = config.Project
 	}
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
+	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *retry.RetryError {
 		err := client.Objects().V1().DeleteByName(ctx, manifest.KindAgent, project, d.Id())
 		if err != nil {
 			if errors.Is(err, errConcurrencyIssue) {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	}); err != nil {
@@ -797,7 +797,6 @@ func marshalAgentGraphite(d *schema.ResourceData, diags diag.Diagnostics) *v1alp
 /**
  * Honeycomb Agent
  * https://docs.nobl9.com/Sources/honeycomb#honeycomb-agent
- * To access this integration, contact support@nobl9.com.
  */
 const honeycombAgentType = "honeycomb"
 const honeycombAgentConfigKey = "honeycomb_config"
@@ -932,6 +931,11 @@ func schemaAgentLightstep() map[string]*schema.Schema {
 						Required:    true,
 						Description: "Name of the Lightstep project.",
 					},
+					"url": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Lightstep API URL. Nobl9 will use https://api.lightstep.com if empty.",
+					},
 				},
 			},
 		},
@@ -948,6 +952,7 @@ func marshalAgentLightstep(d *schema.ResourceData, diags diag.Diagnostics) *v1al
 	return &v1alphaAgent.LightstepConfig{
 		Organization: data["organization"].(string),
 		Project:      data["project"].(string),
+		URL:          data["url"].(string),
 	}
 }
 

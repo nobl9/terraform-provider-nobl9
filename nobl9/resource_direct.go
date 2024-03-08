@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -87,13 +87,13 @@ func (dr directResource) resourceDirectApply(
 		return diags
 	}
 
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
+	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *retry.RetryError {
 		err := client.Objects().V1().Apply(ctx, []manifest.Object{n9Direct})
 		if err != nil {
 			if errors.Is(err, errConcurrencyIssue) {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	}); err != nil {
@@ -145,13 +145,13 @@ func (dr directResource) resourceDirectDelete(
 	}
 
 	project := d.Get("project").(string)
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
+	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *retry.RetryError {
 		err := client.Objects().V1().DeleteByName(ctx, manifest.KindDirect, project, d.Id())
 		if err != nil {
 			if errors.Is(err, errConcurrencyIssue) {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	}); err != nil {
@@ -583,7 +583,6 @@ func (s gcmDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.
 
 // Honeycomb Direct
 // https://docs.nobl9.com/Sources/honeycomba#honeycomb-direct
-// To access this integration, contact support@nobl9.com.
 const honeycombDirectType = "honeycomb"
 
 type honeycombDirectSpec struct{}
@@ -762,6 +761,11 @@ func (s lightstepDirectSpec) GetSchema() map[string]*schema.Schema {
 				validation.StringIsNotEmpty,
 			),
 		},
+		"url": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Lightstep API URL. Nobl9 will use https://api.lightstep.com if empty.",
+		},
 	}
 	setHistoricalDataRetrievalSchema(lightstepSchema)
 	setLogCollectionSchema(lightstepSchema)
@@ -775,6 +779,7 @@ func (s lightstepDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.S
 			AppToken:     d.Get("app_token").(string),
 			Organization: d.Get("lightstep_organization").(string),
 			Project:      d.Get("lightstep_project").(string),
+			URL:          d.Get("url").(string),
 		},
 	}
 }
@@ -783,6 +788,7 @@ func (s lightstepDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaD
 	set(d, "lightstep_organization", spec.Lightstep.Organization, &diags)
 	set(d, "lightstep_project", spec.Lightstep.Project, &diags)
 	set(d, "description", spec.Description, &diags)
+	set(d, "url", spec.Lightstep.URL, &diags)
 	return
 }
 

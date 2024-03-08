@@ -301,6 +301,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   lightstep_organization = "acme"
   lightstep_project = "project1"
+  url = "https://api.lightstep.com"
   app_token = "secret"
   historical_data_retrieval {
     default_duration  {

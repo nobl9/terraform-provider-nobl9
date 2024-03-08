@@ -24,6 +24,13 @@ func resourceAlertPolicy() *schema.Resource {
 				Required:    true,
 				Description: "Alert severity. One of `Low` | `Medium` | `High`.",
 			},
+			"cooldown": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "5m",
+				//nolint:lll
+				Description: "An interval measured from the last time stamp when all alert policy conditions were satisfied before alert is marked as resolved",
+			},
 			//nolint:lll
 			"condition": {
 				Type:        schema.TypeList,
@@ -51,7 +58,15 @@ func resourceAlertPolicy() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Indicates how long a given condition needs to be valid to mark the condition as true.",
-							Default:     "0m",
+							DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+								// To be backward compatible with lasts for with default=0m that was set before.
+								return oldValue == "0m" && newValue == ""
+							},
+						},
+						"alerting_window": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Duration over which the burn rate is evaluated.",
 						},
 					},
 				},
@@ -137,10 +152,11 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alphaAlertPolicy.AlertPolicy
 			Labels:      labelsMarshaled,
 		},
 		v1alphaAlertPolicy.Spec{
-			Description:  d.Get("description").(string),
-			Severity:     d.Get("severity").(string),
-			Conditions:   marshalAlertConditions(d),
-			AlertMethods: marshalAlertMethods(d),
+			Description:      d.Get("description").(string),
+			Severity:         d.Get("severity").(string),
+			CoolDownDuration: d.Get("cooldown").(string),
+			Conditions:       marshalAlertConditions(d),
+			AlertMethods:     marshalAlertMethods(d),
 		})
 	return &alertPolicy, diags
 }
@@ -178,10 +194,20 @@ func marshalAlertConditions(d *schema.ResourceData) []v1alphaAlertPolicy.AlertCo
 			op = "lte"
 		}
 
+		lastsFor := condition["lasts_for"].(string)
+		alertingWindow := condition["alerting_window"].(string)
+
+		if lastsFor == "0m" && alertingWindow != "" {
+			// To be backward compatible with lasts for with default=0m that was set before, when user
+			// wants to switch to use alerting_window instead of lasts_for.
+			lastsFor = ""
+		}
+
 		resultConditions[i] = v1alphaAlertPolicy.AlertCondition{
 			Measurement:      measurement,
 			Value:            value,
-			LastsForDuration: condition["lasts_for"].(string),
+			LastsForDuration: lastsFor,
+			AlertingWindow:   alertingWindow,
 			Operator:         op,
 		}
 	}
@@ -215,6 +241,8 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alphaAlertPolicy.A
 	diags = appendError(diags, err)
 	err = d.Set("severity", spec.Severity)
 	diags = appendError(diags, err)
+	err = d.Set("cooldown", spec.CoolDownDuration)
+	diags = appendError(diags, err)
 
 	conditions := spec.Conditions
 	err = d.Set("condition", unmarshalAlertPolicyConditions(conditions))
@@ -239,10 +267,11 @@ func unmarshalAlertPolicyConditions(conditions []v1alphaAlertPolicy.AlertConditi
 			valueStr = v
 		}
 		resultConditions[i] = map[string]interface{}{
-			"measurement":  condition.Measurement,
-			"value":        value,
-			"value_string": valueStr,
-			"lasts_for":    condition.LastsForDuration,
+			"measurement":     condition.Measurement,
+			"value":           value,
+			"value_string":    valueStr,
+			"lasts_for":       condition.LastsForDuration,
+			"alerting_window": condition.AlertingWindow,
 		}
 	}
 

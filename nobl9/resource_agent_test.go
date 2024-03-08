@@ -376,6 +376,7 @@ resource "nobl9_agent" "%s" {
   lightstep_config {
     organization = "acme"
     project		 = "project1"
+    url			 = "https://api.lightstep.com"
   }
   release_channel = "beta"
   query_delay {

@@ -1589,8 +1589,8 @@ func testMultipleAlertPolicies(name string) string {
 	config :=
 		testService(serviceName) +
 			testPrometheusAgent(agentName) +
-			testAlertPolicyWithoutIntegration(name+"-fast") +
-			testAlertPolicyWithoutIntegration(name+"-slow") + `
+			testAlertPolicyWithoutAnyAlertMethod(name+"-fast") +
+			testAlertPolicyWithoutAnyAlertMethod(name+"-slow") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -1917,7 +1917,7 @@ func testPrometheusSLOWithAlertPolicy(name string) string {
 	config :=
 		testService(serviceName) +
 			testPrometheusAgent(agentName) +
-			testAlertPolicyWithoutIntegration(name+"-ap") + `
+			testAlertPolicyWithoutAnyAlertMethod(name+"-ap") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"

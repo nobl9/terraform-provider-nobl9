@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/manifest"
@@ -144,13 +144,13 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	roleBinding := marshalRoleBinding(d)
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
+	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *retry.RetryError {
 		err := client.Objects().V1().Apply(ctx, []manifest.Object{roleBinding})
 		if err != nil {
 			if errors.Is(err, errConcurrencyIssue) {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	}); err != nil {
@@ -193,13 +193,13 @@ func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta
 		project = wildcardProject
 	}
 
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
+	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *retry.RetryError {
 		err := client.Objects().V1().DeleteByName(ctx, manifest.KindRoleBinding, project, d.Id())
 		if err != nil {
 			if errors.Is(err, errConcurrencyIssue) {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	}); err != nil {

@@ -8,7 +8,7 @@ description: |-
 
 An **Alert Policy** expresses a set of conditions you want to track or monitor. The conditions for an Alert Policy define what is monitored and when to activate an alert: when the performance of your service is declining, Nobl9 will send a notification to a predefined channel.
 
-A Nobl9 AlertPolicy accepts up to 7 conditions. All the specified conditions must be satisfied to trigger an alert.
+A Nobl9 AlertPolicy accepts up to 3 conditions. All the specified conditions must be satisfied to trigger an alert.
 
 For more details, refer to the [Alert Policy configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#alertpolicy).
 
@@ -36,6 +36,7 @@ resource "nobl9_alert_policy" "this" {
   display_name = "${nobl9_project.this.display_name} Front Page Latency"
   severity     = "High"
   description  = "Alert when page latency is > 2000 and error budget would be exhausted"
+  cooldown     = "5m"
 
   condition {
     measurement  = "timeToBurnBudget"
@@ -45,6 +46,42 @@ resource "nobl9_alert_policy" "this" {
 
   alert_method {
     name = "my-alert-method"
+  }
+}
+
+resource "nobl9_alert_policy" "this" {
+  name         = "${nobl9_project.this.name}-slow-burn"
+  project      = nobl9_project.this.name
+  display_name = "${nobl9_project.this.display_name} Slow Burn (1x12h and 2x15min)"
+  severity     = "Low"
+  description  = "The budget is slowly exhausting and not recovering."
+  cooldown     = "5m"
+
+  condition {
+    measurement     = "averageBurnRate"
+    value           = "1"
+    alerting_window = "12h"
+  }
+
+  condition {
+    measurement     = "averageBurnRate"
+    value           = "2"
+    alerting_window = "15m"
+  }
+}
+
+resource "nobl9_alert_policy" "this" {
+  name         = "${nobl9_project.this.name}-fast-burn"
+  project      = nobl9_project.this.name
+  display_name = "${nobl9_project.this.display_name} Fast Burn (20x5min)"
+  severity     = "High"
+  description  = "There’s been a significant spike in burn rate over a brief period."
+  cooldown     = "5m"
+
+  condition {
+    measurement     = "averageBurnRate"
+    value           = "20"
+    alerting_window = "5m"
   }
 }
 ```
@@ -62,6 +99,7 @@ resource "nobl9_alert_policy" "this" {
 ### Optional
 
 - `alert_method` (Block List) (see [below for nested schema](#nestedblock--alert_method))
+- `cooldown` (String) An interval measured from the last time stamp when all alert policy conditions were satisfied before alert is marked as resolved
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 
@@ -78,6 +116,7 @@ Required:
 
 Optional:
 
+- `alerting_window` (String) Duration over which the burn rate is evaluated.
 - `lasts_for` (String) Indicates how long a given condition needs to be valid to mark the condition as true.
 - `value` (Number) For `averageBurnRate`, it indicates how fast the error budget is burning. For `burnedBudget`, it tells how much error budget is already burned.
 - `value_string` (String) Used with `timeToBurnBudget` or `timeToBurnEntireBudget`, indicates when the budget would be exhausted. The expected value is a string in time duration string format.
