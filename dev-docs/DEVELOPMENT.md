@@ -68,27 +68,29 @@ make generate
 
 1. Go to the repo root.
 2. Before the next step, verify if the Makefile variable `OS_ARCH` matches your
-  system (for example *darwin_arm64* for Apple Silicon based Mac's).
-  If not override it.
+    system (for example *darwin_arm64* for Apple Silicon based Mac's).
+    If not override it.
 3. Run `make install`. Make sure that the plugin was installed:
-  `ls ~/.terraform.d/plugins/nobl9.com/nobl9/nobl9/`
-  It will show you the current version of the plugin, ex: *0.19.0*.
+    `ls ~/.terraform.d/plugins/nobl9.com/nobl9/nobl9/`
+    It will show you the current version of the plugin, ex: *0.19.0*.
 4. Copy the path to the plugin after ~/.terraform.d/plugins/, for example:
-  `nobl9.com/nobl9/nobl9/0.19.0/linux_amd64/terraform-provider-nobl9`
-  and configure your `.tf` file with it.
-  Usually it will look like this, just change the version:
-  ```terraform
-  terraform {
-    required_providers {
-      nobl9 = {
-        source = "nobl9.com/nobl9/nobl9"
-        version = "0.19.0"
+    `nobl9.com/nobl9/nobl9/0.19.0/linux_amd64/terraform-provider-nobl9`
+    and configure your `.tf` file with it.
+    Usually it will look like this, just change the version:
+
+    ```terraform
+    terraform {
+      required_providers {
+        nobl9 = {
+          source = "nobl9.com/nobl9/nobl9"
+          version = "0.19.0"
+        }
       }
     }
-  }
-  ```
-  Now you're all set, you can use the locally built provider anywhere, as long
-  as you use the right version (see above).
+    ```
+  
+    Now you're all set, you can use the locally built provider anywhere, as long
+    as you use the right version (see above).
 
 ## Releases
 
