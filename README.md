@@ -28,7 +28,7 @@
 
 # Requirements
 
--	[Terraform](https://www.terraform.io/downloads.html) 0.10.x
+- [Terraform](https://www.terraform.io/downloads.html) 0.10.x
 
 # Example
 
