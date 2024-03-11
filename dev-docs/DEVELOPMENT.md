@@ -88,7 +88,7 @@ make generate
       }
     }
     ```
-  
+
     Now you're all set, you can use the locally built provider anywhere, as long
     as you use the right version (see above).
 
