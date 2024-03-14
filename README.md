@@ -1,9 +1,9 @@
 <!-- markdownlint-disable line-length html -->
 <h1 align="center">
    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/nobl9/n9/assets/84388336/2895fcab-a386-498f-b7c4-14a70c66093d">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/nobl9/n9/assets/84388336/b21abc8b-8b05-448b-a8bc-5576c72e81b5">
-      <img alt="N9" src="https://github.com/nobl9/n9/assets/84388336/b21abc8b-8b05-448b-a8bc-5576c72e81b5" width="500" />
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/nobl9/terraform-provider-nobl9/assets/48822818/2e164ead-61b5-4873-9704-d0fb6ad8ffc9">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/nobl9/terraform-provider-nobl9/assets/48822818/fd32d8a5-4c51-4797-9f3d-a68e721fbbd2">
+      <img alt="N9" src="https://github.com/nobl9/terraform-provider-nobl9/assets/48822818/fd32d8a5-4c51-4797-9f3d-a68e721fbbd2" width="500" />
    </picture>
 </h1>
 
@@ -28,7 +28,7 @@
 
 # Requirements
 
--	[Terraform](https://www.terraform.io/downloads.html) 0.10.x
+- [Terraform](https://www.terraform.io/downloads.html) 0.10.x
 
 # Example
 
