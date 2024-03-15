@@ -65,7 +65,6 @@ func diffSuppressListStringOrder(attribute string) func(
 	}
 }
 
-// TODO PC-12014: Composites V2 schema will need to be moved to here, since its specification is under "Objective" in SDK.
 func resourceObjective() *schema.Resource {
 	res := &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -117,6 +116,27 @@ func resourceObjective() *schema.Resource {
 					},
 				},
 			},
+			// TODO PC-12014
+			"compositeV2": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Composite SLOs are used to combine multiple SLOs into a single SLO.", // TODO PC-12014: to establish.
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"max_delay": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Maximum delay",
+						},
+						"components": {
+							Type:        schema.TypeSet,
+							Required:    true, // TODO PC-12014: to establish.
+							Description: "Component SLOs of the Composite SLO",
+							Elem:        schemaCompositeV2Components(), // TODO PC-12014
+						},
+					},
+				},
+			},
 			"display_name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -151,6 +171,40 @@ func resourceObjective() *schema.Resource {
 		},
 	}
 	return res
+}
+
+// TODO PC-12014: It's just a sketch, might need changes.
+func schemaCompositeV2Components() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"project": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the project",
+			},
+			"slo": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the SLO",
+			},
+			"objective": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the objective of the SLO",
+			},
+			"weight": {
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "Weight of the component",
+			},
+			"when_delayed": {
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "How to interpret the delayed data",
+				ValidateFunc: validation.StringInSlice(v1alphaSLO.WhenDelayedNames(), false),
+			},
+		},
+	}
 }
 
 func schemaObjective() *schema.Schema {
@@ -199,27 +253,6 @@ func schemaSLO() map[string]*schema.Schema {
 								},
 							},
 						},
-					},
-				},
-			},
-		},
-		// TODO PC-12014: This will have to be moved to schema of the "Objective".
-		"compositeV2": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Composite SLOs are used to combine multiple SLOs into a single SLO.", // TODO PC-12014: to establish.
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"max_delay": {
-						Type:        schema.TypeInt, // TODO PC-12014: int, float or something else?
-						Required:    true,
-						Description: "Maximum delay",
-					},
-					"components": {
-						Type:        schema.TypeSet,
-						Required:    true, // TODO PC-12014: to establish.
-						Description: "Component SLOs of the Composite SLO",
-						Elem:        schemaCompositeV2Components(),
 					},
 				},
 			},
@@ -506,6 +539,11 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 	if diags.HasError() {
 		return nil, diags
 	}
+	objectiveSpec, diags := marshalObjectives(d)
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	slo := v1alphaSLO.New(
 		v1alphaSLO.Metadata{
 			Name:        d.Get("name").(string),
@@ -518,12 +556,13 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 			Service:         d.Get("service").(string),
 			BudgetingMethod: d.Get("budgeting_method").(string),
 			Indicator:       marshalIndicator(d),
-			Composite:       marshalComposite(d),
-			Objectives:      marshalObjectives(d),
-			TimeWindows:     marshalTimeWindows(d),
-			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
-			Attachments:     marshalAttachments(attachments.([]interface{})),
-			AnomalyConfig:   marshalAnomalyConfig(d.Get("anomaly_config")),
+			// TODO PC-12014: Mark Composite V1 as deprecated in this repo.
+			Composite:     marshalComposite(d),
+			Objectives:    objectiveSpec,
+			TimeWindows:   marshalTimeWindows(d),
+			AlertPolicies: toStringSlice(d.Get("alert_policies").([]interface{})),
+			Attachments:   marshalAttachments(attachments.([]interface{})),
+			AnomalyConfig: marshalAnomalyConfig(d.Get("anomaly_config")),
 		})
 	return &slo, diags
 }
@@ -554,6 +593,38 @@ func marshalComposite(d *schema.ResourceData) *v1alphaSLO.Composite {
 	}
 
 	return nil
+}
+
+func marshalCompositeV2(objective map[string]interface{}) (*v1alphaSLO.CompositeSpec, error) {
+	compositeV2Set := objective["compositeV2"].(*schema.Set)
+	if compositeV2Set.Len() == 0 {
+		return nil, fmt.Errorf("compositeV2 is required")
+	}
+
+	compositeV2 := compositeV2Set.List()[0].(map[string]interface{})
+	maxDelay := compositeV2["max_delay"].(string)
+
+	componentsSet := compositeV2["components"].(*schema.Set)
+	objectives := make([]v1alphaSLO.CompositeObjective, componentsSet.Len())
+	for i, c := range componentsSet.List() {
+		component := c.(map[string]interface{})
+		whenDelayed, err := v1alphaSLO.ParseWhenDelayed(component["when_delayed"].(string))
+		if err != nil {
+			return nil, err
+		}
+		objectives[i] = v1alphaSLO.CompositeObjective{
+			Project:     component["project"].(string),
+			SLO:         component["slo"].(string),
+			Objective:   component["objective"].(string),
+			Weight:      component["weight"].(float64),
+			WhenDelayed: whenDelayed,
+		}
+	}
+
+	return &v1alphaSLO.CompositeSpec{
+		MaxDelay:   maxDelay,
+		Components: v1alphaSLO.Components{Objectives: objectives},
+	}, nil
 }
 
 func marshalTimeWindows(d *schema.ResourceData) []v1alphaSLO.TimeWindow {
@@ -595,12 +666,12 @@ func marshalCalendar(c map[string]interface{}) *v1alphaSLO.Calendar {
 	}
 }
 
-func marshalIndicator(d *schema.ResourceData) v1alphaSLO.Indicator {
+func marshalIndicator(d *schema.ResourceData) *v1alphaSLO.Indicator {
 	var resultIndicator v1alphaSLO.Indicator
 	indicator := d.Get("indicator").(*schema.Set).List()[0].(map[string]interface{})
 	kind, err := manifest.ParseKind(indicator["kind"].(string))
 	if err != nil {
-		return resultIndicator
+		return &resultIndicator
 	}
 	resultIndicator = v1alphaSLO.Indicator{
 		MetricSource: v1alphaSLO.MetricSourceSpec{
@@ -609,11 +680,10 @@ func marshalIndicator(d *schema.ResourceData) v1alphaSLO.Indicator {
 			Kind:    kind,
 		},
 	}
-	return resultIndicator
+	return &resultIndicator
 }
 
-// TODO PC-12014: probably needs Composite V2 changes here too.
-func marshalObjectives(d *schema.ResourceData) []v1alphaSLO.Objective {
+func marshalObjectives(d *schema.ResourceData) ([]v1alphaSLO.Objective, diag.Diagnostics) {
 	objectivesSchema := d.Get("objective").(*schema.Set).List()
 	objectives := make([]v1alphaSLO.Objective, len(objectivesSchema))
 	for i, o := range objectivesSchema {
@@ -626,6 +696,10 @@ func marshalObjectives(d *schema.ResourceData) []v1alphaSLO.Objective {
 			timeSliceTargetPtr = &timeSliceTarget
 		}
 		operator := objective["op"].(string)
+		compositeSpec, err := marshalCompositeV2(objective)
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
 
 		objectives[i] = v1alphaSLO.Objective{
 			ObjectiveBase: v1alphaSLO.ObjectiveBase{
@@ -638,10 +712,10 @@ func marshalObjectives(d *schema.ResourceData) []v1alphaSLO.Objective {
 			Operator:        &operator,
 			CountMetrics:    marshalCountMetrics(objective),
 			RawMetric:       marshalRawMetric(objective),
+			Composite:       compositeSpec,
 		}
 	}
-
-	return objectives
+	return objectives, nil
 }
 
 func marshalRawMetric(metricRoot map[string]interface{}) *v1alphaSLO.RawMetricSpec {
@@ -852,8 +926,7 @@ func unmarshalTimeWindow(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 	return d.Set("time_window", tw)
 }
 
-// TODO PC-12014: probably need Composite V2 changes here, after moving Composite V2 schema from SLO to Objective.
-// TODO PC-12014: Look at TODO at the Composite V2 schema first.
+// TODO PC-12014: Add Composite V2 changes here.
 func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 	objectives := spec.Objectives
 	objectivesTF := make([]interface{}, len(objectives))
@@ -980,58 +1053,6 @@ func unmarshalSLOMetric(spec *v1alphaSLO.MetricSpec) *schema.Set {
 	}
 
 	return schema.NewSet(oneElementSet, []interface{}{res})
-}
-
-// TODO PC-12014: It's just a sketch, might need changes.
-func schemaCompositeV2Components() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"project": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Name of the project",
-			},
-			"slo": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Name of the SLO",
-			},
-			"objective": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Name of the objective of the SLO",
-			},
-			"weight": {
-				Type:        schema.TypeFloat,
-				Required:    true,
-				Description: "Weight of the component",
-			},
-			"when_delayed": {
-				Type:        schema.TypeSet,
-				Required:    true,
-				Description: "How to interpret the delayed data",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"count_as_good": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Count delayed data as good",
-						},
-						"count_as_bad": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Count delayed data as bad",
-						},
-						"ignore": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Ignore delayed data",
-						},
-					},
-				},
-			},
-		},
-	}
 }
 
 /**

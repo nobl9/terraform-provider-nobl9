@@ -12,8 +12,10 @@ github.com/Masterminds/sprig/v3 v3.2.3 h1:eL2fZNezLomi0uOLqjQoN6BfsDD+fyLtgbJMAj
 github.com/Masterminds/sprig/v3 v3.2.3/go.mod h1:rXcFaZ2zZbLRJv/xSysmlgIM1u11eBaRMhvYXJNkGuM=
 github.com/MicahParks/jwkset v0.5.13 h1:vRXsx+b8uaZm1AU6MpavHJXOmuwP36iR+DNmlg2Lx8o=
 github.com/MicahParks/jwkset v0.5.13/go.mod h1:q8ptTGn/Z9c4MwbcfeCDssADeVQb3Pk7PnVxrvi+2QY=
+github.com/MicahParks/jwkset v0.5.14/go.mod h1:q8ptTGn/Z9c4MwbcfeCDssADeVQb3Pk7PnVxrvi+2QY=
 github.com/MicahParks/keyfunc/v3 v3.2.5 h1:eg4s2zd2nfadnAzAsv9xvJCdCfLNy4s/aSiAxRn+aAk=
 github.com/MicahParks/keyfunc/v3 v3.2.5/go.mod h1:8hmM7h/hNerfF8uC8cFVnT+afxBgh6nKRTR/0vAm5So=
+github.com/MicahParks/keyfunc/v3 v3.2.8/go.mod h1:xO0NcrjdxfRJ+lDKNaXzhgFG/0XlnSi58JiMMAsQeZM=
 github.com/Microsoft/go-winio v0.6.1 h1:9/kr64B9VUZrLm5YYwbGtUJnMgqWVOdUAXu6Migciow=
 github.com/Microsoft/go-winio v0.6.1/go.mod h1:LRdKpFKfdobln8UmuiYcKPot9D2v6svN5+sAH+4kjUM=
 github.com/ProtonMail/go-crypto v1.1.0-alpha.0 h1:nHGfwXmFvJrSR9xu8qL7BkO4DqTHXE9N5vPhgY2I+j0=
@@ -27,6 +29,7 @@ github.com/armon/go-radix v1.0.0 h1:F4z6KzEeeQIMeLFa97iZU6vupzoecKdU5TX24SNppXI=
 github.com/armon/go-radix v1.0.0/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/aws/aws-sdk-go v1.50.31 h1:gx2NRLLEDUmQFC4YUsfMUKkGCwpXVO8ijUecq/nOQGA=
 github.com/aws/aws-sdk-go v1.50.31/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
+github.com/aws/aws-sdk-go v1.50.35/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
 github.com/bgentry/speakeasy v0.1.0 h1:ByYyxL9InA1OWqxJqqp2A5pYHUrCiAL6K3J+LKSsQkY=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/bmatcuk/doublestar/v4 v4.6.1 h1:FH9SifrbvJhnlQpztAx++wlkk70QBf0iBWDwNy7PA4I=
@@ -183,6 +186,8 @@ github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zx
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/nobl9/nobl9-go v0.78.1-0.20240305144417-5332fc9ea955 h1:5XQupNwaeoLNTwwusil59tCGKCLz+BVc/q1y0ilknYc=
 github.com/nobl9/nobl9-go v0.78.1-0.20240305144417-5332fc9ea955/go.mod h1:mYgav7wQHhpTzs53KdyPnaY5eapqJJJTX+S5sJq5t90=
+github.com/nobl9/nobl9-go v0.79.0-rc4 h1:Qe7/Mg9hHweqj0jIaPm/YBi/cnbBVwjyUIhTJtJfiP8=
+github.com/nobl9/nobl9-go v0.79.0-rc4/go.mod h1:pCXXrrmrQUCoti0m9VzKFTb4QQl0JN0/r5fgtLuN/4M=
 github.com/oklog/run v1.1.0 h1:GEenZ1cK0+q0+wsJew9qUg/DyD8k3JzYsZAi5gYi2mA=
 github.com/oklog/run v1.1.0/go.mod h1:sVPdnTZT1zYwAJeCMu2Th4T21pA3FPOQRfWjQlk7DVU=
 github.com/pjbgf/sha1cd v0.3.0 h1:4D5XXmUUBUl/xQ6IjCkEAbqXskkq/4O7LmGn0AqMDs4=
