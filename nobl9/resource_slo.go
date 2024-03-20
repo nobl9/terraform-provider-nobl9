@@ -147,6 +147,11 @@ func resourceObjective() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 			},
+			"primary": {
+				Type:        schema.TypeBool,
+				Description: "Is objective marked as primary.",
+				Optional:    true,
+			},
 		},
 	}
 	return res
@@ -573,12 +578,12 @@ func marshalCalendar(c map[string]interface{}) *v1alphaSLO.Calendar {
 	}
 }
 
-func marshalIndicator(d *schema.ResourceData) v1alphaSLO.Indicator {
+func marshalIndicator(d *schema.ResourceData) *v1alphaSLO.Indicator {
 	var resultIndicator v1alphaSLO.Indicator
 	indicator := d.Get("indicator").(*schema.Set).List()[0].(map[string]interface{})
 	kind, err := manifest.ParseKind(indicator["kind"].(string))
 	if err != nil {
-		return resultIndicator
+		return &resultIndicator
 	}
 	resultIndicator = v1alphaSLO.Indicator{
 		MetricSource: v1alphaSLO.MetricSourceSpec{
@@ -587,7 +592,7 @@ func marshalIndicator(d *schema.ResourceData) v1alphaSLO.Indicator {
 			Kind:    kind,
 		},
 	}
-	return resultIndicator
+	return &resultIndicator
 }
 
 func marshalObjectives(d *schema.ResourceData) []v1alphaSLO.Objective {
@@ -603,6 +608,7 @@ func marshalObjectives(d *schema.ResourceData) []v1alphaSLO.Objective {
 			timeSliceTargetPtr = &timeSliceTarget
 		}
 		operator := objective["op"].(string)
+		primary := objective["primary"].(bool)
 
 		objectives[i] = v1alphaSLO.Objective{
 			ObjectiveBase: v1alphaSLO.ObjectiveBase{
@@ -615,6 +621,7 @@ func marshalObjectives(d *schema.ResourceData) []v1alphaSLO.Objective {
 			Operator:        &operator,
 			CountMetrics:    marshalCountMetrics(objective),
 			RawMetric:       marshalRawMetric(objective),
+			Primary:         &primary,
 		}
 	}
 
@@ -841,6 +848,7 @@ func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 		objectiveTF["value"] = objective.Value
 		objectiveTF["target"] = objective.BudgetTarget
 		objectiveTF["time_slice_target"] = objective.TimeSliceTarget
+		objectiveTF["primary"] = objective.Primary
 
 		if objective.CountMetrics != nil {
 			cm := objective.CountMetrics
