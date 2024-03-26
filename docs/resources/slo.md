@@ -144,7 +144,6 @@ resource "nobl9_slo" "this" {
 ### Required
 
 - `budgeting_method` (String) Method which will be use to calculate budget
-- `indicator` (Block Set, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--indicator))
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `objective` (Block Set, Min: 1) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
@@ -160,24 +159,12 @@ resource "nobl9_slo" "this" {
 - `composite` (Block Set, Max: 1) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
+- `indicator` (Block Set, Max: 1) (see [below for nested schema](#nestedblock--indicator))
 - `label` (Block List) [Labels](https://docs.nobl9.com/Features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-
-<a id="nestedblock--indicator"></a>
-### Nested Schema for `indicator`
-
-Required:
-
-- `name` (String) Name of the metric source (agent).
-
-Optional:
-
-- `kind` (String) Kind of the metric source. One of {Agent, Direct}.
-- `project` (String) Name of the metric source project.
-
 
 <a id="nestedblock--objective"></a>
 ### Nested Schema for `objective`
@@ -190,11 +177,49 @@ Required:
 
 Optional:
 
+- `composite_v2` (Block Set) Composite SLOs are used to combine multiple SLOs into a single SLO. (see [below for nested schema](#nestedblock--objective--composite_v2))
 - `count_metrics` (Block Set) Compares two time series, calculating the ratio of either good or bad values to the total number of values. Fill either the 'good' or 'bad' series, but not both. (see [below for nested schema](#nestedblock--objective--count_metrics))
 - `name` (String) Objective's name. This field is computed if not provided.
 - `op` (String) Type of logical operation
 - `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
 - `time_slice_target` (Number) Designated value for slice
+
+<a id="nestedblock--objective--composite_v2"></a>
+### Nested Schema for `objective.composite_v2`
+
+Required:
+
+- `components` (Block Set, Min: 1) Component SLOs of the Composite SLO (see [below for nested schema](#nestedblock--objective--composite_v2--components))
+- `max_delay` (String) Maximum delay
+
+<a id="nestedblock--objective--composite_v2--components"></a>
+### Nested Schema for `objective.composite_v2.components`
+
+Optional:
+
+- `objectives` (Block List) (see [below for nested schema](#nestedblock--objective--composite_v2--components--objectives))
+
+<a id="nestedblock--objective--composite_v2--components--objectives"></a>
+### Nested Schema for `objective.composite_v2.components.objectives`
+
+Optional:
+
+- `composite_objective` (Block List) (see [below for nested schema](#nestedblock--objective--composite_v2--components--objectives--composite_objective))
+
+<a id="nestedblock--objective--composite_v2--components--objectives--composite_objective"></a>
+### Nested Schema for `objective.composite_v2.components.objectives.composite_objective`
+
+Required:
+
+- `objective` (String) Name of the objective of the SLO
+- `project` (String) Name of the project
+- `slo` (String) Name of the SLO
+- `weight` (Number) Weight of the component
+- `when_delayed` (String) How to interpret the delayed data
+
+
+
+
 
 <a id="nestedblock--objective--count_metrics"></a>
 ### Nested Schema for `objective.count_metrics`
@@ -1710,6 +1735,19 @@ Required:
 - `op` (String) Type of logical operation
 - `value` (Number) Burn rate value.
 
+
+
+<a id="nestedblock--indicator"></a>
+### Nested Schema for `indicator`
+
+Required:
+
+- `name` (String) Name of the metric source (agent).
+
+Optional:
+
+- `kind` (String) Kind of the metric source. One of {Agent, Direct}.
+- `project` (String) Name of the metric source project.
 
 
 <a id="nestedblock--label"></a>
