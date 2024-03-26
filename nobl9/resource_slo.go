@@ -245,6 +245,7 @@ func schemaSLO() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo)",
+			Deprecated:  "composite is deprecated, use slo.objective.composite_v2 instead",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -574,13 +575,12 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 			Service:         d.Get("service").(string),
 			BudgetingMethod: d.Get("budgeting_method").(string),
 			Indicator:       marshalIndicator(d),
-			// TODO PC-12014: Mark Composite V1 as deprecated in this repo.
-			Composite:     marshalComposite(d),
-			Objectives:    objectiveSpec,
-			TimeWindows:   marshalTimeWindows(d),
-			AlertPolicies: toStringSlice(d.Get("alert_policies").([]interface{})),
-			Attachments:   marshalAttachments(attachments.([]interface{})),
-			AnomalyConfig: marshalAnomalyConfig(d.Get("anomaly_config")),
+			Composite:       marshalComposite(d),
+			Objectives:      objectiveSpec,
+			TimeWindows:     marshalTimeWindows(d),
+			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
+			Attachments:     marshalAttachments(attachments.([]interface{})),
+			AnomalyConfig:   marshalAnomalyConfig(d.Get("anomaly_config")),
 		})
 	return &slo, diags
 }
