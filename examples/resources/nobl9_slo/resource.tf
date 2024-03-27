@@ -53,6 +53,7 @@ resource "nobl9_slo" "this" {
     display_name = "OK"
     value        = 2000
     op           = "gte"
+    primary      = true
 
     raw_metric {
       query {
@@ -87,6 +88,7 @@ resource "nobl9_slo" "this" {
     target       = 0.99
     display_name = "OK"
     value        = 1
+    primary      = false
 
     count_metrics {
       incremental = true
