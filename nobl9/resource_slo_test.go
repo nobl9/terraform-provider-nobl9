@@ -29,6 +29,8 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-cloudwatch-with-bad-over-total", testCloudWatchWithBadOverTotal},
 		{"test-composite-occurrences", testCompositeSLOOccurrences},
 		{"test-composite-time-slices", testCompositeSLOTimeSlices},
+		{"test-composite-v2-occurrences", testCompositeV2SLOOccurrences},
+		{"test-composite-v2-time-slices", testCompositeV2SLOTimeSlices},
 		{"test-datadog", testDatadogSLO},
 		{"test-dynatrace", testDynatraceSLO},
 		{"test-grafanaloki", testGrafanaLokiSLO},
@@ -973,6 +975,131 @@ resource "nobl9_slo" ":name" {
     project = ":project"
     kind    = "Agent"
   }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testCompositeV2SLOOccurrences(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testPrometheusAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+ name         = ":name"
+ display_name = ":name"
+ project      = ":project"
+ service      = nobl9_service.:serviceName.name
+
+ label {
+  key = "team"
+  values = ["green","sapphire"]
+ }
+
+ label {
+  key = "env"
+  values = ["dev", "staging", "prod"]
+ }
+
+ budgeting_method = "Occurrences"
+
+ objective {
+   display_name = "obj1"
+   name         = "tf-objective-1"
+   target       = 0.7
+   value        = 1
+   composite_v2 {
+     max_delay = "45m"
+     components {
+       objectives {
+         composite_objective {
+           project = ":project"
+           slo = "slo1"
+           objective = "obj1-1"
+           weight = 0.8
+           when_delayed = "CountAsGood"
+         }
+         composite_objective {
+           project = ":project"
+           slo = "slo2"
+           objective = "obj2-1"
+           weight = 0.9
+           when_delayed = "CountAsGood"
+         }
+       }
+     }
+   }
+ }
+
+ time_window {
+   count      = 10
+   is_rolling = true
+   unit       = "Minute"
+ }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testCompositeV2SLOTimeSlices(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testPrometheusAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+ name         = ":name"
+ display_name = ":name"
+ project      = ":project"
+ service      = nobl9_service.:serviceName.name
+
+ budgeting_method = "Timeslices"
+
+ objective {
+   display_name = "obj1"
+   name         = "tf-objective-1"
+   target       = 0.7
+   value        = 1
+   time_slice_target = 0.7
+   composite_v2 {
+     max_delay = "45m"
+     components {
+       objectives {
+         composite_objective {
+           project = ":project"
+           slo = "slo1"
+           objective = "obj1-1"
+           weight = 0.8
+           when_delayed = "CountAsGood"
+         }
+         composite_objective {
+           project = ":project"
+           slo = "slo2"
+           objective = "obj2-1"
+           weight = 0.9
+           when_delayed = "CountAsGood"
+         }
+       }
+     }
+   }
+ }
+
+ time_window {
+   count      = 10
+   is_rolling = true
+   unit       = "Minute"
+ }
 }
 `
 	config = strings.ReplaceAll(config, ":name", name)
