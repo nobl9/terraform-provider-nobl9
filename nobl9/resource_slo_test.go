@@ -1019,18 +1019,18 @@ resource "nobl9_slo" ":name" {
      components {
        objectives {
          composite_objective {
-           project = ":project"
-           slo = "slo1"
-           objective = "obj1-1"
-           weight = 0.8
-           when_delayed = "CountAsGood"
+            project      = "lightstep-direct"
+            slo          = "get-error-rate-calendar"
+            objective    = "objective-1"
+            weight       = 0.8
+            when_delayed = "CountAsGood"
          }
-         composite_objective {
-           project = ":project"
-           slo = "slo2"
-           objective = "obj2-1"
-           weight = 0.9
-           when_delayed = "CountAsGood"
+		 composite_objective {
+		   project      = "lightstep-direct"
+		   slo          = "get-error-rate-rolling"
+		   objective    = "objective-2"
+		   weight       = 0.9
+		   when_delayed = "CountAsGood"
          }
        }
      }
@@ -1077,18 +1077,18 @@ resource "nobl9_slo" ":name" {
      components {
        objectives {
          composite_objective {
-           project = ":project"
-           slo = "slo1"
-           objective = "obj1-1"
-           weight = 0.8
+           project      = "lightstep-direct"
+           slo          = "get-error-rate-calendar"
+           objective    = "objective-1"
+           weight       = 0.8
            when_delayed = "CountAsGood"
          }
-         composite_objective {
-           project = ":project"
-           slo = "slo2"
-           objective = "obj2-1"
-           weight = 0.9
-           when_delayed = "CountAsGood"
+		 composite_objective {
+		   project      = "lightstep-direct"
+		   slo          = "get-error-rate-rolling"
+		   objective    = "objective-2"
+		   weight       = 0.9
+		   when_delayed = "CountAsGood"
          }
        }
      }

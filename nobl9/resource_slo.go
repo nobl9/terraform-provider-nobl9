@@ -167,7 +167,7 @@ func schemaCompositeV2() *schema.Resource {
 				Description: "Maximum delay",
 			},
 			"components": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Required:    true,
 				Description: "Components of the Composite SLO",
 				Elem:        schemaCompositeV2Components(),
@@ -179,39 +179,51 @@ func schemaCompositeV2() *schema.Resource {
 func schemaCompositeV2Components() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"composite_objective": {
+			"objectives": {
 				Type:     schema.TypeSet,
-				Optional: true,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"project": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Name of the project",
-						},
-						"slo": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Name of the SLO",
-						},
-						"objective": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Name of the objective of the SLO",
-						},
-						"weight": {
-							Type:        schema.TypeFloat,
-							Required:    true,
-							Description: "Weight of the component",
-						},
-						"when_delayed": {
-							Type:         schema.TypeString,
-							Required:     true,
-							Description:  "How to interpret the delayed data",
-							ValidateFunc: validation.StringInSlice(v1alphaSLO.WhenDelayedNames(), false),
+						"composite_objective": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem:     schemaCompositeV2CompositeObjective(),
 						},
 					},
 				},
+			},
+		},
+	}
+}
+
+func schemaCompositeV2CompositeObjective() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"project": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the project",
+			},
+			"slo": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the SLO",
+			},
+			"objective": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the objective of the SLO",
+			},
+			"weight": {
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "Weight of the component",
+			},
+			"when_delayed": {
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "How to interpret the delayed data",
+				ValidateFunc: validation.StringInSlice(v1alphaSLO.WhenDelayedNames(), false),
 			},
 		},
 	}
@@ -610,43 +622,39 @@ func marshalCompositeV2(sloObjective map[string]interface{}) (*v1alphaSLO.Compos
 	if compositeV2Set.Len() == 0 {
 		return nil, nil
 	}
+	compositeV2Map := compositeV2Set.List()[0].(map[string]interface{})
+	maxDelay := compositeV2Map["max_delay"].(string)
 
-	compositeV2 := compositeV2Set.List()[0].(map[string]interface{})
-	maxDelay := compositeV2["max_delay"].(string)
+	componentsSet := compositeV2Map["components"].(*schema.Set)
+	componentsMap := componentsSet.List()[0].(map[string]interface{})
+	objectivesSet := componentsMap["objectives"].(*schema.Set)
+	compositeObjectivesMap := objectivesSet.List()[0].(map[string]interface{})
+	compositeObjectives := compositeObjectivesMap["composite_objective"].([]interface{})
 
-	componentsSet := compositeV2["components"].([]interface{})
-	objectives := make([]v1alphaSLO.CompositeObjective, 0)
-	for _, c := range componentsSet {
-		component := c.(map[string]interface{})
-		compositeObjectiveSet, exists := component["composite_objective"].(*schema.Set)
-		if !exists || compositeObjectiveSet.Len() == 0 {
-			continue
+	resultObjectives := make([]v1alphaSLO.CompositeObjective, 0)
+	for _, compObjElems := range compositeObjectives {
+		compObj := compObjElems.(map[string]interface{})
+		whenDelayed, ok := compObj["when_delayed"].(string)
+		if !ok || whenDelayed == "" {
+			return nil, fmt.Errorf("when_delayed is required for composite objective")
 		}
-		for _, co := range compositeObjectiveSet.List() {
-			compositeObjective := co.(map[string]interface{})
-
-			whenDelayedStr, ok := compositeObjective["when_delayed"].(string)
-			if !ok || whenDelayedStr == "" {
-				return nil, fmt.Errorf("when_delayed is required for composite objective")
-			}
-			whenDelayed, err := v1alphaSLO.ParseWhenDelayed(whenDelayedStr)
-			if err != nil {
-				return nil, err
-			}
-
-			objectives = append(objectives, v1alphaSLO.CompositeObjective{
-				Project:     compositeObjective["project"].(string),
-				SLO:         compositeObjective["slo"].(string),
-				Objective:   compositeObjective["objective"].(string),
-				Weight:      compositeObjective["weight"].(float64),
-				WhenDelayed: whenDelayed,
-			})
+		whenDelayedParsed, err := v1alphaSLO.ParseWhenDelayed(whenDelayed)
+		if err != nil {
+			return nil, err
 		}
+
+		resultObjectives = append(resultObjectives, v1alphaSLO.CompositeObjective{
+			Project:     compObj["project"].(string),
+			SLO:         compObj["slo"].(string),
+			Objective:   compObj["objective"].(string),
+			Weight:      compObj["weight"].(float64),
+			WhenDelayed: whenDelayedParsed,
+		})
 	}
 
 	return &v1alphaSLO.CompositeSpec{
 		MaxDelay:   maxDelay,
-		Components: v1alphaSLO.Components{Objectives: objectives},
+		Components: v1alphaSLO.Components{Objectives: resultObjectives},
 	}, nil
 }
 
@@ -1040,7 +1048,7 @@ func unmarshalCompositeV2(compositeSpec *v1alphaSLO.CompositeSpec) *schema.Set {
 	compositeV2 := make(map[string]interface{})
 	compositeV2["max_delay"] = compositeSpec.MaxDelay
 
-	components := make([]interface{}, 0)
+	compObjList := make([]interface{}, 0, len(compositeSpec.Components.Objectives))
 	for _, objective := range compositeSpec.Components.Objectives {
 		compositeObjective := make(map[string]interface{})
 		compositeObjective["project"] = objective.Project
@@ -1049,13 +1057,15 @@ func unmarshalCompositeV2(compositeSpec *v1alphaSLO.CompositeSpec) *schema.Set {
 		compositeObjective["weight"] = objective.Weight
 		compositeObjective["when_delayed"] = objective.WhenDelayed.String()
 
-		component := make(map[string]interface{})
-		component["composite_objective"] = schema.NewSet(schema.HashResource(schemaCompositeV2Components()), []interface{}{compositeObjective})
-
-		components = append(components, component)
+		compObjList = append(compObjList, compositeObjective)
 	}
 
-	compositeV2["components"] = components
+	objectives := make(map[string]interface{})
+	objectives["composite_objective"] = compObjList
+
+	components := make(map[string]interface{})
+	components["objectives"] = schema.NewSet(schema.HashResource(schemaCompositeV2Components()), []interface{}{objectives})
+	compositeV2["components"] = schema.NewSet(oneElementSet, []interface{}{components})
 
 	return schema.NewSet(schema.HashResource(schemaCompositeV2()), []interface{}{compositeV2})
 }
