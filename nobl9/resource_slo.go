@@ -573,12 +573,12 @@ func marshalCalendar(c map[string]interface{}) *v1alphaSLO.Calendar {
 	}
 }
 
-func marshalIndicator(d *schema.ResourceData) v1alphaSLO.Indicator {
+func marshalIndicator(d *schema.ResourceData) *v1alphaSLO.Indicator {
 	var resultIndicator v1alphaSLO.Indicator
 	indicator := d.Get("indicator").(*schema.Set).List()[0].(map[string]interface{})
 	kind, err := manifest.ParseKind(indicator["kind"].(string))
 	if err != nil {
-		return resultIndicator
+		return &resultIndicator
 	}
 	resultIndicator = v1alphaSLO.Indicator{
 		MetricSource: v1alphaSLO.MetricSourceSpec{
@@ -587,7 +587,7 @@ func marshalIndicator(d *schema.ResourceData) v1alphaSLO.Indicator {
 			Kind:    kind,
 		},
 	}
-	return resultIndicator
+	return &resultIndicator
 }
 
 func marshalObjectives(d *schema.ResourceData) []v1alphaSLO.Objective {

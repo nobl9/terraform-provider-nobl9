@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"encoding/json"
 	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -258,8 +259,8 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alphaAlertPolicy.A
 func unmarshalAlertPolicyConditions(conditions []v1alphaAlertPolicy.AlertCondition) interface{} {
 	resultConditions := make([]map[string]interface{}, len(conditions))
 	for i, condition := range conditions {
-		var value float64
-		if v, ok := condition.Value.(float64); ok {
+		var value json.Number
+		if v, ok := condition.Value.(json.Number); ok {
 			value = v
 		}
 		var valueStr string
