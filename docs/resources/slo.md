@@ -156,7 +156,7 @@ resource "nobl9_slo" "this" {
 - `anomaly_config` (Block Set, Max: 1) Configuration for Anomalies. Currently supported Anomaly Type is NoData (see [below for nested schema](#nestedblock--anomaly_config))
 - `attachment` (Block List, Max: 20) (see [below for nested schema](#nestedblock--attachment))
 - `attachments` (Block List, Max: 20, Deprecated) (see [below for nested schema](#nestedblock--attachments))
-- `composite` (Block Set, Max: 1) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
+- `composite` (Block Set, Max: 1, Deprecated) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `indicator` (Block Set, Max: 1) (see [below for nested schema](#nestedblock--indicator))
@@ -177,7 +177,7 @@ Required:
 
 Optional:
 
-- `composite_v2` (Block Set) Composite SLOs are used to combine multiple SLOs into a single SLO. (see [below for nested schema](#nestedblock--objective--composite_v2))
+- `composite_v2` (Block Set) Composite SLOs allow aggregating multiple SLO objectives within a single SLO. (see [below for nested schema](#nestedblock--objective--composite_v2))
 - `count_metrics` (Block Set) Compares two time series, calculating the ratio of either good or bad values to the total number of values. Fill either the 'good' or 'bad' series, but not both. (see [below for nested schema](#nestedblock--objective--count_metrics))
 - `name` (String) Objective's name. This field is computed if not provided.
 - `op` (String) Type of logical operation
@@ -189,22 +189,22 @@ Optional:
 
 Required:
 
-- `components` (Block Set, Min: 1) Component SLOs of the Composite SLO (see [below for nested schema](#nestedblock--objective--composite_v2--components))
+- `components` (Block Set, Min: 1) Components of the Composite SLO (see [below for nested schema](#nestedblock--objective--composite_v2--components))
 - `max_delay` (String) Maximum delay
 
 <a id="nestedblock--objective--composite_v2--components"></a>
 ### Nested Schema for `objective.composite_v2.components`
 
-Optional:
+Required:
 
-- `objectives` (Block List) (see [below for nested schema](#nestedblock--objective--composite_v2--components--objectives))
+- `objectives` (Block Set, Min: 1) (see [below for nested schema](#nestedblock--objective--composite_v2--components--objectives))
 
 <a id="nestedblock--objective--composite_v2--components--objectives"></a>
 ### Nested Schema for `objective.composite_v2.components.objectives`
 
-Optional:
+Required:
 
-- `composite_objective` (Block List) (see [below for nested schema](#nestedblock--objective--composite_v2--components--objectives--composite_objective))
+- `composite_objective` (Block List, Min: 1) (see [below for nested schema](#nestedblock--objective--composite_v2--components--objectives--composite_objective))
 
 <a id="nestedblock--objective--composite_v2--components--objectives--composite_objective"></a>
 ### Nested Schema for `objective.composite_v2.components.objectives.composite_objective`

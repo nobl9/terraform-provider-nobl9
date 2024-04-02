@@ -119,7 +119,7 @@ func resourceObjective() *schema.Resource {
 			"composite_v2": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Composite SLOs are used to combine multiple SLOs into a single SLO.", // TODO PC-12014: to establish.
+				Description: "Composite SLOs allow aggregating multiple SLO objectives within a single SLO.", // TODO PC-12014: to establish.
 				Elem:        schemaCompositeV2(),
 			},
 			"display_name": {
@@ -186,7 +186,7 @@ func schemaCompositeV2Components() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"composite_objective": {
 							Type:     schema.TypeList,
-							Optional: true,
+							Required: true,
 							Elem:     schemaCompositeV2CompositeObjective(),
 						},
 					},
@@ -249,7 +249,7 @@ func schemaSLO() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo)",
-			Deprecated:  "composite is deprecated, use slo.objective.composite_v2 instead",
+			Deprecated:  "composite is deprecated, use objective.composite_v2 instead",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{

@@ -1,6 +1,7 @@
 package nobl9
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -988,14 +989,18 @@ resource "nobl9_slo" ":name" {
 func testCompositeV2SLOOccurrences(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
+	var sloDependencyName = name + "-dependency-slo-1"
 	config :=
 		testService(serviceName) +
-			testPrometheusAgent(agentName) + `
+			testPrometheusAgent(agentName) +
+			testCompositeV2DependencySLO(serviceName, agentName, sloDependencyName) + `
 resource "nobl9_slo" ":name" {
  name         = ":name"
  display_name = ":name"
  project      = ":project"
  service      = nobl9_service.:serviceName.name
+ 
+ depends_on = [nobl9_slo.:sloDependencyName]
 
  label {
   key = "team"
@@ -1019,18 +1024,18 @@ resource "nobl9_slo" ":name" {
      components {
        objectives {
          composite_objective {
-            project      = "lightstep-direct"
-            slo          = "get-error-rate-calendar"
-            objective    = "objective-1"
-            weight       = 0.8
-            when_delayed = "CountAsGood"
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-1"
+           weight       = 0.8
+           when_delayed = "CountAsGood"
          }
 		 composite_objective {
-		   project      = "lightstep-direct"
-		   slo          = "get-error-rate-rolling"
-		   objective    = "objective-2"
-		   weight       = 0.9
-		   when_delayed = "CountAsGood"
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-2"
+           weight       = 1.0
+           when_delayed = "CountAsBad"
          }
        }
      }
@@ -1048,6 +1053,7 @@ resource "nobl9_slo" ":name" {
 	config = strings.ReplaceAll(config, ":serviceName", serviceName)
 	config = strings.ReplaceAll(config, ":agentName", agentName)
 	config = strings.ReplaceAll(config, ":project", testProject)
+	config = strings.ReplaceAll(config, ":sloDependencyName", sloDependencyName)
 
 	return config
 }
@@ -1055,14 +1061,18 @@ resource "nobl9_slo" ":name" {
 func testCompositeV2SLOTimeSlices(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
+	var sloDependencyName = name + "-dependency-slo-2"
 	config :=
 		testService(serviceName) +
-			testPrometheusAgent(agentName) + `
+			testPrometheusAgent(agentName) +
+			testCompositeV2DependencySLO(serviceName, agentName, sloDependencyName) + `
 resource "nobl9_slo" ":name" {
  name         = ":name"
  display_name = ":name"
  project      = ":project"
  service      = nobl9_service.:serviceName.name
+
+ depends_on = [nobl9_slo.:sloDependencyName]
 
  budgeting_method = "Timeslices"
 
@@ -1077,18 +1087,18 @@ resource "nobl9_slo" ":name" {
      components {
        objectives {
          composite_objective {
-           project      = "lightstep-direct"
-           slo          = "get-error-rate-calendar"
+           project      = ":project"
+           slo          = ":sloDependencyName"
            objective    = "objective-1"
            weight       = 0.8
            when_delayed = "CountAsGood"
          }
 		 composite_objective {
-		   project      = "lightstep-direct"
-		   slo          = "get-error-rate-rolling"
-		   objective    = "objective-2"
-		   weight       = 0.9
-		   when_delayed = "CountAsGood"
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-2"
+           weight       = 1.0
+           when_delayed = "CountAsBad"
          }
        }
      }
@@ -1106,6 +1116,7 @@ resource "nobl9_slo" ":name" {
 	config = strings.ReplaceAll(config, ":serviceName", serviceName)
 	config = strings.ReplaceAll(config, ":agentName", agentName)
 	config = strings.ReplaceAll(config, ":project", testProject)
+	config = strings.ReplaceAll(config, ":sloDependencyName", sloDependencyName)
 
 	return config
 }
@@ -1119,7 +1130,7 @@ func testDatadogSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:serviceName.name
 
   label {
@@ -3111,4 +3122,58 @@ resource "nobl9_slo" ":name" {
 	config = strings.ReplaceAll(config, ":project", testProject)
 
 	return config
+}
+
+func testCompositeV2DependencySLO(serviceName, agentName, name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_slo" "%s" {
+  name             = "%s"
+  service          = nobl9_service.%s.name
+  budgeting_method = "Occurrences"
+  project          = "%s"
+
+  time_window {
+    unit       = "Day"
+    count      = 14
+    is_rolling = true
+  }
+
+  objective {
+    target       = 0.999
+    value        = 5
+    display_name = "Good"
+    name         = "objective-1"
+    op           = "lte"
+
+    raw_metric {
+      query {
+        prometheus {
+          promql = "server_requestMsec{host=\"*\",instance=\"143.146.168.125:9913\",job=\"nginx\"}"
+        }
+      }
+    }
+  }
+  objective {
+    target       = 0.80
+    value        = 2
+    display_name = "Moderate"
+    name         = "objective-2"
+    op           = "lte"
+
+    raw_metric {
+      query {
+        prometheus {
+          promql = "server_requestMsec{host=\"*\",instance=\"143.146.168.125:9913\",job=\"nginx\"}"
+        }
+      }
+    }
+  }
+
+  indicator {
+    name    = nobl9_agent.%s.name
+    kind    = "Agent"
+    project = "%s"
+  }
+}
+`, name, name, serviceName, testProject, agentName, testProject)
 }
