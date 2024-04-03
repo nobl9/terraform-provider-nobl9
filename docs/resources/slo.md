@@ -177,7 +177,7 @@ Required:
 
 Optional:
 
-- `composite_v2` (Block Set) Composite SLOs allow aggregating multiple SLO objectives within a single SLO. (see [below for nested schema](#nestedblock--objective--composite_v2))
+- `composite_v2` (Block Set) A composite SLO combines multiple SLOs and reflects their overall performance against a dedicated composite threshold. (see [below for nested schema](#nestedblock--objective--composite_v2))
 - `count_metrics` (Block Set) Compares two time series, calculating the ratio of either good or bad values to the total number of values. Fill either the 'good' or 'bad' series, but not both. (see [below for nested schema](#nestedblock--objective--count_metrics))
 - `name` (String) Objective's name. This field is computed if not provided.
 - `op` (String) Type of logical operation

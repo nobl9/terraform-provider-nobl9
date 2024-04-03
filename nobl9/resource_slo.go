@@ -119,7 +119,7 @@ func resourceObjective() *schema.Resource {
 			"composite_v2": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Composite SLOs allow aggregating multiple SLO objectives within a single SLO.", // TODO PC-12014: to establish.
+				Description: "A composite SLO combines multiple SLOs and reflects their overall performance against a dedicated composite threshold.",
 				Elem:        schemaCompositeV2(),
 			},
 			"display_name": {
