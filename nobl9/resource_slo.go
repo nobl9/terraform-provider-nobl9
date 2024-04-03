@@ -1019,7 +1019,9 @@ func objectiveHash(objective interface{}) int {
 }
 
 func unmarshalComposite(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
+	//nolint:staticcheck
 	if spec.Composite != nil {
+		//nolint:staticcheck
 		composite := spec.Composite
 		compositeTF := make(map[string]interface{})
 
