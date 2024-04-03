@@ -54,8 +54,8 @@ jobs:
         id: import_gpg
         uses:  crazy-max/ghaction-import-gpg@v5
         with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY_2024_03 }}
+          passphrase: ${{ secrets.PASSPHRASE_2024_03 }}
       - name: setup github
         run: git config --global url."https://n9-machine-user:${{ secrets.GH_TOKEN }}@github.com".insteadOf "https://github.com"
       - name: Run GoReleaser
