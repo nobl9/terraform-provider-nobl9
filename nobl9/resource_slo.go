@@ -1063,7 +1063,10 @@ func unmarshalCompositeV2(compositeSpec *v1alphaSLO.CompositeSpec) *schema.Set {
 	objectives["composite_objective"] = compObjList
 
 	components := make(map[string]interface{})
-	components["objectives"] = schema.NewSet(schema.HashResource(schemaCompositeV2Components()), []interface{}{objectives})
+	components["objectives"] = schema.NewSet(
+		schema.HashResource(schemaCompositeV2Components()),
+		[]interface{}{objectives},
+	)
 	compositeV2["components"] = schema.NewSet(oneElementSet, []interface{}{components})
 
 	return schema.NewSet(schema.HashResource(schemaCompositeV2()), []interface{}{compositeV2})
