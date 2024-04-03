@@ -999,7 +999,7 @@ resource "nobl9_slo" ":name" {
  display_name = ":name"
  project      = ":project"
  service      = nobl9_service.:serviceName.name
- 
+
  depends_on = [nobl9_slo.:sloDependencyName]
 
  label {

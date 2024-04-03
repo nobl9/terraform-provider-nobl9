@@ -997,7 +997,6 @@ func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 			objectiveTF["raw_metric"] = tfMetric
 		}
 
-		// This is Composite V2, not the old Composite.
 		if objective.Composite != nil {
 			objectiveTF["composite_v2"] = unmarshalCompositeV2(objective.Composite)
 		}
