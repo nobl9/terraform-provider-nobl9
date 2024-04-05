@@ -28,10 +28,10 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-cloudwatch-with-stat", testCloudWatchWithStat},
 		{"test-cloudwatch-with-stat-and-cross-account", testCloudWatchWithStatAndCrossAccount},
 		{"test-cloudwatch-with-bad-over-total", testCloudWatchWithBadOverTotal},
+		{"test-composite-occurrences-deprecated", testCompositeSLOOccurrencesDeprecated},
+		{"test-composite-time-slices-deprecated", testCompositeSLOTimeSlicesDeprecated},
 		{"test-composite-occurrences", testCompositeSLOOccurrences},
 		{"test-composite-time-slices", testCompositeSLOTimeSlices},
-		{"test-composite-v2-occurrences", testCompositeV2SLOOccurrences},
-		{"test-composite-v2-time-slices", testCompositeV2SLOTimeSlices},
 		{"test-datadog", testDatadogSLO},
 		{"test-dynatrace", testDynatraceSLO},
 		{"test-grafanaloki", testGrafanaLokiSLO},
@@ -832,7 +832,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testCompositeSLOOccurrences(name string) string {
+func testCompositeSLOOccurrencesDeprecated(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	config :=
@@ -915,7 +915,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testCompositeSLOTimeSlices(name string) string {
+func testCompositeSLOTimeSlicesDeprecated(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	config :=
@@ -986,14 +986,14 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testCompositeV2SLOOccurrences(name string) string {
+func testCompositeSLOOccurrences(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	var sloDependencyName = name + "-dependency-slo-1"
 	config :=
 		testService(serviceName) +
 			testPrometheusAgent(agentName) +
-			testCompositeV2DependencySLO(serviceName, agentName, sloDependencyName) + `
+			testCompositeDependencySLO(serviceName, agentName, sloDependencyName) + `
 resource "nobl9_slo" ":name" {
  name         = ":name"
  display_name = ":name"
@@ -1020,7 +1020,7 @@ resource "nobl9_slo" ":name" {
    name         = "tf-objective-1"
    target       = 0.7
    value        = 1
-   composite_v2 {
+   composite {
      max_delay = "45m"
      components {
        objectives {
@@ -1059,14 +1059,14 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testCompositeV2SLOTimeSlices(name string) string {
+func testCompositeSLOTimeSlices(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	var sloDependencyName = name + "-dependency-slo-2"
 	config :=
 		testService(serviceName) +
 			testPrometheusAgent(agentName) +
-			testCompositeV2DependencySLO(serviceName, agentName, sloDependencyName) + `
+			testCompositeDependencySLO(serviceName, agentName, sloDependencyName) + `
 resource "nobl9_slo" ":name" {
  name         = ":name"
  display_name = ":name"
@@ -1083,7 +1083,7 @@ resource "nobl9_slo" ":name" {
    target       = 0.7
    value        = 1
    time_slice_target = 0.7
-   composite_v2 {
+   composite {
      max_delay = "45m"
      components {
        objectives {
@@ -3125,7 +3125,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testCompositeV2DependencySLO(serviceName, agentName, name string) string {
+func testCompositeDependencySLO(serviceName, agentName, name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_slo" "%s" {
   name             = "%s"

@@ -116,11 +116,11 @@ func resourceObjective() *schema.Resource {
 					},
 				},
 			},
-			"composite_v2": {
+			"composite": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A composite SLO aggregates SLOs to measure their overall performance.",
-				Elem:        schemaCompositeV2(),
+				Elem:        schemaComposite(),
 			},
 			"display_name": {
 				Type:        schema.TypeString,
@@ -158,7 +158,7 @@ func resourceObjective() *schema.Resource {
 	return res
 }
 
-func schemaCompositeV2() *schema.Resource {
+func schemaComposite() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"max_delay": {
@@ -170,13 +170,13 @@ func schemaCompositeV2() *schema.Resource {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Description: "Components of the Composite SLO",
-				Elem:        schemaCompositeV2Components(),
+				Elem:        schemaCompositeComponents(),
 			},
 		},
 	}
 }
 
-func schemaCompositeV2Components() *schema.Resource {
+func schemaCompositeComponents() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"objectives": {
@@ -187,7 +187,7 @@ func schemaCompositeV2Components() *schema.Resource {
 						"composite_objective": {
 							Type:     schema.TypeList,
 							Required: true,
-							Elem:     schemaCompositeV2CompositeObjective(),
+							Elem:     schemaCompositeObjective(),
 						},
 					},
 				},
@@ -196,7 +196,7 @@ func schemaCompositeV2Components() *schema.Resource {
 	}
 }
 
-func schemaCompositeV2CompositeObjective() *schema.Resource {
+func schemaCompositeObjective() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"project": {
@@ -249,7 +249,7 @@ func schemaSLO() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo)",
-			Deprecated:  "composite is deprecated, use objective.composite_v2 instead",
+			Deprecated:  "composite is deprecated, use objective.composite instead",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -579,7 +579,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 			Service:         d.Get("service").(string),
 			BudgetingMethod: d.Get("budgeting_method").(string),
 			Indicator:       marshalIndicator(d),
-			Composite:       marshalComposite(d),
+			Composite:       marshalCompositeDeprecated(d),
 			Objectives:      objectiveSpec,
 			TimeWindows:     marshalTimeWindows(d),
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
@@ -589,7 +589,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 	return &slo, diags
 }
 
-func marshalComposite(d *schema.ResourceData) *v1alphaSLO.Composite {
+func marshalCompositeDeprecated(d *schema.ResourceData) *v1alphaSLO.Composite {
 	compositeSet := d.Get("composite").(*schema.Set)
 
 	if compositeSet.Len() > 0 {
@@ -617,15 +617,15 @@ func marshalComposite(d *schema.ResourceData) *v1alphaSLO.Composite {
 	return nil
 }
 
-func marshalCompositeV2(sloObjective map[string]interface{}) (*v1alphaSLO.CompositeSpec, error) {
-	compositeV2Set := sloObjective["composite_v2"].(*schema.Set)
-	if compositeV2Set.Len() == 0 {
+func marshalComposite(sloObjective map[string]interface{}) (*v1alphaSLO.CompositeSpec, error) {
+	compositeSet := sloObjective["composite"].(*schema.Set)
+	if compositeSet.Len() == 0 {
 		return nil, nil
 	}
-	compositeV2Map := compositeV2Set.List()[0].(map[string]interface{})
-	maxDelay := compositeV2Map["max_delay"].(string)
+	compositeMap := compositeSet.List()[0].(map[string]interface{})
+	maxDelay := compositeMap["max_delay"].(string)
 
-	componentsSet := compositeV2Map["components"].(*schema.Set)
+	componentsSet := compositeMap["components"].(*schema.Set)
 	componentsMap := componentsSet.List()[0].(map[string]interface{})
 	objectivesSet := componentsMap["objectives"].(*schema.Set)
 	compositeObjectivesMap := objectivesSet.List()[0].(map[string]interface{})
@@ -730,7 +730,7 @@ func marshalObjectives(d *schema.ResourceData) ([]v1alphaSLO.Objective, diag.Dia
 			timeSliceTargetPtr = &timeSliceTarget
 		}
 		operator := objective["op"].(string)
-		compositeSpec, err := marshalCompositeV2(objective)
+		compositeSpec, err := marshalComposite(objective)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
@@ -874,7 +874,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []v1alphaSLO.SLO) diag.Diagnos
 	err = unmarshalObjectives(d, spec)
 	diags = appendError(diags, err)
 
-	err = unmarshalComposite(d, spec)
+	err = unmarshalCompositeDeprecated(d, spec)
 	diags = appendError(diags, err)
 
 	err = unmarshalAttachments(d, spec)
@@ -998,7 +998,7 @@ func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 		}
 
 		if objective.Composite != nil {
-			objectiveTF["composite_v2"] = unmarshalCompositeV2(objective.Composite)
+			objectiveTF["composite"] = unmarshalComposite(objective.Composite)
 		}
 		objectivesTF[i] = objectiveTF
 	}
@@ -1018,7 +1018,7 @@ func objectiveHash(objective interface{}) int {
 	return schema.HashString(indicator)
 }
 
-func unmarshalComposite(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
+func unmarshalCompositeDeprecated(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 	//nolint:staticcheck
 	if spec.Composite != nil {
 		//nolint:staticcheck
@@ -1041,13 +1041,13 @@ func unmarshalComposite(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 	return nil
 }
 
-func unmarshalCompositeV2(compositeSpec *v1alphaSLO.CompositeSpec) *schema.Set {
+func unmarshalComposite(compositeSpec *v1alphaSLO.CompositeSpec) *schema.Set {
 	if compositeSpec == nil {
 		return nil
 	}
 
-	compositeV2 := make(map[string]interface{})
-	compositeV2["max_delay"] = compositeSpec.MaxDelay
+	composite := make(map[string]interface{})
+	composite["max_delay"] = compositeSpec.MaxDelay
 
 	compObjList := make([]interface{}, 0, len(compositeSpec.Components.Objectives))
 	for _, objective := range compositeSpec.Components.Objectives {
@@ -1066,12 +1066,12 @@ func unmarshalCompositeV2(compositeSpec *v1alphaSLO.CompositeSpec) *schema.Set {
 
 	components := make(map[string]interface{})
 	components["objectives"] = schema.NewSet(
-		schema.HashResource(schemaCompositeV2Components()),
+		schema.HashResource(schemaCompositeComponents()),
 		[]interface{}{objectives},
 	)
-	compositeV2["components"] = schema.NewSet(oneElementSet, []interface{}{components})
+	composite["components"] = schema.NewSet(oneElementSet, []interface{}{components})
 
-	return schema.NewSet(schema.HashResource(schemaCompositeV2()), []interface{}{compositeV2})
+	return schema.NewSet(schema.HashResource(schemaComposite()), []interface{}{composite})
 }
 
 func unmarshalSLORawMetric(rawMetricSource *v1alphaSLO.RawMetricSpec) *schema.Set {
