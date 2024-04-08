@@ -628,32 +628,33 @@ func marshalComposite(sloObjective map[string]interface{}) (*v1alphaSLO.Composit
 	maxDelay := compositeMap["max_delay"].(string)
 
 	componentsSet := compositeMap["components"].(*schema.Set)
-	componentsMap := componentsSet.List()[0].(map[string]interface{})
-	objectivesSet := componentsMap["objectives"].(*schema.Set)
-	compositeObjectivesMap := objectivesSet.List()[0].(map[string]interface{})
-	compositeObjectives := compositeObjectivesMap["composite_objective"].([]interface{})
-
 	resultObjectives := make([]v1alphaSLO.CompositeObjective, 0)
-	for _, compObjElems := range compositeObjectives {
-		compObj := compObjElems.(map[string]interface{})
-		whenDelayed, ok := compObj["when_delayed"].(string)
-		if !ok || whenDelayed == "" {
-			return nil, fmt.Errorf("when_delayed is required for composite objective")
-		}
-		whenDelayedParsed, err := v1alphaSLO.ParseWhenDelayed(whenDelayed)
-		if err != nil {
-			return nil, err
-		}
+	if len(componentsSet.List()) > 0 {
+		componentsMap := componentsSet.List()[0].(map[string]interface{})
+		objectivesSet := componentsMap["objectives"].(*schema.Set)
+		compositeObjectivesMap := objectivesSet.List()[0].(map[string]interface{})
+		compositeObjectives := compositeObjectivesMap["composite_objective"].([]interface{})
 
-		resultObjectives = append(resultObjectives, v1alphaSLO.CompositeObjective{
-			Project:     compObj["project"].(string),
-			SLO:         compObj["slo"].(string),
-			Objective:   compObj["objective"].(string),
-			Weight:      compObj["weight"].(float64),
-			WhenDelayed: whenDelayedParsed,
-		})
+		for _, compObjElems := range compositeObjectives {
+			compObj := compObjElems.(map[string]interface{})
+			whenDelayed, ok := compObj["when_delayed"].(string)
+			if !ok || whenDelayed == "" {
+				return nil, fmt.Errorf("when_delayed is required for composite objective")
+			}
+			whenDelayedParsed, err := v1alphaSLO.ParseWhenDelayed(whenDelayed)
+			if err != nil {
+				return nil, err
+			}
+
+			resultObjectives = append(resultObjectives, v1alphaSLO.CompositeObjective{
+				Project:     compObj["project"].(string),
+				SLO:         compObj["slo"].(string),
+				Objective:   compObj["objective"].(string),
+				Weight:      compObj["weight"].(float64),
+				WhenDelayed: whenDelayedParsed,
+			})
+		}
 	}
-
 	return &v1alphaSLO.CompositeSpec{
 		MaxDelay:   maxDelay,
 		Components: v1alphaSLO.Components{Objectives: resultObjectives},
