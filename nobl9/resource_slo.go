@@ -164,12 +164,12 @@ func schemaComposite() *schema.Resource {
 			"max_delay": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Maximum delay",
+				Description: "Maximum time the composite SLO will wait for data from delayed objectives",
 			},
 			"components": {
 				Type:        schema.TypeSet,
 				Required:    true,
-				Description: "Components of the Composite SLO",
+				Description: "Components of the composite SLO",
 				Elem:        schemaCompositeComponents(),
 			},
 		},
@@ -180,14 +180,16 @@ func schemaCompositeComponents() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"objectives": {
-				Type:     schema.TypeSet,
-				Required: true,
+				Type:        schema.TypeSet,
+				Required:    true,
+				Description: "A list of the objectives aggregated by the composite SLO",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"composite_objective": {
-							Type:     schema.TypeList,
-							Required: true,
-							Elem:     schemaCompositeObjective(),
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "An objective aggregated by the composite SLO",
+							Elem:        schemaCompositeObjective(),
 						},
 					},
 				},
@@ -222,7 +224,7 @@ func schemaCompositeObjective() *schema.Resource {
 			"when_delayed": {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "How to interpret the delayed data",
+				Description:  "Indicator of how to interpret delayed data of this objective",
 				ValidateFunc: validation.StringInSlice(v1alphaSLO.WhenDelayedNames(), false),
 			},
 		},

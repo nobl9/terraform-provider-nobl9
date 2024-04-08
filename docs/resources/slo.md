@@ -177,37 +177,37 @@ Required:
 
 Optional:
 
-- `composite_v2` (Block Set) A composite SLO aggregates SLOs to measure their overall performance. (see [below for nested schema](#nestedblock--objective--composite_v2))
+- `composite` (Block Set) A composite SLO aggregates SLOs to measure their overall performance. (see [below for nested schema](#nestedblock--objective--composite))
 - `count_metrics` (Block Set) Compares two time series, calculating the ratio of either good or bad values to the total number of values. Fill either the 'good' or 'bad' series, but not both. (see [below for nested schema](#nestedblock--objective--count_metrics))
 - `name` (String) Objective's name. This field is computed if not provided.
 - `op` (String) Type of logical operation
 - `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
 - `time_slice_target` (Number) Designated value for slice
 
-<a id="nestedblock--objective--composite_v2"></a>
-### Nested Schema for `objective.composite_v2`
+<a id="nestedblock--objective--composite"></a>
+### Nested Schema for `objective.composite`
 
 Required:
 
-- `components` (Block Set, Min: 1) Components of the Composite SLO (see [below for nested schema](#nestedblock--objective--composite_v2--components))
-- `max_delay` (String) Maximum delay
+- `components` (Block Set, Min: 1) Components of the composite SLO (see [below for nested schema](#nestedblock--objective--composite--components))
+- `max_delay` (String) Maximum time the composite SLO will wait for data from delayed objectives
 
-<a id="nestedblock--objective--composite_v2--components"></a>
-### Nested Schema for `objective.composite_v2.components`
-
-Required:
-
-- `objectives` (Block Set, Min: 1) (see [below for nested schema](#nestedblock--objective--composite_v2--components--objectives))
-
-<a id="nestedblock--objective--composite_v2--components--objectives"></a>
-### Nested Schema for `objective.composite_v2.components.objectives`
+<a id="nestedblock--objective--composite--components"></a>
+### Nested Schema for `objective.composite.components`
 
 Required:
 
-- `composite_objective` (Block List, Min: 1) (see [below for nested schema](#nestedblock--objective--composite_v2--components--objectives--composite_objective))
+- `objectives` (Block Set, Min: 1) A list of the objectives aggregated by the composite SLO (see [below for nested schema](#nestedblock--objective--composite--components--objectives))
 
-<a id="nestedblock--objective--composite_v2--components--objectives--composite_objective"></a>
-### Nested Schema for `objective.composite_v2.components.objectives.composite_objective`
+<a id="nestedblock--objective--composite--components--objectives"></a>
+### Nested Schema for `objective.composite.components.objectives`
+
+Required:
+
+- `composite_objective` (Block List, Min: 1) An objective aggregated by the composite SLO (see [below for nested schema](#nestedblock--objective--composite--components--objectives--composite_objective))
+
+<a id="nestedblock--objective--composite--components--objectives--composite_objective"></a>
+### Nested Schema for `objective.composite.components.objectives.composite_objective`
 
 Required:
 
@@ -215,7 +215,7 @@ Required:
 - `project` (String) Name of the project
 - `slo` (String) Name of the SLO
 - `weight` (Number) Weight of the component
-- `when_delayed` (String) How to interpret the delayed data
+- `when_delayed` (String) Indicator of how to interpret delayed data of this objective
 
 
 
