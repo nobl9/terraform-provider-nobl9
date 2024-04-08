@@ -120,7 +120,7 @@ func resourceObjective() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A composite SLO aggregates SLOs to measure their overall performance.",
-				Elem:        schemaComposite(),
+				Elem:        resourceComposite(),
 			},
 			"display_name": {
 				Type:        schema.TypeString,
@@ -158,7 +158,7 @@ func resourceObjective() *schema.Resource {
 	return res
 }
 
-func schemaComposite() *schema.Resource {
+func resourceComposite() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"max_delay": {
@@ -170,13 +170,13 @@ func schemaComposite() *schema.Resource {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Description: "Components of the composite SLO",
-				Elem:        schemaCompositeComponents(),
+				Elem:        resourceCompositeComponents(),
 			},
 		},
 	}
 }
 
-func schemaCompositeComponents() *schema.Resource {
+func resourceCompositeComponents() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"objectives": {
@@ -189,7 +189,7 @@ func schemaCompositeComponents() *schema.Resource {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "An objective aggregated by the composite SLO",
-							Elem:        schemaCompositeObjective(),
+							Elem:        resourceCompositeObjective(),
 						},
 					},
 				},
@@ -198,7 +198,7 @@ func schemaCompositeComponents() *schema.Resource {
 	}
 }
 
-func schemaCompositeObjective() *schema.Resource {
+func resourceCompositeObjective() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"project": {
@@ -1069,12 +1069,12 @@ func unmarshalComposite(compositeSpec *v1alphaSLO.CompositeSpec) *schema.Set {
 
 	components := make(map[string]interface{})
 	components["objectives"] = schema.NewSet(
-		schema.HashResource(schemaCompositeComponents()),
+		schema.HashResource(resourceCompositeComponents()),
 		[]interface{}{objectives},
 	)
 	composite["components"] = schema.NewSet(oneElementSet, []interface{}{components})
 
-	return schema.NewSet(schema.HashResource(schemaComposite()), []interface{}{composite})
+	return schema.NewSet(schema.HashResource(resourceComposite()), []interface{}{composite})
 }
 
 func unmarshalSLORawMetric(rawMetricSource *v1alphaSLO.RawMetricSpec) *schema.Set {
