@@ -187,7 +187,7 @@ func schemaCompositeComponents() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"composite_objective": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Description: "An objective aggregated by the composite SLO",
 							Elem:        schemaCompositeObjective(),
 						},
