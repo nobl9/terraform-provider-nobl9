@@ -168,7 +168,7 @@ func resourceComposite() *schema.Resource {
 			},
 			"components": {
 				Type:        schema.TypeSet,
-				Required:    true,
+				Optional:    true,
 				Description: "Components of the composite SLO",
 				Elem:        resourceCompositeComponents(),
 			},
@@ -181,7 +181,7 @@ func resourceCompositeComponents() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"objectives": {
 				Type:        schema.TypeSet,
-				Required:    true,
+				Optional:    true,
 				Description: "A list of the objectives aggregated by the composite SLO",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
