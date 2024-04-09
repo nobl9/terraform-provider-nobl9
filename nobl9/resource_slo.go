@@ -124,7 +124,7 @@ func resourceObjective() *schema.Resource {
 			},
 			"display_name": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Name to be displayed",
 			},
 			"op": {
