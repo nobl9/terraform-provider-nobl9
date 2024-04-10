@@ -68,6 +68,7 @@ resource "nobl9_slo" "this" {
     display_name = "OK"
     value        = 2000
     op           = "gte"
+    primary      = true
 
     raw_metric {
       query {
@@ -102,6 +103,7 @@ resource "nobl9_slo" "this" {
     target       = 0.99
     display_name = "OK"
     value        = 1
+    primary      = false
 
     count_metrics {
       incremental = true
@@ -181,6 +183,7 @@ Optional:
 - `display_name` (String) Name to be displayed.
 - `name` (String) Objective's name. This field is computed if not provided.
 - `op` (String) Type of logical operation.
+- `primary` (Boolean) Is objective marked as primary.
 - `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
 - `time_slice_target` (Number) Designated value for slice.
 

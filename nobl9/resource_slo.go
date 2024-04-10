@@ -153,6 +153,11 @@ func resourceObjective() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 			},
+			"primary": {
+				Type:        schema.TypeBool,
+				Description: "Is objective marked as primary.",
+				Optional:    true,
+			},
 		},
 	}
 	return res
@@ -293,7 +298,8 @@ func schemaSLO() map[string]*schema.Schema {
 			Description: "Name of the service.",
 		},
 		"indicator": {
-			Type:        schema.TypeSet,
+			Type: schema.TypeSet,
+			// TODO PC-12014: check if it has to be optional or required.
 			Optional:    true,
 			Description: " ",
 			MaxItems:    1,
@@ -701,6 +707,7 @@ func marshalCalendar(c map[string]interface{}) *v1alphaSLO.Calendar {
 }
 
 func marshalIndicator(d *schema.ResourceData) *v1alphaSLO.Indicator {
+	// TODO PC-12014: check if tests go well without this.
 	if d.Get("indicator").(*schema.Set).Len() == 0 {
 		return nil
 	}
@@ -733,6 +740,7 @@ func marshalObjectives(d *schema.ResourceData) ([]v1alphaSLO.Objective, diag.Dia
 			timeSliceTargetPtr = &timeSliceTarget
 		}
 		operator := objective["op"].(string)
+		primary := objective["primary"].(bool)
 		compositeSpec, err := marshalComposite(objective)
 		if err != nil {
 			return nil, diag.FromErr(err)
@@ -749,6 +757,7 @@ func marshalObjectives(d *schema.ResourceData) ([]v1alphaSLO.Objective, diag.Dia
 			Operator:        &operator,
 			CountMetrics:    marshalCountMetrics(objective),
 			RawMetric:       marshalRawMetric(objective),
+			Primary:         &primary,
 			Composite:       compositeSpec,
 		}
 	}
@@ -931,6 +940,7 @@ func getDeclaredAttachmentTag(d *schema.ResourceData) string {
 }
 
 func unmarshalIndicator(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
+	// TODO PC-12014: check if it's needed.
 	if spec.Indicator == nil {
 		return nil
 	}
@@ -978,6 +988,7 @@ func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 		objectiveTF["value"] = objective.Value
 		objectiveTF["target"] = objective.BudgetTarget
 		objectiveTF["time_slice_target"] = objective.TimeSliceTarget
+		objectiveTF["primary"] = objective.Primary
 
 		if objective.CountMetrics != nil {
 			cm := objective.CountMetrics

@@ -1,13 +1,13 @@
 module github.com/nobl9/terraform-provider-nobl9
 
-go 1.21
+go 1.22
 
 require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
 	github.com/hashicorp/terraform-plugin-docs v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.33.0
-	github.com/nobl9/nobl9-go v0.79.0-rc4
+	github.com/nobl9/nobl9-go v0.81.0
 	github.com/stretchr/testify v1.9.0
 )
 
@@ -17,13 +17,13 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
-	github.com/MicahParks/jwkset v0.5.14 // indirect
-	github.com/MicahParks/keyfunc/v3 v3.2.8 // indirect
+	github.com/MicahParks/jwkset v0.5.17 // indirect
+	github.com/MicahParks/keyfunc/v3 v3.3.2 // indirect
 	github.com/ProtonMail/go-crypto v1.1.0-alpha.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.50.35 // indirect
+	github.com/aws/aws-sdk-go v1.51.17 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
