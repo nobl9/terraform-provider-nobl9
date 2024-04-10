@@ -84,19 +84,19 @@ func resourceObjective() *schema.Resource {
 						"bad": {
 							Type:        schema.TypeSet,
 							Optional:    true,
-							Description: "Configuration for bad time series metrics. ",
+							Description: "Configuration for bad time series metrics.",
 							Elem:        schemaMetricSpec(),
 						},
 						"total": {
 							Type:        schema.TypeSet,
 							Required:    true,
-							Description: "Configuration for metric source",
+							Description: "Configuration for metric source.",
 							Elem:        schemaMetricSpec(),
 						},
 						"incremental": {
 							Type:        schema.TypeBool,
 							Required:    true,
-							Description: "Should the metrics be incrementing or not",
+							Description: "Should the metrics be incrementing or not.",
 						},
 					},
 				},
@@ -110,7 +110,7 @@ func resourceObjective() *schema.Resource {
 						"query": {
 							Type:        schema.TypeSet,
 							Required:    true,
-							Description: "Configuration for metric source",
+							Description: "Configuration for metric source.",
 							Elem:        schemaMetricSpec(),
 						},
 					},
@@ -119,33 +119,33 @@ func resourceObjective() *schema.Resource {
 			"composite": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "A composite SLO aggregates SLOs to measure their overall performance.",
+				Description: "An assembly of objectives from different SLOs reflecting their combined performance.",
 				Elem:        resourceComposite(),
 			},
 			"display_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Name to be displayed",
+				Description: "Name to be displayed.",
 			},
 			"op": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Type of logical operation",
+				Description: "Type of logical operation.",
 			},
 			"target": {
 				Type:        schema.TypeFloat,
 				Required:    true,
-				Description: "Designated value",
+				Description: "Designated value.",
 			},
 			"time_slice_target": {
 				Type:        schema.TypeFloat,
 				Optional:    true,
-				Description: "Designated value for slice",
+				Description: "Designated value for slice.",
 			},
 			"value": {
 				Type:        schema.TypeFloat,
 				Required:    true,
-				Description: "Value",
+				Description: "Value.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -164,12 +164,12 @@ func resourceComposite() *schema.Resource {
 			"max_delay": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Maximum time the composite SLO will wait for data from delayed objectives",
+				Description: "Maximum time for your composite SLO to wait for data from objectives.",
 			},
 			"components": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Components of the composite SLO",
+				Description: "Objectives to be assembled in your composite SLO.",
 				Elem:        resourceCompositeComponents(),
 			},
 		},
@@ -182,13 +182,13 @@ func resourceCompositeComponents() *schema.Resource {
 			"objectives": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "A list of the objectives aggregated by the composite SLO",
+				Description: "An additional nesting for the components of your composite SLO.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"composite_objective": {
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "An objective aggregated by the composite SLO",
+							Description: "Your composite SLO component.",
 							Elem:        resourceCompositeObjective(),
 						},
 					},
@@ -204,27 +204,27 @@ func resourceCompositeObjective() *schema.Resource {
 			"project": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Name of the project",
+				Description: "Project name.",
 			},
 			"slo": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Name of the SLO",
+				Description: "SLO name.",
 			},
 			"objective": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Name of the objective of the SLO",
+				Description: "SLO objective name.",
 			},
 			"weight": {
 				Type:        schema.TypeFloat,
 				Required:    true,
-				Description: "Weight of the component",
+				Description: "Weights determine each component’s contribution to the composite SLO.",
 			},
 			"when_delayed": {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Indicator of how to interpret delayed data of this objective",
+				Description:  "Indicator of how to interpret data received after max_delay is over.",
 				ValidateFunc: validation.StringInSlice(v1alphaSLO.WhenDelayedNames(), false),
 			},
 		},
@@ -251,14 +251,14 @@ func schemaSLO() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "[Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo)",
-			Deprecated:  "composite is deprecated, use objective.composite instead",
+			Deprecated:  "\"composite\" is deprecated, use \"objective.composite\" instead.",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"target": {
 						Type:        schema.TypeFloat,
 						Required:    true,
-						Description: "Designated value",
+						Description: "Designated value.",
 					},
 					"burn_rate_condition": {
 						Type:        schema.TypeSet,
@@ -269,7 +269,7 @@ func schemaSLO() map[string]*schema.Schema {
 								"op": {
 									Type:        schema.TypeString,
 									Required:    true,
-									Description: "Type of logical operation",
+									Description: "Type of logical operation.",
 								},
 								"value": {
 									Type:        schema.TypeFloat,
@@ -285,12 +285,12 @@ func schemaSLO() map[string]*schema.Schema {
 		"budgeting_method": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Method which will be use to calculate budget",
+			Description: "Method which will be use to calculate budget.",
 		},
 		"service": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Name of the service",
+			Description: "Name of the service.",
 		},
 		"indicator": {
 			Type:        schema.TypeSet,
@@ -329,18 +329,18 @@ func schemaSLO() map[string]*schema.Schema {
 					"calendar": {
 						Type:        schema.TypeSet,
 						Optional:    true,
-						Description: "Alert Policies attached to SLO",
+						Description: "Alert Policies attached to SLO.",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"start_time": {
 									Type:        schema.TypeString,
 									Required:    true,
-									Description: "Date of the start",
+									Description: "Date of the start.",
 								},
 								"time_zone": {
 									Type:        schema.TypeString,
 									Required:    true,
-									Description: "Timezone name in IANA Time Zone Database",
+									Description: "Timezone name in IANA Time Zone Database.",
 								},
 							},
 						},
@@ -348,23 +348,23 @@ func schemaSLO() map[string]*schema.Schema {
 					"count": {
 						Type:        schema.TypeInt,
 						Required:    true,
-						Description: "Count of the time unit",
+						Description: "Count of the time unit.",
 					},
 					"is_rolling": {
 						Type:        schema.TypeBool,
 						Optional:    true,
-						Description: "Is the window moving or not",
+						Description: "Is the window moving or not.",
 					},
 					"period": {
 						Type:        schema.TypeMap,
 						Computed:    true,
-						Description: "Period between start time and added count",
+						Description: "Period between start time and added count.",
 						Elem:        &schema.Schema{Type: schema.TypeString},
 					},
 					"unit": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Unit of time",
+						Description: "Unit of time.",
 					},
 				},
 			},
@@ -372,10 +372,10 @@ func schemaSLO() map[string]*schema.Schema {
 		"alert_policies": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: "Alert Policies attached to SLO",
+			Description: "Alert Policies attached to SLO.",
 			Elem: &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "Alert Policy",
+				Description: "Alert Policy.",
 			},
 			DiffSuppressFunc: diffSuppressListStringOrder("alert_policies"),
 		},
@@ -384,7 +384,7 @@ func schemaSLO() map[string]*schema.Schema {
 			Optional:      true,
 			Description:   "",
 			MaxItems:      20,
-			Deprecated:    "\"attachments\" argument is deprecated use \"attachment\" instead",
+			Deprecated:    "\"attachments\" argument is deprecated use \"attachment\" instead.",
 			ConflictsWith: []string{"attachment"},
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -397,7 +397,7 @@ func schemaSLO() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "URL to the attachment",
+						Description: "URL to the attachment.",
 					},
 				},
 			},
@@ -418,7 +418,7 @@ func schemaSLO() map[string]*schema.Schema {
 					"url": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "URL to the attachment",
+						Description: "URL to the attachment.",
 					},
 				},
 			},

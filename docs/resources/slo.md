@@ -143,16 +143,16 @@ resource "nobl9_slo" "this" {
 
 ### Required
 
-- `budgeting_method` (String) Method which will be use to calculate budget
+- `budgeting_method` (String) Method which will be use to calculate budget.
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `objective` (Block Set, Min: 1) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `service` (String) Name of the service
+- `service` (String) Name of the service.
 - `time_window` (Block Set, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--time_window))
 
 ### Optional
 
-- `alert_policies` (List of String) Alert Policies attached to SLO
+- `alert_policies` (List of String) Alert Policies attached to SLO.
 - `anomaly_config` (Block Set, Max: 1) Configuration for Anomalies. Currently supported Anomaly Type is NoData (see [below for nested schema](#nestedblock--anomaly_config))
 - `attachment` (Block List, Max: 20) (see [below for nested schema](#nestedblock--attachment))
 - `attachments` (Block List, Max: 20, Deprecated) (see [below for nested schema](#nestedblock--attachments))
@@ -171,51 +171,54 @@ resource "nobl9_slo" "this" {
 
 Required:
 
-- `display_name` (String) Name to be displayed
-- `target` (Number) Designated value
-- `value` (Number) Value
+- `target` (Number) Designated value.
+- `value` (Number) Value.
 
 Optional:
 
-- `composite` (Block Set) A composite SLO aggregates SLOs to measure their overall performance. (see [below for nested schema](#nestedblock--objective--composite))
+- `composite` (Block Set) An assembly of objectives from different SLOs reflecting their combined performance. (see [below for nested schema](#nestedblock--objective--composite))
 - `count_metrics` (Block Set) Compares two time series, calculating the ratio of either good or bad values to the total number of values. Fill either the 'good' or 'bad' series, but not both. (see [below for nested schema](#nestedblock--objective--count_metrics))
+- `display_name` (String) Name to be displayed.
 - `name` (String) Objective's name. This field is computed if not provided.
-- `op` (String) Type of logical operation
+- `op` (String) Type of logical operation.
 - `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
-- `time_slice_target` (Number) Designated value for slice
+- `time_slice_target` (Number) Designated value for slice.
 
 <a id="nestedblock--objective--composite"></a>
 ### Nested Schema for `objective.composite`
 
 Required:
 
-- `components` (Block Set, Min: 1) Components of the composite SLO (see [below for nested schema](#nestedblock--objective--composite--components))
-- `max_delay` (String) Maximum time the composite SLO will wait for data from delayed objectives
+- `max_delay` (String) Maximum time for your composite SLO to wait for data from objectives.
+
+Optional:
+
+- `components` (Block Set) Objectives to be assembled in your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components))
 
 <a id="nestedblock--objective--composite--components"></a>
 ### Nested Schema for `objective.composite.components`
 
-Required:
+Optional:
 
-- `objectives` (Block Set, Min: 1) A list of the objectives aggregated by the composite SLO (see [below for nested schema](#nestedblock--objective--composite--components--objectives))
+- `objectives` (Block Set) An additional nesting for the components of your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components--objectives))
 
 <a id="nestedblock--objective--composite--components--objectives"></a>
 ### Nested Schema for `objective.composite.components.objectives`
 
-Required:
+Optional:
 
-- `composite_objective` (Block List, Min: 1) An objective aggregated by the composite SLO (see [below for nested schema](#nestedblock--objective--composite--components--objectives--composite_objective))
+- `composite_objective` (Block List) Your composite SLO component. (see [below for nested schema](#nestedblock--objective--composite--components--objectives--composite_objective))
 
 <a id="nestedblock--objective--composite--components--objectives--composite_objective"></a>
 ### Nested Schema for `objective.composite.components.objectives.composite_objective`
 
 Required:
 
-- `objective` (String) Name of the objective of the SLO
-- `project` (String) Name of the project
-- `slo` (String) Name of the SLO
-- `weight` (Number) Weight of the component
-- `when_delayed` (String) Indicator of how to interpret delayed data of this objective
+- `objective` (String) SLO objective name.
+- `project` (String) Project name.
+- `slo` (String) SLO name.
+- `weight` (Number) Weights determine each component’s contribution to the composite SLO.
+- `when_delayed` (String) Indicator of how to interpret data received after max_delay is over.
 
 
 
@@ -226,8 +229,8 @@ Required:
 
 Required:
 
-- `incremental` (Boolean) Should the metrics be incrementing or not
-- `total` (Block Set, Min: 1) Configuration for metric source (see [below for nested schema](#nestedblock--objective--count_metrics--total))
+- `incremental` (Boolean) Should the metrics be incrementing or not.
+- `total` (Block Set, Min: 1) Configuration for metric source. (see [below for nested schema](#nestedblock--objective--count_metrics--total))
 
 Optional:
 
@@ -1287,7 +1290,7 @@ Required:
 
 Required:
 
-- `query` (Block Set, Min: 1) Configuration for metric source (see [below for nested schema](#nestedblock--objective--raw_metric--query))
+- `query` (Block Set, Min: 1) Configuration for metric source. (see [below for nested schema](#nestedblock--objective--raw_metric--query))
 
 <a id="nestedblock--objective--raw_metric--query"></a>
 ### Nested Schema for `objective.raw_metric.query`
@@ -1645,25 +1648,25 @@ Required:
 
 Required:
 
-- `count` (Number) Count of the time unit
-- `unit` (String) Unit of time
+- `count` (Number) Count of the time unit.
+- `unit` (String) Unit of time.
 
 Optional:
 
-- `calendar` (Block Set) Alert Policies attached to SLO (see [below for nested schema](#nestedblock--time_window--calendar))
-- `is_rolling` (Boolean) Is the window moving or not
+- `calendar` (Block Set) Alert Policies attached to SLO. (see [below for nested schema](#nestedblock--time_window--calendar))
+- `is_rolling` (Boolean) Is the window moving or not.
 
 Read-Only:
 
-- `period` (Map of String) Period between start time and added count
+- `period` (Map of String) Period between start time and added count.
 
 <a id="nestedblock--time_window--calendar"></a>
 ### Nested Schema for `time_window.calendar`
 
 Required:
 
-- `start_time` (String) Date of the start
-- `time_zone` (String) Timezone name in IANA Time Zone Database
+- `start_time` (String) Date of the start.
+- `time_zone` (String) Timezone name in IANA Time Zone Database.
 
 
 
@@ -1697,7 +1700,7 @@ Required:
 
 Required:
 
-- `url` (String) URL to the attachment
+- `url` (String) URL to the attachment.
 
 Optional:
 
@@ -1709,7 +1712,7 @@ Optional:
 
 Required:
 
-- `url` (String) URL to the attachment
+- `url` (String) URL to the attachment.
 
 Optional:
 
@@ -1721,7 +1724,7 @@ Optional:
 
 Required:
 
-- `target` (Number) Designated value
+- `target` (Number) Designated value.
 
 Optional:
 
@@ -1732,7 +1735,7 @@ Optional:
 
 Required:
 
-- `op` (String) Type of logical operation
+- `op` (String) Type of logical operation.
 - `value` (Number) Burn rate value.
 
 
