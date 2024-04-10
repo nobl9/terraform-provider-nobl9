@@ -298,8 +298,7 @@ func schemaSLO() map[string]*schema.Schema {
 			Description: "Name of the service.",
 		},
 		"indicator": {
-			Type: schema.TypeSet,
-			// TODO PC-12014: check if it has to be optional or required.
+			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: " ",
 			MaxItems:    1,
@@ -707,7 +706,6 @@ func marshalCalendar(c map[string]interface{}) *v1alphaSLO.Calendar {
 }
 
 func marshalIndicator(d *schema.ResourceData) *v1alphaSLO.Indicator {
-	// TODO PC-12014: check if tests go well without this.
 	if d.Get("indicator").(*schema.Set).Len() == 0 {
 		return nil
 	}
@@ -940,7 +938,6 @@ func getDeclaredAttachmentTag(d *schema.ResourceData) string {
 }
 
 func unmarshalIndicator(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
-	// TODO PC-12014: check if it's needed.
 	if spec.Indicator == nil {
 		return nil
 	}
