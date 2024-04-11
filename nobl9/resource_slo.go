@@ -229,7 +229,7 @@ func resourceCompositeObjective() *schema.Resource {
 			"when_delayed": {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Indicator of how to interpret data received after max_delay is over.",
+				Description:  "Defines how to treat missing component data on `max_delay` expiry.",
 				ValidateFunc: validation.StringInSlice(v1alphaSLO.WhenDelayedNames(), false),
 			},
 		},

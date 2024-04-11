@@ -221,7 +221,7 @@ Required:
 - `project` (String) Project name.
 - `slo` (String) SLO name.
 - `weight` (Number) Weights determine each component’s contribution to the composite SLO.
-- `when_delayed` (String) Indicator of how to interpret data received after max_delay is over.
+- `when_delayed` (String) Defines how to treat missing component data on `max_delay` expiry.
 
 
 
