@@ -78,8 +78,16 @@ func schemaBudgetAdjustment() map[string]*schema.Schema {
 									Description: "SLO where budget adjustment event will be applied.",
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
-											"name":    schemaName(),
-											"project": schemaProject(),
+											"name": {
+												Type:        schema.TypeString,
+												Required:    true,
+												Description: "Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
+											},
+											"project": {
+												Type:        schema.TypeString,
+												Required:    true,
+												Description: "Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
+											},
 										},
 									},
 								},
