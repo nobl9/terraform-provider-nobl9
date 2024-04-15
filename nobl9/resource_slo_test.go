@@ -1,6 +1,7 @@
 package nobl9
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -27,6 +28,8 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-cloudwatch-with-stat", testCloudWatchWithStat},
 		{"test-cloudwatch-with-stat-and-cross-account", testCloudWatchWithStatAndCrossAccount},
 		{"test-cloudwatch-with-bad-over-total", testCloudWatchWithBadOverTotal},
+		{"test-composite-occurrences-deprecated", testCompositeSLOOccurrencesDeprecated},
+		{"test-composite-time-slices-deprecated", testCompositeSLOTimeSlicesDeprecated},
 		{"test-composite-occurrences", testCompositeSLOOccurrences},
 		{"test-composite-time-slices", testCompositeSLOTimeSlices},
 		{"test-datadog", testDatadogSLO},
@@ -835,7 +838,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testCompositeSLOOccurrences(name string) string {
+func testCompositeSLOOccurrencesDeprecated(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	config :=
@@ -918,7 +921,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testCompositeSLOTimeSlices(name string) string {
+func testCompositeSLOTimeSlicesDeprecated(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	config :=
@@ -989,6 +992,142 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
+func testCompositeSLOOccurrences(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	var sloDependencyName = name + "-dependency-slo-1"
+	config :=
+		testService(serviceName) +
+			testPrometheusAgent(agentName) +
+			testCompositeDependencySLO(serviceName, agentName, sloDependencyName) + `
+resource "nobl9_slo" ":name" {
+ name         = ":name"
+ display_name = ":name"
+ project      = ":project"
+ service      = nobl9_service.:serviceName.name
+
+
+ depends_on = [nobl9_slo.:sloDependencyName]
+
+ label {
+  key = "team"
+  values = ["green","sapphire"]
+ }
+
+ label {
+  key = "env"
+  values = ["dev", "staging", "prod"]
+ }
+
+ budgeting_method = "Occurrences"
+
+ objective {
+   display_name = "obj1"
+   name         = "tf-objective-1"
+   target       = 0.7
+   value        = 1
+   composite {
+     max_delay = "45m"
+     components {
+       objectives {
+         composite_objective {
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-1"
+           weight       = 0.8
+           when_delayed = "CountAsGood"
+         }
+		 composite_objective {
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-2"
+           weight       = 1.0
+           when_delayed = "CountAsBad"
+         }
+       }
+     }
+   }
+ }
+
+ time_window {
+   count      = 10
+   is_rolling = true
+   unit       = "Minute"
+ }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+	config = strings.ReplaceAll(config, ":sloDependencyName", sloDependencyName)
+
+	return config
+}
+
+func testCompositeSLOTimeSlices(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	var sloDependencyName = name + "-dependency-slo-2"
+	config :=
+		testService(serviceName) +
+			testPrometheusAgent(agentName) +
+			testCompositeDependencySLO(serviceName, agentName, sloDependencyName) + `
+resource "nobl9_slo" ":name" {
+ name         = ":name"
+ display_name = ":name"
+ project      = ":project"
+ service      = nobl9_service.:serviceName.name
+
+ depends_on = [nobl9_slo.:sloDependencyName]
+
+ budgeting_method = "Timeslices"
+
+ objective {
+   display_name = "obj1"
+   name         = "tf-objective-1"
+   target       = 0.7
+   value        = 1
+   time_slice_target = 0.7
+   composite {
+     max_delay = "45m"
+     components {
+       objectives {
+         composite_objective {
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-1"
+           weight       = 0.8
+           when_delayed = "CountAsGood"
+         }
+		 composite_objective {
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-2"
+           weight       = 1.0
+           when_delayed = "CountAsBad"
+         }
+       }
+     }
+   }
+ }
+
+ time_window {
+   count      = 10
+   is_rolling = true
+   unit       = "Minute"
+ }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+	config = strings.ReplaceAll(config, ":sloDependencyName", sloDependencyName)
+
+	return config
+}
+
 func testDatadogSLO(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
@@ -998,7 +1137,7 @@ func testDatadogSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:serviceName.name
 
   label {
@@ -3193,4 +3332,58 @@ func testMoreThanOnePrimaryObjective(name string) string {
 	config = strings.ReplaceAll(config, ":project", testProject)
 
 	return config
+}
+
+func testCompositeDependencySLO(serviceName, agentName, name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_slo" "%s" {
+  name             = "%s"
+  service          = nobl9_service.%s.name
+  budgeting_method = "Occurrences"
+  project          = "%s"
+
+  time_window {
+    unit       = "Day"
+    count      = 14
+    is_rolling = true
+  }
+
+  objective {
+    target       = 0.999
+    value        = 5
+    display_name = "Good"
+    name         = "objective-1"
+    op           = "lte"
+
+    raw_metric {
+      query {
+        prometheus {
+          promql = "server_requestMsec{host=\"*\",instance=\"143.146.168.125:9913\",job=\"nginx\"}"
+        }
+      }
+    }
+  }
+  objective {
+    target       = 0.80
+    value        = 2
+    display_name = "Moderate"
+    name         = "objective-2"
+    op           = "lte"
+
+    raw_metric {
+      query {
+        prometheus {
+          promql = "server_requestMsec{host=\"*\",instance=\"143.146.168.125:9913\",job=\"nginx\"}"
+        }
+      }
+    }
+  }
+
+  indicator {
+    name    = nobl9_agent.%s.name
+    kind    = "Agent"
+    project = "%s"
+  }
+}
+`, name, name, serviceName, testProject, agentName, testProject)
 }
