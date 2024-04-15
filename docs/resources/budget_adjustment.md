@@ -1,14 +1,14 @@
 ---
 page_title: "nobl9_budget_adjustment Resource - terraform-provider-nobl9"
 description: |-
-  Budget adjustment configuration documentation https://docs.nobl9.com/yaml-guide#budget-adjustment
+  Budget adjustment configuration documentation https://docs.nobl9.com/Features/budget-adjustment
 ---
 
 # nobl9_budget_adjustment (Resource)
 
 The budget adjustment feature allows you to define future periods where planned maintenance, releases, and similar activities won't affect your budget in specific SLOs.
 
-For more details, refer to the [Budget adjustment configuration documentation](https://docs.nobl9.com/yaml-guide#budget-adjustment).
+For more details, refer to the [Budget adjustment configuration documentation](https://docs.nobl9.com/Features/budget-adjustment).
 
 ## Example Usage
 
