@@ -26,7 +26,7 @@ func budgetAdjustment() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[Budget adjustment configuration documentation](https://docs.nobl9.com/Features/budget-adjustment)",
+		Description: "[Budget adjustment configuration documentation](https://docs.nobl9.com/features/budget-adjustment)",
 	}
 }
 
