@@ -13,9 +13,11 @@ import (
 )
 
 const (
-	fieldLabel       = "label"
-	fieldLabelKey    = "key"
-	fieldLabelValues = "values"
+	fieldLabel           = "label"
+	fieldLabelKey        = "key"
+	fieldLabelValues     = "values"
+	fieldAnnotationKey   = "key"
+	fieldAnnotationValue = "value"
 )
 
 //nolint:lll
@@ -59,6 +61,31 @@ func schemaLabels() *schema.Schema {
 					Elem: &schema.Schema{
 						Type:         schema.TypeString,
 						ValidateFunc: validateNotEmptyString(fieldLabelValues),
+					},
+				},
+			},
+		},
+	}
+}
+
+func schemaAnnotations() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "List of key/value pairs attached to the resource.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				fieldAnnotationKey: {
+					Type:         schema.TypeString,
+					Required:     true,
+					ValidateFunc: validateNotEmptyString(fieldAnnotationKey),
+					Description:  "An annotation key, unique within the associated resource.",
+				},
+				fieldAnnotationValue: {
+					Type:        schema.TypeString,
+					Description: "Annotation value.",
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
 					},
 				},
 			},
