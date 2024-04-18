@@ -51,10 +51,7 @@ func marshalService(d *schema.ResourceData) (*v1alphaService.Service, diag.Diagn
 		return nil, diags
 	}
 
-	annotationsMarshaled, diags := getMarshaledAnnotations(d)
-	if diags.HasError() {
-		return nil, diags
-	}
+	annotationsMarshaled := getMarshaledAnnotations(d)
 
 	service := v1alphaService.New(
 		v1alphaService.Metadata{

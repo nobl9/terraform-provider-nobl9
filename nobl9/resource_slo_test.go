@@ -63,6 +63,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-anomaly-config-different-project", testAnomalyConfigNoDataDifferentProject},
 		{"test-max-one-primary-objective", testMaxOnePrimaryObjective},
 		{"test-no-primary-objective", testNoPrimaryObjective},
+		{"test-metadata-annotations", testMetadataAnnotations},
 	}
 
 	for _, tc := range cases {

@@ -145,10 +145,7 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alphaAlertPolicy.AlertPolicy
 		return nil, diags
 	}
 
-	annotationsMarshaled, diags := getMarshaledAnnotations(d)
-	if diags.HasError() {
-		return nil, diags
-	}
+	annotationsMarshaled := getMarshaledAnnotations(d)
 
 	alertPolicy := v1alphaAlertPolicy.New(
 		v1alphaAlertPolicy.Metadata{

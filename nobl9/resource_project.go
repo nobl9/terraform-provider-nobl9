@@ -37,10 +37,7 @@ func marshalProject(d *schema.ResourceData) (*v1alphaProject.Project, diag.Diagn
 		return nil, diags
 	}
 
-	annotationsMarshaled, diags := getMarshaledAnnotations(d)
-	if diags.HasError() {
-		return nil, diags
-	}
+	annotationsMarshaled := getMarshaledAnnotations(d)
 
 	project := v1alphaProject.New(
 		v1alphaProject.Metadata{

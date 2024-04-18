@@ -574,10 +574,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 	if diags.HasError() {
 		return nil, diags
 	}
-	annotationsMarshaled, diags := getMarshaledAnnotations(d)
-	if diags.HasError() {
-		return nil, diags
-	}
+	annotationsMarshaled := getMarshaledAnnotations(d)
 
 	slo := v1alphaSLO.New(
 		v1alphaSLO.Metadata{

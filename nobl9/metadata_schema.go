@@ -194,19 +194,15 @@ func getMarshaledLabels(d *schema.ResourceData) (v1alpha.Labels, diag.Diagnostic
 	return marshalLabels(labels)
 }
 
-func getMarshaledAnnotations(d *schema.ResourceData) (v1alpha.MetadataAnnotations, diag.Diagnostics) {
-	var diags diag.Diagnostics
+func getMarshaledAnnotations(d *schema.ResourceData) v1alpha.MetadataAnnotations {
 	rawAnnotations := d.Get("annotations").(map[string]interface{})
 	annotations := make(map[string]string, len(rawAnnotations))
-	if len(rawAnnotations) == 0 {
-		return annotations, diags
-	}
 
 	for k, v := range rawAnnotations {
 		annotations[k] = v.(string)
 	}
 
-	return annotations, diags
+	return annotations
 }
 
 func marshalLabels(labels []interface{}) (v1alpha.Labels, diag.Diagnostics) {
