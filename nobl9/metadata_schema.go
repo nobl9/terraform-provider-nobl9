@@ -70,7 +70,7 @@ func schemaAnnotations() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeMap,
 		Optional:    true,
-		Description: "List of key/value pairs attached to the resource.",
+		Description: "[Metadata annotations](https://docs.nobl9.com/Features/Labels/#metadata-annotations) attached to the resource.",
 		Elem: &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
