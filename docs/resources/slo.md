@@ -155,6 +155,7 @@ resource "nobl9_slo" "this" {
 ### Optional
 
 - `alert_policies` (List of String) Alert Policies attached to SLO.
+- `annotations` (Map of String) List of key/value pairs attached to the resource.
 - `anomaly_config` (Block Set, Max: 1) Configuration for Anomalies. Currently supported Anomaly Type is NoData (see [below for nested schema](#nestedblock--anomaly_config))
 - `attachment` (Block List, Max: 20) (see [below for nested schema](#nestedblock--attachment))
 - `attachments` (Block List, Max: 20, Deprecated) (see [below for nested schema](#nestedblock--attachments))
