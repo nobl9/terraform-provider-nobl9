@@ -72,6 +72,11 @@ resource "nobl9_alert_policy" "%s" {
   project    = "%s"
   severity   = "Medium"
 
+  annotations = {
+      env  = "development"
+      name = "example annotation"
+  }
+
   condition {
 	  measurement = "burnedBudget"
 	  value 	  = 0.9

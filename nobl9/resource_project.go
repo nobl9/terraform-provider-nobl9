@@ -18,6 +18,7 @@ func resourceProject() *schema.Resource {
 			"display_name": schemaDisplayName(),
 			"description":  schemaDescription(),
 			"label":        schemaLabels(),
+			"annotations":  schemaAnnotations(),
 		},
 		CreateContext: resourceProjectApply,
 		UpdateContext: resourceProjectApply,
@@ -36,11 +37,17 @@ func marshalProject(d *schema.ResourceData) (*v1alphaProject.Project, diag.Diagn
 		return nil, diags
 	}
 
+	annotationsMarshaled, diags := getMarshaledAnnotations(d)
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	project := v1alphaProject.New(
 		v1alphaProject.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: d.Get("display_name").(string),
 			Labels:      labelsMarshaled,
+			Annotations: annotationsMarshaled,
 		},
 		v1alphaProject.Spec{
 			Description: d.Get("description").(string),
@@ -65,6 +72,11 @@ func unmarshalProject(d *schema.ResourceData, objects []v1alphaProject.Project) 
 
 	if labelsRaw := metadata.Labels; len(labelsRaw) > 0 {
 		err = d.Set("label", unmarshalLabels(labelsRaw))
+		diags = appendError(diags, err)
+	}
+
+	if len(metadata.Annotations) > 0 {
+		err = d.Set("annotations", metadata.Annotations)
 		diags = appendError(diags, err)
 	}
 

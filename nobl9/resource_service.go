@@ -19,6 +19,7 @@ func resourceService() *schema.Resource {
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
 			"label":        schemaLabels(),
+			"annotations":  schemaAnnotations(),
 			"status": {
 				Type:        schema.TypeMap,
 				Computed:    true,
@@ -50,12 +51,18 @@ func marshalService(d *schema.ResourceData) (*v1alphaService.Service, diag.Diagn
 		return nil, diags
 	}
 
+	annotationsMarshaled, diags := getMarshaledAnnotations(d)
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	service := v1alphaService.New(
 		v1alphaService.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
 			Labels:      labelsMarshaled,
+			Annotations: annotationsMarshaled,
 		},
 		v1alphaService.Spec{
 			Description: d.Get("description").(string),
@@ -81,6 +88,11 @@ func unmarshalService(d *schema.ResourceData, objects []v1alphaService.Service) 
 
 	if labelsRaw := metadata.Labels; len(labelsRaw) > 0 {
 		err = d.Set("label", unmarshalLabels(labelsRaw))
+		diags = appendError(diags, err)
+	}
+
+	if len(metadata.Annotations) > 0 {
+		err = d.Set("annotations", metadata.Annotations)
 		diags = appendError(diags, err)
 	}
 
