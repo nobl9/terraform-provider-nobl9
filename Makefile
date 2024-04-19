@@ -7,9 +7,9 @@ NAMESPACE=nobl9
 NAME=nobl9
 BIN_DIR=./bin
 BINARY=$(BIN_DIR)/terraform-provider-$(NAME)
-VERSION=0.25.0
+VERSION=0.26.0
 BUILD_FLAGS="-X github.com/nobl9/terraform-provider-nobl9/nobl9.Version=$(VERSION)"
-OS_ARCH?=linux_amd64
+OS_ARCH?=darwin_arm64
 
 # renovate datasource=github-releases depName=securego/gosec
 GOSEC_VERSION := v2.19.0
