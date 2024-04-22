@@ -3387,3 +3387,30 @@ resource "nobl9_slo" "%s" {
 }
 `, name, name, serviceName, testProject, agentName, testProject)
 }
+
+func testAlertPolicyWithoutAnyAlertMethod(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_policy" "%s" {
+  name       = "%s"
+  project    = "%s"
+  severity   = "Medium"
+
+  condition {
+	  measurement = "burnedBudget"
+	  value 	  = 0.9
+	}
+
+  condition {
+	  measurement = "averageBurnRate"
+	  value 	  = 3
+	  lasts_for	  = "1m"
+	}
+
+  condition {
+	  measurement  = "timeToBurnBudget"
+	  value_string = "1h"
+	  lasts_for	   = "300s"
+	}
+}
+`, name, name, testProject)
+}
