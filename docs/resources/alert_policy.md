@@ -118,6 +118,7 @@ Optional:
 
 - `alerting_window` (String) Duration over which the burn rate is evaluated.
 - `lasts_for` (String) Indicates how long a given condition needs to be valid to mark the condition as true.
+- `op` (String) A mathematical inequality operator. One of `lt` | `lte` | `gt` | `gte`.
 - `value` (Number) For `averageBurnRate`, it indicates how fast the error budget is burning. For `burnedBudget`, it tells how much error budget is already burned.
 - `value_string` (String) Used with `timeToBurnBudget` or `timeToBurnEntireBudget`, indicates when the budget would be exhausted. The expected value is a string in time duration string format.
 
