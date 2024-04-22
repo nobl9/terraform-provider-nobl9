@@ -42,9 +42,9 @@ define _print_check_step
 	printf -- '------\n%s...\n' "${1}"
 endef
 
-.PHONY: install
+.PHONY: install/provider
 ## Install provider locally.
-install: build
+install/provider: build
 	mkdir -p ~/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(NAME)/$(VERSION)/$(OS_ARCH)
 	mv $(BINARY) ~/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(NAME)/$(VERSION)/$(OS_ARCH)
 

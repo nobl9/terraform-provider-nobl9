@@ -66,6 +66,18 @@ func schemaLabels() *schema.Schema {
 	}
 }
 
+func schemaAnnotations() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeMap,
+		Optional:    true,
+		Description: "[Metadata annotations](https://docs.nobl9.com/Features/Labels/#metadata-annotations) attached to the resource.",
+		Elem: &schema.Schema{
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+	}
+}
+
 func validateNotEmptyString(variableName string) func(interface{}, string) ([]string, []error) {
 	return func(valueRaw interface{}, _ string) ([]string, []error) {
 		if valueRaw.(string) == "" {
@@ -180,6 +192,17 @@ func getMarshaledLabels(d *schema.ResourceData) (v1alpha.Labels, diag.Diagnostic
 		labels = labelsData.([]interface{})
 	}
 	return marshalLabels(labels)
+}
+
+func getMarshaledAnnotations(d *schema.ResourceData) v1alpha.MetadataAnnotations {
+	rawAnnotations := d.Get("annotations").(map[string]interface{})
+	annotations := make(map[string]string, len(rawAnnotations))
+
+	for k, v := range rawAnnotations {
+		annotations[k] = v.(string)
+	}
+
+	return annotations
 }
 
 func marshalLabels(labels []interface{}) (v1alpha.Labels, diag.Diagnostics) {

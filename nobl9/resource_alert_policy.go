@@ -19,6 +19,7 @@ func resourceAlertPolicy() *schema.Resource {
 			"display_name": schemaDisplayName(),
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
+			"annotations":  schemaAnnotations(),
 			"severity": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -144,12 +145,15 @@ func marshalAlertPolicy(d *schema.ResourceData) (*v1alphaAlertPolicy.AlertPolicy
 		return nil, diags
 	}
 
+	annotationsMarshaled := getMarshaledAnnotations(d)
+
 	alertPolicy := v1alphaAlertPolicy.New(
 		v1alphaAlertPolicy.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
 			Labels:      labelsMarshaled,
+			Annotations: annotationsMarshaled,
 		},
 		v1alphaAlertPolicy.Spec{
 			Description:      d.Get("description").(string),
@@ -233,6 +237,11 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alphaAlertPolicy.A
 
 	if labelsRaw := metadata.Labels; len(labelsRaw) > 0 {
 		err = d.Set("label", unmarshalLabels(labelsRaw))
+		diags = appendError(diags, err)
+	}
+
+	if len(metadata.Annotations) > 0 {
+		err = d.Set("annotations", metadata.Annotations)
 		diags = appendError(diags, err)
 	}
 
