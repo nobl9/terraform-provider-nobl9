@@ -187,12 +187,7 @@ func marshalAlertConditions(d *schema.ResourceData) []v1alphaAlertPolicy.AlertCo
 		}
 
 		measurement := condition["measurement"].(string)
-		op := "gte"
-		if measurement == "timeToBurnBudget" {
-			op = "lt"
-		} else if measurement == "timeToBurnEntireBudget" {
-			op = "lte"
-		}
+		op := defaultOperatorForMeasurement(measurement)
 
 		lastsFor := condition["lasts_for"].(string)
 		alertingWindow := condition["alerting_window"].(string)
@@ -347,4 +342,18 @@ func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 	return nil
+}
+
+func defaultOperatorForMeasurement(measurement string) string {
+	switch measurement {
+	case "timeToBurnBudget":
+		return "lt"
+	case "timeToBurnEntireBudget":
+		return "lte"
+	case "burnedBudget", "averageBurnRate":
+		return "gte"
+	default:
+		// Unknown measurement, so let API to decide what to do.
+		return ""
+	}
 }
