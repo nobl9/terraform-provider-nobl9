@@ -135,7 +135,7 @@ resource "nobl9_alert_policy" "remaining_exhaustion_prediction_3d_lasts_for" {
 }
 
 # Fast exhaustion below budget
-resource "nobl9_alert_policy" "fast_exhaustion_bewlo_budget_alerting_window" {
+resource "nobl9_alert_policy" "fast_exhaustion_below_budget_alerting_window" {
   name         = "fast-exhaustion-below-budget-alerting-window"
   project      = nobl9_project.this.name
   display_name = "${nobl9_project.this.display_name} Fast exhaustion below budget (3d)"
