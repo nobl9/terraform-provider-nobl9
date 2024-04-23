@@ -12,9 +12,17 @@ import (
 )
 
 func TestAcc_Nobl9AlertPolicy(t *testing.T) {
-	// @todo
-	// alert policy with with multiple alert methods
-	// alert policy with with multiple alert methods reversed
+	alertMethodsRes := func() string {
+		return fmt.Sprintf(`
+%s
+%s
+%s
+`,
+			alertMethodConfig("am1", "am1", testProject),
+			alertMethodConfig("am2", "am2", testProject),
+			alertMethodConfig("am3", "am3", testProject),
+		)
+	}
 
 	for scenario, alertPolicyConfig := range map[string]alertPolicyConfig{
 		// Test optional description.
@@ -80,6 +88,40 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 		// Test alert methods
 		"alert policy with no alert method": {
 			OverrideAlertMethodsBlock: ``,
+		},
+		"alert policy with multiple alert method": {
+			AdditionalResources: alertMethodsRes(),
+			OverrideAlertMethodsBlock: fmt.Sprintf(`
+			alert_method {
+				name = nobl9_alert_method_slack.am1
+				project = %s
+			}
+			alert_method {
+				name = nobl9_alert_method_slack.am2
+				project = %s
+			}
+			alert_method {
+				name = nobl9_alert_method_slack.am3
+				project = %s
+			}
+			`, testProject, testProject, testProject),
+		},
+		"alert policy with multiple alert method reversed": {
+			AdditionalResources: alertMethodsRes(),
+			OverrideAlertMethodsBlock: fmt.Sprintf(`
+			alert_method {
+				name = nobl9_alert_method_slack.am3
+				project = %s
+			}
+			alert_method {
+				name = nobl9_alert_method_slack.am2
+				project = %s
+			}
+			alert_method {
+				name = nobl9_alert_method_slack.am1
+				project = %s
+			}
+			`, testProject, testProject, testProject),
 		},
 		// Measurement: burnedBudget
 		"burned budget with default operator and lasts for": {
@@ -228,16 +270,12 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 			resourceName := strings.Replace(scenario, " ", "_", -1)
 			alertPolicyName := strings.Replace(scenario, " ", "-", -1)
 
-			alertPolicyConfig.Name = alertPolicyName
-			alertPolicyConfig.ResourceName = resourceName
-			alertPolicyConfig.Project = testProject
-
-			res := alertPolicyConfig.String()
+			res := alertPolicyConfig.Build(resourceName, alertPolicyName, testProject)
 
 			resource.Test(t, resource.TestCase{
 				ProviderFactories: ProviderFactory(),
 				CheckDestroy: destroyMultiple(
-					[]string{"nobl9_alert_policy", "nobl9_alert_method_webhook"},
+					[]string{"nobl9_alert_policy", "nobl9_alert_method_slack"},
 					[]manifest.Kind{manifest.KindAlertPolicy, manifest.KindAlertMethod},
 				),
 				Steps: []resource.TestStep{
@@ -270,18 +308,15 @@ func destroyMultiple(rsTypes []string, kinds []manifest.Kind) resource.TestCheck
 }
 
 type alertPolicyConfig struct {
-	Name         string
-	ResourceName string
-	Project      string
-
 	OverrideDisplayNameBlock  string
 	OverrideDescriptionBlock  string
 	OverrideCooldownBlock     string
 	OverrideConditionsBlock   string
 	OverrideAlertMethodsBlock string
+	AdditionalResources       string
 }
 
-func (ap alertPolicyConfig) String() string {
+func (ap alertPolicyConfig) Build(resourceName, name, project string) string {
 	const defaultCondition = `
 	condition {
 		measurement = "burnedBudget"
@@ -290,11 +325,12 @@ func (ap alertPolicyConfig) String() string {
 
 	b := strings.Builder{}
 	b.WriteString(fmt.Sprintf(`
-resource "nobl9_alert_policy" "%s" {`, ap.ResourceName))
+%s
+resource "nobl9_alert_policy" "%s" {`, ap.AdditionalResources, resourceName))
 	b.WriteString("\n	")
-	b.WriteString(fmt.Sprintf(`name = "%s"`, strings.Replace(ap.ResourceName, "_", "-", -1)))
+	b.WriteString(fmt.Sprintf(`name = "%s"`, name))
 	b.WriteString("\n	")
-	b.WriteString(fmt.Sprintf(`project = "%s"`, ap.Project))
+	b.WriteString(fmt.Sprintf(`project = "%s"`, project))
 	b.WriteString("\n	")
 	b.WriteString(`severity = "Low"`)
 	b.WriteString("\n	")
@@ -322,4 +358,15 @@ resource "nobl9_alert_policy" "%s" {`, ap.ResourceName))
 	b.WriteString(`
 }`)
 	return b.String()
+}
+
+func alertMethodConfig(resourceName, name, project string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_slack" "%s" {
+  name        = "%s"
+  project     = "%s"
+  description = "slack"
+  url         = "https://slack.com"
+}
+`, resourceName, name, project)
 }
