@@ -40,6 +40,11 @@ resource "nobl9_service" "%s" {
    key = "dev"
    values = ["dev", "staging", "prod"]
   }
+
+  annotations = {
+   env = "development"
+   name = "example annotation"
+  }
 }
 `, name, name, name, testProject)
 }

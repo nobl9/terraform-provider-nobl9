@@ -99,6 +99,7 @@ resource "nobl9_alert_policy" "this" {
 ### Optional
 
 - `alert_method` (Block List) (see [below for nested schema](#nestedblock--alert_method))
+- `annotations` (Map of String) [Metadata annotations](https://docs.nobl9.com/Features/Labels/#metadata-annotations) attached to the resource.
 - `cooldown` (String) An interval measured from the last time stamp when all alert policy conditions were satisfied before alert is marked as resolved
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.

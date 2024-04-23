@@ -81,6 +81,11 @@ resource "nobl9_project" "%s" {
     key    = "env"
     values = ["dev", "staging", "prod"]
   }
+
+  annotations = {
+    env  = "development"
+    name = "example annotation"
+  }
 }
 `, name, name, name)
 }

@@ -252,6 +252,7 @@ func schemaSLO() map[string]*schema.Schema {
 		"project":      schemaProject(),
 		"description":  schemaDescription(),
 		"label":        schemaLabels(),
+		"annotations":  schemaAnnotations(),
 		"composite": {
 			Type:        schema.TypeSet,
 			Optional:    true,
@@ -573,6 +574,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 	if diags.HasError() {
 		return nil, diags
 	}
+	annotationsMarshaled := getMarshaledAnnotations(d)
 
 	slo := v1alphaSLO.New(
 		v1alphaSLO.Metadata{
@@ -580,6 +582,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 			DisplayName: displayName,
 			Project:     d.Get("project").(string),
 			Labels:      labelsMarshaled,
+			Annotations: annotationsMarshaled,
 		},
 		v1alphaSLO.Spec{
 			Description:     d.Get("description").(string),
@@ -855,6 +858,11 @@ func unmarshalSLO(d *schema.ResourceData, objects []v1alphaSLO.SLO) diag.Diagnos
 
 	if labelsRaw := metadata.Labels; len(labelsRaw) > 0 {
 		err = d.Set("label", unmarshalLabels(labelsRaw))
+		diags = appendError(diags, err)
+	}
+
+	if len(metadata.Annotations) > 0 {
+		err = d.Set("annotations", metadata.Annotations)
 		diags = appendError(diags, err)
 	}
 

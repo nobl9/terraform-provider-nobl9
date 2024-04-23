@@ -13,6 +13,17 @@ import (
 
 func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 	for scenario, alertPolicyConfig := range map[string]alertPolicyConfig{
+		// Test optional annotations.
+		"alert policy with no annotations": {
+			OverrideAnnotationsBlock: ``,
+		},
+		"alert policy with annotations": {
+			OverrideAnnotationsBlock: `
+				annotations = {
+					env  = "development"
+					name = "example annotation"
+				}`,
+		},
 		// Test optional description.
 		"alert policy with no description": {
 			OverrideDescriptionBlock: ``,
@@ -348,6 +359,7 @@ type alertPolicyConfig struct {
 	OverrideConditionsBlock   string
 	OverrideSeverityBlock     string
 	OverrideAlertMethodsBlock string
+	OverrideAnnotationsBlock  string
 	AdditionalResources       string
 }
 
@@ -367,6 +379,10 @@ resource "nobl9_alert_policy" "%s" {`, ap.AdditionalResources, resourceName))
 	b.WriteString("\n	")
 	b.WriteString(fmt.Sprintf(`project = "%s"`, project))
 	b.WriteString("\n	")
+	if ap.OverrideAnnotationsBlock != "" {
+		b.WriteString(ap.OverrideAnnotationsBlock)
+		b.WriteString("\n	")
+	}
 	if ap.OverrideSeverityBlock == "" {
 		b.WriteString(`severity = "Low"`)
 	} else {
