@@ -12,18 +12,6 @@ import (
 )
 
 func TestAcc_Nobl9AlertPolicy(t *testing.T) {
-	alertMethodsRes := func() string {
-		return fmt.Sprintf(`
-%s
-%s
-%s
-`,
-			alertMethodConfig("am1", "am1", testProject),
-			alertMethodConfig("am2", "am2", testProject),
-			alertMethodConfig("am3", "am3", testProject),
-		)
-	}
-
 	for scenario, alertPolicyConfig := range map[string]alertPolicyConfig{
 		// Test optional description.
 		"alert policy with no description": {
@@ -49,221 +37,267 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 		// Test multiple conditions order.
 		"alert policy with multiple conditions": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement = "burnedBudget"
-				value 	  	= 0.9
-			}
+				condition {
+					measurement = "burnedBudget"
+					value 	  	= 0.9
+				}
 
-			condition {
-				measurement	= "averageBurnRate"
-				value 	  	= 3
-				lasts_for	= "1m"
-			}
+				condition {
+					measurement	= "averageBurnRate"
+					value 	  	= 3
+					lasts_for	= "1m"
+				}
 
-			condition {
-				measurement  = "timeToBurnBudget"
-				value_string = "1h"
-				lasts_for	 = "300s"
-			}`,
+				condition {
+					measurement  = "timeToBurnBudget"
+					value_string = "1h"
+					lasts_for	 = "300s"
+				}`,
 		},
 		"alert policy with multiple conditions reversed": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement  = "timeToBurnBudget"
-				value_string = "1h"
-				lasts_for	 = "300s"
-			}
+				condition {
+					measurement  = "timeToBurnBudget"
+					value_string = "1h"
+					lasts_for	 = "300s"
+				}
 
-			condition {
-				measurement = "burnedBudget"
-				value 	  	= 0.9
-			}
+				condition {
+					measurement = "burnedBudget"
+					value 	  	= 0.9
+				}
 
-			condition {
-				measurement = "averageBurnRate"
-				value 	  	= 3
-				lasts_for	= "1m"
-			}`,
+				condition {
+					measurement = "averageBurnRate"
+					value 	  	= 3
+					lasts_for	= "1m"
+				}`,
 		},
 		// Test alert methods
 		"alert policy with no alert method": {
 			OverrideAlertMethodsBlock: ``,
 		},
 		"alert policy with multiple alert method": {
-			AdditionalResources: alertMethodsRes(),
+			AdditionalResources: fmt.Sprintf(`
+			resource "nobl9_alert_method_slack" "%s" {
+				name        = "%s"
+				project     = "%s"
+				description = "slack"
+				url         = "https://slack.com"
+			}
+			resource "nobl9_alert_method_slack" "%s" {
+				name        = "%s"
+				project     = "%s"
+				description = "slack"
+				url         = "https://slack.com"
+			}
+			resource "nobl9_alert_method_slack" "%s" {
+				name        = "%s"
+				project     = "%s"
+				description = "slack"
+				url         = "https://slack.com"
+			}
+			`,
+				"am1", "am1", testProject,
+				"am2", "am2", testProject,
+				"am3", "am3", testProject,
+			),
 			OverrideAlertMethodsBlock: fmt.Sprintf(`
 			alert_method {
-				name = nobl9_alert_method_slack.am1
-				project = %s
+				name = nobl9_alert_method_slack.am1.name
+				project = "%s"
 			}
 			alert_method {
-				name = nobl9_alert_method_slack.am2
-				project = %s
+				name = nobl9_alert_method_slack.am2.name
+				project = "%s"
 			}
 			alert_method {
-				name = nobl9_alert_method_slack.am3
-				project = %s
+				name = nobl9_alert_method_slack.am3.name
+				project = "%s"
 			}
 			`, testProject, testProject, testProject),
 		},
 		"alert policy with multiple alert method reversed": {
-			AdditionalResources: alertMethodsRes(),
+			AdditionalResources: fmt.Sprintf(`
+			resource "nobl9_alert_method_slack" "%s" {
+				name        = "%s"
+				project     = "%s"
+				description = "slack"
+				url         = "https://slack.com"
+			}
+			resource "nobl9_alert_method_slack" "%s" {
+				name        = "%s"
+				project     = "%s"
+				description = "slack"
+				url         = "https://slack.com"
+			}
+			resource "nobl9_alert_method_slack" "%s" {
+				name        = "%s"
+				project     = "%s"
+				description = "slack"
+				url         = "https://slack.com"
+			}
+			`,
+				"am1", "am1", testProject,
+				"am2", "am2", testProject,
+				"am3", "am3", testProject,
+			),
 			OverrideAlertMethodsBlock: fmt.Sprintf(`
 			alert_method {
-				name = nobl9_alert_method_slack.am3
-				project = %s
+				name = nobl9_alert_method_slack.am3.name
+				project = "%s"
 			}
 			alert_method {
-				name = nobl9_alert_method_slack.am2
-				project = %s
+				name = nobl9_alert_method_slack.am2.name
+				project = "%s"
 			}
 			alert_method {
-				name = nobl9_alert_method_slack.am1
-				project = %s
+				name = nobl9_alert_method_slack.am1.name
+				project = "%s"
 			}
 			`, testProject, testProject, testProject),
 		},
 		// Measurement: burnedBudget
 		"burned budget with default operator and lasts for": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement = "burnedBudget"
-				value 	  	= 1.0
-			}`,
+				condition {
+					measurement = "burnedBudget"
+					value 	  	= 1.0
+				}`,
 		},
 		"burned budget with value 0": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement = "burnedBudget"
-				value 	  	= 0.0
-			}`,
+				condition {
+					measurement = "burnedBudget"
+					value 	  	= 0.0
+				}`,
 		},
 		"burned budget with explicit default operator": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement = "burnedBudget"
-				value 	  	= 1.0
-				op			= "gte"
-			}`,
+				condition {
+					measurement = "burnedBudget"
+					value 	  	= 1.0
+					op			= "gte"
+				}`,
 		},
 		"burned budget with custom operator": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement = "burnedBudget"
-				value 	  	= 1.0
-				op			= "lt"
-			}`,
+				condition {
+					measurement = "burnedBudget"
+					value 	  	= 1.0
+					op			= "lt"
+				}`,
 		},
 		"burned budget with custom lasts for": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement = "burnedBudget"
-				value 	  	= 1.0
-				lasts_for	= "10m"
-			}`,
+				condition {
+					measurement = "burnedBudget"
+					value 	  	= 1.0
+					lasts_for	= "10m"
+				}`,
 		},
 		// Measurement: averageBurnRate
 		"average burn rate with default operator and lasts for": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement = "averageBurnRate"
-				value 	  	= 1.0
-			}`,
+				condition {
+					measurement = "averageBurnRate"
+					value 	  	= 1.0
+				}`,
 		},
 		"average burn rate with value 0": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement = "averageBurnRate"
-				value 	  	= 0.0
-			}`,
+				condition {
+					measurement = "averageBurnRate"
+					value 	  	= 0.0
+				}`,
 		},
 		"average burn rate with explicit default operator": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement = "averageBurnRate"
-				value 	  	= 1.0
-				op			= "gte"
-			}`,
+				condition {
+					measurement = "averageBurnRate"
+					value 	  	= 1.0
+					op			= "gte"
+				}`,
 		},
 		"average burn rate with custom lasts for": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement = "averageBurnRate"
-				value 	  	= 1.0
-				lasts_for	= "10m"
-			}`,
+				condition {
+					measurement = "averageBurnRate"
+					value 	  	= 1.0
+					lasts_for	= "10m"
+				}`,
 		},
 		"average burn rate with custom alerting window": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement 	= "averageBurnRate"
-				value 	  		= 1.0
-				alerting_window	= "10m"
-			}`,
+				condition {
+					measurement 	= "averageBurnRate"
+					value 	  		= 1.0
+					alerting_window	= "10m"
+				}`,
 		},
 		// Measurement: timeToBurnBudget
 		"time to burn budget with default operator and lasts for": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement 	= "timeToBurnBudget"
-				value_string 	= "6h"
-			}`,
+				condition {
+					measurement 	= "timeToBurnBudget"
+					value_string 	= "6h"
+				}`,
 		},
 		"time to burn budget with explicit default operator": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement 	= "timeToBurnBudget"
-				value_string 	= "6h"
-				op				= "lt"
-			}`,
+				condition {
+					measurement 	= "timeToBurnBudget"
+					value_string 	= "6h"
+					op				= "lt"
+				}`,
 		},
 		"time to burn budget with custom lasts for": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement 	= "timeToBurnBudget"
-				value_string 	= "6h"
-				lasts_for		= "10m"
-			}`,
+				condition {
+					measurement 	= "timeToBurnBudget"
+					value_string 	= "6h"
+					lasts_for		= "10m"
+				}`,
 		},
 		"time to burn budget with custom alerting window": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement 	= "timeToBurnBudget"
-				value_string 	= "6h"
-				alerting_window	= "10m"
-			}`,
+				condition {
+					measurement 	= "timeToBurnBudget"
+					value_string 	= "6h"
+					alerting_window	= "10m"
+				}`,
 		},
 		// Measurement: timeToBurnEntireBudget
 		"time to burn entire budget with default operator and lasts for": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement 	= "timeToBurnEntireBudget"
-				value_string 	= "6h"
-			}`,
+				condition {
+					measurement 	= "timeToBurnEntireBudget"
+					value_string 	= "6h"
+				}`,
 		},
 		"time to burn entire budget with explicit default operator": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement 	= "timeToBurnEntireBudget"
-				value_string 	= "6h"
-				op				= "lte"
-			}`,
+				condition {
+					measurement 	= "timeToBurnEntireBudget"
+					value_string 	= "6h"
+					op				= "lte"
+				}`,
 		},
 		"time to burn entire budget with custom lasts for": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement 	= "timeToBurnEntireBudget"
-				value_string 	= "6h"
-				lasts_for		= "10m"
-			}`,
+				condition {
+					measurement 	= "timeToBurnEntireBudget"
+					value_string 	= "6h"
+					lasts_for		= "10m"
+				}`,
 		},
 		"time to burn entire budget with custom alerting window": {
 			OverrideConditionsBlock: `
-			condition {
-				measurement 	= "timeToBurnEntireBudget"
-				value_string 	= "6h"
-				alerting_window	= "10m"
-			}`,
+				condition {
+					measurement 	= "timeToBurnEntireBudget"
+					value_string 	= "6h"
+					alerting_window	= "10m"
+				}`,
 		},
 	} {
 		t.Run(scenario, func(t *testing.T) {
@@ -312,6 +346,7 @@ type alertPolicyConfig struct {
 	OverrideDescriptionBlock  string
 	OverrideCooldownBlock     string
 	OverrideConditionsBlock   string
+	OverrideSeverityBlock     string
 	OverrideAlertMethodsBlock string
 	AdditionalResources       string
 }
@@ -332,7 +367,11 @@ resource "nobl9_alert_policy" "%s" {`, ap.AdditionalResources, resourceName))
 	b.WriteString("\n	")
 	b.WriteString(fmt.Sprintf(`project = "%s"`, project))
 	b.WriteString("\n	")
-	b.WriteString(`severity = "Low"`)
+	if ap.OverrideSeverityBlock == "" {
+		b.WriteString(`severity = "Low"`)
+	} else {
+		b.WriteString(ap.OverrideSeverityBlock)
+	}
 	b.WriteString("\n	")
 	if ap.OverrideCooldownBlock != "" {
 		b.WriteString(ap.OverrideCooldownBlock)
@@ -358,15 +397,4 @@ resource "nobl9_alert_policy" "%s" {`, ap.AdditionalResources, resourceName))
 	b.WriteString(`
 }`)
 	return b.String()
-}
-
-func alertMethodConfig(resourceName, name, project string) string {
-	return fmt.Sprintf(`
-resource "nobl9_alert_method_slack" "%s" {
-  name        = "%s"
-  project     = "%s"
-  description = "slack"
-  url         = "https://slack.com"
-}
-`, resourceName, name, project)
 }
