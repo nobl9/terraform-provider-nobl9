@@ -312,8 +312,8 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 		},
 	} {
 		t.Run(scenario, func(t *testing.T) {
-			resourceName := strings.Replace(scenario, " ", "_", -1)
-			alertPolicyName := strings.Replace(scenario, " ", "-", -1)
+			resourceName := strings.ReplaceAll(scenario, " ", "_")
+			alertPolicyName := strings.ReplaceAll(scenario, " ", "-")
 
 			res := alertPolicyConfig.Build(resourceName, alertPolicyName, testProject)
 
