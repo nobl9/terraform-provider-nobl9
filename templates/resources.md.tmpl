@@ -16,5 +16,5 @@ There are many types of resources in the Nobl9 platform, which you can configure
 There are couple of resources that cannot be configured using Terraform Provider.
 Their creation and management are limited to sloctl/UI.
 This is the list that are not supported in this provider:
-- [SLO Annotations](https://docs.nobl9.com/Features/SLO_Annotations/)
+- [SLO Annotations](https://docs.nobl9.com/features/slo-annotations/)
 - Alert Silences

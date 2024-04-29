@@ -63,6 +63,6 @@ resource "nobl9_role_binding" "this" {
 
 ## Useful Links
 
-[Role Based Access Control in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/Getting_Started/RBAC/)
+[Role Based Access Control in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/getting-started/rbac/)
 
-[Role Binding YAML Configuration | Nobl9 Documentation](https://docs.nobl9.com/Getting_Started/RBAC/role-binding-yaml)
+[Role Binding YAML Configuration | Nobl9 Documentation](https://docs.nobl9.com/getting-started/rbac/role-binding-yaml)

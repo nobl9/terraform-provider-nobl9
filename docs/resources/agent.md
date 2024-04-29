@@ -65,9 +65,9 @@ resource "nobl9_agent" "this" {
 - `opentsdb_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#opentsdb-agent) (see [below for nested schema](#nestedblock--opentsdb_config))
 - `pingdom_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#pingdom-agent) (see [below for nested schema](#nestedblock--pingdom_config))
 - `prometheus_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#prometheus-agent) (see [below for nested schema](#nestedblock--prometheus_config))
-- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
+- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `redshift_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-agent) (see [below for nested schema](#nestedblock--redshift_config))
-- `release_channel` (String) Release channel of the created datasource [stable/beta]
+- `release_channel` (String) Release channel of the created data source [stable/beta]
 - `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 - `splunk_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent) (see [below for nested schema](#nestedblock--splunk_config))
 - `splunk_observability_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-agent) (see [below for nested schema](#nestedblock--splunk_observability_config))

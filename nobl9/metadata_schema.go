@@ -41,7 +41,7 @@ func schemaLabels() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeList,
 		Optional:         true,
-		Description:      "[Labels](https://docs.nobl9.com/Features/labels/) containing a single key and a list of values.",
+		Description:      "[Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values.",
 		DiffSuppressFunc: diffSuppressLabels,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -70,7 +70,7 @@ func schemaAnnotations() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeMap,
 		Optional:    true,
-		Description: "[Metadata annotations](https://docs.nobl9.com/Features/Labels/#metadata-annotations) attached to the resource.",
+		Description: "[Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.",
 		Elem: &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
