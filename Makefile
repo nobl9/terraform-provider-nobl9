@@ -16,7 +16,7 @@ GOSEC_VERSION := v2.19.0
 # renovate datasource=github-releases depName=golangci/golangci-lint
 GOLANGCI_LINT_VERSION := v1.57.2
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
-GOVULNCHECK_VERSION := v1.0.4
+GOVULNCHECK_VERSION := v1.1.0
 # renovate datasource=go depName=golang.org/x/tools/cmd/goimports
 GOIMPORTS_VERSION := v0.19.0
 # renovate datasource=github-releases depName=segmentio/golines
@@ -42,9 +42,9 @@ define _print_check_step
 	printf -- '------\n%s...\n' "${1}"
 endef
 
-.PHONY: install
+.PHONY: install/provider
 ## Install provider locally.
-install: build
+install/provider: build
 	mkdir -p ~/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(NAME)/$(VERSION)/$(OS_ARCH)
 	mv $(BINARY) ~/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(NAME)/$(VERSION)/$(OS_ARCH)
 
