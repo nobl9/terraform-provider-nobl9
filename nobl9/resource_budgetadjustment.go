@@ -135,10 +135,10 @@ func resourceBudgetAdjustmentApply(ctx context.Context, d *schema.ResourceData, 
 		return ds
 	}
 
-	budgetAdjustment := marshalBudgetAdjustment(d)
+	adjustment := marshalBudgetAdjustment(d)
 
 	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *retry.RetryError {
-		err := client.Objects().V1().Apply(ctx, []manifest.Object{budgetAdjustment})
+		err := client.Objects().V1().Apply(ctx, []manifest.Object{adjustment})
 		if err != nil {
 			if errors.Is(err, errConcurrencyIssue) {
 				return retry.RetryableError(err)
@@ -150,7 +150,7 @@ func resourceBudgetAdjustmentApply(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(budgetAdjustment.Metadata.Name)
+	d.SetId(adjustment.Metadata.Name)
 	return resourceBudgetAdjustmentRead(ctx, d, meta)
 }
 
@@ -220,23 +220,12 @@ func unmarshalBudgetAdjustment(d *schema.ResourceData, objects []budgetadjustmen
 	var diags diag.Diagnostics
 	var err error
 
-	err = d.Set("name", object.Metadata.Name)
-	diags = appendError(diags, err)
-
-	err = d.Set("display_name", object.Metadata.DisplayName)
-	diags = appendError(diags, err)
-
-	err = d.Set("description", object.Spec.Description)
-	diags = appendError(diags, err)
-
-	err = d.Set("first_event_start", object.Spec.FirstEventStart.Format(time.RFC3339))
-	diags = appendError(diags, err)
-
-	err = d.Set("duration", object.Spec.Duration)
-	diags = appendError(diags, err)
-
-	err = d.Set("rrule", object.Spec.Rrule)
-	diags = appendError(diags, err)
+	diags = appendError(diags, d.Set("name", object.Metadata.Name))
+	diags = appendError(diags, d.Set("display_name", object.Metadata.DisplayName))
+	diags = appendError(diags, d.Set("description", object.Spec.Description))
+	diags = appendError(diags, d.Set("first_event_start", object.Spec.FirstEventStart.Format(time.RFC3339)))
+	diags = appendError(diags, d.Set("duration", object.Spec.Duration))
+	diags = appendError(diags, d.Set("rrule", object.Spec.Rrule))
 
 	err = unmarshalFilters(d, object.Spec.Filters)
 	diags = appendError(diags, err)
