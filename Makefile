@@ -18,7 +18,7 @@ GOLANGCI_LINT_VERSION := v1.57.2
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
 GOVULNCHECK_VERSION := v1.1.0
 # renovate datasource=go depName=golang.org/x/tools/cmd/goimports
-GOIMPORTS_VERSION := v0.19.0
+GOIMPORTS_VERSION := v0.21.0
 # renovate datasource=github-releases depName=segmentio/golines
 GOLINES_VERSION := v0.12.2
 
