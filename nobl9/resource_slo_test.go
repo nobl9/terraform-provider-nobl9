@@ -3395,20 +3395,16 @@ func testMetadataAnnotations(name string) string {
 
 	config := testService(serviceName) +
 		testThousandEyesAgent(agentName) + `
-
 		resource "nobl9_slo" ":name" {
 			name         = ":name"
 			display_name = ":name"
 			project      = ":project"
 			service      = nobl9_service.:serviceName.name
-
 			annotations = {
 				env  = "development"
 				name = "example annotation"
 			}
-
 			budgeting_method = "Occurrences"
-
 			objective {
 				display_name = "obj1"
 				name         = "tf-objective-1"
@@ -3423,13 +3419,11 @@ func testMetadataAnnotations(name string) string {
 					}
 				}
 			}
-
 			time_window {
 				count      = 10
 				is_rolling = true
 				unit       = "Minute"
 			}
-
 			indicator {
 				name    = nobl9_agent.:agentName.name
 				project = ":project"
@@ -3443,4 +3437,31 @@ func testMetadataAnnotations(name string) string {
 	config = strings.ReplaceAll(config, ":project", testProject)
 
 	return config
+}
+
+func testAlertPolicyWithoutAnyAlertMethod(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_policy" "%s" {
+  name       = "%s"
+  project    = "%s"
+  severity   = "Medium"
+
+  condition {
+	  measurement = "burnedBudget"
+	  value 	  = 0.9
+	}
+
+  condition {
+	  measurement = "averageBurnRate"
+	  value 	  = 3
+	  lasts_for	  = "1m"
+	}
+
+  condition {
+	  measurement  = "timeToBurnBudget"
+	  value_string = "1h"
+	  lasts_for	   = "300s"
+	}
+}
+`, name, name, testProject)
 }
