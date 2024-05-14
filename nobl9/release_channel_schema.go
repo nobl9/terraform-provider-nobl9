@@ -17,7 +17,7 @@ func schemaReleaseChannel() *schema.Schema {
 		Type:        schema.TypeString,
 		Optional:    true,
 		Computed:    true,
-		Description: "Release channel of the created datasource [stable/beta]",
+		Description: "Release channel of the created data source [stable/beta]",
 		ValidateDiagFunc: validation.ToDiagFunc(
 			validation.StringInSlice([]string{
 				v1alpha.ReleaseChannelStable.String(),
