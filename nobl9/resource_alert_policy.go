@@ -59,7 +59,7 @@ func resourceAlertPolicy() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Indicates how long a given condition needs to be valid to mark the condition as true.",
-							DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+							DiffSuppressFunc: func(key, oldValue, newValue string, d *schema.ResourceData) bool {
 								// To be backward compatible with lasts for with default=0m that was set before.
 								return oldValue == "0m" && newValue == ""
 							},
@@ -68,6 +68,15 @@ func resourceAlertPolicy() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Duration over which the burn rate is evaluated.",
+						},
+						"op": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "A mathematical inequality operator. One of `lt` | `lte` | `gt` | `gte`.",
+							DiffSuppressFunc: func(key, oldValue, newValue string, d *schema.ResourceData) bool {
+								// To be backward compatible, default operator is set depending on measurement type.
+								return newValue == ""
+							},
 						},
 					},
 				},
@@ -185,17 +194,17 @@ func marshalAlertConditions(d *schema.ResourceData) []v1alphaAlertPolicy.AlertCo
 	resultConditions := make([]v1alphaAlertPolicy.AlertCondition, len(conditions))
 	for i, c := range conditions {
 		condition := c.(map[string]interface{})
+
 		value := condition["value"]
-		if value == 0.0 {
-			value = condition["value_string"]
+		if valueStr, exists := condition["value_string"]; exists && valueStr != "" {
+			value = valueStr
 		}
 
 		measurement := condition["measurement"].(string)
-		op := "gte"
-		if measurement == "timeToBurnBudget" {
-			op = "lt"
-		} else if measurement == "timeToBurnEntireBudget" {
-			op = "lte"
+		op := condition["op"].(string)
+		if op == "" {
+			// To be backward compatible, set default operator depending on measurement type.
+			op = defaultOperatorForMeasurement(measurement)
 		}
 
 		lastsFor := condition["lasts_for"].(string)
@@ -281,6 +290,7 @@ func unmarshalAlertPolicyConditions(conditions []v1alphaAlertPolicy.AlertConditi
 			"value_string":    valueStr,
 			"lasts_for":       condition.LastsForDuration,
 			"alerting_window": condition.AlertingWindow,
+			"op":              condition.Operator,
 		}
 	}
 
@@ -356,4 +366,18 @@ func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 	return nil
+}
+
+func defaultOperatorForMeasurement(measurement string) string {
+	switch measurement {
+	case "timeToBurnBudget":
+		return "lt"
+	case "timeToBurnEntireBudget":
+		return "lte"
+	case "burnedBudget", "averageBurnRate":
+		return "gte"
+	default:
+		// Unknown measurement, so let API to decide what to do.
+		return ""
+	}
 }
