@@ -109,6 +109,7 @@ func Provider() *schema.Provider {
 			"nobl9_project":                                 resourceProject(),
 			"nobl9_role_binding":                            resourceRoleBinding(),
 			"nobl9_slo":                                     resourceSLO(),
+			"nobl9_budget_adjustment":                       budgetAdjustment(),
 		},
 
 		ConfigureContextFunc: providerConfigure,

@@ -26,6 +26,7 @@ ignorePaths:
   - bin/**
 words:
   - apdex
+  - bymonthday
   - dbslo
   - dynatrace
   - endef
@@ -46,6 +47,7 @@ words:
   - opentsdb
   - plantuml
   - promql
+  - rrule
   - securego
   - sloctl
   - slos
