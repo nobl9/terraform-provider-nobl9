@@ -35,9 +35,9 @@ resource "nobl9_direct_pingdom" "test-pingdom" {
 - `api_token` (String, Sensitive) [required] | Pingdom API token.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)
-- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
-- `release_channel` (String) Release channel of the created datasource [stable/beta]
+- `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/features/slo-troubleshooting/event-logs)
+- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
+- `release_channel` (String) Release channel of the created data source [stable/beta]
 - `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only

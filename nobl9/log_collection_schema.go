@@ -11,7 +11,7 @@ func getLogCollectionSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,
-		Description: "[Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)",
+		Description: "[Logs documentation](https://docs.nobl9.com/features/slo-troubleshooting/event-logs)",
 	}
 }
 

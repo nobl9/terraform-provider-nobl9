@@ -911,7 +911,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []v1alphaSLO.SLO) diag.Diagnos
 		Detail: "Nobl9 is introducing an SLO objective unique identifier to support the same value for different " +
 			"SLIs in the same SLO. As such, Nobl9 is adding a name identifier to each SLO objective. " +
 			"Objective names can be set now, and they'll be required once grace period ends. " +
-			"For more detailed information, refer to: https://docs.nobl9.com/Features/slo-objective-unique-identifier",
+			"For more detailed information, refer to: https://docs.nobl9.com/features/slo-objective-unique-identifier",
 	})
 
 	return diags

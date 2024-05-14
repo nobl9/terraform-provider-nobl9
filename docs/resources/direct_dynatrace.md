@@ -47,9 +47,9 @@ resource "nobl9_direct_dynatrace" "test-dynatrace" {
 - `display_name` (String) User-friendly display name of the resource.
 - `dynatrace_token` (String, Sensitive) [required] | Dynatrace Token.
 - `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
-- `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)
-- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
-- `release_channel` (String) Release channel of the created datasource [stable/beta]
+- `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/features/slo-troubleshooting/event-logs)
+- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
+- `release_channel` (String) Release channel of the created data source [stable/beta]
 - `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
