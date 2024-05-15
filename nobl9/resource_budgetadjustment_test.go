@@ -35,7 +35,9 @@ func TestAcc_Nobl9BudgetAdjustments(t *testing.T) {
 }
 
 func testBudgetAdjustmentSingleEvent(name string) string {
-	return fmt.Sprintf(`
+	const sloName = "test-slo"
+	return testPrometheusSLOFull(sloName) +
+		fmt.Sprintf(`
 resource "nobl9_budget_adjustment" "%s" {
   name              = "%s"
   first_event_start = "2022-01-01T00:00:00Z"
@@ -43,17 +45,22 @@ resource "nobl9_budget_adjustment" "%s" {
   filters {
     slos {
       slo {
-        name    = "cloudwatch-ratio-slo"
-        project = "cloudwatch"
+        name    = nobl9_slo.%s.name
+        project = "%s"
       }
     }
   }
 }
-`, name, name)
+`, name, name, sloName, testProject)
 }
 
 func testBudgetAdjustmentRecurringEvent(name string) string {
-	return fmt.Sprintf(`resource "nobl9_budget_adjustment" "%s" {
+	const sloName = "test-slo2"
+	const sloName2 = "test-slo3"
+
+	return testPrometheusSLOFull(sloName) + testPrometheusSLOFull(sloName2) +
+		fmt.Sprintf(`
+resource "nobl9_budget_adjustment" "%s" {
   name              = "%s"
   first_event_start = "2022-01-01T00:00:00Z"
   duration          = "1h"
@@ -61,20 +68,24 @@ func testBudgetAdjustmentRecurringEvent(name string) string {
   filters {
     slos {
       slo {
-        name    = "cloudwatch-ratio-slo"
-        project = "cloudwatch"
+        name    = nobl9_slo.%s.name
+        project = "%s"
       }
       slo {
-        name    = "cloudwatch-ratio-slo2"
-        project = "cloudwatch"
+        name    = nobl9_slo.%s.name
+        project = "%s"
       }
     }
   }
-}`, name, name)
+}`, name, name, sloName, testProject, sloName2, testProject)
 }
 
 func testBudgetAdjustmentRecurringEventMultipleSlo(name string) string {
-	return fmt.Sprintf(`
+	const sloName = "test-slo4"
+	const sloName2 = "test-slo5"
+
+	return testPrometheusSLOFull(sloName) + testPrometheusSLOFull(sloName2) +
+		fmt.Sprintf(`
 resource "nobl9_budget_adjustment" "%s" {
   name              = "%s"
   display_name      = "Recurring budget adjustment for the first day of the month."
@@ -85,15 +96,15 @@ resource "nobl9_budget_adjustment" "%s" {
   filters {
     slos {
       slo {
-        name    = "ratio-slo"
-        project = "default"
+        name    = nobl9_slo.%s.name
+        project = "%s"
       }
       slo {
-        name    = "ratio-slo-timeslices"
-        project = "default"
+        name    = nobl9_slo.%s.name
+        project = "%s"
       }
     }
   }
 }
-`, name, name)
+`, name, name, sloName, testProject, sloName2, testProject)
 }
