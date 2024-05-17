@@ -31,6 +31,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 		{"test-influxdb", testInfluxDBAgent},
 		{"test-instana", testInstanaAgent},
 		{"test-lightstep", testLightstepAgent},
+		{"test-logicmonitor", testLogicMonitorAgent},
 		{"test-newrelic", testNewrelicAgent},
 		{"test-opentsdb", testOpenTSDBAgent},
 		{"test-pingdom", testPingdomAgent},
@@ -377,6 +378,24 @@ resource "nobl9_agent" "%s" {
     organization = "acme"
     project		 = "project1"
     url			 = "https://api.lightstep.com"
+  }
+  release_channel = "beta"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
+}
+`, name, name, testProject)
+}
+
+func testLogicMonitorAgent(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  agent_type = "logic_monitor"
+  logic_monitor_config {
+    account = "account-name"
   }
   release_channel = "beta"
   query_delay {

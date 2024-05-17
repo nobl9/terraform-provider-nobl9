@@ -26,6 +26,7 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 		{influxdbDirectType, testInfluxDBDirect},
 		{instanaDirectType, testInstanaDirect},
 		{lightstepDirectType, testLightstepDirect},
+		{logicMonitorDirectType, testLogicMonitorDirect},
 		{newRelicDirectType, testNewrelicDirect},
 		{pingdomDirectType, testPingdomDirect},
 		{redshiftDirectType, testRedshiftDirect},
@@ -315,6 +316,35 @@ resource "nobl9_direct_%s" "%s" {
   }
   log_collection_enabled = true
   release_channel = "stable"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
+}
+`, directType, name, name, testProject)
+}
+
+func testLogicMonitorDirect(directType, name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
+  account = "account_name"
+  account_id = "secret"
+  access_key = "secret"
+  log_collection_enabled = true
+  release_channel = "beta"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
   query_delay {
     unit = "Minute"
     value = 6
