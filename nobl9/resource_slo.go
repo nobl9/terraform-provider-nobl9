@@ -2438,22 +2438,22 @@ func schemaLogicMonitorMetric() map[string]*schema.Schema {
 					"query_type": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Query type: ",
+						Description: "Query type",
 					},
 					"device_data_source_instance_id": {
 						Type:        schema.TypeInt,
 						Required:    true,
-						Description: "ID of the metrics stream",
+						Description: "Device Datasource Instance ID",
 					},
 					"graph_id": {
 						Type:        schema.TypeInt,
 						Required:    true,
-						Description: "Type of data to filter by",
+						Description: "Graph ID",
 					},
 					"line": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "UQL query",
+						Description: "Line",
 					},
 				},
 			},
