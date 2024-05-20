@@ -509,10 +509,10 @@ Optional:
 
 Required:
 
-- `device_data_source_instance_id` (Number) ID of the metrics stream
-- `graph_id` (Number) Type of data to filter by
-- `line` (String) UQL query
-- `query_type` (String) Query type:
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID
+- `graph_id` (Number) Graph ID
+- `line` (String) Line
+- `query_type` (String) Query type: device_metrics
 
 
 <a id="nestedblock--objective--count_metrics--total--newrelic"></a>
@@ -870,10 +870,10 @@ Optional:
 
 Required:
 
-- `device_data_source_instance_id` (Number) ID of the metrics stream
-- `graph_id` (Number) Type of data to filter by
-- `line` (String) UQL query
-- `query_type` (String) Query type:
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID
+- `graph_id` (Number) Graph ID
+- `line` (String) Line
+- `query_type` (String) Query type: device_metrics
 
 
 <a id="nestedblock--objective--count_metrics--bad--newrelic"></a>
@@ -1231,10 +1231,10 @@ Optional:
 
 Required:
 
-- `device_data_source_instance_id` (Number) ID of the metrics stream
-- `graph_id` (Number) Type of data to filter by
-- `line` (String) UQL query
-- `query_type` (String) Query type:
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID
+- `graph_id` (Number) Graph ID
+- `line` (String) Line
+- `query_type` (String) Query type: device_metrics
 
 
 <a id="nestedblock--objective--count_metrics--good--newrelic"></a>
@@ -1600,10 +1600,10 @@ Optional:
 
 Required:
 
-- `device_data_source_instance_id` (Number) ID of the metrics stream
-- `graph_id` (Number) Type of data to filter by
-- `line` (String) UQL query
-- `query_type` (String) Query type:
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID
+- `graph_id` (Number) Graph ID
+- `line` (String) Line
+- `query_type` (String) Query type: device_metrics
 
 
 <a id="nestedblock--objective--raw_metric--query--newrelic"></a>

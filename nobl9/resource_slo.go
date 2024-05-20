@@ -2438,7 +2438,7 @@ func schemaLogicMonitorMetric() map[string]*schema.Schema {
 					"query_type": {
 						Type:        schema.TypeString,
 						Required:    true,
-						Description: "Query type",
+						Description: "Query type: device_metrics",
 					},
 					"device_data_source_instance_id": {
 						Type:        schema.TypeInt,
