@@ -94,10 +94,8 @@ func (a alertMethod) resourceAlertMethodApply(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	am := a.marshalAlertMethod(d)
 	resultAm := manifest.SetDefaultProject([]manifest.Object{am}, config.Project)
 	err := client.Objects().V1().Apply(ctx, resultAm)
@@ -116,10 +114,8 @@ func (a alertMethod) resourceAlertMethodRead(
 	meta interface{},
 ) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	project := d.Get("project").(string)
 	if project == "" {
 		project = config.Project
@@ -136,10 +132,8 @@ func (a alertMethod) resourceAlertMethodRead(
 
 func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	project := d.Get("project").(string)
 	if project == "" {
 		project = config.Project

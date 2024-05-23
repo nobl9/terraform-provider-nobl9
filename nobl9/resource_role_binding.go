@@ -138,10 +138,7 @@ func containsProjectRef(obj v1alphaRoleBinding.RoleBinding) bool {
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
 
 	roleBinding := marshalRoleBinding(d)
 	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *retry.RetryError {
@@ -163,10 +160,8 @@ func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta 
 
 func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
+
 	project := d.Get("project_ref").(string)
 	if project == "" {
 		project = wildcardProject
@@ -183,10 +178,7 @@ func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta i
 
 func resourceRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return ds
-	}
+	client := getClient(config)
 
 	project := d.Get("project_ref").(string)
 	if project == "" {
