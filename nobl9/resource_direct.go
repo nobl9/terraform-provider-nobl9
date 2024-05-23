@@ -802,7 +802,7 @@ func (s logicMonitorDirectSpec) GetSchema() map[string]*schema.Schema {
 	logicMonitorSchema := map[string]*schema.Schema{
 		"account": {
 			Type:        schema.TypeString,
-			Description: "[required] | Account name.",
+			Description: "Account name.",
 			Required:    true,
 		},
 		"account_id": {
