@@ -1308,7 +1308,7 @@ func marshalAgentThousandEyes(d *schema.ResourceData) *v1alphaAgent.ThousandEyes
 	return &v1alphaAgent.ThousandEyesConfig{}
 }
 
-/**
+/*
  * LogicMonitor Agent
  * https://docs.nobl9.com/Sources/logic-monitor#logic-monitor-agent
  */
