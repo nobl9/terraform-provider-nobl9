@@ -1,5 +1,5 @@
 resource "nobl9_direct_logic_monitor" "logic_monitor" {
-  name = "logic_monitor"
+  name = "logic-monitor"
   project = "logic_monitor"
   description = "desc"
   account = "account_name"
