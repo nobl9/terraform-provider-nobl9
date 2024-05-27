@@ -335,16 +335,6 @@ resource "nobl9_direct_%s" "%s" {
   access_key = "secret"
   log_collection_enabled = true
   release_channel = "beta"
-  historical_data_retrieval {
-    default_duration  {
-      unit = "Day"
-      value = 1
-    }
-    max_duration {
-      unit = "Day"
-      value = 10
-    }
-  }
   query_delay {
     unit = "Minute"
     value = 6

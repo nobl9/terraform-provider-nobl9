@@ -810,7 +810,6 @@ func (s logicMonitorDirectSpec) GetSchema() map[string]*schema.Schema {
 			Description: "[required] | Logic Monitor Application account ID.",
 			Computed:    true,
 			Optional:    true,
-			Sensitive:   true,
 			ValidateDiagFunc: validation.ToDiagFunc(
 				validation.StringIsNotEmpty,
 			),
@@ -827,7 +826,7 @@ func (s logicMonitorDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setLogCollectionSchema(logicMonitorSchema)
-	setHistoricalDataRetrievalSchema(logicMonitorSchema)
+	// TODO: setHistoricalDataRetrievalSchema(logicMonitorSchema)
 
 	return logicMonitorSchema
 }
