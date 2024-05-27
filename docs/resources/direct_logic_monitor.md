@@ -14,8 +14,8 @@ For more information, refer to [Logic Monitor Direct | Nobl9 Documentation](http
 
 ```terraform
 resource "nobl9_direct_logic_monitor" "logic_monitor" {
-  name = "logic_monitor"
-  project = "logic_monitor"
+  name = "logic-monitor"
+  project = "logic-monitor"
   description = "desc"
   account = "account_name"
   account_id = "secret"
