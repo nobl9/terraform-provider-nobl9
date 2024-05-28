@@ -526,6 +526,7 @@ func schemaMetricSpec() *schema.Resource {
 		schemaMetricInfluxDB(),
 		schemaMetricInstana(),
 		schemaMetricLightstep(),
+		schemaLogicMonitorMetric(),
 		schemaMetricNewRelic(),
 		schemaMetricOpenTSDB(),
 		schemaMetricPingdom(),
@@ -826,6 +827,7 @@ func marshalMetric(metric map[string]interface{}) *v1alphaSLO.MetricSpec {
 		InfluxDB:            marshalInfluxDBMetric(metric[influxdbMetric].(*schema.Set)),
 		Instana:             marshalInstanaMetric(metric[instanaMetric].(*schema.Set)),
 		Lightstep:           marshalLightstepMetric(metric[lightstepMetric].(*schema.Set)),
+		LogicMonitor:        marshalLogicMonitorMetric(metric[logicMonitorMetric].(*schema.Set)),
 		NewRelic:            marshalNewRelicMetric(metric[newrelicMetric].(*schema.Set)),
 		OpenTSDB:            marshalOpenTSDBMetric(metric[opentsdbMetric].(*schema.Set)),
 		Pingdom:             marshalPingdomMetric(metric[pingdomMetric].(*schema.Set)),
@@ -1122,6 +1124,7 @@ func unmarshalSLOMetric(spec *v1alphaSLO.MetricSpec) *schema.Set {
 		{influxdbMetric, "InfluxDB", unmarshalInfluxDBMetric},
 		{instanaMetric, "Instana", unmarshalInstanaMetric},
 		{lightstepMetric, "Lightstep", unmarshalLightstepMetric},
+		{logicMonitorMetric, "LogicMonitor", unmarshalLogicMonitorMetric},
 		{newrelicMetric, "NewRelic", unmarshalNewRelicMetric},
 		{opentsdbMetric, "OpenTSDB", unmarshalOpentsdbMetric},
 		{pingdomMetric, "Pingdom", unmarshalPingdomMetric},
@@ -2414,6 +2417,86 @@ func unmarshalLightstepMetric(metric interface{}) map[string]interface{} {
 	res["stream_id"] = lMetric.StreamID
 	res["type_of_data"] = lMetric.TypeOfData
 	res["uql"] = lMetric.UQL
+
+	return res
+}
+
+/**
+ * LogicMonitor Metric
+ * https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor
+ */
+const logicMonitorMetric = "logic_monitor"
+
+func schemaLogicMonitorMetric() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		logicMonitorMetric: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor)",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"query_type": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Query type: device_metrics",
+					},
+					"device_data_source_instance_id": {
+						Type:        schema.TypeInt,
+						Required:    true,
+						Description: "Device Datasource Instance ID",
+					},
+					"graph_id": {
+						Type:        schema.TypeInt,
+						Required:    true,
+						Description: "Graph ID",
+					},
+					"line": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Line",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalLogicMonitorMetric(s *schema.Set) *v1alphaSLO.LogicMonitorMetric {
+	if s.Len() == 0 {
+		return nil
+	}
+
+	metric := s.List()[0].(map[string]interface{})
+
+	var QueryType string
+	if value := metric["query_type"].(string); value != "" {
+		QueryType = value
+	}
+
+	deviceDataSourceInstanceID := metric["device_data_source_instance_id"].(int)
+
+	graphId := metric["graph_id"].(int)
+
+	line := metric["line"].(string)
+
+	return &v1alphaSLO.LogicMonitorMetric{
+		QueryType:                  QueryType,
+		DeviceDataSourceInstanceID: deviceDataSourceInstanceID,
+		GraphID:                    graphId,
+		Line:                       line,
+	}
+}
+
+func unmarshalLogicMonitorMetric(metric interface{}) map[string]interface{} {
+	lMetric, ok := metric.(*v1alphaSLO.LogicMonitorMetric)
+	if !ok {
+		return nil
+	}
+	res := make(map[string]interface{})
+	res["query_type"] = lMetric.QueryType
+	res["device_data_source_instance_id"] = lMetric.DeviceDataSourceInstanceID
+	res["graph_id"] = lMetric.GraphID
+	res["line"] = lMetric.Line
 
 	return res
 }

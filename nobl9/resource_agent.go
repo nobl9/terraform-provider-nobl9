@@ -94,6 +94,7 @@ func agentSchema() map[string]*schema.Schema {
 		schemaAgentInfluxDB(),
 		schemaAgentInstana(),
 		schemaAgentLightstep(),
+		schemaAgentLogicMonitor(),
 		schemaAgentNewRelic(),
 		schemaAgentOpenTSDB(),
 		schemaAgentPingdom(),
@@ -230,6 +231,7 @@ func marshalAgent(d *schema.ResourceData) (*v1alphaAgent.Agent, diag.Diagnostics
 			InfluxDB:                marshalAgentInfluxDB(d, diags),
 			Instana:                 marshalAgentInstana(d, diags),
 			Lightstep:               marshalAgentLightstep(d, diags),
+			LogicMonitor:            marshalAgentLogicMonitor(d, diags),
 			NewRelic:                marshalAgentNewRelic(d, diags),
 			OpenTSDB:                marshalAgentOpenTSDB(d, diags),
 			Prometheus:              marshalAgentPrometheus(d, diags),
@@ -291,6 +293,7 @@ func unmarshalAgent(d *schema.ResourceData, agents []v1alphaAgent.Agent) diag.Di
 		{influxdbAgentConfigKey, agentSpecJSONName(spec.InfluxDB, diags)},
 		{instanaAgentConfigKey, agentSpecJSONName(spec.Instana, diags)},
 		{lightstepAgentConfigKey, agentSpecJSONName(spec.Lightstep, diags)},
+		{logicMonitorAgentConfigKey, agentSpecJSONName(spec.LogicMonitor, diags)},
 		{newRelicAgentConfigKey, agentSpecJSONName(spec.NewRelic, diags)},
 		{opentsdbAgentConfigKey, agentSpecJSONName(spec.OpenTSDB, diags)},
 		{pingdomAgentConfigKey, agentSpecJSONName(spec.Pingdom, diags)},
@@ -1303,6 +1306,46 @@ func marshalAgentThousandEyes(d *schema.ResourceData) *v1alphaAgent.ThousandEyes
 	}
 
 	return &v1alphaAgent.ThousandEyesConfig{}
+}
+
+/*
+ * LogicMonitor Agent
+ * https://docs.nobl9.com/Sources/logic-monitor#logic-monitor-agent
+ */
+const logicMonitorAgentType = "logic_monitor"
+const logicMonitorAgentConfigKey = "logic_monitor_config"
+
+func schemaAgentLogicMonitor() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		logicMonitorAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#logic-monitor-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"account": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "LogicMonitor Account name.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentLogicMonitor(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.LogicMonitorConfig {
+	data := getAgentResourceData(d, logicMonitorAgentType, logicMonitorAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &v1alphaAgent.LogicMonitorConfig{
+		Account: data["account"].(string),
+	}
 }
 
 func getAgentResourceData(

@@ -61,6 +61,7 @@ resource "nobl9_agent" "this" {
 - `influxdb_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#influxdb-agent) (see [below for nested schema](#nestedblock--influxdb_config))
 - `instana_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/instana#instana-agent) (see [below for nested schema](#nestedblock--instana_config))
 - `lightstep_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-agent) (see [below for nested schema](#nestedblock--lightstep_config))
+- `logic_monitor_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#logic-monitor-agent) (see [below for nested schema](#nestedblock--logic_monitor_config))
 - `newrelic_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#new-relic-agent) (see [below for nested schema](#nestedblock--newrelic_config))
 - `opentsdb_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#opentsdb-agent) (see [below for nested schema](#nestedblock--opentsdb_config))
 - `pingdom_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#pingdom-agent) (see [below for nested schema](#nestedblock--pingdom_config))
@@ -216,6 +217,14 @@ Required:
 Optional:
 
 - `url` (String) Lightstep API URL. Nobl9 will use https://api.lightstep.com if empty.
+
+
+<a id="nestedblock--logic_monitor_config"></a>
+### Nested Schema for `logic_monitor_config`
+
+Required:
+
+- `account` (String) LogicMonitor Account name.
 
 
 <a id="nestedblock--newrelic_config"></a>

@@ -1,0 +1,21 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+LogicMonitor is a SaaS-based monitoring platform designed for automated monitoring of IT systems. It centralizes monitoring by providing a unified view of various IT components, including networks, cloud environments, servers, and applications. Nobl9 integration with LogicMonitor allows you to create SLOs on LogicMonitor DataPoints based on a threshold (raw) or ratio (count) metrics.
+
+For more information, refer to {{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Nobl9 Official Documentation
+
+https://docs.nobl9.com/

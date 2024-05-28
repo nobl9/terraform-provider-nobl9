@@ -41,6 +41,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-instana-infra", testInstanaInfrastructureSLO},
 		{"test-instana-app", testInstanaApplicationSLO},
 		{"test-lightstep", testLightstepSLO},
+		{"test-logic-monitor", testLogicMonitorMetricsSLO},
 		{"test-multiple-ap", testMultipleAlertPolicies},
 		{"test-newrelic", testNewRelicSLO},
 		{"test-opentsdb", testOpenTSDBSLO},
@@ -1703,6 +1704,69 @@ resource "nobl9_slo" ":name" {
           stream_id = "id"
           type_of_data = "latency"
           percentile = 95
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testLogicMonitorMetricsSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testLogicMonitorAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        logic_monitor {
+          query_type = "device_metrics"
+          device_data_source_instance_id = "775430648"
+          graph_id = "11354"
+          line = "AVERAGE"
         }
       }
     }

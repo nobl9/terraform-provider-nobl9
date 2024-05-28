@@ -261,6 +261,7 @@ Optional:
 - `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--influxdb))
 - `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana))
 - `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--total--lightstep))
+- `logic_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--total--logic_monitor))
 - `newrelic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--total--newrelic))
 - `opentsdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--opentsdb))
 - `pingdom` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--count_metrics--total--pingdom))
@@ -503,6 +504,17 @@ Optional:
 - `uql` (String) UQL query
 
 
+<a id="nestedblock--objective--count_metrics--total--logic_monitor"></a>
+### Nested Schema for `objective.count_metrics.total.logic_monitor`
+
+Required:
+
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID
+- `graph_id` (Number) Graph ID
+- `line` (String) Line
+- `query_type` (String) Query type: device_metrics
+
+
 <a id="nestedblock--objective--count_metrics--total--newrelic"></a>
 ### Nested Schema for `objective.count_metrics.total.newrelic`
 
@@ -610,6 +622,7 @@ Optional:
 - `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--influxdb))
 - `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--instana))
 - `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--lightstep))
+- `logic_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--logic_monitor))
 - `newrelic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--newrelic))
 - `opentsdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--opentsdb))
 - `pingdom` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--pingdom))
@@ -852,6 +865,17 @@ Optional:
 - `uql` (String) UQL query
 
 
+<a id="nestedblock--objective--count_metrics--bad--logic_monitor"></a>
+### Nested Schema for `objective.count_metrics.bad.logic_monitor`
+
+Required:
+
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID
+- `graph_id` (Number) Graph ID
+- `line` (String) Line
+- `query_type` (String) Query type: device_metrics
+
+
 <a id="nestedblock--objective--count_metrics--bad--newrelic"></a>
 ### Nested Schema for `objective.count_metrics.bad.newrelic`
 
@@ -959,6 +983,7 @@ Optional:
 - `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--influxdb))
 - `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana))
 - `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--good--lightstep))
+- `logic_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good--logic_monitor))
 - `newrelic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--good--newrelic))
 - `opentsdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--opentsdb))
 - `pingdom` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--count_metrics--good--pingdom))
@@ -1201,6 +1226,17 @@ Optional:
 - `uql` (String) UQL query
 
 
+<a id="nestedblock--objective--count_metrics--good--logic_monitor"></a>
+### Nested Schema for `objective.count_metrics.good.logic_monitor`
+
+Required:
+
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID
+- `graph_id` (Number) Graph ID
+- `line` (String) Line
+- `query_type` (String) Query type: device_metrics
+
+
 <a id="nestedblock--objective--count_metrics--good--newrelic"></a>
 ### Nested Schema for `objective.count_metrics.good.newrelic`
 
@@ -1316,6 +1352,7 @@ Optional:
 - `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--raw_metric--query--influxdb))
 - `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana))
 - `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--raw_metric--query--lightstep))
+- `logic_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--raw_metric--query--logic_monitor))
 - `newrelic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--raw_metric--query--newrelic))
 - `opentsdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--raw_metric--query--opentsdb))
 - `pingdom` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--raw_metric--query--pingdom))
@@ -1556,6 +1593,17 @@ Optional:
 - `percentile` (Number) Optional value to filter by percentiles
 - `stream_id` (String) ID of the metrics stream
 - `uql` (String) UQL query
+
+
+<a id="nestedblock--objective--raw_metric--query--logic_monitor"></a>
+### Nested Schema for `objective.raw_metric.query.logic_monitor`
+
+Required:
+
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID
+- `graph_id` (Number) Graph ID
+- `line` (String) Line
+- `query_type` (String) Query type: device_metrics
 
 
 <a id="nestedblock--objective--raw_metric--query--newrelic"></a>

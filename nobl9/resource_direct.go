@@ -792,6 +792,68 @@ func (s lightstepDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaD
 	return
 }
 
+// Logic Monitor Direct
+// https://docs.nobl9.com/Sources/logic-monitor#logic-monitor-direct
+const logicMonitorDirectType = "logic_monitor"
+
+type logicMonitorDirectSpec struct{}
+
+func (s logicMonitorDirectSpec) GetSchema() map[string]*schema.Schema {
+	logicMonitorSchema := map[string]*schema.Schema{
+		"account": {
+			Type:        schema.TypeString,
+			Description: "Account name.",
+			Required:    true,
+		},
+		"account_id": {
+			Type:        schema.TypeString,
+			Description: "[required] | Logic Monitor Application account ID.",
+			Computed:    true,
+			Optional:    true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
+		},
+		"access_key": {
+			Type:        schema.TypeString,
+			Description: "[required] | Logic Monitor Application access key.",
+			Computed:    true,
+			Optional:    true,
+			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
+		},
+	}
+	setLogCollectionSchema(logicMonitorSchema)
+	// TODO: setHistoricalDataRetrievalSchema(logicMonitorSchema)
+
+	return logicMonitorSchema
+}
+
+// nolint: lll
+func (s logicMonitorDirectSpec) GetDescription() string {
+	return "[Logic Monitor Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/logic-monitor#logic-monitor-direct)"
+}
+
+func (s logicMonitorDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+	return v1alphaDirect.Spec{
+		LogicMonitor: &v1alphaDirect.LogicMonitorConfig{
+			Account:   d.Get("account").(string),
+			AccessID:  d.Get("account_id").(string),
+			AccessKey: d.Get("access_key").(string),
+		},
+	}
+}
+
+func (s logicMonitorDirectSpec) UnmarshalSpec(
+	d *schema.ResourceData,
+	spec v1alphaDirect.Spec,
+) (diags diag.Diagnostics) {
+	set(d, "account", spec.LogicMonitor.Account, &diags)
+	return
+}
+
 // New Relic Direct
 // https://docs.nobl9.com/Sources/new-relic#new-relic-direct
 const newRelicDirectType = "newrelic"

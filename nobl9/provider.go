@@ -99,6 +99,7 @@ func Provider() *schema.Provider {
 			"nobl9_direct_" + influxdbDirectType:            resourceDirectFactory(influxdbDirectSpec{}),
 			"nobl9_direct_" + instanaDirectType:             resourceDirectFactory(instanaDirectSpec{}),
 			"nobl9_direct_" + lightstepDirectType:           resourceDirectFactory(lightstepDirectSpec{}),
+			"nobl9_direct_" + logicMonitorDirectType:        resourceDirectFactory(logicMonitorDirectSpec{}),
 			"nobl9_direct_" + newRelicDirectType:            resourceDirectFactory(newRelicDirectSpec{}),
 			"nobl9_direct_" + pingdomDirectType:             resourceDirectFactory(pingdomDirectSpec{}),
 			"nobl9_direct_" + redshiftDirectType:            resourceDirectFactory(redshiftDirectSpec{}),
