@@ -26,7 +26,7 @@ resource "nobl9_service" "this" {
   description  = "Front page service"
 }
 
-resource "nobl9_slo" "this" {
+resource "nobl9_slo" "this1" {
   name             = "${nobl9_project.this.name}-latency"
   service          = nobl9_service.this.name
   budgeting_method = "Occurrences"
@@ -86,7 +86,7 @@ resource "nobl9_slo" "this" {
   }
 }
 
-resource "nobl9_slo" "this" {
+resource "nobl9_slo" "this2" {
   name             = "${nobl9_project.this.name}-ratio"
   service          = nobl9_service.this.name
   budgeting_method = "Occurrences"
@@ -134,6 +134,49 @@ resource "nobl9_slo" "this" {
       alert_method {
         name = "bar-alert-method"
         project = "default"
+      }
+    }
+  }
+}
+
+resource "nobl9_slo" "this-composite" {
+  name             = "${nobl9_project.this.name}-composite"
+  service          = nobl9_service.this.name
+  budgeting_method = "Occurrences"
+  project          =  nobl9_project.this.name
+
+  depends_on = [nobl9_slo.this1, nobl9_slo.this2]
+
+  time_window {
+    unit       = "Day"
+    count      = 3
+    is_rolling = true
+  }
+
+  objective {
+    display_name = "OK"
+    name         = "tf-objective-1"
+    target       = 0.8
+    value        = 1
+    composite {
+      max_delay = "45m"
+      components {
+        objectives {
+          composite_objective {
+            project      = nobl9_project.this.name
+            slo          = nobl9_slo.this1.name
+            objective    = "tf-objective-1"
+            weight       = 0.8
+            when_delayed = "CountAsGood"
+          }
+	 	 composite_objective {
+            project      = nobl9_project.this.name
+            slo          = nobl9_slo.this2.name
+            objective    = "tf-objective-1"
+            weight       = 1.5
+            when_delayed = "Ignore"
+          }
+        }
       }
     }
   }
