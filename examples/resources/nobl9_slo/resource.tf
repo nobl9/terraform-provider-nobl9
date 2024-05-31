@@ -67,7 +67,7 @@ resource "nobl9_slo" "slo_1" {
   }
 
   indicator {
-    name = "test-terraform-prom-agent"
+    name = "test-n9-terraform-prom-agent"
   }
 }
 
@@ -106,7 +106,7 @@ resource "nobl9_slo" "slo_2" {
   }
 
   indicator {
-    name = "test-terraform-prom-agent"
+    name = "test-n9-terraform-prom-agent"
   }
 
   anomaly_config {
