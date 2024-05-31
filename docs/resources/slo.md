@@ -143,7 +143,7 @@ resource "nobl9_slo" "composite_slo" {
   name             = "${nobl9_project.this.name}-composite"
   service          = nobl9_service.this.name
   budgeting_method = "Occurrences"
-  project          =  nobl9_project.this.name
+  project          = nobl9_project.this.name
 
   depends_on = [nobl9_slo.slo_1, nobl9_slo.slo_2]
 
