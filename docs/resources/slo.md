@@ -26,7 +26,7 @@ resource "nobl9_service" "this" {
   description  = "Front page service"
 }
 
-resource "nobl9_slo" "slo1" {
+resource "nobl9_slo" "slo_1" {
   name             = "${nobl9_project.this.name}-latency"
   service          = nobl9_service.this.name
   budgeting_method = "Occurrences"
