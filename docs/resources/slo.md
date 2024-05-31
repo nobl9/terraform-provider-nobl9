@@ -163,14 +163,14 @@ resource "nobl9_slo" "composite_slo" {
       components {
         objectives {
           composite_objective {
-            project      = nobl9_slo.slo_1.project.name
+            project      = nobl9_slo.slo_1.project
             slo          = nobl9_slo.slo_1.name
             objective    = "tf-objective-1"
             weight       = 0.8
             when_delayed = "CountAsGood"
           }
           composite_objective {
-            project      = nobl9_slo.slo_2.project.name
+            project      = nobl9_slo.slo_2.project
             slo          = nobl9_slo.slo_2.name
             objective    = "tf-objective-1"
             weight       = 1.5
