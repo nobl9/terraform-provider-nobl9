@@ -26,7 +26,7 @@ resource "nobl9_service" "this" {
   description  = "Front page service"
 }
 
-resource "nobl9_slo" "this1" {
+resource "nobl9_slo" "slo1" {
   name             = "${nobl9_project.this.name}-latency"
   service          = nobl9_service.this.name
   budgeting_method = "Occurrences"
@@ -86,7 +86,7 @@ resource "nobl9_slo" "this1" {
   }
 }
 
-resource "nobl9_slo" "this2" {
+resource "nobl9_slo" "slo_2" {
   name             = "${nobl9_project.this.name}-ratio"
   service          = nobl9_service.this.name
   budgeting_method = "Occurrences"
@@ -139,13 +139,13 @@ resource "nobl9_slo" "this2" {
   }
 }
 
-resource "nobl9_slo" "this-composite" {
+resource "nobl9_slo" "composite_slo" {
   name             = "${nobl9_project.this.name}-composite"
   service          = nobl9_service.this.name
   budgeting_method = "Occurrences"
   project          =  nobl9_project.this.name
 
-  depends_on = [nobl9_slo.this1, nobl9_slo.this2]
+  depends_on = [nobl9_slo.slo_1, nobl9_slo.slo_2]
 
   time_window {
     unit       = "Day"
@@ -163,15 +163,15 @@ resource "nobl9_slo" "this-composite" {
       components {
         objectives {
           composite_objective {
-            project      = nobl9_project.this.name
-            slo          = nobl9_slo.this1.name
+            project      = nobl9_slo.slo_1.project.name
+            slo          = nobl9_slo.slo_1.name
             objective    = "tf-objective-1"
             weight       = 0.8
             when_delayed = "CountAsGood"
           }
 	 	 composite_objective {
-            project      = nobl9_project.this.name
-            slo          = nobl9_slo.this2.name
+            project      = nobl9_slo.slo_2.project.name
+            slo          = nobl9_slo.slo_2.name
             objective    = "tf-objective-1"
             weight       = 1.5
             when_delayed = "Ignore"
