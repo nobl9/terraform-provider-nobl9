@@ -2,14 +2,14 @@
 page_title: "nobl9_alert_method_discord Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Discord Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alerting/Alert_methods/discord
+  Discord Alert Method | Nobl9 Documentation https://docs.nobl9.com/alerting/alert-methods/discord
 ---
 
 # nobl9_alert_method_discord (Resource)
 
 The **Discord Alert Method** enables sending alerts through Discord to notify Nobl9 users whenever an incident is triggered.
 
-For more details, refer to [Discord Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/discord).
+For more details, refer to [Discord Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/discord).
 
 ## Example Usage
 
@@ -45,6 +45,6 @@ resource "nobl9_alert_method_discord" "this" {
 
 ## Useful Links
 
-[Discord alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/discord/)
+[Discord alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/discord/)
 
 [Intro to webhooks | Discord Documentation](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)

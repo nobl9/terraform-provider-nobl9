@@ -24,7 +24,7 @@ The Nobl9 Provider delivers tools working with the Nobl9 API to create and manag
 
 The Nobl9 Terraform Provider does not support the configuration of the following resources:
 - [SLO Annotations](https://docs.nobl9.com/features/slo-annotations/)
-- [Alert Silence](https://docs.nobl9.com/Alerting/Alert_silence/)
+- [Alert Silence](https://docs.nobl9.com/alerting/alert-silence/)
 
 ## Configuration
 

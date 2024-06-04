@@ -154,7 +154,7 @@ func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta
 type alertMethodWebhook struct{}
 
 func (i alertMethodWebhook) GetDescription() string {
-	return "[Webhook Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/webhook)"
+	return "[Webhook Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/webhook)"
 }
 
 //nolint:lll
@@ -222,7 +222,7 @@ func (i alertMethodWebhook) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAl
 type alertMethodPagerDuty struct{}
 
 func (i alertMethodPagerDuty) GetDescription() string {
-	return "[PagerDuty Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/pagerduty)"
+	return "[PagerDuty Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/pagerduty)"
 }
 
 func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
@@ -289,7 +289,7 @@ func (i alertMethodPagerDuty) UnmarshalSpec(_ *schema.ResourceData, _ v1alphaAle
 type alertMethodSlack struct{}
 
 func (i alertMethodSlack) GetDescription() string {
-	return "[Slack Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/slack)"
+	return "[Slack Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/slack)"
 }
 
 func (i alertMethodSlack) GetSchema() map[string]*schema.Schema {
@@ -321,7 +321,7 @@ func (i alertMethodSlack) UnmarshalSpec(_ *schema.ResourceData, _ v1alphaAlertMe
 type alertMethodDiscord struct{}
 
 func (i alertMethodDiscord) GetDescription() string {
-	return "[Discord Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/discord)"
+	return "[Discord Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/discord)"
 }
 
 func (i alertMethodDiscord) GetSchema() map[string]*schema.Schema {
@@ -353,7 +353,7 @@ func (i alertMethodDiscord) UnmarshalSpec(_ *schema.ResourceData, _ v1alphaAlert
 type alertMethodOpsgenie struct{}
 
 func (i alertMethodOpsgenie) GetDescription() string {
-	return "[OpsGenie Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/opsgenie)"
+	return "[OpsGenie Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/opsgenie)"
 }
 
 func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
@@ -361,14 +361,14 @@ func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
 		"auth": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Opsgenie authentication credentials. See [Nobl9 documentation](https://docs.nobl9.com/Alerting/Alert_methods/opsgenie#authentication) for supported formats.",
+			Description: "Opsgenie authentication credentials. See [Nobl9 documentation](https://docs.nobl9.com/alerting/alert-methods/opsgenie#authentication) for supported formats.",
 			Sensitive:   true,
 			Computed:    true,
 		},
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Opsgenie API URL. See [Nobl9 documentation](https://docs.nobl9.com/Alerting/Alert_methods/opsgenie#creating-opsgenie-api-key) for more details.",
+			Description: "Opsgenie API URL. See [Nobl9 documentation](https://docs.nobl9.com/alerting/alert-methods/opsgenie#creating-opsgenie-api-key) for more details.",
 		},
 	}
 }
@@ -396,7 +396,7 @@ func (i alertMethodOpsgenie) UnmarshalSpec(d *schema.ResourceData, spec v1alphaA
 type alertMethodServiceNow struct{}
 
 func (i alertMethodServiceNow) GetDescription() string {
-	return "[ServiceNow Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/servicenow)"
+	return "[ServiceNow Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/servicenow)"
 }
 
 func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
@@ -416,7 +416,7 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 		"instance_name": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "ServiceNow InstanceName. For details see [Nobl9 documentation](https://docs.nobl9.com/Alerting/Alert_methods/servicenow#servicenow-credentials).",
+			Description: "ServiceNow InstanceName. For details see [Nobl9 documentation](https://docs.nobl9.com/alerting/alert-methods/servicenow#servicenow-credentials).",
 		},
 	}
 }
@@ -447,7 +447,7 @@ func (i alertMethodServiceNow) UnmarshalSpec(d *schema.ResourceData, spec v1alph
 type alertMethodJira struct{}
 
 func (i alertMethodJira) GetDescription() string {
-	return "[Jira Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/jira)"
+	return "[Jira Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/jira)"
 }
 
 func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
@@ -506,7 +506,7 @@ func (i alertMethodJira) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAlert
 type alertMethodTeams struct{}
 
 func (i alertMethodTeams) GetDescription() string {
-	return "[MS Teams Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/ms-teams)"
+	return "[MS Teams Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/ms-teams)"
 }
 
 func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
@@ -538,7 +538,7 @@ func (i alertMethodTeams) UnmarshalSpec(_ *schema.ResourceData, _ v1alphaAlertMe
 type alertMethodEmail struct{}
 
 func (i alertMethodEmail) GetDescription() string {
-	return "[Email Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/email-alert)"
+	return "[Email Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/email-alert)"
 }
 
 func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
