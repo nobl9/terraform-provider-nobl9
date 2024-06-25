@@ -43,12 +43,12 @@ func resourceAlertPolicy() *schema.Resource {
 						"measurement": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "One of `timeToBurnBudget` | `timeToBurnEntireBudget` | `burnRate` | `burnedBudget`.",
+							Description: "One of `timeToBurnBudget` | `timeToBurnEntireBudget` | `burnRate` | `burnedBudget` | `budgetDrop`.",
 						},
 						"value": {
 							Type:        schema.TypeFloat,
 							Optional:    true,
-							Description: "For `averageBurnRate`, it indicates how fast the error budget is burning. For `burnedBudget`, it tells how much error budget is already burned.",
+							Description: "For `averageBurnRate`, it indicates how fast the error budget is burning. For `burnedBudget`, it tells how much error budget is already burned. For `budgetDrop`, it tells how much budget dropped.",
 						},
 						"value_string": {
 							Type:        schema.TypeString,
@@ -374,7 +374,7 @@ func defaultOperatorForMeasurement(measurement string) string {
 		return "lt"
 	case "timeToBurnEntireBudget":
 		return "lte"
-	case "burnedBudget", "averageBurnRate":
+	case "burnedBudget", "averageBurnRate", "budgetDrop":
 		return "gte"
 	default:
 		// Unknown measurement, so let API to decide what to do.
