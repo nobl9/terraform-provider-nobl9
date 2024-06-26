@@ -246,6 +246,24 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 					alerting_window	= "10m"
 				}`,
 		},
+		// Measurement: budgetDrop
+		"budget drop with explicit operator": {
+			OverrideConditionsBlock: `
+				condition {
+					measurement = "budgetDrop"
+					value 	  	= 1.0
+					op			= "gte"
+					alerting_window	= "10m"
+				}`,
+		},
+		"budget drop with default operator": {
+			OverrideConditionsBlock: `
+				condition {
+					measurement = "averageBurnRate"
+					value 	  	= 1.0
+					alerting_window	= "10m"
+				}`,
+		},
 		// Measurement: timeToBurnBudget
 		"time to burn budget with default operator and lasts for": {
 			OverrideConditionsBlock: `
