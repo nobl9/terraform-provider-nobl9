@@ -13,7 +13,7 @@ For more information, refer to [Azure Monitor Direct | Nobl9 Documentation](http
 ## Example Usage
 
 ```terraform
-resource "nobl9_direct_%s" "test-azure-monitor" {
+resource "nobl9_direct_azure_monitor" "test-azure-monitor" {
   name                   = "test-azure-monitor"
   project                = "terraform"
   description            = "desc"
