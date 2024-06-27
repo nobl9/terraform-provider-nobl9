@@ -22,7 +22,7 @@ on:
         description: Project name to create the tested objects in
         required: false
         type: string
-        default: default
+        default: terraform-acceptance-tests
 jobs:
   test:
     uses: ./.github/workflows/acc-tests.yml
