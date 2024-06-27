@@ -70,7 +70,7 @@ make generate
 2. Before the next step, verify if the Makefile variable `OS_ARCH` matches your
     system (for example *darwin_arm64* for Apple Silicon based Mac's).
     If not override it.
-3. Run `make install`. Make sure that the plugin was installed:
+3. Run `make install/provider`. Make sure that the plugin was installed:
     `ls ~/.terraform.d/plugins/nobl9.com/nobl9/nobl9/`
     It will show you the current version of the plugin, ex: *0.19.0*.
 4. Copy the path to the plugin after ~/.terraform.d/plugins/, for example:
