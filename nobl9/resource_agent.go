@@ -31,7 +31,7 @@ func resourceAgent() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9_agent)",
+		Description: "[Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9-agent/)",
 	}
 }
 
