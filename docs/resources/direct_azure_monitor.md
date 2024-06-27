@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_azure_monitor (Resource)
 
-Azure Monitor is a comprehensive monitoring solution for collecting, analyzing, and responding to monitoring data from your cloud and on-premises environments. Nobl9 connects to Honeycomb for SLI measurement collection and comparison with SLO targets.
+Azure Monitor is a comprehensive monitoring solution for collecting, analyzing, and responding to monitoring data from your cloud and on-premises environments. Nobl9 connects to Azure Monitor for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Azure Monitor Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-direct)
 
