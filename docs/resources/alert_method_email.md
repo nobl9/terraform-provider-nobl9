@@ -2,14 +2,14 @@
 page_title: "nobl9_alert_method_email Resource - terraform-provider-nobl9"
 subcategory: "Alert Methods"
 description: |-
-  Email Alert Method | Nobl9 Documentation https://docs.nobl9.com/Alerting/Alert_methods/email-alert
+  Email Alert Method | Nobl9 Documentation https://docs.nobl9.com/alerting/alert-methods/email-alert
 ---
 
 # nobl9_alert_method_email (Resource)
 
 The **Email Alert Method** enables sending automated and customized alert messages to up to 30 different inboxes per alert to notify Nobl9 users whenever an incident is triggered.
 
-For more details, refer to [Email Alert Method | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/email-alert).
+For more details, refer to [Email Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/email-alert).
 
 ## Example Usage
 
@@ -51,4 +51,4 @@ resource "nobl9_alert_method_email" "this" {
 
 ## Useful links
 
-[Email alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/email-alert)
+[Email alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/email-alert)

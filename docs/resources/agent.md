@@ -1,7 +1,7 @@
 ---
 page_title: "nobl9_agent Resource - terraform-provider-nobl9"
 description: |-
-  Agent configuration | Nobl9 Documentation https://docs.nobl9.com/nobl9_agent
+  Agent configuration | Nobl9 Documentation https://docs.nobl9.com/nobl9-agent/
 ---
 
 # nobl9_agent (Resource)
@@ -10,7 +10,7 @@ The Agent is a lightweight application that executes the queries defined for you
 
 The Agent then sends your SLI metrics back to Nobl9 for processing and error budget calculation.
 
-For more information, refer to [Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9_agent)
+For more information, refer to [Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9-agent/)
 
 ## Example Usage
 

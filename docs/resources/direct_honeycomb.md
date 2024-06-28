@@ -1,14 +1,14 @@
 ---
 page_title: "nobl9_direct_honeycomb Resource - terraform-provider-nobl9"
 description: |-
-  Honeycomb Direct | Nobl9 Documentation https://docs.nobl9.com/Sources/honeycomb#hc-direct.
+  Honeycomb Direct | Nobl9 Documentation https://docs.nobl9.com/Sources/honeycomb-integration/#hc-direct.
 ---
 
 # nobl9_direct_honeycomb (Resource)
 
 Honeycomb is an observability platform that integrates system metrics with high-cardinality application data for in-depth analysis and swift debugging of complex software systems. Nobl9 connects to Honeycomb for SLI measurement collection and comparison with SLO targets.
 
-For more information, refer to [Honeycomb Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/honeycomb#hc-direct).
+For more information, refer to [Honeycomb Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/honeycomb-integration/#hc-direct).
 
 ## Example Usage
 
