@@ -92,10 +92,6 @@ func validateNotEmptyString(variableName string) func(interface{}, string) ([]st
 	}
 }
 
-func exactlyOneStringEmpty(str1, str2 string) bool {
-	return (str1 == "" && str2 != "") || (str1 != "" && str2 == "")
-}
-
 func diffSuppressLabels(fieldPath, oldValueStr, newValueStr string, d *schema.ResourceData) bool {
 	fieldPathSegments := strings.Split(fieldPath, ".")
 	if len(fieldPathSegments) > 1 {
