@@ -87,10 +87,6 @@ func validateNotEmptyString(variableName string) func(interface{}, string) ([]st
 	}
 }
 
-func exactlyOneStringEmpty(str1, str2 string) bool {
-	return (str1 == "" && str2 != "") || (str1 != "" && str2 == "")
-}
-
 func diffSuppressLabels(fieldPath, oldValueStr, newValueStr string, d *schema.ResourceData) bool {
 	fieldPathSegments := strings.Split(fieldPath, ".")
 	if len(fieldPathSegments) > 1 {
@@ -186,7 +182,7 @@ func schemaDescription() *schema.Schema {
 	}
 }
 
-func getMarshaledLabels(d *schema.ResourceData) (v1alpha.Labels, diag.Diagnostics) {
+func getMarshaledLabels(d Data) (v1alpha.Labels, diag.Diagnostics) {
 	var labels []interface{}
 	if labelsData := d.Get("label"); labelsData != nil {
 		labels = labelsData.([]interface{})
@@ -194,7 +190,7 @@ func getMarshaledLabels(d *schema.ResourceData) (v1alpha.Labels, diag.Diagnostic
 	return marshalLabels(labels)
 }
 
-func getMarshaledAnnotations(d *schema.ResourceData) v1alpha.MetadataAnnotations {
+func getMarshaledAnnotations(d Data) v1alpha.MetadataAnnotations {
 	rawAnnotations := d.Get("annotations").(map[string]interface{})
 	annotations := make(map[string]string, len(rawAnnotations))
 
