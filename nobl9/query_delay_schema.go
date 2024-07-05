@@ -38,7 +38,7 @@ func schemaQueryDelay() *schema.Schema {
 	}
 }
 
-func marshalQueryDelay(d *schema.ResourceData) *v1alpha.QueryDelay {
+func marshalQueryDelay(d Data) *v1alpha.QueryDelay {
 	queryDelay := d.Get(queryDelayConfigKey).(*schema.Set)
 	if queryDelay.Len() > 0 {
 		qd := queryDelay.List()[0].(map[string]interface{})

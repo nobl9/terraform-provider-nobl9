@@ -2,8 +2,6 @@ package nobl9
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -43,7 +41,7 @@ func resourceService() *schema.Resource {
 	}
 }
 
-func marshalService(d *schema.ResourceData) (*v1alphaService.Service, diag.Diagnostics) {
+func marshalService(d Data) (*v1alphaService.Service, diag.Diagnostics) {
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
@@ -107,38 +105,15 @@ func unmarshalService(d *schema.ResourceData, objects []v1alphaService.Service) 
 	return diags
 }
 
+//nolint:unparam
 func resourceServiceValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
-	var errs []error
-	labels, diags := getMarshaledLabels(diff)
+	service, diags := marshalService(diff)
 	if diags.HasError() {
-		for _, d := range diags {
-			errs = append(errs, fmt.Errorf(d.Summary))
-		}
+		return diagsToSingleError(diags)
 	}
-	validationErrors := manifest.Validate([]manifest.Object{
-		v1alphaService.New(
-			v1alphaService.Metadata{
-				Name:        diff.Get("name").(string),
-				DisplayName: diff.Get("display_name").(string),
-				Project:     diff.Get("project").(string),
-				Labels:      labels,
-				Annotations: getMarshaledAnnotations(diff),
-			},
-			v1alphaService.Spec{
-				Description: diff.Get("description").(string),
-			},
-		),
-	})
-	if validationErrors != nil {
-		errs = append(errs, validationErrors...)
-	}
-	if len(errs) > 0 {
-		var errsStrings []string
-		for _, err := range errs {
-			errsStrings = append(errsStrings, err.Error())
-		}
-		combinedErrs := strings.Join(errsStrings, "; ")
-		return fmt.Errorf("validation failed: %s", strings.Trim(combinedErrs, "[]"))
+	errs := manifest.Validate([]manifest.Object{service})
+	if errs != nil {
+		return formatErrorsAsSingleError(errs)
 	}
 	return nil
 }

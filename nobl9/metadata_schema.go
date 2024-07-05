@@ -80,6 +80,7 @@ func schemaAnnotations() *schema.Schema {
 
 type Data interface {
 	Get(key string) any
+	GetOk(key string) (any, bool)
 }
 
 func validateNotEmptyString(variableName string) func(interface{}, string) ([]string, []error) {
@@ -287,6 +288,28 @@ func appendError(d diag.Diagnostics, err error) diag.Diagnostics {
 	}
 
 	return d
+}
+
+func diagsToSingleError(diags diag.Diagnostics) error {
+	if len(diags) == 0 {
+		return nil
+	}
+
+	var errsStrings []string
+	for _, d := range diags {
+		errsStrings = append(errsStrings, fmt.Sprintf("%s: %s", d.Summary, d.Detail))
+	}
+	combinedErrs := strings.Join(errsStrings, "; ")
+	return fmt.Errorf("validation failed: %s", combinedErrs)
+}
+
+func formatErrorsAsSingleError(errs []error) error {
+	var errsStrings []string
+	for _, err := range errs {
+		errsStrings = append(errsStrings, err.Error())
+	}
+	combinedErrs := strings.Join(errsStrings, "; ")
+	return fmt.Errorf("validation failed: %s", strings.Trim(combinedErrs, "[]"))
 }
 
 func toStringSlice(in []interface{}) []string {

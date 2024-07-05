@@ -2,8 +2,6 @@ package nobl9
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -33,7 +31,7 @@ func resourceProject() *schema.Resource {
 	}
 }
 
-func marshalProject(d *schema.ResourceData) (*v1alphaProject.Project, diag.Diagnostics) {
+func marshalProject(d Data) (*v1alphaProject.Project, diag.Diagnostics) {
 	labelsMarshaled, diags := getMarshaledLabels(d)
 	if diags.HasError() {
 		return nil, diags
@@ -86,37 +84,15 @@ func unmarshalProject(d *schema.ResourceData, objects []v1alphaProject.Project) 
 	return diags
 }
 
+//nolint:unparam
 func resourceProjectValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
-	var errs []error
-	labels, diags := getMarshaledLabels(diff)
+	project, diags := marshalProject(diff)
 	if diags.HasError() {
-		for _, d := range diags {
-			errs = append(errs, fmt.Errorf(d.Summary))
-		}
+		return diagsToSingleError(diags)
 	}
-	validationErrors := manifest.Validate([]manifest.Object{
-		v1alphaProject.New(
-			v1alphaProject.Metadata{
-				Name:        diff.Get("name").(string),
-				DisplayName: diff.Get("display_name").(string),
-				Labels:      labels,
-				Annotations: getMarshaledAnnotations(diff),
-			},
-			v1alphaProject.Spec{
-				Description: diff.Get("description").(string),
-			},
-		),
-	})
-	if validationErrors != nil {
-		errs = append(errs, validationErrors...)
-	}
-	if len(errs) > 0 {
-		var errsStrings []string
-		for _, err := range errs {
-			errsStrings = append(errsStrings, err.Error())
-		}
-		combinedErrs := strings.Join(errsStrings, "; ")
-		return fmt.Errorf("validation failed: %s", strings.Trim(combinedErrs, "[]"))
+	errs := manifest.Validate([]manifest.Object{project})
+	if errs != nil {
+		return formatErrorsAsSingleError(errs)
 	}
 	return nil
 }

@@ -24,6 +24,7 @@ const agentTypeKey = "agent_type"
 func resourceAgent() *schema.Resource {
 	return &schema.Resource{
 		Schema:        agentSchema(),
+		CustomizeDiff: resourceAgentValidation,
 		CreateContext: resourceAgentApply,
 		UpdateContext: resourceAgentApply,
 		DeleteContext: resourceAgentDelete,
@@ -115,6 +116,19 @@ func agentSchema() map[string]*schema.Schema {
 	return agentSchema
 }
 
+//nolint:unparam
+func resourceAgentValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	agent, diags := marshalAgent(diff)
+	if diags.HasError() {
+		return diagsToSingleError(diags)
+	}
+	errs := manifest.Validate([]manifest.Object{agent})
+	if errs != nil {
+		return formatErrorsAsSingleError(errs)
+	}
+	return nil
+}
+
 func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config)
@@ -201,7 +215,7 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 }
 
 //nolint:unparam
-func marshalAgent(d *schema.ResourceData) (*v1alphaAgent.Agent, diag.Diagnostics) {
+func marshalAgent(d Data) (*v1alphaAgent.Agent, diag.Diagnostics) {
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
@@ -410,7 +424,7 @@ func schemaAgentAmazonPrometheus() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentAmazonPrometheus(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.AmazonPrometheusConfig {
+func marshalAgentAmazonPrometheus(d Data, diags diag.Diagnostics) *v1alphaAgent.AmazonPrometheusConfig {
 	data := getAgentResourceData(d, amazonPrometheusAgentType, amazonPrometheusAgentConfigKey, diags)
 
 	if data == nil {
@@ -451,7 +465,7 @@ func schemaAgentAppDynamics() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentAppDynamics(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.AppDynamicsConfig {
+func marshalAgentAppDynamics(d Data, diags diag.Diagnostics) *v1alphaAgent.AppDynamicsConfig {
 	data := getAgentResourceData(d, appDynamicsAgentType, appDynamicsAgentConfigKey, diags)
 
 	if data == nil {
@@ -492,7 +506,7 @@ func schemaAgentAzureMonitor() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentAzureMonitor(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.AzureMonitorConfig {
+func marshalAgentAzureMonitor(d Data, diags diag.Diagnostics) *v1alphaAgent.AzureMonitorConfig {
 	data := getAgentResourceData(d, azureMonitorAgentType, azureMonitorAgentConfigKey, diags)
 
 	if data == nil {
@@ -527,7 +541,7 @@ func schemaAgentBigQuery() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentBigQuery(d *schema.ResourceData) *v1alphaAgent.BigQueryConfig {
+func marshalAgentBigQuery(d Data) *v1alphaAgent.BigQueryConfig {
 	if !isAgentType(d, bigqueryAgentType) {
 		return nil
 	}
@@ -557,7 +571,7 @@ func schemaAgentCloudWatch() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentCloudWatch(d *schema.ResourceData) *v1alphaAgent.CloudWatchConfig {
+func marshalAgentCloudWatch(d Data) *v1alphaAgent.CloudWatchConfig {
 	if !isAgentType(d, cloudWatchAgentType) {
 		return nil
 	}
@@ -594,7 +608,7 @@ func schemaAgentDatadog() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentDatadog(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.DatadogConfig {
+func marshalAgentDatadog(d Data, diags diag.Diagnostics) *v1alphaAgent.DatadogConfig {
 	data := getAgentResourceData(d, datadogAgentType, datadogAgentConfigKey, diags)
 
 	if data == nil {
@@ -634,7 +648,7 @@ func schemaAgentDynatrace() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentDynatrace(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.DynatraceConfig {
+func marshalAgentDynatrace(d Data, diags diag.Diagnostics) *v1alphaAgent.DynatraceConfig {
 	data := getAgentResourceData(d, dynatraceAgentType, dynatraceAgentConfigKey, diags)
 
 	if data == nil {
@@ -674,7 +688,7 @@ func schemaAgentElasticsearch() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentElasticsearch(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.ElasticsearchConfig {
+func marshalAgentElasticsearch(d Data, diags diag.Diagnostics) *v1alphaAgent.ElasticsearchConfig {
 	data := getAgentResourceData(d, elasticsearchAgentType, elasticsearchAgentConfigKey, diags)
 
 	if data == nil {
@@ -709,7 +723,7 @@ func schemaAgentGCM() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentGCM(d *schema.ResourceData) *v1alphaAgent.GCMConfig {
+func marshalAgentGCM(d Data) *v1alphaAgent.GCMConfig {
 	if !isAgentType(d, gcmAgentType) {
 		return nil
 	}
@@ -745,7 +759,7 @@ func schemaAgentGrafanaLoki() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentGrafanaLoki(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.GrafanaLokiConfig {
+func marshalAgentGrafanaLoki(d Data, diags diag.Diagnostics) *v1alphaAgent.GrafanaLokiConfig {
 	data := getAgentResourceData(d, grafanalokiAgentType, grafanalokiAgentConfigKey, diags)
 
 	if data == nil {
@@ -785,7 +799,7 @@ func schemaAgentGraphite() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentGraphite(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.GraphiteConfig {
+func marshalAgentGraphite(d Data, diags diag.Diagnostics) *v1alphaAgent.GraphiteConfig {
 	data := getAgentResourceData(d, graphiteAgentType, graphiteAgentConfigKey, diags)
 
 	if data == nil {
@@ -819,10 +833,11 @@ func schemaAgentHoneycomb() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentHoneycomb(d *schema.ResourceData) *v1alphaAgent.HoneycombConfig {
+func marshalAgentHoneycomb(d Data) *v1alphaAgent.HoneycombConfig {
 	if !isAgentType(d, honeycombAgentType) {
 		return nil
 	}
+
 	return &v1alphaAgent.HoneycombConfig{}
 }
 
@@ -854,7 +869,7 @@ func schemaAgentInfluxDB() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentInfluxDB(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.InfluxDBConfig {
+func marshalAgentInfluxDB(d Data, diags diag.Diagnostics) *v1alphaAgent.InfluxDBConfig {
 	data := getAgentResourceData(d, influxdbAgentType, influxdbAgentConfigKey, diags)
 
 	if data == nil {
@@ -894,7 +909,7 @@ func schemaAgentInstana() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentInstana(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.InstanaConfig {
+func marshalAgentInstana(d Data, diags diag.Diagnostics) *v1alphaAgent.InstanaConfig {
 	data := getAgentResourceData(d, instanaAgentType, instanaAgentConfigKey, diags)
 
 	if data == nil {
@@ -945,7 +960,7 @@ func schemaAgentLightstep() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentLightstep(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.LightstepConfig {
+func marshalAgentLightstep(d Data, diags diag.Diagnostics) *v1alphaAgent.LightstepConfig {
 	data := getAgentResourceData(d, lightstepAgentType, lightstepAgentConfigKey, diags)
 
 	if data == nil {
@@ -987,7 +1002,7 @@ func schemaAgentNewRelic() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentNewRelic(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.NewRelicConfig {
+func marshalAgentNewRelic(d Data, diags diag.Diagnostics) *v1alphaAgent.NewRelicConfig {
 	data := getAgentResourceData(d, newRelicAgentType, newRelicAgentConfigKey, diags)
 	if data == nil {
 		return nil
@@ -1043,7 +1058,7 @@ func schemaAgentOpenTSDB() map[string]*schema.Schema {
 		}}
 }
 
-func marshalAgentOpenTSDB(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.OpenTSDBConfig {
+func marshalAgentOpenTSDB(d Data, diags diag.Diagnostics) *v1alphaAgent.OpenTSDBConfig {
 	data := getAgentResourceData(d, opentsdbAgentType, opentsdbAgentConfigKey, diags)
 
 	if data == nil {
@@ -1076,7 +1091,7 @@ func schemaAgentPingdom() map[string]*schema.Schema {
 		}}
 }
 
-func marshalAgentPingdom(d *schema.ResourceData) *v1alphaAgent.PingdomConfig {
+func marshalAgentPingdom(d Data) *v1alphaAgent.PingdomConfig {
 	if !isAgentType(d, pingdomAgentType) {
 		return nil
 	}
@@ -1112,7 +1127,7 @@ func schemaAgentPrometheus() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentPrometheus(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.PrometheusConfig {
+func marshalAgentPrometheus(d Data, diags diag.Diagnostics) *v1alphaAgent.PrometheusConfig {
 	data := getAgentResourceData(d, prometheusAgentType, prometheusAgentConfigKey, diags)
 
 	if data == nil {
@@ -1147,7 +1162,7 @@ func schemaAgentRedshift() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentRedshift(d *schema.ResourceData) *v1alphaAgent.RedshiftConfig {
+func marshalAgentRedshift(d Data) *v1alphaAgent.RedshiftConfig {
 	if !isAgentType(d, redshiftAgentType) {
 		return nil
 	}
@@ -1183,7 +1198,7 @@ func schemaAgentSplunk() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentSplunk(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.SplunkConfig {
+func marshalAgentSplunk(d Data, diags diag.Diagnostics) *v1alphaAgent.SplunkConfig {
 	data := getAgentResourceData(d, splunkAgentType, splunkAgentConfigKey, diags)
 
 	if data == nil {
@@ -1225,7 +1240,7 @@ func schemaAgentSplunkObservability() map[string]*schema.Schema {
 }
 
 func marshalAgentSplunkObservability(
-	d *schema.ResourceData,
+	d Data,
 	diags diag.Diagnostics) *v1alphaAgent.SplunkObservabilityConfig {
 	data := getAgentResourceData(d, splunkObservabilityAgentType, splunkObservabilityAgentConfigKey, diags)
 
@@ -1266,7 +1281,7 @@ func schemaAgentSumoLogic() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentSumoLogic(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.SumoLogicConfig {
+func marshalAgentSumoLogic(d Data, diags diag.Diagnostics) *v1alphaAgent.SumoLogicConfig {
 	data := getAgentResourceData(d, sumologicAgentType, sumologicAgentConfigKey, diags)
 
 	if data == nil {
@@ -1300,7 +1315,7 @@ func schemaAgentThousandEyes() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentThousandEyes(d *schema.ResourceData) *v1alphaAgent.ThousandEyesConfig {
+func marshalAgentThousandEyes(d Data) *v1alphaAgent.ThousandEyesConfig {
 	if !isAgentType(d, thousandeyesAgentType) {
 		return nil
 	}
@@ -1336,7 +1351,7 @@ func schemaAgentLogicMonitor() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentLogicMonitor(d *schema.ResourceData, diags diag.Diagnostics) *v1alphaAgent.LogicMonitorConfig {
+func marshalAgentLogicMonitor(d Data, diags diag.Diagnostics) *v1alphaAgent.LogicMonitorConfig {
 	data := getAgentResourceData(d, logicMonitorAgentType, logicMonitorAgentConfigKey, diags)
 
 	if data == nil {
@@ -1349,7 +1364,7 @@ func marshalAgentLogicMonitor(d *schema.ResourceData, diags diag.Diagnostics) *v
 }
 
 func getAgentResourceData(
-	d *schema.ResourceData,
+	d Data,
 	agentType,
 	agentConfigKey string,
 	diags diag.Diagnostics) map[string]interface{} {
@@ -1366,7 +1381,7 @@ func getAgentResourceData(
 	return resourceData
 }
 
-func isAgentType(d *schema.ResourceData, agentType string) bool {
+func isAgentType(d Data, agentType string) bool {
 	agentTypeResource := d.Get(agentTypeKey).(string)
 	return agentTypeResource == agentType
 }
