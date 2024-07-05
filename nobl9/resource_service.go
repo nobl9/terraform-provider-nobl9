@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
@@ -39,10 +40,6 @@ func resourceService() *schema.Resource {
 		},
 		Description: "[Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service)",
 	}
-}
-
-type Data interface {
-	Get(key string) any
 }
 
 func marshalService(d Data) (*v1alphaService.Service, diag.Diagnostics) {

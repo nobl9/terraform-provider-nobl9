@@ -2,10 +2,10 @@ package nobl9
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
@@ -20,6 +20,7 @@ func resourceProject() *schema.Resource {
 			"label":        schemaLabels(),
 			"annotations":  schemaAnnotations(),
 		},
+		CustomizeDiff: resourceProjectValidation,
 		CreateContext: resourceProjectApply,
 		UpdateContext: resourceProjectApply,
 		DeleteContext: resourceProjectDelete,
@@ -82,6 +83,36 @@ func unmarshalProject(d *schema.ResourceData, objects []v1alphaProject.Project) 
 	diags = appendError(diags, err)
 
 	return diags
+}
+
+func resourceProjectValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	var errs []error
+	labels, diags := getMarshaledLabels(diff)
+	if diags.HasError() {
+		for _, d := range diags {
+			errs = append(errs, fmt.Errorf(d.Summary))
+		}
+	}
+	validationErrors := manifest.Validate([]manifest.Object{
+		v1alphaProject.New(
+			v1alphaProject.Metadata{
+				Name:        diff.Get("name").(string),
+				DisplayName: diff.Get("display_name").(string),
+				Labels:      labels,
+				Annotations: getMarshaledAnnotations(diff),
+			},
+			v1alphaProject.Spec{
+				Description: diff.Get("description").(string),
+			},
+		),
+	})
+	if validationErrors != nil {
+		errs = append(errs, validationErrors...)
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("validation failed: %v", errs)
+	}
+	return nil
 }
 
 func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

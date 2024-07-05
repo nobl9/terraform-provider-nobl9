@@ -78,6 +78,10 @@ func schemaAnnotations() *schema.Schema {
 	}
 }
 
+type Data interface {
+	Get(key string) any
+}
+
 func validateNotEmptyString(variableName string) func(interface{}, string) ([]string, []error) {
 	return func(valueRaw interface{}, _ string) ([]string, []error) {
 		if valueRaw.(string) == "" {
