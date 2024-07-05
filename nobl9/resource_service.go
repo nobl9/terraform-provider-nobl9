@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -29,6 +30,7 @@ func resourceService() *schema.Resource {
 				},
 			},
 		},
+		CustomizeDiff: resourceServicePlanChecks,
 		CreateContext: resourceServiceApply,
 		ReadContext:   resourceServiceRead,
 		UpdateContext: resourceServiceApply,
@@ -40,7 +42,11 @@ func resourceService() *schema.Resource {
 	}
 }
 
-func marshalService(d *schema.ResourceData) (*v1alphaService.Service, diag.Diagnostics) {
+type Data interface {
+	Get(key string) any
+}
+
+func marshalService(d Data) (*v1alphaService.Service, diag.Diagnostics) {
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
@@ -102,6 +108,41 @@ func unmarshalService(d *schema.ResourceData, objects []v1alphaService.Service) 
 	diags = appendError(diags, err)
 
 	return diags
+}
+
+func resourceServicePlanChecks(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	// TODO PC-13378: Would this work correctly?
+	//	if diff.HasChange("name") {
+	//		return fmt.Errorf("name cannot be changed")
+	//	}
+	//	if diff.HasChange("project") {
+	//		return fmt.Errorf("project cannot be changed")
+	//	}
+
+	// Check if project exists.
+	if diff.HasChange("project") {
+		//if err := validateProjectExistence(diff); err != nil {
+		//	return err
+		//}
+	}
+
+	// Check if apply with dry run works.
+	config := meta.(ProviderConfig)
+	client, ds := getClient(config)
+	if ds != nil {
+		return fmt.Errorf("could not get client: %v", ds)
+	}
+	service, diags := marshalService(diff)
+	if diags.HasError() {
+		return fmt.Errorf("could not marshal service: %v", diags)
+	}
+	resultService := manifest.SetDefaultProject([]manifest.Object{service}, config.Project)
+	dryRun := true
+	err := client.Objects().V1().Apply(ctx, resultService, dryRun)
+	if err != nil {
+		return diag.Errorf("could not add service: %s", err.Error())
+	}
+	return nil
 }
 
 func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
