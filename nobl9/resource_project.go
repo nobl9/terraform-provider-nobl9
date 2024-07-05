@@ -3,6 +3,7 @@ package nobl9
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -110,7 +111,12 @@ func resourceProjectValidation(ctx context.Context, diff *schema.ResourceDiff, m
 		errs = append(errs, validationErrors...)
 	}
 	if len(errs) > 0 {
-		return fmt.Errorf("validation failed: %v", errs)
+		var errsStrings []string
+		for _, err := range errs {
+			errsStrings = append(errsStrings, err.Error())
+		}
+		combinedErrs := strings.Join(errsStrings, "; ")
+		return fmt.Errorf("validation failed: %s", strings.Trim(combinedErrs, "[]"))
 	}
 	return nil
 }
