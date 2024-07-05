@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
@@ -30,7 +29,7 @@ func resourceService() *schema.Resource {
 				},
 			},
 		},
-		CustomizeDiff: resourceServicePlanChecks,
+		CustomizeDiff: resourceServiceValidation,
 		CreateContext: resourceServiceApply,
 		ReadContext:   resourceServiceRead,
 		UpdateContext: resourceServiceApply,
@@ -110,37 +109,37 @@ func unmarshalService(d *schema.ResourceData, objects []v1alphaService.Service) 
 	return diags
 }
 
-func resourceServicePlanChecks(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
-	// TODO PC-13378: Would this work correctly?
-	//	if diff.HasChange("name") {
-	//		return fmt.Errorf("name cannot be changed")
-	//	}
-	//	if diff.HasChange("project") {
-	//		return fmt.Errorf("project cannot be changed")
-	//	}
-
-	// Check if project exists.
-	if diff.HasChange("project") {
-		//if err := validateProjectExistence(diff); err != nil {
-		//	return err
-		//}
-	}
-
-	// Check if apply with dry run works.
-	config := meta.(ProviderConfig)
-	client, ds := getClient(config)
-	if ds != nil {
-		return fmt.Errorf("could not get client: %v", ds)
-	}
-	service, diags := marshalService(diff)
+func resourceServiceValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	var errs []error
+	labels, diags := getMarshaledLabels(diff)
 	if diags.HasError() {
-		return fmt.Errorf("could not marshal service: %v", diags)
+		for _, d := range diags {
+			errs = append(errs, fmt.Errorf(d.Summary))
+		}
 	}
-	resultService := manifest.SetDefaultProject([]manifest.Object{service}, config.Project)
-	dryRun := true
-	err := client.Objects().V1().Apply(ctx, resultService, dryRun)
-	if err != nil {
-		return diag.Errorf("could not add service: %s", err.Error())
+	validationErrors := manifest.Validate([]manifest.Object{
+		v1alphaService.New(
+			v1alphaService.Metadata{
+				Name:        diff.Get("name").(string),
+				DisplayName: diff.Get("display_name").(string),
+				Project:     diff.Get("project").(string),
+				Labels:      labels,
+				Annotations: getMarshaledAnnotations(diff),
+			},
+			v1alphaService.Spec{
+				Description: diff.Get("description").(string),
+			},
+		),
+	})
+	if validationErrors != nil {
+		errs = append(errs, validationErrors...)
+	}
+	if len(errs) > 0 {
+		var combinedErrs string
+		for _, err := range errs {
+			combinedErrs += err.Error() + "; "
+		}
+		return fmt.Errorf("validation failed: %s", combinedErrs)
 	}
 	return nil
 }
