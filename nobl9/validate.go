@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/teambition/rrule-go"
 )
 
 // validateDataTime validates the datetime format in RFC3339
@@ -56,4 +57,32 @@ func validateNotEmptyString(variableName string) func(interface{}, string) ([]st
 		}
 		return nil, nil
 	}
+}
+
+func validateDuration(v interface{}, path cty.Path) diag.Diagnostics {
+	var diags diag.Diagnostics
+	_, err := time.ParseDuration(v.(string))
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Error,
+			Summary:       "Invalid duration format",
+			Detail:        fmt.Sprintf("Invalid duration format: %s", v),
+			AttributePath: path,
+		})
+	}
+	return diags
+}
+
+func validateRrule(v interface{}, path cty.Path) diag.Diagnostics {
+	var diags diag.Diagnostics
+	_, err := rrule.StrToRRule(v.(string))
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Error,
+			Summary:       "Invalid rrule format",
+			Detail:        fmt.Sprintf("Invalid rrule format: %s", v),
+			AttributePath: path,
+		})
+	}
+	return diags
 }
