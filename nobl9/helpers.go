@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type Data interface {
+type resourceInterface interface {
 	Get(key string) any
 	GetOk(key string) (any, bool)
 }

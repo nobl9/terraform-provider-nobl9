@@ -173,7 +173,7 @@ func schemaDescription() *schema.Schema {
 	}
 }
 
-func getMarshaledLabels(d Data) (v1alpha.Labels, diag.Diagnostics) {
+func getMarshaledLabels(d resourceInterface) (v1alpha.Labels, diag.Diagnostics) {
 	var labels []interface{}
 	if labelsData := d.Get("label"); labelsData != nil {
 		labels = labelsData.([]interface{})
@@ -181,7 +181,7 @@ func getMarshaledLabels(d Data) (v1alpha.Labels, diag.Diagnostics) {
 	return marshalLabels(labels)
 }
 
-func getMarshaledAnnotations(d Data) v1alpha.MetadataAnnotations {
+func getMarshaledAnnotations(d resourceInterface) v1alpha.MetadataAnnotations {
 	rawAnnotations := d.Get("annotations").(map[string]interface{})
 	annotations := make(map[string]string, len(rawAnnotations))
 
