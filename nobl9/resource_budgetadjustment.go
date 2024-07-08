@@ -3,17 +3,14 @@ package nobl9
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha/budgetadjustment"
 	v1 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
-	"github.com/teambition/rrule-go"
 )
 
 func budgetAdjustment() *schema.Resource {
@@ -98,34 +95,6 @@ func schemaBudgetAdjustment() map[string]*schema.Schema {
 			},
 		},
 	}
-}
-
-func validateDuration(v interface{}, path cty.Path) diag.Diagnostics {
-	var diags diag.Diagnostics
-	_, err := time.ParseDuration(v.(string))
-	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity:      diag.Error,
-			Summary:       "Invalid duration format",
-			Detail:        fmt.Sprintf("Invalid duration format: %s", v),
-			AttributePath: path,
-		})
-	}
-	return diags
-}
-
-func validateRrule(v interface{}, path cty.Path) diag.Diagnostics {
-	var diags diag.Diagnostics
-	_, err := rrule.StrToRRule(v.(string))
-	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity:      diag.Error,
-			Summary:       "Invalid rrule format",
-			Detail:        fmt.Sprintf("Invalid rrule format: %s", v),
-			AttributePath: path,
-		})
-	}
-	return diags
 }
 
 func resourceBudgetAdjustmentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
