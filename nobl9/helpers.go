@@ -42,12 +42,13 @@ func appendError(d diag.Diagnostics, err error) diag.Diagnostics {
 	return d
 }
 
+//nolint:unused
 func diagsToSingleError(diags diag.Diagnostics) error {
 	if len(diags) == 0 {
 		return nil
 	}
 
-	var errsStrings []string
+	errsStrings := make([]string, 0, len(diags))
 	for _, d := range diags {
 		errsStrings = append(errsStrings, fmt.Sprintf("%s: %s", d.Summary, d.Detail))
 	}
@@ -55,8 +56,9 @@ func diagsToSingleError(diags diag.Diagnostics) error {
 	return fmt.Errorf("validation failed: %s", combinedErrs)
 }
 
+//nolint:unused
 func formatErrorsAsSingleError(errs []error) error {
-	var errsStrings []string
+	errsStrings := make([]string, 0, len(errs))
 	for _, err := range errs {
 		errsStrings = append(errsStrings, err.Error())
 	}
