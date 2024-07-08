@@ -259,32 +259,3 @@ func unmarshalLabels(labelsRaw v1alpha.Labels) interface{} {
 
 	return resultLabels
 }
-
-// oneElementSet implements schema.SchemaSetFunc and created only one element set.
-// Never use it for sets with more elements as new elements will override the old ones.
-func oneElementSet(_ interface{}) int {
-	return 0
-}
-
-func set(d *schema.ResourceData, key string, value interface{}, diags *diag.Diagnostics) {
-	appendError(*diags, d.Set(key, value))
-}
-
-func appendError(d diag.Diagnostics, err error) diag.Diagnostics {
-	if err != nil {
-		return append(d, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  err.Error(),
-		})
-	}
-
-	return d
-}
-
-func toStringSlice(in []interface{}) []string {
-	ret := make([]string, len(in))
-	for i, v := range in {
-		ret[i] = v.(string)
-	}
-	return ret
-}
