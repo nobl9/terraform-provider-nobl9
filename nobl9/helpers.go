@@ -1,6 +1,7 @@
 package nobl9
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -12,6 +13,9 @@ type Data interface {
 	Get(key string) any
 	GetOk(key string) (any, bool)
 }
+
+// TODO: Once we introduce a more structured approach to error handling in SDK, this should be removed.
+var errConcurrencyIssue = errors.New("operation failed due to concurrency issue but can be retried")
 
 func exactlyOneStringEmpty(str1, str2 string) bool {
 	return (str1 == "" && str2 != "") || (str1 != "" && str2 == "")
@@ -66,4 +70,16 @@ func toStringSlice(in []interface{}) []string {
 		ret[i] = v.(string)
 	}
 	return ret
+}
+
+func equalSlices(a, b []interface{}) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }

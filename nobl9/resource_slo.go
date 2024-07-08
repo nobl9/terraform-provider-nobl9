@@ -549,18 +549,6 @@ func schemaMetricSpec() *schema.Resource {
 	}
 }
 
-func equalSlices(a, b []interface{}) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i, v := range a {
-		if v != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
 func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 	attachments, ok := d.GetOk("attachment")
 	if !ok {
@@ -3023,19 +3011,4 @@ func unmarshalThousandeyesMetric(metric interface{}) map[string]interface{} {
 	res["test_id"] = teMetric.TestID
 
 	return res
-}
-
-func validateMaxLength(fieldName string, maxLength int) func(interface{}, cty.Path) diag.Diagnostics {
-	return func(v any, _ cty.Path) diag.Diagnostics {
-		var diags diag.Diagnostics
-		if len(v.(string)) > 63 {
-			diagnostic := diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  fmt.Sprintf("%s is too long", fieldName),
-				Detail:   fmt.Sprintf("%s cannot be longer than %d characters", fieldName, maxLength),
-			}
-			diags = append(diags, diagnostic)
-		}
-		return diags
-	}
 }

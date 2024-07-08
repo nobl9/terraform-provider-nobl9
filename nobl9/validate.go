@@ -33,3 +33,18 @@ func validateDateTime(v interface{}, path cty.Path) diag.Diagnostics {
 	}
 	return diags
 }
+
+func validateMaxLength(fieldName string, maxLength int) func(interface{}, cty.Path) diag.Diagnostics {
+	return func(v any, _ cty.Path) diag.Diagnostics {
+		var diags diag.Diagnostics
+		if len(v.(string)) > 63 {
+			diagnostic := diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("%s is too long", fieldName),
+				Detail:   fmt.Sprintf("%s cannot be longer than %d characters", fieldName, maxLength),
+			}
+			diags = append(diags, diagnostic)
+		}
+		return diags
+	}
+}
