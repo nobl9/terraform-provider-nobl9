@@ -78,15 +78,6 @@ func schemaAnnotations() *schema.Schema {
 	}
 }
 
-func validateNotEmptyString(variableName string) func(interface{}, string) ([]string, []error) {
-	return func(valueRaw interface{}, _ string) ([]string, []error) {
-		if valueRaw.(string) == "" {
-			return nil, []error{fmt.Errorf("%s must not be empty", variableName)}
-		}
-		return nil, nil
-	}
-}
-
 func diffSuppressLabels(fieldPath, oldValueStr, newValueStr string, d *schema.ResourceData) bool {
 	fieldPathSegments := strings.Split(fieldPath, ".")
 	if len(fieldPathSegments) > 1 {
