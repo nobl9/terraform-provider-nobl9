@@ -48,3 +48,12 @@ func validateMaxLength(fieldName string, maxLength int) func(interface{}, cty.Pa
 		return diags
 	}
 }
+
+func validateNotEmptyString(variableName string) func(interface{}, string) ([]string, []error) {
+	return func(valueRaw interface{}, _ string) ([]string, []error) {
+		if valueRaw.(string) == "" {
+			return nil, []error{fmt.Errorf("%s must not be empty", variableName)}
+		}
+		return nil, nil
+	}
+}
