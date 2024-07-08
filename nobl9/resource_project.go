@@ -31,7 +31,7 @@ func resourceProject() *schema.Resource {
 	}
 }
 
-func marshalProject(d Data) (*v1alphaProject.Project, diag.Diagnostics) {
+func marshalProject(d resourceInterface) (*v1alphaProject.Project, diag.Diagnostics) {
 	labelsMarshaled, diags := getMarshaledLabels(d)
 	if diags.HasError() {
 		return nil, diags

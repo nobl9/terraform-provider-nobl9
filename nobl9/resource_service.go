@@ -41,7 +41,7 @@ func resourceService() *schema.Resource {
 	}
 }
 
-func marshalService(d Data) (*v1alphaService.Service, diag.Diagnostics) {
+func marshalService(d resourceInterface) (*v1alphaService.Service, diag.Diagnostics) {
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)

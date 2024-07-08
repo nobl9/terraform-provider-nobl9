@@ -59,7 +59,7 @@ func setHistoricalDataRetrievalSchema(s map[string]*schema.Schema) {
 	s[historicalDataRetrievalConfigKey] = getHistoricalDataRetrievalSchema()[historicalDataRetrievalConfigKey]
 }
 
-func marshalHistoricalDataRetrieval(d Data) *v1alpha.HistoricalDataRetrieval {
+func marshalHistoricalDataRetrieval(d resourceInterface) *v1alpha.HistoricalDataRetrieval {
 	hData, ok := d.GetOk(historicalDataRetrievalConfigKey)
 	if !ok {
 		return nil

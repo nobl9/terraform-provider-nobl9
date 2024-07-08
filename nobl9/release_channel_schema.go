@@ -27,7 +27,7 @@ func schemaReleaseChannel() *schema.Schema {
 	}
 }
 
-func marshalReleaseChannel(d Data, diags diag.Diagnostics) v1alpha.ReleaseChannel {
+func marshalReleaseChannel(d resourceInterface, diags diag.Diagnostics) v1alpha.ReleaseChannel {
 	rc, ok := d.Get(releaseChannel).(string)
 	if !ok {
 		return 0
