@@ -119,34 +119,6 @@ func schemaCompositeDeprecated() *schema.Schema {
 	}
 }
 
-func marshalCompositeDeprecated(d *schema.ResourceData) *v1alphaSLO.Composite {
-	compositeSet := d.Get("composite").(*schema.Set)
-
-	if compositeSet.Len() > 0 {
-		compositeTf := compositeSet.List()[0].(map[string]interface{})
-
-		var burnRateCondition *v1alphaSLO.CompositeBurnRateCondition
-		burnRateConditionSet := compositeTf["burn_rate_condition"].(*schema.Set)
-
-		if burnRateConditionSet.Len() > 0 {
-			burnRateConditionTf := burnRateConditionSet.List()[0].(map[string]interface{})
-
-			burnRateCondition = &v1alphaSLO.CompositeBurnRateCondition{
-				Value:    burnRateConditionTf["value"].(float64),
-				Operator: burnRateConditionTf["op"].(string),
-			}
-		}
-
-		budgetTarget := compositeTf["target"].(float64)
-		return &v1alphaSLO.Composite{
-			BudgetTarget:      &budgetTarget,
-			BurnRateCondition: burnRateCondition,
-		}
-	}
-
-	return nil
-}
-
 func marshalComposite(sloObjective map[string]interface{}) (*v1alphaSLO.CompositeSpec, error) {
 	compositeSet := sloObjective["composite"].(*schema.Set)
 	if compositeSet.Len() == 0 {
@@ -189,24 +161,29 @@ func marshalComposite(sloObjective map[string]interface{}) (*v1alphaSLO.Composit
 	}, nil
 }
 
-func unmarshalCompositeDeprecated(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
-	//nolint:staticcheck
-	if spec.Composite != nil {
-		//nolint:staticcheck
-		composite := spec.Composite
-		compositeTF := make(map[string]interface{})
+func marshalCompositeDeprecated(d *schema.ResourceData) *v1alphaSLO.Composite {
+	compositeSet := d.Get("composite").(*schema.Set)
 
-		compositeTF["target"] = composite.BudgetTarget
+	if compositeSet.Len() > 0 {
+		compositeTf := compositeSet.List()[0].(map[string]interface{})
 
-		if composite.BurnRateCondition != nil {
-			burnRateCondition := composite.BurnRateCondition
-			burnRateConditionTF := make(map[string]interface{})
-			burnRateConditionTF["value"] = burnRateCondition.Value
-			burnRateConditionTF["op"] = burnRateCondition.Operator
-			compositeTF["burn_rate_condition"] = schema.NewSet(oneElementSet, []interface{}{burnRateConditionTF})
+		var burnRateCondition *v1alphaSLO.CompositeBurnRateCondition
+		burnRateConditionSet := compositeTf["burn_rate_condition"].(*schema.Set)
+
+		if burnRateConditionSet.Len() > 0 {
+			burnRateConditionTf := burnRateConditionSet.List()[0].(map[string]interface{})
+
+			burnRateCondition = &v1alphaSLO.CompositeBurnRateCondition{
+				Value:    burnRateConditionTf["value"].(float64),
+				Operator: burnRateConditionTf["op"].(string),
+			}
 		}
 
-		return d.Set("composite", schema.NewSet(oneElementSet, []interface{}{compositeTF}))
+		budgetTarget := compositeTf["target"].(float64)
+		return &v1alphaSLO.Composite{
+			BudgetTarget:      &budgetTarget,
+			BurnRateCondition: burnRateCondition,
+		}
 	}
 
 	return nil
@@ -243,4 +220,27 @@ func unmarshalComposite(compositeSpec *v1alphaSLO.CompositeSpec) *schema.Set {
 	composite["components"] = schema.NewSet(oneElementSet, []interface{}{components})
 
 	return schema.NewSet(schema.HashResource(resourceComposite()), []interface{}{composite})
+}
+
+func unmarshalCompositeDeprecated(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
+	//nolint:staticcheck
+	if spec.Composite != nil {
+		//nolint:staticcheck
+		composite := spec.Composite
+		compositeTF := make(map[string]interface{})
+
+		compositeTF["target"] = composite.BudgetTarget
+
+		if composite.BurnRateCondition != nil {
+			burnRateCondition := composite.BurnRateCondition
+			burnRateConditionTF := make(map[string]interface{})
+			burnRateConditionTF["value"] = burnRateCondition.Value
+			burnRateConditionTF["op"] = burnRateCondition.Operator
+			compositeTF["burn_rate_condition"] = schema.NewSet(oneElementSet, []interface{}{burnRateConditionTF})
+		}
+
+		return d.Set("composite", schema.NewSet(oneElementSet, []interface{}{compositeTF}))
+	}
+
+	return nil
 }
