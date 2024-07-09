@@ -88,9 +88,9 @@ func (a alertMethod) unmarshalAlertMethod(
 }
 
 //nolint:unparam
-func resourceAlertMethodValidation(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func resourceAlertMethodValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	alertMethod := alertMethod{alertMethodProvider: alertMethodEmail{}}
-	am := alertMethod.marshalAlertMethod(d)
+	am := alertMethod.marshalAlertMethod(diff)
 	errs := manifest.Validate([]manifest.Object{am})
 	if errs != nil {
 		return formatErrorsAsSingleError(errs)
