@@ -22,7 +22,7 @@ type directResource struct {
 type directSpecResource interface {
 	GetSchema() map[string]*schema.Schema
 	GetDescription() string
-	MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec
+	MarshalSpec(r resourceInterface) v1alphaDirect.Spec
 	UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics)
 }
 
@@ -54,6 +54,7 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 				Description: "The status of the created direct.",
 			},
 		},
+		CustomizeDiff: i.resourceDirectValidation,
 		CreateContext: i.resourceDirectApply,
 		UpdateContext: i.resourceDirectApply,
 		DeleteContext: i.resourceDirectDelete,
@@ -69,6 +70,23 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 	}
 
 	return r
+}
+
+//nolint:unparam
+func (dr directResource) resourceDirectValidation(
+	ctx context.Context,
+	diff *schema.ResourceDiff,
+	meta interface{},
+) error {
+	n9Direct, diags := dr.marshalDirect(diff)
+	if diags.HasError() {
+		return diagsToSingleError(diags)
+	}
+	errs := manifest.Validate([]manifest.Object{n9Direct})
+	if errs != nil {
+		return formatErrorsAsSingleError(errs)
+	}
+	return nil
 }
 
 func (dr directResource) resourceDirectApply(
@@ -162,30 +180,30 @@ func (dr directResource) resourceDirectDelete(
 }
 
 //nolint:unparam
-func (dr directResource) marshalDirect(d *schema.ResourceData) (*v1alphaDirect.Direct, diag.Diagnostics) {
+func (dr directResource) marshalDirect(r resourceInterface) (*v1alphaDirect.Direct, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	spec := dr.MarshalSpec(d)
-	spec.Description = d.Get("description").(string)
-	spec.HistoricalDataRetrieval = marshalHistoricalDataRetrieval(d)
-	spec.QueryDelay = marshalQueryDelay(d)
-	spec.ReleaseChannel = marshalReleaseChannel(d, diags)
+	spec := dr.MarshalSpec(r)
+	spec.Description = r.Get("description").(string)
+	spec.HistoricalDataRetrieval = marshalHistoricalDataRetrieval(r)
+	spec.QueryDelay = marshalQueryDelay(r)
+	spec.ReleaseChannel = marshalReleaseChannel(r, diags)
 
-	if d.GetRawConfig().Type().HasAttribute(logCollectionConfigKey) &&
-		!d.GetRawConfig().GetAttr(logCollectionConfigKey).IsNull() {
-		spec.LogCollectionEnabled = marshalLogCollectionEnabled(d)
+	if r.GetRawConfig().Type().HasAttribute(logCollectionConfigKey) &&
+		!r.GetRawConfig().GetAttr(logCollectionConfigKey).IsNull() {
+		spec.LogCollectionEnabled = marshalLogCollectionEnabled(r)
 	}
 
 	var displayName string
-	if dn := d.Get("display_name"); dn != nil {
+	if dn := r.Get("display_name"); dn != nil {
 		displayName = dn.(string)
 	}
 
 	direct := v1alphaDirect.New(
 		v1alphaDirect.Metadata{
-			Name:        d.Get("name").(string),
+			Name:        r.Get("name").(string),
 			DisplayName: displayName,
-			Project:     d.Get("project").(string),
+			Project:     r.Get("project").(string),
 		},
 		spec,
 	)
@@ -263,14 +281,14 @@ func (s appDynamicsDirectSpec) GetDescription() string {
 	return "[AppDynamics Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-direct)"
 }
 
-func (s appDynamicsDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s appDynamicsDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		AppDynamics: &v1alphaDirect.AppDynamicsConfig{
-			URL:          d.Get("url").(string),
-			AccountName:  d.Get("account_name").(string),
-			ClientID:     d.Get("client_id").(string),
-			ClientSecret: d.Get("client_secret").(string),
-			ClientName:   d.Get("client_name").(string),
+			URL:          r.Get("url").(string),
+			AccountName:  r.Get("account_name").(string),
+			ClientID:     r.Get("client_id").(string),
+			ClientSecret: r.Get("client_secret").(string),
+			ClientName:   r.Get("client_name").(string),
 		},
 	}
 }
@@ -326,12 +344,12 @@ func (s azureMonitorDirectSpec) GetDescription() string {
 	return "[Azure Monitor Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-direct)"
 }
 
-func (s azureMonitorDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s azureMonitorDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		AzureMonitor: &v1alphaDirect.AzureMonitorConfig{
-			TenantID:     d.Get("tenant_id").(string),
-			ClientID:     d.Get("client_id").(string),
-			ClientSecret: d.Get("client_secret").(string),
+			TenantID:     r.Get("tenant_id").(string),
+			ClientID:     r.Get("client_id").(string),
+			ClientSecret: r.Get("client_secret").(string),
 		},
 	}
 }
@@ -372,10 +390,10 @@ func (s bigqueryDirectSpec) GetDescription() string {
 	return "[BigQuery Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-direct)"
 }
 
-func (s bigqueryDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s bigqueryDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		BigQuery: &v1alphaDirect.BigQueryConfig{
-			ServiceAccountKey: d.Get("service_account_key").(string),
+			ServiceAccountKey: r.Get("service_account_key").(string),
 		},
 	}
 }
@@ -415,10 +433,10 @@ func (s cloudWatchDirectSpec) GetDescription() string {
 	return "[Amazon CloudWatch Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-direct)"
 }
 
-func (s cloudWatchDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s cloudWatchDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		CloudWatch: &v1alphaDirect.CloudWatchConfig{
-			RoleARN: d.Get("role_arn").(string),
+			RoleARN: r.Get("role_arn").(string),
 		},
 	}
 }
@@ -438,12 +456,12 @@ func (s datadogDirectSpec) GetDescription() string {
 	return "[Datadog Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/datadog#datadog-direct)."
 }
 
-func (s datadogDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s datadogDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		Datadog: &v1alphaDirect.DatadogConfig{
-			Site:           d.Get("site").(string),
-			APIKey:         d.Get("api_key").(string),
-			ApplicationKey: d.Get("application_key").(string),
+			Site:           r.Get("site").(string),
+			APIKey:         r.Get("api_key").(string),
+			ApplicationKey: r.Get("application_key").(string),
 		},
 	}
 }
@@ -524,11 +542,11 @@ func (s dynatraceDirectSpec) GetSchema() map[string]*schema.Schema {
 	return dynatraceSchema
 }
 
-func (s dynatraceDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s dynatraceDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		Dynatrace: &v1alphaDirect.DynatraceConfig{
-			URL:            d.Get("url").(string),
-			DynatraceToken: d.Get("dynatrace_token").(string),
+			URL:            r.Get("url").(string),
+			DynatraceToken: r.Get("dynatrace_token").(string),
 		},
 	}
 }
@@ -568,10 +586,10 @@ func (s gcmDirectSpec) GetDescription() string {
 		"(https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-direct)."
 }
 
-func (s gcmDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s gcmDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		GCM: &v1alphaDirect.GCMConfig{
-			ServiceAccountKey: d.Get("service_account_key").(string),
+			ServiceAccountKey: r.Get("service_account_key").(string),
 		},
 	}
 }
@@ -609,10 +627,10 @@ func (h honeycombDirectSpec) GetDescription() string {
 	return "[Honeycomb Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/honeycomb-integration/#hc-direct)."
 }
 
-func (h honeycombDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (h honeycombDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		Honeycomb: &v1alphaDirect.HoneycombConfig{
-			APIKey: d.Get("api_key").(string),
+			APIKey: r.Get("api_key").(string),
 		},
 	}
 }
@@ -665,12 +683,12 @@ func (s influxdbDirectSpec) GetSchema() map[string]*schema.Schema {
 	return influxdbSchema
 }
 
-func (s influxdbDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s influxdbDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		InfluxDB: &v1alphaDirect.InfluxDBConfig{
-			URL:            d.Get("url").(string),
-			APIToken:       d.Get("api_token").(string),
-			OrganizationID: d.Get("organization_id").(string),
+			URL:            r.Get("url").(string),
+			APIToken:       r.Get("api_token").(string),
+			OrganizationID: r.Get("organization_id").(string),
 		},
 	}
 }
@@ -714,11 +732,11 @@ func (s instanaDirectSpec) GetSchema() map[string]*schema.Schema {
 	return instanaSchema
 }
 
-func (s instanaDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s instanaDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		Instana: &v1alphaDirect.InstanaConfig{
-			URL:      d.Get("url").(string),
-			APIToken: d.Get("api_token").(string),
+			URL:      r.Get("url").(string),
+			APIToken: r.Get("api_token").(string),
 		},
 	}
 }
@@ -773,13 +791,13 @@ func (s lightstepDirectSpec) GetSchema() map[string]*schema.Schema {
 	return lightstepSchema
 }
 
-func (s lightstepDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s lightstepDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		Lightstep: &v1alphaDirect.LightstepConfig{
-			AppToken:     d.Get("app_token").(string),
-			Organization: d.Get("lightstep_organization").(string),
-			Project:      d.Get("lightstep_project").(string),
-			URL:          d.Get("url").(string),
+			AppToken:     r.Get("app_token").(string),
+			Organization: r.Get("lightstep_organization").(string),
+			Project:      r.Get("lightstep_project").(string),
+			URL:          r.Get("url").(string),
 		},
 	}
 }
@@ -836,12 +854,12 @@ func (s logicMonitorDirectSpec) GetDescription() string {
 	return "[Logic Monitor Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/logic-monitor#logic-monitor-direct)"
 }
 
-func (s logicMonitorDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s logicMonitorDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		LogicMonitor: &v1alphaDirect.LogicMonitorConfig{
-			Account:   d.Get("account").(string),
-			AccessID:  d.Get("account_id").(string),
-			AccessKey: d.Get("access_key").(string),
+			Account:   r.Get("account").(string),
+			AccessID:  r.Get("account_id").(string),
+			AccessKey: r.Get("access_key").(string),
 		},
 	}
 }
@@ -891,10 +909,10 @@ func (s newRelicDirectSpec) GetDescription() string {
 	return "[New Relic Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/new-relic#new-relic-direct)."
 }
 
-func (s newRelicDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s newRelicDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{NewRelic: &v1alphaDirect.NewRelicConfig{
-		AccountID:        d.Get("account_id").(int),
-		InsightsQueryKey: d.Get("insights_query_key").(string),
+		AccountID:        r.Get("account_id").(int),
+		InsightsQueryKey: r.Get("insights_query_key").(string),
 	}}
 }
 
@@ -932,10 +950,10 @@ func (s pingdomDirectSpec) GetSchema() map[string]*schema.Schema {
 	return pingdomSchema
 }
 
-func (s pingdomDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s pingdomDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		Pingdom: &v1alphaDirect.PingdomConfig{
-			APIToken: d.Get("api_token").(string),
+			APIToken: r.Get("api_token").(string),
 		},
 	}
 }
@@ -984,11 +1002,11 @@ func (s redshiftDirectSpec) GetDescription() string {
 		"(https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-direct)."
 }
 
-func (s redshiftDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s redshiftDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		Redshift: &v1alphaDirect.RedshiftConfig{
-			RoleARN:   d.Get("role_arn").(string),
-			SecretARN: d.Get("secret_arn").(string),
+			RoleARN:   r.Get("role_arn").(string),
+			SecretARN: r.Get("secret_arn").(string),
 		},
 	}
 }
@@ -1033,10 +1051,10 @@ func (s splunkDirectSpec) GetSchema() map[string]*schema.Schema {
 	return splunkSchema
 }
 
-func (s splunkDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s splunkDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{Splunk: &v1alphaDirect.SplunkConfig{
-		URL:         d.Get("url").(string),
-		AccessToken: d.Get("access_token").(string),
+		URL:         r.Get("url").(string),
+		AccessToken: r.Get("access_token").(string),
 	}}
 }
 
@@ -1077,10 +1095,10 @@ func (s splunkObservabilityDirectSpec) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (s splunkObservabilityDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s splunkObservabilityDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{SplunkObservability: &v1alphaDirect.SplunkObservabilityConfig{
-		Realm:       d.Get("realm").(string),
-		AccessToken: d.Get("access_token").(string),
+		Realm:       r.Get("realm").(string),
+		AccessToken: r.Get("access_token").(string),
 	}}
 }
 
@@ -1137,11 +1155,11 @@ func (s sumologicDirectSpec) GetSchema() map[string]*schema.Schema {
 	return sumologicSchema
 }
 
-func (s sumologicDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s sumologicDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{SumoLogic: &v1alphaDirect.SumoLogicConfig{
-		URL:       d.Get("url").(string),
-		AccessID:  d.Get("access_id").(string),
-		AccessKey: d.Get("access_key").(string),
+		URL:       r.Get("url").(string),
+		AccessID:  r.Get("access_id").(string),
+		AccessKey: r.Get("access_key").(string),
 	}}
 }
 
@@ -1179,9 +1197,9 @@ func (s thousandeyesDirectSpec) GetDescription() string {
 	return "[ThousandEyes Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-direct)."
 }
 
-func (s thousandeyesDirectSpec) MarshalSpec(d *schema.ResourceData) v1alphaDirect.Spec {
+func (s thousandeyesDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{ThousandEyes: &v1alphaDirect.ThousandEyesConfig{
-		OauthBearerToken: d.Get("oauth_bearer_token").(string),
+		OauthBearerToken: r.Get("oauth_bearer_token").(string),
 	}}
 }
 

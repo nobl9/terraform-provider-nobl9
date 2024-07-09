@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -12,6 +13,7 @@ import (
 type resourceInterface interface {
 	Get(key string) any
 	GetOk(key string) (any, bool)
+	GetRawConfig() cty.Value
 }
 
 // TODO: Once we introduce a more structured approach to error handling in SDK, this should be removed.
