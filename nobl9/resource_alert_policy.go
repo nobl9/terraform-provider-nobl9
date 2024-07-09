@@ -104,6 +104,7 @@ func resourceAlertPolicy() *schema.Resource {
 				},
 			},
 		},
+		CustomizeDiff: resourceAlertPolicyValidation,
 		CreateContext: resourceAlertPolicyApply,
 		UpdateContext: resourceAlertPolicyApply,
 		DeleteContext: resourceAlertPolicyDelete,
@@ -143,39 +144,39 @@ func transformAlertMethodsTo2DMap(alertMethods []interface{}) map[string]map[str
 	return result
 }
 
-func marshalAlertPolicy(d *schema.ResourceData) (*v1alphaAlertPolicy.AlertPolicy, diag.Diagnostics) {
+func marshalAlertPolicy(r resourceInterface) (*v1alphaAlertPolicy.AlertPolicy, diag.Diagnostics) {
 	var displayName string
-	if dn := d.Get("display_name"); dn != nil {
+	if dn := r.Get("display_name"); dn != nil {
 		displayName = dn.(string)
 	}
 
-	labelsMarshaled, diags := getMarshaledLabels(d)
+	labelsMarshaled, diags := getMarshaledLabels(r)
 	if diags.HasError() {
 		return nil, diags
 	}
 
-	annotationsMarshaled := getMarshaledAnnotations(d)
+	annotationsMarshaled := getMarshaledAnnotations(r)
 
 	alertPolicy := v1alphaAlertPolicy.New(
 		v1alphaAlertPolicy.Metadata{
-			Name:        d.Get("name").(string),
+			Name:        r.Get("name").(string),
 			DisplayName: displayName,
-			Project:     d.Get("project").(string),
+			Project:     r.Get("project").(string),
 			Labels:      labelsMarshaled,
 			Annotations: annotationsMarshaled,
 		},
 		v1alphaAlertPolicy.Spec{
-			Description:      d.Get("description").(string),
-			Severity:         d.Get("severity").(string),
-			CoolDownDuration: d.Get("cooldown").(string),
-			Conditions:       marshalAlertConditions(d),
-			AlertMethods:     marshalAlertMethods(d),
+			Description:      r.Get("description").(string),
+			Severity:         r.Get("severity").(string),
+			CoolDownDuration: r.Get("cooldown").(string),
+			Conditions:       marshalAlertConditions(r),
+			AlertMethods:     marshalAlertMethods(r),
 		})
 	return &alertPolicy, diags
 }
 
-func marshalAlertMethods(d *schema.ResourceData) []v1alphaAlertPolicy.AlertMethodRef {
-	methods := d.Get("alert_method").([]interface{})
+func marshalAlertMethods(r resourceInterface) []v1alphaAlertPolicy.AlertMethodRef {
+	methods := r.Get("alert_method").([]interface{})
 	resultConditions := make([]v1alphaAlertPolicy.AlertMethodRef, len(methods))
 	for i, m := range methods {
 		method := m.(map[string]interface{})
@@ -189,8 +190,8 @@ func marshalAlertMethods(d *schema.ResourceData) []v1alphaAlertPolicy.AlertMetho
 	return resultConditions
 }
 
-func marshalAlertConditions(d *schema.ResourceData) []v1alphaAlertPolicy.AlertCondition {
-	conditions := d.Get("condition").([]interface{})
+func marshalAlertConditions(r resourceInterface) []v1alphaAlertPolicy.AlertCondition {
+	conditions := r.Get("condition").([]interface{})
 	resultConditions := make([]v1alphaAlertPolicy.AlertCondition, len(conditions))
 	for i, c := range conditions {
 		condition := c.(map[string]interface{})
@@ -310,6 +311,19 @@ func unmarshalAlertMethods(alertMethods []v1alphaAlertPolicy.AlertMethodRef) int
 	}
 
 	return resultMethods
+}
+
+//nolint:unparam
+func resourceAlertPolicyValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	alertPolicy, diags := marshalAlertPolicy(diff)
+	if diags.HasError() {
+		return diagsToSingleError(diags)
+	}
+	errs := manifest.Validate([]manifest.Object{alertPolicy})
+	if errs != nil {
+		return formatErrorsAsSingleError(errs)
+	}
+	return nil
 }
 
 func resourceAlertPolicyApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
