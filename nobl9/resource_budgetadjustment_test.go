@@ -23,7 +23,6 @@ func TestAcc_Nobl9BudgetAdjustments(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tc := tc
 			resource.ParallelTest(t, resource.TestCase{
 				ProviderFactories: ProviderFactory(),
 				CheckDestroy:      CheckDestroy("nobl9_budget_adjustment", manifest.KindBudgetAdjustment),
