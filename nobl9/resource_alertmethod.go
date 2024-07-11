@@ -27,7 +27,7 @@ func resourceAlertMethodFactory(provider alertMethodProvider) *schema.Resource {
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
 		},
-		CustomizeDiff: resourceAlertMethodValidation,
+		CustomizeDiff: i.resourceAlertMethodValidation,
 		CreateContext: i.resourceAlertMethodApply,
 		UpdateContext: i.resourceAlertMethodApply,
 		DeleteContext: resourceAlertMethodDelete,
@@ -88,9 +88,8 @@ func (a alertMethod) unmarshalAlertMethod(
 }
 
 //nolint:unparam
-func resourceAlertMethodValidation(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	alertMethod := alertMethod{alertMethodProvider: alertMethodEmail{}}
-	am := alertMethod.marshalAlertMethod(d)
+func (a alertMethod) resourceAlertMethodValidation(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	am := a.marshalAlertMethod(d)
 	errs := manifest.Validate([]manifest.Object{am})
 	if errs != nil {
 		return formatErrorsAsSingleError(errs)
