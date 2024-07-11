@@ -16,7 +16,6 @@ import (
 func budgetAdjustment() *schema.Resource {
 	return &schema.Resource{
 		Schema:        schemaBudgetAdjustment(),
-		CustomizeDiff: resourceBudgetAdjustmentValidation,
 		CreateContext: resourceBudgetAdjustmentApply,
 		UpdateContext: resourceBudgetAdjustmentApply,
 		DeleteContext: resourceBudgetAdjustmentDelete,
@@ -98,16 +97,6 @@ func schemaBudgetAdjustment() map[string]*schema.Schema {
 	}
 }
 
-//nolint:unparam
-func resourceBudgetAdjustmentValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
-	adjustment := marshalBudgetAdjustment(diff)
-	errs := manifest.Validate([]manifest.Object{adjustment})
-	if errs != nil {
-		return formatErrorsAsSingleError(errs)
-	}
-	return nil
-}
-
 func resourceBudgetAdjustmentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config)
@@ -134,20 +123,20 @@ func resourceBudgetAdjustmentApply(ctx context.Context, d *schema.ResourceData, 
 	return resourceBudgetAdjustmentRead(ctx, d, meta)
 }
 
-func marshalBudgetAdjustment(r resourceInterface) *budgetadjustment.BudgetAdjustment {
-	firstEventStart, _ := time.Parse(time.RFC3339, r.Get("first_event_start").(string))
+func marshalBudgetAdjustment(d *schema.ResourceData) *budgetadjustment.BudgetAdjustment {
+	firstEventStart, _ := time.Parse(time.RFC3339, d.Get("first_event_start").(string))
 
 	adjustment := budgetadjustment.New(
 		budgetadjustment.Metadata{
-			Name:        r.Get("name").(string),
-			DisplayName: r.Get("display_name").(string),
+			Name:        d.Get("name").(string),
+			DisplayName: d.Get("display_name").(string),
 		},
 		budgetadjustment.Spec{
-			Description:     r.Get("description").(string),
+			Description:     d.Get("description").(string),
 			FirstEventStart: firstEventStart,
-			Duration:        r.Get("duration").(string),
-			Rrule:           r.Get("rrule").(string),
-			Filters:         marshalFilters(r.Get("filters")),
+			Duration:        d.Get("duration").(string),
+			Rrule:           d.Get("rrule").(string),
+			Filters:         marshalFilters(d.Get("filters")),
 		})
 
 	return &adjustment
