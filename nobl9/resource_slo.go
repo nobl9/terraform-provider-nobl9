@@ -2995,6 +2995,11 @@ func schemaMetricThousandEyes() map[string]*schema.Schema {
 						Required:    true,
 						Description: "ID of the test",
 					},
+					"test_type": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Type of the test",
+					},
 				},
 			},
 		},
@@ -3009,8 +3014,10 @@ func marshalThousandEyesMetric(s *schema.Set) *v1alphaSLO.ThousandEyesMetric {
 	metric := s.List()[0].(map[string]interface{})
 
 	testID := int64(metric["test_id"].(int))
+	testType := metric["test_type"].(string)
 	return &v1alphaSLO.ThousandEyesMetric{
-		TestID: &testID,
+		TestID:   &testID,
+		TestType: &testType,
 	}
 }
 
@@ -3021,7 +3028,7 @@ func unmarshalThousandeyesMetric(metric interface{}) map[string]interface{} {
 	}
 	res := make(map[string]interface{})
 	res["test_id"] = teMetric.TestID
-
+	res["test_type"] = teMetric.TestType
 	return res
 }
 
