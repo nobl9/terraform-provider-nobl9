@@ -19,7 +19,7 @@ func resourceProject() *schema.Resource {
 			"label":        schemaLabels(),
 			"annotations":  schemaAnnotations(),
 		},
-		CustomizeDiff: resourceProjectValidation,
+		CustomizeDiff: resourceProjectValidate,
 		CreateContext: resourceProjectApply,
 		UpdateContext: resourceProjectApply,
 		DeleteContext: resourceProjectDelete,
@@ -85,7 +85,7 @@ func unmarshalProject(d *schema.ResourceData, objects []v1alphaProject.Project) 
 }
 
 //nolint:unparam
-func resourceProjectValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func resourceProjectValidate(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	project, diags := marshalProject(diff)
 	if diags.HasError() {
 		return diagsToSingleError(diags)

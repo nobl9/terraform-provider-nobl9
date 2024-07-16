@@ -24,7 +24,7 @@ const agentTypeKey = "agent_type"
 func resourceAgent() *schema.Resource {
 	return &schema.Resource{
 		Schema:        agentSchema(),
-		CustomizeDiff: resourceAgentValidation,
+		CustomizeDiff: resourceAgentValidate,
 		CreateContext: resourceAgentApply,
 		UpdateContext: resourceAgentApply,
 		DeleteContext: resourceAgentDelete,
@@ -117,7 +117,7 @@ func agentSchema() map[string]*schema.Schema {
 }
 
 //nolint:unparam
-func resourceAgentValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func resourceAgentValidate(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	agent, diags := marshalAgent(diff)
 	if diags.HasError() {
 		return diagsToSingleError(diags)

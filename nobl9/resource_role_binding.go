@@ -52,7 +52,7 @@ func resourceRoleBinding() *schema.Resource {
 				Description: "Project name, the project in which we want the user or group to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.",
 			},
 		},
-		CustomizeDiff: resourceRoleBindingValidation,
+		CustomizeDiff: resourceRoleBindingValidate,
 		CreateContext: resourceRoleBindingApply,
 		UpdateContext: resourceRoleBindingApply,
 		DeleteContext: resourceRoleBindingDelete,
@@ -138,7 +138,7 @@ func containsProjectRef(obj v1alphaRoleBinding.RoleBinding) bool {
 }
 
 //nolint:unparam
-func resourceRoleBindingValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func resourceRoleBindingValidate(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	roleBinding := marshalRoleBinding(diff)
 	errs := manifest.Validate([]manifest.Object{roleBinding})
 	if errs != nil {

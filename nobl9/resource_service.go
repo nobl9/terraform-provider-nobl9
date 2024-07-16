@@ -29,7 +29,7 @@ func resourceService() *schema.Resource {
 				},
 			},
 		},
-		CustomizeDiff: resourceServiceValidation,
+		CustomizeDiff: resourceServiceValidate,
 		CreateContext: resourceServiceApply,
 		ReadContext:   resourceServiceRead,
 		UpdateContext: resourceServiceApply,
@@ -106,7 +106,7 @@ func unmarshalService(d *schema.ResourceData, objects []v1alphaService.Service) 
 }
 
 //nolint:unparam
-func resourceServiceValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func resourceServiceValidate(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	service, diags := marshalService(diff)
 	if diags.HasError() {
 		return diagsToSingleError(diags)

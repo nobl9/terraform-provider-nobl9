@@ -104,7 +104,7 @@ func resourceAlertPolicy() *schema.Resource {
 				},
 			},
 		},
-		CustomizeDiff: resourceAlertPolicyValidation,
+		CustomizeDiff: resourceAlertPolicyValidate,
 		CreateContext: resourceAlertPolicyApply,
 		UpdateContext: resourceAlertPolicyApply,
 		DeleteContext: resourceAlertPolicyDelete,
@@ -314,7 +314,7 @@ func unmarshalAlertMethods(alertMethods []v1alphaAlertPolicy.AlertMethodRef) int
 }
 
 //nolint:unparam
-func resourceAlertPolicyValidation(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func resourceAlertPolicyValidate(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	alertPolicy, diags := marshalAlertPolicy(diff)
 	if diags.HasError() {
 		return diagsToSingleError(diags)

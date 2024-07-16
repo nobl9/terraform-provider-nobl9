@@ -54,7 +54,7 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 				Description: "The status of the created direct.",
 			},
 		},
-		CustomizeDiff: i.resourceDirectValidation,
+		CustomizeDiff: i.resourceDirectValidate,
 		CreateContext: i.resourceDirectApply,
 		UpdateContext: i.resourceDirectApply,
 		DeleteContext: i.resourceDirectDelete,
@@ -73,7 +73,7 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 }
 
 //nolint:unparam
-func (dr directResource) resourceDirectValidation(
+func (dr directResource) resourceDirectValidate(
 	ctx context.Context,
 	diff *schema.ResourceDiff,
 	meta interface{},
