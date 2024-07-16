@@ -43,7 +43,7 @@ func testBudgetAdjustmentSingleEvent(name string, futureTime time.Time) string {
 		fmt.Sprintf(`
 resource "nobl9_budget_adjustment" "%s" {
   name              = "%s"
-  first_event_start = "2022-01-01T00:00:00Z"
+  first_event_start = "%s"
   duration          = "1h"
   filters {
     slos {
