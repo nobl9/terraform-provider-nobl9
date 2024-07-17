@@ -44,7 +44,6 @@ func appendError(d diag.Diagnostics, err error) diag.Diagnostics {
 	return d
 }
 
-//nolint:unused
 func diagsToSingleError(diags diag.Diagnostics) error {
 	if len(diags) == 0 {
 		return nil
@@ -58,7 +57,6 @@ func diagsToSingleError(diags diag.Diagnostics) error {
 	return fmt.Errorf("validation failed: %s", combinedErrs)
 }
 
-//nolint:unused
 func formatErrorsAsSingleError(errs []error) error {
 	errsStrings := make([]string, 0, len(errs))
 	for _, err := range errs {

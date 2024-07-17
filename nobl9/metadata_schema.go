@@ -36,7 +36,6 @@ func schemaDisplayName() *schema.Schema {
 	}
 }
 
-//nolint:unused,deadcode
 func schemaLabels() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeList,
