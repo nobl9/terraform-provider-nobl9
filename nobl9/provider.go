@@ -146,6 +146,7 @@ var (
 	once         sync.Once
 )
 
+//nolint:unparam
 func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	once.Do(func() {
