@@ -105,8 +105,7 @@ func unmarshalService(d *schema.ResourceData, objects []v1alphaService.Service) 
 	return diags
 }
 
-//nolint:unparam
-func resourceServiceValidate(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func resourceServiceValidate(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 	service, diags := marshalService(diff)
 	if diags.HasError() {
 		return diagsToSingleError(diags)

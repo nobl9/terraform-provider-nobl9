@@ -72,11 +72,10 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 	return r
 }
 
-//nolint:unparam
 func (dr directResource) resourceDirectValidate(
-	ctx context.Context,
+	_ context.Context,
 	diff *schema.ResourceDiff,
-	meta interface{},
+	_ interface{},
 ) error {
 	n9Direct, diags := dr.marshalDirect(diff)
 	if diags.HasError() {
@@ -179,7 +178,6 @@ func (dr directResource) resourceDirectDelete(
 	return nil
 }
 
-//nolint:unparam
 func (dr directResource) marshalDirect(r resourceInterface) (*v1alphaDirect.Direct, diag.Diagnostics) {
 	var diags diag.Diagnostics
 

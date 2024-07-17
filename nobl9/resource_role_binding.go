@@ -137,8 +137,7 @@ func containsProjectRef(obj v1alphaRoleBinding.RoleBinding) bool {
 	return obj.Spec.ProjectRef != ""
 }
 
-//nolint:unparam
-func resourceRoleBindingValidate(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func resourceRoleBindingValidate(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 	roleBinding := marshalRoleBinding(diff)
 	errs := manifest.Validate([]manifest.Object{roleBinding})
 	if errs != nil {

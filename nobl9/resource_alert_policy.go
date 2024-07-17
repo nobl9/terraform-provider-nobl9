@@ -313,8 +313,7 @@ func unmarshalAlertMethods(alertMethods []v1alphaAlertPolicy.AlertMethodRef) int
 	return resultMethods
 }
 
-//nolint:unparam
-func resourceAlertPolicyValidate(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func resourceAlertPolicyValidate(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 	alertPolicy, diags := marshalAlertPolicy(diff)
 	if diags.HasError() {
 		return diagsToSingleError(diags)

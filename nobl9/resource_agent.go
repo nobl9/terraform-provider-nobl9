@@ -116,8 +116,7 @@ func agentSchema() map[string]*schema.Schema {
 	return agentSchema
 }
 
-//nolint:unparam
-func resourceAgentValidate(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func resourceAgentValidate(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 	agent, diags := marshalAgent(diff)
 	if diags.HasError() {
 		return diagsToSingleError(diags)
@@ -214,7 +213,6 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	return nil
 }
 
-//nolint:unparam
 func marshalAgent(d resourceInterface) (*v1alphaAgent.Agent, diag.Diagnostics) {
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {

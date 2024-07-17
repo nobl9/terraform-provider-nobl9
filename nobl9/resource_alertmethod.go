@@ -87,8 +87,7 @@ func (a alertMethod) unmarshalAlertMethod(
 	return diags
 }
 
-//nolint:unparam
-func (a alertMethod) resourceAlertMethodValidate(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func (a alertMethod) resourceAlertMethodValidate(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	am := a.marshalAlertMethod(d)
 	errs := manifest.Validate([]manifest.Object{am})
 	if errs != nil {

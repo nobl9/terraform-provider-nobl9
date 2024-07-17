@@ -84,8 +84,7 @@ func unmarshalProject(d *schema.ResourceData, objects []v1alphaProject.Project) 
 	return diags
 }
 
-//nolint:unparam
-func resourceProjectValidate(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func resourceProjectValidate(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 	project, diags := marshalProject(diff)
 	if diags.HasError() {
 		return diagsToSingleError(diags)
