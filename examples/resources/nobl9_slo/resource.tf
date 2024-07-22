@@ -130,6 +130,7 @@ resource "nobl9_slo" "composite_slo" {
   budgeting_method = "Occurrences"
   project          = nobl9_project.this.name
 
+  # List the names of component SLOs your composite must include
   depends_on = [nobl9_slo.slo_1, nobl9_slo.slo_2]
 
   time_window {
