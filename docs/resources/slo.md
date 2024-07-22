@@ -1864,4 +1864,6 @@ Required:
 
 ## Nobl9 Official Documentation
 
-https://docs.nobl9.com/SLOs_as_code/?_highlight=slo
+https://docs.nobl9.com/getting-started/nobl9-resources/slo
+
+https://docs.nobl9.com/yaml-guide#slo
