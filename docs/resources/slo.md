@@ -10,6 +10,11 @@ An SLO is a target value or range of values for a service that is measured by a 
 
 For more information, refer to [SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)
 
+
+## Composite SLOs 2.0
+
+Use the `depends_on` meta-argument to specify component SLOs your composite must depend on. It addresses incorrect application order issues.
+
 ## Example Usage
 
 ```terraform
@@ -145,6 +150,7 @@ resource "nobl9_slo" "composite_slo" {
   budgeting_method = "Occurrences"
   project          = nobl9_project.this.name
 
+  # List the names of component SLOs your composite must include
   depends_on = [nobl9_slo.slo_1, nobl9_slo.slo_2]
 
   time_window {
@@ -1858,4 +1864,6 @@ Required:
 
 ## Nobl9 Official Documentation
 
-https://docs.nobl9.com/SLOs_as_code/?_highlight=slo
+https://docs.nobl9.com/getting-started/nobl9-resources/slo
+
+https://docs.nobl9.com/yaml-guide#slo
