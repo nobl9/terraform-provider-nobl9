@@ -2,7 +2,6 @@ package nobl9
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 	"sync"
@@ -189,6 +188,3 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 	})
 	return sharedClient, diags
 }
-
-// TODO: Once we introduce a more structured approach to error handling in SDK, this should be removed.
-var errConcurrencyIssue = errors.New("operation failed due to concurrency issue but can be retried")
