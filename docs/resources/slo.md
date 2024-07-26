@@ -648,6 +648,9 @@ Optional:
 Required:
 
 - `test_id` (Number) ID of the test
+
+Optional:
+
 - `test_type` (String) Type of the test
 
 
@@ -1010,6 +1013,9 @@ Optional:
 Required:
 
 - `test_id` (Number) ID of the test
+
+Optional:
+
 - `test_type` (String) Type of the test
 
 
@@ -1372,6 +1378,9 @@ Optional:
 Required:
 
 - `test_id` (Number) ID of the test
+
+Optional:
+
 - `test_type` (String) Type of the test
 
 
@@ -1742,6 +1751,9 @@ Optional:
 Required:
 
 - `test_id` (Number) ID of the test
+
+Optional:
+
 - `test_type` (String) Type of the test
 
 

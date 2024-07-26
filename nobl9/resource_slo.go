@@ -2752,7 +2752,7 @@ func schemaMetricThousandEyes() map[string]*schema.Schema {
 					},
 					"test_type": {
 						Type:        schema.TypeString,
-						Required:    true,
+						Optional:    true,
 						Description: "Type of the test",
 					},
 				},
