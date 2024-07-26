@@ -39,7 +39,6 @@ func TestAcc_Nobl9RoleBinding(t *testing.T) {
 	}
 }
 
-//nolint:unused
 func testProjectRoleBindingConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
@@ -62,7 +61,6 @@ resource "nobl9_role_binding" "%s" {
 `, name, name)
 }
 
-//nolint:unused
 func testRoleBindingWithoutName(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {

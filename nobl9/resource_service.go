@@ -29,6 +29,7 @@ func resourceService() *schema.Resource {
 				},
 			},
 		},
+		CustomizeDiff: resourceServiceValidate,
 		CreateContext: resourceServiceApply,
 		ReadContext:   resourceServiceRead,
 		UpdateContext: resourceServiceApply,
@@ -40,7 +41,7 @@ func resourceService() *schema.Resource {
 	}
 }
 
-func marshalService(d *schema.ResourceData) (*v1alphaService.Service, diag.Diagnostics) {
+func marshalService(d resourceInterface) (*v1alphaService.Service, diag.Diagnostics) {
 	var displayName string
 	if dn := d.Get("display_name"); dn != nil {
 		displayName = dn.(string)
@@ -102,6 +103,18 @@ func unmarshalService(d *schema.ResourceData, objects []v1alphaService.Service) 
 	diags = appendError(diags, err)
 
 	return diags
+}
+
+func resourceServiceValidate(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	service, diags := marshalService(diff)
+	if diags.HasError() {
+		return diagsToSingleError(diags)
+	}
+	errs := manifest.Validate([]manifest.Object{service})
+	if errs != nil {
+		return formatErrorsAsSingleError(errs)
+	}
+	return nil
 }
 
 func resourceServiceApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

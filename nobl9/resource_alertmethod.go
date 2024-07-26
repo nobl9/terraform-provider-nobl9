@@ -14,7 +14,7 @@ import (
 type alertMethodProvider interface {
 	GetSchema() map[string]*schema.Schema
 	GetDescription() string
-	MarshalSpec(data *schema.ResourceData) v1alphaAlertMethod.Spec
+	MarshalSpec(resource resourceInterface) v1alphaAlertMethod.Spec
 	UnmarshalSpec(d *schema.ResourceData, spec v1alphaAlertMethod.Spec) diag.Diagnostics
 }
 
@@ -27,6 +27,7 @@ func resourceAlertMethodFactory(provider alertMethodProvider) *schema.Resource {
 			"project":      schemaProject(),
 			"description":  schemaDescription(),
 		},
+		CustomizeDiff: i.resourceAlertMethodValidate,
 		CreateContext: i.resourceAlertMethodApply,
 		UpdateContext: i.resourceAlertMethodApply,
 		DeleteContext: resourceAlertMethodDelete,
@@ -48,15 +49,15 @@ type alertMethod struct {
 	alertMethodProvider
 }
 
-func (a alertMethod) marshalAlertMethod(d *schema.ResourceData) *v1alphaAlertMethod.AlertMethod {
-	displayName, _ := d.Get("display_name").(string)
+func (a alertMethod) marshalAlertMethod(r resourceInterface) *v1alphaAlertMethod.AlertMethod {
+	displayName, _ := r.Get("display_name").(string)
 	alertMethod := v1alphaAlertMethod.New(
 		v1alphaAlertMethod.Metadata{
-			Name:        d.Get("name").(string),
+			Name:        r.Get("name").(string),
 			DisplayName: displayName,
-			Project:     d.Get("project").(string),
+			Project:     r.Get("project").(string),
 		},
-		a.MarshalSpec(d),
+		a.MarshalSpec(r),
 	)
 	return &alertMethod
 }
@@ -86,7 +87,15 @@ func (a alertMethod) unmarshalAlertMethod(
 	return diags
 }
 
-//
+func (a alertMethod) resourceAlertMethodValidate(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	am := a.marshalAlertMethod(d)
+	errs := manifest.Validate([]manifest.Object{am})
+	if errs != nil {
+		return formatErrorsAsSingleError(errs)
+	}
+	return nil
+}
+
 //nolint:lll
 func (a alertMethod) resourceAlertMethodApply(
 	ctx context.Context,
@@ -108,7 +117,6 @@ func (a alertMethod) resourceAlertMethodApply(
 	return a.resourceAlertMethodRead(ctx, d, meta)
 }
 
-//
 //nolint:lll
 func (a alertMethod) resourceAlertMethodRead(
 	ctx context.Context,
@@ -185,22 +193,22 @@ func (i alertMethodWebhook) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodWebhook) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod.Spec {
-	fields := d.Get("template_fields").([]interface{})
+func (i alertMethodWebhook) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Spec {
+	fields := r.Get("template_fields").([]interface{})
 	templateFields := make([]string, len(fields))
 	for i, field := range fields {
 		templateFields[i] = field.(string)
 	}
 	var template *string
-	if t := d.Get("template").(string); t != "" {
+	if t := r.Get("template").(string); t != "" {
 		template = &t
 		templateFields = nil
 	}
 
 	return v1alphaAlertMethod.Spec{
-		Description: d.Get("description").(string),
+		Description: r.Get("description").(string),
 		Webhook: &v1alphaAlertMethod.WebhookAlertMethod{
-			URL:            d.Get("url").(string),
+			URL:            r.Get("url").(string),
 			Template:       template,
 			TemplateFields: templateFields,
 		},
@@ -253,12 +261,12 @@ func (i alertMethodPagerDuty) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodPagerDuty) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod.Spec {
+func (i alertMethodPagerDuty) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Spec {
 	return v1alphaAlertMethod.Spec{
-		Description: d.Get("description").(string),
+		Description: r.Get("description").(string),
 		PagerDuty: &v1alphaAlertMethod.PagerDutyAlertMethod{
-			IntegrationKey: d.Get("integration_key").(string),
-			SendResolution: marshalSendResolution(d.Get("send_resolution")),
+			IntegrationKey: r.Get("integration_key").(string),
+			SendResolution: marshalSendResolution(r.Get("send_resolution")),
 		},
 	}
 }
@@ -304,11 +312,11 @@ func (i alertMethodSlack) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodSlack) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod.Spec {
+func (i alertMethodSlack) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Spec {
 	return v1alphaAlertMethod.Spec{
-		Description: d.Get("description").(string),
+		Description: r.Get("description").(string),
 		Slack: &v1alphaAlertMethod.SlackAlertMethod{
-			URL: d.Get("url").(string),
+			URL: r.Get("url").(string),
 		},
 	}
 }
@@ -336,11 +344,11 @@ func (i alertMethodDiscord) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodDiscord) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod.Spec {
+func (i alertMethodDiscord) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Spec {
 	return v1alphaAlertMethod.Spec{
-		Description: d.Get("description").(string),
+		Description: r.Get("description").(string),
 		Discord: &v1alphaAlertMethod.DiscordAlertMethod{
-			URL: d.Get("url").(string),
+			URL: r.Get("url").(string),
 		},
 	}
 }
@@ -373,12 +381,12 @@ func (i alertMethodOpsgenie) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodOpsgenie) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod.Spec {
+func (i alertMethodOpsgenie) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Spec {
 	return v1alphaAlertMethod.Spec{
-		Description: d.Get("description").(string),
+		Description: r.Get("description").(string),
 		Opsgenie: &v1alphaAlertMethod.OpsgenieAlertMethod{
-			Auth: d.Get("auth").(string),
-			URL:  d.Get("url").(string),
+			Auth: r.Get("auth").(string),
+			URL:  r.Get("url").(string),
 		},
 	}
 }
@@ -421,13 +429,13 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodServiceNow) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod.Spec {
+func (i alertMethodServiceNow) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Spec {
 	return v1alphaAlertMethod.Spec{
-		Description: d.Get("description").(string),
+		Description: r.Get("description").(string),
 		ServiceNow: &v1alphaAlertMethod.ServiceNowAlertMethod{
-			Username:     d.Get("username").(string),
-			Password:     d.Get("password").(string),
-			InstanceName: d.Get("instance_name").(string),
+			Username:     r.Get("username").(string),
+			Password:     r.Get("password").(string),
+			InstanceName: r.Get("instance_name").(string),
 		},
 	}
 }
@@ -477,14 +485,14 @@ func (i alertMethodJira) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodJira) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod.Spec {
+func (i alertMethodJira) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Spec {
 	return v1alphaAlertMethod.Spec{
-		Description: d.Get("description").(string),
+		Description: r.Get("description").(string),
 		Jira: &v1alphaAlertMethod.JiraAlertMethod{
-			URL:        d.Get("url").(string),
-			Username:   d.Get("username").(string),
-			APIToken:   d.Get("apitoken").(string),
-			ProjectKey: d.Get("project_key").(string),
+			URL:        r.Get("url").(string),
+			Username:   r.Get("username").(string),
+			APIToken:   r.Get("apitoken").(string),
+			ProjectKey: r.Get("project_key").(string),
 		},
 	}
 }
@@ -521,11 +529,11 @@ func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodTeams) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod.Spec {
+func (i alertMethodTeams) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Spec {
 	return v1alphaAlertMethod.Spec{
-		Description: d.Get("description").(string),
+		Description: r.Get("description").(string),
 		Teams: &v1alphaAlertMethod.TeamsAlertMethod{
-			URL: d.Get("url").(string),
+			URL: r.Get("url").(string),
 		},
 	}
 }
@@ -582,15 +590,15 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 	}
 }
 
-func (i alertMethodEmail) MarshalSpec(d *schema.ResourceData) v1alphaAlertMethod.Spec {
+func (i alertMethodEmail) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Spec {
 	return v1alphaAlertMethod.Spec{
-		Description: d.Get("description").(string),
+		Description: r.Get("description").(string),
 		Email: &v1alphaAlertMethod.EmailAlertMethod{
-			To:      toStringSlice(d.Get("to").([]interface{})),
-			Cc:      toStringSlice(d.Get("cc").([]interface{})),
-			Bcc:     toStringSlice(d.Get("bcc").([]interface{})),
-			Subject: d.Get("subject").(string),
-			Body:    d.Get("body").(string),
+			To:      toStringSlice(r.Get("to").([]interface{})),
+			Cc:      toStringSlice(r.Get("cc").([]interface{})),
+			Bcc:     toStringSlice(r.Get("bcc").([]interface{})),
+			Subject: r.Get("subject").(string),
+			Body:    r.Get("body").(string),
 		},
 	}
 }

@@ -36,7 +36,6 @@ func schemaDisplayName() *schema.Schema {
 	}
 }
 
-//nolint:unused,deadcode
 func schemaLabels() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeList,
@@ -76,19 +75,6 @@ func schemaAnnotations() *schema.Schema {
 			Optional: true,
 		},
 	}
-}
-
-func validateNotEmptyString(variableName string) func(interface{}, string) ([]string, []error) {
-	return func(valueRaw interface{}, _ string) ([]string, []error) {
-		if valueRaw.(string) == "" {
-			return nil, []error{fmt.Errorf("%s must not be empty", variableName)}
-		}
-		return nil, nil
-	}
-}
-
-func exactlyOneStringEmpty(str1, str2 string) bool {
-	return (str1 == "" && str2 != "") || (str1 != "" && str2 == "")
 }
 
 func diffSuppressLabels(fieldPath, oldValueStr, newValueStr string, d *schema.ResourceData) bool {
@@ -186,7 +172,7 @@ func schemaDescription() *schema.Schema {
 	}
 }
 
-func getMarshaledLabels(d *schema.ResourceData) (v1alpha.Labels, diag.Diagnostics) {
+func getMarshaledLabels(d resourceInterface) (v1alpha.Labels, diag.Diagnostics) {
 	var labels []interface{}
 	if labelsData := d.Get("label"); labelsData != nil {
 		labels = labelsData.([]interface{})
@@ -194,7 +180,7 @@ func getMarshaledLabels(d *schema.ResourceData) (v1alpha.Labels, diag.Diagnostic
 	return marshalLabels(labels)
 }
 
-func getMarshaledAnnotations(d *schema.ResourceData) v1alpha.MetadataAnnotations {
+func getMarshaledAnnotations(d resourceInterface) v1alpha.MetadataAnnotations {
 	rawAnnotations := d.Get("annotations").(map[string]interface{})
 	annotations := make(map[string]string, len(rawAnnotations))
 
@@ -262,33 +248,4 @@ func unmarshalLabels(labelsRaw v1alpha.Labels) interface{} {
 	}
 
 	return resultLabels
-}
-
-// oneElementSet implements schema.SchemaSetFunc and created only one element set.
-// Never use it for sets with more elements as new elements will override the old ones.
-func oneElementSet(_ interface{}) int {
-	return 0
-}
-
-func set(d *schema.ResourceData, key string, value interface{}, diags *diag.Diagnostics) {
-	appendError(*diags, d.Set(key, value))
-}
-
-func appendError(d diag.Diagnostics, err error) diag.Diagnostics {
-	if err != nil {
-		return append(d, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  err.Error(),
-		})
-	}
-
-	return d
-}
-
-func toStringSlice(in []interface{}) []string {
-	ret := make([]string, len(in))
-	for i, v := range in {
-		ret[i] = v.(string)
-	}
-	return ret
 }
