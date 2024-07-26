@@ -19,8 +19,8 @@ func setLogCollectionSchema(s map[string]*schema.Schema) {
 	s[logCollectionConfigKey] = getLogCollectionSchema()
 }
 
-func marshalLogCollectionEnabled(d *schema.ResourceData) *bool {
-	lData := d.Get(logCollectionConfigKey)
+func marshalLogCollectionEnabled(r resourceInterface) *bool {
+	lData := r.Get(logCollectionConfigKey)
 	value, ok := lData.(bool)
 	if !ok {
 		return nil

@@ -10,11 +10,11 @@ import (
 )
 
 func TestAcc_Nobl9BudgetAdjustments(t *testing.T) {
-	futureTime := time.Now().AddDate(0, 0, 1)
+	futureTime := time.Now().AddDate(0, 0, 1).UTC().Format(time.RFC3339)
 	cases := []struct {
 		name            string
-		configFunc      func(string, time.Time) string
-		firstEventStart time.Time
+		configFunc      func(string, string) string
+		firstEventStart string
 	}{
 		{"single-event", testBudgetAdjustmentSingleEvent, futureTime},
 		{"recurring-event", testBudgetAdjustmentRecurringEvent, futureTime},
@@ -37,7 +37,7 @@ func TestAcc_Nobl9BudgetAdjustments(t *testing.T) {
 	}
 }
 
-func testBudgetAdjustmentSingleEvent(name string, futureTime time.Time) string {
+func testBudgetAdjustmentSingleEvent(name, futureTime string) string {
 	const sloName = "test-slo"
 	return testPrometheusSLOFull(sloName) +
 		fmt.Sprintf(`
@@ -54,10 +54,10 @@ resource "nobl9_budget_adjustment" "%s" {
     }
   }
 }
-`, name, name, futureTime.Format(time.RFC3339), sloName, testProject)
+`, name, name, futureTime, sloName, testProject)
 }
 
-func testBudgetAdjustmentRecurringEvent(name string, futureTime time.Time) string {
+func testBudgetAdjustmentRecurringEvent(name, futureTime string) string {
 	const sloName = "test-slo2"
 	const sloName2 = "test-slo3"
 
@@ -80,10 +80,10 @@ resource "nobl9_budget_adjustment" "%s" {
       }
     }
   }
-}`, name, name, futureTime.Format(time.RFC3339), sloName, testProject, sloName2, testProject)
+}`, name, name, futureTime, sloName, testProject, sloName2, testProject)
 }
 
-func testBudgetAdjustmentRecurringEventMultipleSlo(name string, futureTime time.Time) string {
+func testBudgetAdjustmentRecurringEventMultipleSlo(name, futureTime string) string {
 	const sloName = "test-slo4"
 	const sloName2 = "test-slo5"
 
@@ -109,5 +109,5 @@ resource "nobl9_budget_adjustment" "%s" {
     }
   }
 }
-`, name, name, futureTime.Format(time.RFC3339), sloName, testProject, sloName2, testProject)
+`, name, name, futureTime, sloName, testProject, sloName2, testProject)
 }

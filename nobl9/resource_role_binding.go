@@ -52,6 +52,7 @@ func resourceRoleBinding() *schema.Resource {
 				Description: "Project name, the project in which we want the user or group to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.",
 			},
 		},
+		CustomizeDiff: resourceRoleBindingValidate,
 		CreateContext: resourceRoleBindingApply,
 		UpdateContext: resourceRoleBindingApply,
 		DeleteContext: resourceRoleBindingDelete,
@@ -63,20 +64,20 @@ func resourceRoleBinding() *schema.Resource {
 	}
 }
 
-func marshalRoleBinding(d *schema.ResourceData) *v1alphaRoleBinding.RoleBinding {
-	name := d.Get("name").(string)
+func marshalRoleBinding(r resourceInterface) *v1alphaRoleBinding.RoleBinding {
+	name := r.Get("name").(string)
 	if name == "" {
 		id, _ := uuid.NewUUID() // NewUUID returns always nil error
 		name = id.String()
 	}
 
 	var user *string
-	if userValue := d.Get("user").(string); userValue != "" {
+	if userValue := r.Get("user").(string); userValue != "" {
 		user = &userValue
 	}
 
 	var groupRef *string
-	if groupRefValue := d.Get("group_ref").(string); groupRefValue != "" {
+	if groupRefValue := r.Get("group_ref").(string); groupRefValue != "" {
 		groupRef = &groupRefValue
 	}
 
@@ -87,8 +88,8 @@ func marshalRoleBinding(d *schema.ResourceData) *v1alphaRoleBinding.RoleBinding 
 		v1alphaRoleBinding.Spec{
 			User:       user,
 			GroupRef:   groupRef,
-			RoleRef:    d.Get("role_ref").(string),
-			ProjectRef: d.Get("project_ref").(string),
+			RoleRef:    r.Get("role_ref").(string),
+			ProjectRef: r.Get("project_ref").(string),
 		},
 	)
 	return &roleBinding
@@ -134,6 +135,15 @@ func findRoleBindingByType(projectRole bool, objects []v1alphaRoleBinding.RoleBi
 
 func containsProjectRef(obj v1alphaRoleBinding.RoleBinding) bool {
 	return obj.Spec.ProjectRef != ""
+}
+
+func resourceRoleBindingValidate(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	roleBinding := marshalRoleBinding(diff)
+	errs := manifest.Validate([]manifest.Object{roleBinding})
+	if errs != nil {
+		return formatErrorsAsSingleError(errs)
+	}
+	return nil
 }
 
 func resourceRoleBindingApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

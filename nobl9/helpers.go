@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -12,6 +14,7 @@ import (
 type resourceInterface interface {
 	Get(key string) any
 	GetOk(key string) (any, bool)
+	GetRawConfig() cty.Value
 }
 
 // TODO: Once we introduce a more structured approach to error handling in SDK, this should be removed.
@@ -42,7 +45,6 @@ func appendError(d diag.Diagnostics, err error) diag.Diagnostics {
 	return d
 }
 
-//nolint:unused
 func diagsToSingleError(diags diag.Diagnostics) error {
 	if len(diags) == 0 {
 		return nil
@@ -56,7 +58,6 @@ func diagsToSingleError(diags diag.Diagnostics) error {
 	return fmt.Errorf("validation failed: %s", combinedErrs)
 }
 
-//nolint:unused
 func formatErrorsAsSingleError(errs []error) error {
 	errsStrings := make([]string, 0, len(errs))
 	for _, err := range errs {

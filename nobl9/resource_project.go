@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
@@ -20,6 +19,7 @@ func resourceProject() *schema.Resource {
 			"label":        schemaLabels(),
 			"annotations":  schemaAnnotations(),
 		},
+		CustomizeDiff: resourceProjectValidate,
 		CreateContext: resourceProjectApply,
 		UpdateContext: resourceProjectApply,
 		DeleteContext: resourceProjectDelete,
@@ -31,7 +31,7 @@ func resourceProject() *schema.Resource {
 	}
 }
 
-func marshalProject(d *schema.ResourceData) (*v1alphaProject.Project, diag.Diagnostics) {
+func marshalProject(d resourceInterface) (*v1alphaProject.Project, diag.Diagnostics) {
 	labelsMarshaled, diags := getMarshaledLabels(d)
 	if diags.HasError() {
 		return nil, diags
@@ -82,6 +82,18 @@ func unmarshalProject(d *schema.ResourceData, objects []v1alphaProject.Project) 
 	diags = appendError(diags, err)
 
 	return diags
+}
+
+func resourceProjectValidate(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	project, diags := marshalProject(diff)
+	if diags.HasError() {
+		return diagsToSingleError(diags)
+	}
+	errs := manifest.Validate([]manifest.Object{project})
+	if errs != nil {
+		return formatErrorsAsSingleError(errs)
+	}
+	return nil
 }
 
 func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
