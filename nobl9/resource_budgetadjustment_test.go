@@ -10,7 +10,7 @@ import (
 )
 
 func TestAcc_Nobl9BudgetAdjustments(t *testing.T) {
-	futureTime := time.Now().AddDate(0, 0, 1).Format("2006-01-02T15:04:05Z")
+	futureTime := time.Now().AddDate(0, 0, 1).UTC().Format(time.RFC3339)
 	cases := []struct {
 		name            string
 		configFunc      func(string, string) string
