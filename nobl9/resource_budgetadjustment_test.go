@@ -37,7 +37,7 @@ func TestAcc_Nobl9BudgetAdjustments(t *testing.T) {
 	}
 }
 
-func testBudgetAdjustmentSingleEvent(name string, futureTime string) string {
+func testBudgetAdjustmentSingleEvent(name, futureTime string) string {
 	const sloName = "test-slo"
 	return testPrometheusSLOFull(sloName) +
 		fmt.Sprintf(`
@@ -57,7 +57,7 @@ resource "nobl9_budget_adjustment" "%s" {
 `, name, name, futureTime, sloName, testProject)
 }
 
-func testBudgetAdjustmentRecurringEvent(name string, futureTime string) string {
+func testBudgetAdjustmentRecurringEvent(name, futureTime string) string {
 	const sloName = "test-slo2"
 	const sloName2 = "test-slo3"
 
@@ -83,7 +83,7 @@ resource "nobl9_budget_adjustment" "%s" {
 }`, name, name, futureTime, sloName, testProject, sloName2, testProject)
 }
 
-func testBudgetAdjustmentRecurringEventMultipleSlo(name string, futureTime string) string {
+func testBudgetAdjustmentRecurringEventMultipleSlo(name, futureTime string) string {
 	const sloName = "test-slo4"
 	const sloName2 = "test-slo5"
 
