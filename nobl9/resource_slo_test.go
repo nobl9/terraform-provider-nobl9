@@ -2982,6 +2982,7 @@ resource "nobl9_slo" ":name" {
       query {
         thousandeyes {
           test_id = 11
+          test_type = "web-dom-load"
         }
       }
     }
@@ -3035,6 +3036,7 @@ func testAnomalyConfigNoDataSameProject(name string) string {
 					query {
 						thousandeyes {
 							test_id = 11
+							test_type = "web-dom-load"
 						}
 					}
 				}
@@ -3099,6 +3101,7 @@ func testAnomalyConfigNoDataDifferentProject(name string) string {
 					query {
 						thousandeyes {
 							test_id = 11
+							test_type = "web-dom-load"
 						}
 					}
 				}
@@ -3222,6 +3225,7 @@ func testMaxOnePrimaryObjective(name string) string {
 					query {
 						thousandeyes {
 							test_id = 11
+							test_type = "web-dom-load"
 						}
 					}
 				}
@@ -3238,6 +3242,7 @@ func testMaxOnePrimaryObjective(name string) string {
 					query {
 						thousandeyes {
 							test_id = 11
+							test_type = "web-dom-load"
 						}
 					}
 				}
@@ -3289,6 +3294,7 @@ func testNoPrimaryObjective(name string) string {
 					query {
 						thousandeyes {
 							test_id = 11
+							test_type = "web-dom-load"
 						}
 					}
 				}
@@ -3305,6 +3311,7 @@ func testNoPrimaryObjective(name string) string {
 					query {
 						thousandeyes {
 							test_id = 11
+							test_type = "web-dom-load"
 						}
 					}
 				}
@@ -3357,6 +3364,7 @@ func testMoreThanOnePrimaryObjective(name string) string {
 					query {
 						thousandeyes {
 							test_id = 11
+							test_type = "web-dom-load"
 						}
 					}
 				}
@@ -3373,6 +3381,7 @@ func testMoreThanOnePrimaryObjective(name string) string {
 					query {
 						thousandeyes {
 							test_id = 11
+							test_type = "web-dom-load"
 						}
 					}
 				}
@@ -3479,6 +3488,7 @@ func testMetadataAnnotations(name string) string {
 					query {
 						thousandeyes {
 							test_id = 11
+							test_type = "web-dom-load"
 						}
 					}
 				}

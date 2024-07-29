@@ -649,6 +649,10 @@ Required:
 
 - `test_id` (Number) ID of the test
 
+Optional:
+
+- `test_type` (String) Type of the test
+
 
 
 <a id="nestedblock--objective--count_metrics--bad"></a>
@@ -1010,6 +1014,10 @@ Required:
 
 - `test_id` (Number) ID of the test
 
+Optional:
+
+- `test_type` (String) Type of the test
+
 
 
 <a id="nestedblock--objective--count_metrics--good"></a>
@@ -1370,6 +1378,10 @@ Optional:
 Required:
 
 - `test_id` (Number) ID of the test
+
+Optional:
+
+- `test_type` (String) Type of the test
 
 
 
@@ -1739,6 +1751,10 @@ Optional:
 Required:
 
 - `test_id` (Number) ID of the test
+
+Optional:
+
+- `test_type` (String) Type of the test
 
 
 
