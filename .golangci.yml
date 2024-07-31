@@ -1,8 +1,6 @@
 run:
   timeout: 5m
   modules-download-mode: readonly
-  skip-dirs:
-    - scripts
   skip-dirs-use-default: true
 
 issues:
@@ -58,7 +56,7 @@ linters-settings:
   misspell:
     locale: US
   gocognit:
-    min-complexity: 40
+    min-complexity: 30
   revive:
     rules:
       - name: unused-parameter
