@@ -9,12 +9,12 @@
     ":automergeMinor",
     ":automergePr",
     ":automergeRequireAllStatusChecks",
- ],
+  ],
   "reviewersFromCodeOwners": true,
   "dependencyDashboard": true,
   "semanticCommits": "disabled",
   "labels": ["dependencies", "renovate"],
-  "prHourlyLimit": 5,
+  "prHourlyLimit": 1,
   "prConcurrentLimit": 5,
   "rebaseWhen": "conflicted",
   "rangeStrategy": "pin",
@@ -30,12 +30,11 @@
         "minor",
         "patch",
       ],
-      "groupName": "Minor and patch Golang dependencies",
+      "groupName": "minor and patch Golang dependencies",
     },
     {
       "matchManagers": ["github-actions"],
       "addLabels": ["github-actions"],
-      "groupName": "GitHub Actions",
     },
     {
       "matchManagers": ["gomod"],
@@ -44,7 +43,6 @@
     {
       "matchManagers": ["npm"],
       "addLabels": ["javascript"],
-      "groupName": "JS dependencies",
     },
   ],
   // Custom version extraction from Makefile.
@@ -56,4 +54,9 @@
       ]
     }
   ],
+  "ignorePaths": [
+    "**/vendor/**",
+    "**/node_modules/**",
+    "**/test_data/**",
+  ]
 }
