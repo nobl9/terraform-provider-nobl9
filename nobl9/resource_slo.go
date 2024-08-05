@@ -283,7 +283,7 @@ func schemaSLO() map[string]*schema.Schema {
 			Optional:      true,
 			Description:   "",
 			MaxItems:      20,
-			Deprecated:    "\"attachments\" argument is deprecated use \"attachment\" instead.",
+			Deprecated:    "\"attachments\" argument is deprecated, use \"attachment\" instead.",
 			ConflictsWith: []string{"attachment"},
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -1311,7 +1311,7 @@ func schemaMetricCloudwatch() map[string]*schema.Schema {
 					"dimensions": {
 						Type:        schema.TypeSet,
 						Optional:    true,
-						Description: "Set of name/value pairs that is a part of the identity of a metric",
+						Description: "Set of name/value pairs that is part of the identity of a metric",
 						MinItems:    1,
 						MaxItems:    10,
 						Elem: &schema.Resource{

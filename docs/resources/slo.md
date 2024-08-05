@@ -11,7 +11,7 @@ An SLO is a target value or range of values for a service that is measured by a 
 For more information, refer to [SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)
 
 
-## Composite SLOs 2.0
+## Composite SLOs 2.0 note
 
 Use the `depends_on` meta-argument to specify component SLOs your composite must depend on. It addresses incorrect application order issues.
 
@@ -209,7 +209,7 @@ resource "nobl9_slo" "composite_slo" {
 - `anomaly_config` (Block Set, Max: 1) Configuration for Anomalies. Currently supported Anomaly Type is NoData (see [below for nested schema](#nestedblock--anomaly_config))
 - `attachment` (Block List, Max: 20) (see [below for nested schema](#nestedblock--attachment))
 - `attachments` (Block List, Max: 20, Deprecated) (see [below for nested schema](#nestedblock--attachments))
-- `composite` (Block Set, Max: 1, Deprecated) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
+- `composite` (Block Set, Max: 1, Deprecated) ("composite" is deprecated, use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `indicator` (Block Set, Max: 1) (see [below for nested schema](#nestedblock--indicator))
@@ -396,7 +396,7 @@ Required:
 Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
-- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is a part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch--dimensions))
+- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch--dimensions))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -761,7 +761,7 @@ Required:
 Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
-- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is a part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--bad--cloudwatch--dimensions))
+- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--bad--cloudwatch--dimensions))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -1126,7 +1126,7 @@ Required:
 Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
-- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is a part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch--dimensions))
+- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch--dimensions))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -1499,7 +1499,7 @@ Required:
 Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
-- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is a part of the identity of a metric (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch--dimensions))
+- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch--dimensions))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -1846,7 +1846,7 @@ Required:
 
 Optional:
 
-- `burn_rate_condition` (Block Set) Condition when the Composite SLO’s error budget is burning. (see [below for nested schema](#nestedblock--composite--burn_rate_condition))
+- `burn_rate_condition` (Block Set, Deprecated) ("burn_rate_condition" is part of deprecated composites 1.0, use [composites 2.0](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) Condition when the Composite SLO’s error budget is burning. (see [below for nested schema](#nestedblock--composite--burn_rate_condition))
 
 <a id="nestedblock--composite--burn_rate_condition"></a>
 ### Nested Schema for `composite.burn_rate_condition`
