@@ -522,7 +522,7 @@ func (i alertMethodTeams) GetSchema() map[string]*schema.Schema {
 		"url": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "MS Teams [webhook endpoint URL](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook).",
+			Description: "Either [MS Teams Workflow URL](https://docs.nobl9.com/alerting/alert-methods/ms-teams/#2) or deprecated [Webhook URL](https://docs.nobl9.com/alerting/alert-methods/ms-teams/#webhook-url-).",
 			Sensitive:   true,
 			Computed:    true,
 		},
