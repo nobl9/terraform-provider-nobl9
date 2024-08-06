@@ -37,7 +37,7 @@ resource "nobl9_alert_method_msteams" "this" {
 
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `url` (String, Sensitive) MS Teams [webhook endpoint URL](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook).
+- `url` (String, Sensitive) Either [MS Teams Workflow URL](https://docs.nobl9.com/alerting/alert-methods/ms-teams/#2) or deprecated [Webhook URL](https://docs.nobl9.com/alerting/alert-methods/ms-teams/#webhook-url-).
 
 ### Read-Only
 
@@ -45,6 +45,8 @@ resource "nobl9_alert_method_msteams" "this" {
 
 ## Useful Links
 
-[MS Teams alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/Alerting/Alert_methods/msteams/)
+[MS Teams alerts configuration | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/ms-teams)
+
+[Retirement of Office 365 connectors within Microsoft Teams | MS Teams Documentation](https://devblogs.microsoft.com/microsoft365dev/retirement-of-office-365-connectors-within-microsoft-teams/)
 
 [MS Teams webhooks | MS Teams Documentation](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook)
