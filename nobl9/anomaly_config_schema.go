@@ -2,7 +2,8 @@ package nobl9
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	n9api "github.com/nobl9/nobl9-go"
+
+	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 )
 
 func schemaAnomalyConfig() *schema.Schema {
@@ -53,7 +54,7 @@ func schemaAnomalyConfig() *schema.Schema {
 	}
 }
 
-func marshalAnomalyConfig(anomalyConfigRaw interface{}) *n9api.AnomalyConfig {
+func marshalAnomalyConfig(anomalyConfigRaw interface{}) *v1alphaSLO.AnomalyConfig {
 	anomalyConfigSet := anomalyConfigRaw.(*schema.Set)
 	if anomalyConfigSet.Len() == 0 {
 		return nil
@@ -66,24 +67,24 @@ func marshalAnomalyConfig(anomalyConfigRaw interface{}) *n9api.AnomalyConfig {
 	}
 	noDataAnomalyConfig := noDataAnomalyConfigSet.List()[0].(map[string]interface{})
 	noDataAlertMethods := noDataAnomalyConfig["alert_method"].([]interface{})
-	marshalledAlertMethods := marshalAnomalyConfigAlertMethods(noDataAlertMethods)
+	marshaledAlertMethods := marshalAnomalyConfigAlertMethods(noDataAlertMethods)
 
-	return &n9api.AnomalyConfig{
-		NoData: &n9api.AnomalyConfigNoData{
-			AlertMethods: marshalledAlertMethods,
+	return &v1alphaSLO.AnomalyConfig{
+		NoData: &v1alphaSLO.AnomalyConfigNoData{
+			AlertMethods: marshaledAlertMethods,
 		},
 	}
 }
 
-func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []n9api.AnomalyConfigAlertMethod {
-	alertMethodsAPI := make([]n9api.AnomalyConfigAlertMethod, 0)
+func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []v1alphaSLO.AnomalyConfigAlertMethod {
+	alertMethodsAPI := make([]v1alphaSLO.AnomalyConfigAlertMethod, 0)
 
 	for i := 0; i < len(alertMethodsTF); i++ {
 		if alertMethodsTF[i] == nil {
 			continue
 		}
 		alertMethodTF := alertMethodsTF[i].(map[string]interface{})
-		alertMethodsAPI = append(alertMethodsAPI, n9api.AnomalyConfigAlertMethod{
+		alertMethodsAPI = append(alertMethodsAPI, v1alphaSLO.AnomalyConfigAlertMethod{
 			Name:    alertMethodTF["name"].(string),
 			Project: alertMethodTF["project"].(string),
 		})
@@ -92,30 +93,27 @@ func marshalAnomalyConfigAlertMethods(alertMethodsTF []interface{}) []n9api.Anom
 	return alertMethodsAPI
 }
 
-func unmarshalAnomalyConfig(d *schema.ResourceData, spec map[string]interface{}) error {
-	anomalyConfigRaw, anomalyConfigExists := spec["anomalyConfig"]
-	if !anomalyConfigExists {
+func unmarshalAnomalyConfig(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
+	if spec.AnomalyConfig == nil {
 		return nil
 	}
-	anomalyConfig := anomalyConfigRaw.(map[string]interface{})
 
-	noData := anomalyConfig["noData"].(map[string]interface{})
-	noDataMethods := noData["alertMethods"].([]interface{})
+	noData := spec.AnomalyConfig.NoData
+	noDataMethods := noData.AlertMethods
 	resNoDataMethods := make([]map[string]interface{}, 0)
 
 	if len(noDataMethods) == 0 {
 		return nil
 	}
 
-	for _, amRaw := range noDataMethods {
-		am := amRaw.(map[string]interface{})
-		if am["name"] == nil || am["project"] == nil {
+	for _, am := range noDataMethods {
+		if am.Name == "" || am.Project == "" {
 			continue
 		}
 
 		resNoDataMethods = append(resNoDataMethods, map[string]interface{}{
-			"name":    am["name"],
-			"project": am["project"],
+			"name":    am.Name,
+			"project": am.Project,
 		})
 	}
 

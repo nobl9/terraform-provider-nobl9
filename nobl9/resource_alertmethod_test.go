@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
 )
 
 func TestAcc_Nobl9AlertMethod(t *testing.T) {
@@ -18,6 +18,8 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 		{"test-webhook", "webhook", testWebhookTemplateConfig},
 		{"test-webhook-fields", "webhook", testWebhookTemplateFieldsConfig},
 		{"test-pagerduty", "pagerduty", testPagerDutyConfig},
+		{"test-pagerduty-send-resolution", "pagerduty", testPagerDutyWithSendResolutionConfig},
+		{"test-pagerduty-send-resolution-message", "pagerduty", testPagerDutyWithSendResolutionWithMessageConfig},
 		{"test-slack", "slack", testSlackConfig},
 		{"test-discord", "discord", testDiscordConfig},
 		{"test-opsgenie", "opsgenie", testOpsgenieConfig},
@@ -31,9 +33,8 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.ParallelTest(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_alert_method_"+tc.resourceSuffix, n9api.ObjectAlertMethod),
+				CheckDestroy:      CheckDestroy("nobl9_alert_method_"+tc.resourceSuffix, manifest.KindAlertMethod),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
@@ -50,7 +51,7 @@ func testWebhookTemplateConfig(name string) string {
 resource "nobl9_alert_method_webhook" "%s" {
   name        = "%s"
   project     = "%s"
-  description = "wehbook"
+  description = "WebHook"
   url         = "http://web.net"
   template    = "SLO needs attention $slo_name"
 }
@@ -62,7 +63,7 @@ func testWebhookTemplateFieldsConfig(name string) string {
 resource "nobl9_alert_method_webhook" "%s" {
   name            = "%s"
   project         = "%s"
-  description	  = "wehbook"
+  description	  = "WebHook"
   url             = "http://web.net"
   template_fields = [ "slo_name", "slo_details_link" ]
 }
@@ -74,8 +75,37 @@ func testPagerDutyConfig(name string) string {
 resource "nobl9_alert_method_pagerduty" "%s" {
   name            = "%s"
   project         = "%s"
-  description     = "paderduty"
+  description     = "PagerDuty"
   integration_key = "84dfcdf19dad8f6c82b7e22afa024065"
+}
+`, name, name, testProject)
+}
+
+func testPagerDutyWithSendResolutionConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_pagerduty" "%s" {
+  name            = "%s"
+  project         = "%s"
+  description     = "PagerDuty"
+  integration_key = "84dfcdf19dad8f6c82b7e22afa024065"
+
+  send_resolution {
+    message = "Alert is now resolved"
+  }
+}
+`, name, name, testProject)
+}
+
+func testPagerDutyWithSendResolutionWithMessageConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_pagerduty" "%s" {
+  name            = "%s"
+  project         = "%s"
+  description     = "PagerDuty"
+  integration_key = "84dfcdf19dad8f6c82b7e22afa024065"
+
+  send_resolution {
+  }
 }
 `, name, name, testProject)
 }
@@ -121,7 +151,7 @@ resource "nobl9_alert_method_servicenow" "%s" {
   project        = "%s"
   description    = "servicenow"
   username       = "nobleUser"
-  password       = "very sercret"
+  password       = "very secret"
   instance_name  = "name"
 }
 `, name, name, testProject)
@@ -135,7 +165,7 @@ resource "nobl9_alert_method_jira" "%s" {
   description = "jira"
   url		  = "https://jira.com"
   username    = "nobleUser"
-  apitoken    = "very sercret"
+  apitoken    = "very secret"
   project_key = "PC"
 }
 `, name, name, testProject)

@@ -6,14 +6,17 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
+	v1alphaAgent "github.com/nobl9/nobl9-go/manifest/v1alpha/agent"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 const agentTypeKey = "agent_type"
@@ -21,6 +24,7 @@ const agentTypeKey = "agent_type"
 func resourceAgent() *schema.Resource {
 	return &schema.Resource{
 		Schema:        agentSchema(),
+		CustomizeDiff: resourceAgentValidate,
 		CreateContext: resourceAgentApply,
 		UpdateContext: resourceAgentApply,
 		DeleteContext: resourceAgentDelete,
@@ -28,7 +32,7 @@ func resourceAgent() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "[Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9_agent)",
+		Description: "[Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9-agent/)",
 	}
 }
 
@@ -40,13 +44,14 @@ func agentSchema() map[string]*schema.Schema {
 		"description":  schemaDescription(),
 		"source_of": {
 			Type:        schema.TypeList,
-			Required:    true,
+			Optional:    true,
 			MinItems:    1,
 			MaxItems:    2,
-			Description: "Source of Metrics and/or Services.",
+			Deprecated:  "'source_of' is deprecated and not used anywhere. You can safely remove it from your configuration file.",
+			Description: "This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.",
 			Elem: &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "Source of Metrics or Services",
+				Description: "This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.",
 			},
 		},
 		agentTypeKey: {
@@ -64,17 +69,20 @@ func agentSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "client_secret of created agent.",
 		},
+		releaseChannel:      schemaReleaseChannel(),
 		queryDelayConfigKey: schemaQueryDelay(),
 		"status": {
 			Type:        schema.TypeMap,
 			Computed:    true,
 			Description: "Status of the created agent.",
 		},
+		historicalDataRetrievalConfigKey: getHistoricalDataRetrievalSchema()[historicalDataRetrievalConfigKey],
 	}
 
 	agentSchemaDefinitions := []map[string]*schema.Schema{
 		schemaAgentAmazonPrometheus(),
 		schemaAgentAppDynamics(),
+		schemaAgentAzureMonitor(),
 		schemaAgentBigQuery(),
 		schemaAgentCloudWatch(),
 		schemaAgentDatadog(),
@@ -83,9 +91,11 @@ func agentSchema() map[string]*schema.Schema {
 		schemaAgentGCM(),
 		schemaAgentGrafanaLoki(),
 		schemaAgentGraphite(),
+		schemaAgentHoneycomb(),
 		schemaAgentInfluxDB(),
 		schemaAgentInstana(),
 		schemaAgentLightstep(),
+		schemaAgentLogicMonitor(),
 		schemaAgentNewRelic(),
 		schemaAgentOpenTSDB(),
 		schemaAgentPingdom(),
@@ -106,34 +116,46 @@ func agentSchema() map[string]*schema.Schema {
 	return agentSchema
 }
 
+func resourceAgentValidate(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	agent, diags := marshalAgent(diff)
+	if diags.HasError() {
+		return diagsToSingleError(diags)
+	}
+	errs := manifest.Validate([]manifest.Object{agent})
+	if errs != nil {
+		return formatErrorsAsSingleError(errs)
+	}
+	return nil
+}
+
 func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
+
 	agent, diags := marshalAgent(d)
 	if diags.HasError() {
 		return diags
 	}
+	resultAgent := manifest.SetDefaultProject([]manifest.Object{agent}, config.Project)
 
-	var p n9api.Payload
-	p.AddObject(agent)
-
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
-		agentsData, err := client.ApplyAgents(p.GetObjects())
+	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *retry.RetryError {
+		err := client.Objects().V1().Apply(ctx, resultAgent)
 		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
-				return resource.RetryableError(err)
+			if errors.Is(err, errConcurrencyIssue) {
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
-		if len(agentsData) == 1 {
-			err = d.Set("client_id", agentsData[0].ClientID)
-			diags = appendError(diags, err)
-			err = d.Set("client_secret", agentsData[0].ClientSecret)
-			diags = appendError(diags, err)
-		}
+		project := d.Get("project").(string)
+		agentsData, err := client.AuthData().V1().GetAgentCredentials(ctx, project, agent.Metadata.Name)
+		diags = appendError(diags, err)
+		err = d.Set("client_id", agentsData.ClientID)
+		diags = appendError(diags, err)
+		err = d.Set("client_secret", agentsData.ClientSecret)
+		diags = appendError(diags, err)
 		return nil
 	}); err != nil {
 		return diag.Errorf("could not add agent: %s", err.Error())
@@ -146,99 +168,100 @@ func resourceAgentApply(ctx context.Context, d *schema.ResourceData, meta interf
 	return append(diags, readAgentDiags...)
 }
 
-func resourceAgentRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	project := d.Get("project").(string)
-	if project == "" {
-		// project is empty when importing
-		project = config.Project
-	}
-	client, ds := getClient(config, project)
-	if ds.HasError() {
+	client, ds := getClient(config)
+	if ds != nil {
 		return ds
 	}
-
-	objects, err := client.GetAgents("", d.Id())
+	project := d.Get("project").(string)
+	if project == "" {
+		project = config.Project
+	}
+	agents, err := client.Objects().V1().GetV1alphaAgents(ctx, v1Objects.GetAgentsRequest{
+		Project: project,
+		Names:   []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	return unmarshalAgent(d, objects)
+	return unmarshalAgent(d, agents)
 }
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, d.Get("project").(string))
-	if ds.HasError() {
+	client, ds := getClient(config)
+	if ds != nil {
 		return ds
 	}
-
-	if err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *resource.RetryError {
-		err := client.DeleteObjectsByName(n9api.ObjectAgent, d.Id())
+	project := d.Get("project").(string)
+	if project == "" {
+		project = config.Project
+	}
+	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete)-time.Minute, func() *retry.RetryError {
+		err := client.Objects().V1().DeleteByName(ctx, manifest.KindAgent, project, d.Id())
 		if err != nil {
-			if errors.Is(err, n9api.ErrConcurrencyIssue) {
-				return resource.RetryableError(err)
+			if errors.Is(err, errConcurrencyIssue) {
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	}); err != nil {
 		return diag.FromErr(err)
 	}
-
 	return nil
 }
 
-func marshalAgent(d *schema.ResourceData) (*n9api.Agent, diag.Diagnostics) {
+//nolint:unparam
+func marshalAgent(d resourceInterface) (*v1alphaAgent.Agent, diag.Diagnostics) {
+	var displayName string
+	if dn := d.Get("display_name"); dn != nil {
+		displayName = dn.(string)
+	}
+
 	var diags diag.Diagnostics
-	metadataHolder, diags := marshalMetadata(d)
-	if diags.HasError() {
-		return nil, diags
-	}
-
-	sourceOf := d.Get("source_of").([]interface{})
-	sourceOfStr := make([]string, len(sourceOf))
-	for i, s := range sourceOf {
-		sourceOfStr[i] = s.(string)
-	}
-
-	return &n9api.Agent{
-		ObjectHeader: n9api.ObjectHeader{
-			APIVersion:     n9api.APIVersion,
-			Kind:           n9api.KindAgent,
-			MetadataHolder: metadataHolder,
+	agent := v1alphaAgent.New(
+		v1alphaAgent.Metadata{
+			Name:        d.Get("name").(string),
+			DisplayName: displayName,
+			Project:     d.Get("project").(string),
 		},
-		Spec: n9api.AgentSpec{
-			Description:         d.Get("description").(string),
-			SourceOf:            sourceOfStr,
-			AmazonPrometheus:    marshalAgentAmazonPrometheus(d, diags),
-			AppDynamics:         marshalAgentAppDynamics(d, diags),
-			BigQuery:            marshalAgentBigQuery(d),
-			CloudWatch:          marshalAgentCloudWatch(d),
-			Datadog:             marshalAgentDatadog(d, diags),
-			Dynatrace:           marshalAgentDynatrace(d, diags),
-			Elasticsearch:       marshalAgentElasticsearch(d, diags),
-			GCM:                 marshalAgentGCM(d),
-			GrafanaLoki:         marshalAgentGrafanaLoki(d, diags),
-			Graphite:            marshalAgentGraphite(d, diags),
-			InfluxDB:            marshalAgentInfluxDB(d, diags),
-			Instana:             marshalAgentInstana(d, diags),
-			Lightstep:           marshalAgentLightstep(d, diags),
-			NewRelic:            marshalAgentNewRelic(d, diags),
-			OpenTSDB:            marshalAgentOpenTSDB(d, diags),
-			Prometheus:          marshalAgentPrometheus(d, diags),
-			Pingdom:             marshalAgentPingdom(d),
-			Redshift:            marshalAgentRedshift(d),
-			Splunk:              marshalAgentSplunk(d, diags),
-			SplunkObservability: marshalAgentSplunkObservability(d, diags),
-			SumoLogic:           marshalAgentSumoLogic(d, diags),
-			ThousandEyes:        marshalAgentThousandEyes(d),
-			QueryDelay:          marshalQueryDelay(d),
-		},
-	}, diags
+		v1alphaAgent.Spec{
+			Description:             d.Get("description").(string),
+			AmazonPrometheus:        marshalAgentAmazonPrometheus(d, diags),
+			AppDynamics:             marshalAgentAppDynamics(d, diags),
+			AzureMonitor:            marshalAgentAzureMonitor(d, diags),
+			BigQuery:                marshalAgentBigQuery(d),
+			CloudWatch:              marshalAgentCloudWatch(d),
+			Datadog:                 marshalAgentDatadog(d, diags),
+			Dynatrace:               marshalAgentDynatrace(d, diags),
+			Elasticsearch:           marshalAgentElasticsearch(d, diags),
+			GCM:                     marshalAgentGCM(d),
+			GrafanaLoki:             marshalAgentGrafanaLoki(d, diags),
+			Graphite:                marshalAgentGraphite(d, diags),
+			Honeycomb:               marshalAgentHoneycomb(d),
+			InfluxDB:                marshalAgentInfluxDB(d, diags),
+			Instana:                 marshalAgentInstana(d, diags),
+			Lightstep:               marshalAgentLightstep(d, diags),
+			LogicMonitor:            marshalAgentLogicMonitor(d, diags),
+			NewRelic:                marshalAgentNewRelic(d, diags),
+			OpenTSDB:                marshalAgentOpenTSDB(d, diags),
+			Prometheus:              marshalAgentPrometheus(d, diags),
+			Pingdom:                 marshalAgentPingdom(d),
+			Redshift:                marshalAgentRedshift(d),
+			Splunk:                  marshalAgentSplunk(d, diags),
+			SplunkObservability:     marshalAgentSplunkObservability(d, diags),
+			SumoLogic:               marshalAgentSumoLogic(d, diags),
+			ThousandEyes:            marshalAgentThousandEyes(d),
+			QueryDelay:              marshalQueryDelay(d),
+			ReleaseChannel:          marshalReleaseChannel(d, diags),
+			HistoricalDataRetrieval: marshalHistoricalDataRetrieval(d),
+		})
+	return &agent, diags
 }
 
-func unmarshalAgent(d *schema.ResourceData, agents []n9api.Agent) diag.Diagnostics {
+func unmarshalAgent(d *schema.ResourceData, agents []v1alphaAgent.Agent) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if len(agents) != 1 {
@@ -255,15 +278,22 @@ func unmarshalAgent(d *schema.ResourceData, agents []n9api.Agent) diag.Diagnosti
 	err := d.Set("status", status)
 
 	diags = appendError(diags, err)
-	diags = append(diags, unmarshalMetadata(agent.MetadataHolder, d)...)
+
+	unmarshalHistoricalDataRetrieval(d, agent.Spec.HistoricalDataRetrieval)
+	set(d, "name", agent.Metadata.Name, &diags)
+	set(d, "display_name", agent.Metadata.DisplayName, &diags)
+	set(d, "project", agent.Metadata.Project, &diags)
+
 	diags = append(diags, unmarshalQueryDelay(d, agent.Spec.QueryDelay)...)
-	spec := n9api.AgentSpec{}
+	diags = append(diags, unmarshalReleaseChannel(d, agent.Spec.ReleaseChannel)...)
+	spec := v1alphaAgent.Spec{}
 	supportedAgents := []struct {
 		hclName  string
 		jsonName string
 	}{
 		{amazonPrometheusAgentConfigKey, agentSpecJSONName(spec.AmazonPrometheus, diags)},
 		{appDynamicsAgentConfigKey, agentSpecJSONName(spec.AppDynamics, diags)},
+		{azureMonitorAgentConfigKey, agentSpecJSONName(spec.AzureMonitor, diags)},
 		{bigqueryAgentConfigKey, agentSpecJSONName(spec.BigQuery, diags)},
 		{cloudWatchAgentConfigKey, agentSpecJSONName(spec.CloudWatch, diags)},
 		{datadogAgentConfigKey, agentSpecJSONName(spec.Datadog, diags)},
@@ -272,9 +302,11 @@ func unmarshalAgent(d *schema.ResourceData, agents []n9api.Agent) diag.Diagnosti
 		{gcmAgentConfigKey, agentSpecJSONName(spec.GCM, diags)},
 		{grafanalokiAgentConfigKey, agentSpecJSONName(spec.GrafanaLoki, diags)},
 		{graphiteAgentConfigKey, agentSpecJSONName(spec.Graphite, diags)},
+		{honeycombAgentConfigKey, agentSpecJSONName(spec.Honeycomb, diags)},
 		{influxdbAgentConfigKey, agentSpecJSONName(spec.InfluxDB, diags)},
 		{instanaAgentConfigKey, agentSpecJSONName(spec.Instana, diags)},
 		{lightstepAgentConfigKey, agentSpecJSONName(spec.Lightstep, diags)},
+		{logicMonitorAgentConfigKey, agentSpecJSONName(spec.LogicMonitor, diags)},
 		{newRelicAgentConfigKey, agentSpecJSONName(spec.NewRelic, diags)},
 		{opentsdbAgentConfigKey, agentSpecJSONName(spec.OpenTSDB, diags)},
 		{pingdomAgentConfigKey, agentSpecJSONName(spec.Pingdom, diags)},
@@ -301,14 +333,12 @@ func unmarshalAgent(d *schema.ResourceData, agents []n9api.Agent) diag.Diagnosti
 
 func unmarshalAgentConfig(
 	d *schema.ResourceData,
-	agent n9api.Agent,
+	agent v1alphaAgent.Agent,
 	hclName,
 	jsonName string) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// err := d.Set("agent_type", spec[""]) TODO
-	err := d.Set("source_of", agent.Spec.SourceOf)
-	diags = appendError(diags, err)
 
 	spec, err := json.Marshal(&agent.Spec)
 	diags = appendError(diags, err)
@@ -318,7 +348,7 @@ func unmarshalAgentConfig(
 	diags = appendError(diags, err)
 
 	switch jsonName {
-	case agentSpecJSONName(n9api.AgentSpec{}.NewRelic, diags):
+	case agentSpecJSONName(v1alphaAgent.Spec{}.NewRelic, diags):
 		unmarshalDiags := unmarshalNewRelicAgentSpec(d, agent)
 		diags = append(diags, unmarshalDiags...)
 	default:
@@ -330,7 +360,7 @@ func unmarshalAgentConfig(
 }
 
 func agentSpecJSONName(agentSpecField any, diags diag.Diagnostics) string {
-	agentSpec := n9api.AgentSpec{}
+	agentSpec := v1alphaAgent.Spec{}
 	getAgentSpecFieldName := func() string {
 		var name string
 		val := reflect.Indirect(reflect.ValueOf(agentSpec))
@@ -393,14 +423,14 @@ func schemaAgentAmazonPrometheus() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentAmazonPrometheus(d *schema.ResourceData, diags diag.Diagnostics) *n9api.AmazonPrometheusAgentConfig {
+func marshalAgentAmazonPrometheus(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.AmazonPrometheusConfig {
 	data := getAgentResourceData(d, amazonPrometheusAgentType, amazonPrometheusAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.AmazonPrometheusAgentConfig{
+	return &v1alphaAgent.AmazonPrometheusConfig{
 		URL:    data["url"].(string),
 		Region: data["region"].(string),
 	}
@@ -434,7 +464,7 @@ func schemaAgentAppDynamics() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentAppDynamics(d *schema.ResourceData, diags diag.Diagnostics) *n9api.AppDynamicsAgentConfig {
+func marshalAgentAppDynamics(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.AppDynamicsConfig {
 	data := getAgentResourceData(d, appDynamicsAgentType, appDynamicsAgentConfigKey, diags)
 
 	if data == nil {
@@ -442,8 +472,49 @@ func marshalAgentAppDynamics(d *schema.ResourceData, diags diag.Diagnostics) *n9
 	}
 
 	url := data["url"].(string)
-	return &n9api.AppDynamicsAgentConfig{
-		URL: &url,
+	return &v1alphaAgent.AppDynamicsConfig{
+		URL: url,
+	}
+}
+
+/**
+ * Azure Monitor Agent
+ * https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-agent
+ */
+const azureMonitorAgentType = "azure_monitor"
+const azureMonitorAgentConfigKey = "azure_monitor_config"
+
+func schemaAgentAzureMonitor() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		azureMonitorAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"tenant_id": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Azure Tenant Id.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentAzureMonitor(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.AzureMonitorConfig {
+	data := getAgentResourceData(d, azureMonitorAgentType, azureMonitorAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	tenantID := data["tenant_id"].(string)
+	return &v1alphaAgent.AzureMonitorConfig{
+		TenantID: tenantID,
 	}
 }
 
@@ -469,12 +540,12 @@ func schemaAgentBigQuery() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentBigQuery(d *schema.ResourceData) *n9api.BigQueryAgentConfig {
+func marshalAgentBigQuery(d resourceInterface) *v1alphaAgent.BigQueryConfig {
 	if !isAgentType(d, bigqueryAgentType) {
 		return nil
 	}
 
-	return &n9api.BigQueryAgentConfig{}
+	return &v1alphaAgent.BigQueryConfig{}
 }
 
 /**
@@ -499,12 +570,12 @@ func schemaAgentCloudWatch() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentCloudWatch(d *schema.ResourceData) *n9api.CloudWatchAgentConfig {
+func marshalAgentCloudWatch(d resourceInterface) *v1alphaAgent.CloudWatchConfig {
 	if !isAgentType(d, cloudWatchAgentType) {
 		return nil
 	}
 
-	return &n9api.CloudWatchAgentConfig{}
+	return &v1alphaAgent.CloudWatchConfig{}
 }
 
 /**
@@ -536,14 +607,14 @@ func schemaAgentDatadog() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentDatadog(d *schema.ResourceData, diags diag.Diagnostics) *n9api.DatadogAgentConfig {
+func marshalAgentDatadog(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.DatadogConfig {
 	data := getAgentResourceData(d, datadogAgentType, datadogAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.DatadogAgentConfig{
+	return &v1alphaAgent.DatadogConfig{
 		Site: data["site"].(string),
 	}
 }
@@ -576,14 +647,14 @@ func schemaAgentDynatrace() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentDynatrace(d *schema.ResourceData, diags diag.Diagnostics) *n9api.DynatraceAgentConfig {
+func marshalAgentDynatrace(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.DynatraceConfig {
 	data := getAgentResourceData(d, dynatraceAgentType, dynatraceAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.DynatraceAgentConfig{
+	return &v1alphaAgent.DynatraceConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -616,14 +687,14 @@ func schemaAgentElasticsearch() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentElasticsearch(d *schema.ResourceData, diags diag.Diagnostics) *n9api.ElasticsearchAgentConfig {
+func marshalAgentElasticsearch(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.ElasticsearchConfig {
 	data := getAgentResourceData(d, elasticsearchAgentType, elasticsearchAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.ElasticsearchAgentConfig{
+	return &v1alphaAgent.ElasticsearchConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -651,12 +722,12 @@ func schemaAgentGCM() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentGCM(d *schema.ResourceData) *n9api.GCMAgentConfig {
+func marshalAgentGCM(d resourceInterface) *v1alphaAgent.GCMConfig {
 	if !isAgentType(d, gcmAgentType) {
 		return nil
 	}
 
-	return &n9api.GCMAgentConfig{}
+	return &v1alphaAgent.GCMConfig{}
 }
 
 /**
@@ -687,14 +758,14 @@ func schemaAgentGrafanaLoki() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentGrafanaLoki(d *schema.ResourceData, diags diag.Diagnostics) *n9api.GrafanaLokiAgentConfig {
+func marshalAgentGrafanaLoki(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.GrafanaLokiConfig {
 	data := getAgentResourceData(d, grafanalokiAgentType, grafanalokiAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.GrafanaLokiAgentConfig{
+	return &v1alphaAgent.GrafanaLokiConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -727,16 +798,46 @@ func schemaAgentGraphite() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentGraphite(d *schema.ResourceData, diags diag.Diagnostics) *n9api.GraphiteAgentConfig {
+func marshalAgentGraphite(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.GraphiteConfig {
 	data := getAgentResourceData(d, graphiteAgentType, graphiteAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.GraphiteAgentConfig{
+	return &v1alphaAgent.GraphiteConfig{
 		URL: data["url"].(string),
 	}
+}
+
+/**
+ * Honeycomb Agent
+ * https://docs.nobl9.com/Sources/honeycomb#honeycomb-agent
+ */
+const honeycombAgentType = "honeycomb"
+const honeycombAgentConfigKey = "honeycomb_config"
+
+func schemaAgentHoneycomb() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		honeycombAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#hc-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Description: "Agent configuration is not required.",
+			},
+		},
+	}
+}
+
+func marshalAgentHoneycomb(d resourceInterface) *v1alphaAgent.HoneycombConfig {
+	if !isAgentType(d, honeycombAgentType) {
+		return nil
+	}
+
+	return &v1alphaAgent.HoneycombConfig{}
 }
 
 /**
@@ -767,14 +868,14 @@ func schemaAgentInfluxDB() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentInfluxDB(d *schema.ResourceData, diags diag.Diagnostics) *n9api.InfluxDBAgentConfig {
+func marshalAgentInfluxDB(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.InfluxDBConfig {
 	data := getAgentResourceData(d, influxdbAgentType, influxdbAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.InfluxDBAgentConfig{
+	return &v1alphaAgent.InfluxDBConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -807,14 +908,14 @@ func schemaAgentInstana() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentInstana(d *schema.ResourceData, diags diag.Diagnostics) *n9api.InstanaAgentConfig {
+func marshalAgentInstana(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.InstanaConfig {
 	data := getAgentResourceData(d, instanaAgentType, instanaAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.InstanaAgentConfig{
+	return &v1alphaAgent.InstanaConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -847,22 +948,28 @@ func schemaAgentLightstep() map[string]*schema.Schema {
 						Required:    true,
 						Description: "Name of the Lightstep project.",
 					},
+					"url": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Lightstep API URL. Nobl9 will use https://api.lightstep.com if empty.",
+					},
 				},
 			},
 		},
 	}
 }
 
-func marshalAgentLightstep(d *schema.ResourceData, diags diag.Diagnostics) *n9api.LightstepAgentConfig {
+func marshalAgentLightstep(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.LightstepConfig {
 	data := getAgentResourceData(d, lightstepAgentType, lightstepAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.LightstepAgentConfig{
+	return &v1alphaAgent.LightstepConfig{
 		Organization: data["organization"].(string),
 		Project:      data["project"].(string),
+		URL:          data["url"].(string),
 	}
 }
 
@@ -894,16 +1001,33 @@ func schemaAgentNewRelic() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentNewRelic(d *schema.ResourceData, diags diag.Diagnostics) *n9api.NewRelicAgentConfig {
+func marshalAgentNewRelic(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.NewRelicConfig {
 	data := getAgentResourceData(d, newRelicAgentType, newRelicAgentConfigKey, diags)
-
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.NewRelicAgentConfig{
-		AccountID: json.Number(data["account_id"].(string)),
+	accID, err := strconv.Atoi(data["account_id"].(string))
+	if err != nil {
+		appendError(diags, err)
+		return nil
 	}
+	return &v1alphaAgent.NewRelicConfig{
+		AccountID: accID,
+	}
+}
+
+func unmarshalNewRelicAgentSpec(d *schema.ResourceData, agent v1alphaAgent.Agent) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if agent.Spec.NewRelic != nil {
+		accountID := agent.Spec.NewRelic.AccountID
+		accountIDVal := map[string]interface{}{"account_id": fmt.Sprint(accountID)}
+		err := d.Set(newRelicAgentConfigKey, schema.NewSet(oneElementSet, []interface{}{accountIDVal}))
+		diags = appendError(diags, err)
+		return diags
+	}
+	diags = appendError(diags, fmt.Errorf("missing newrelic agent spec"))
+	return diags
 }
 
 /**
@@ -933,14 +1057,14 @@ func schemaAgentOpenTSDB() map[string]*schema.Schema {
 		}}
 }
 
-func marshalAgentOpenTSDB(d *schema.ResourceData, diags diag.Diagnostics) *n9api.OpenTSDBAgentConfig {
+func marshalAgentOpenTSDB(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.OpenTSDBConfig {
 	data := getAgentResourceData(d, opentsdbAgentType, opentsdbAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.OpenTSDBAgentConfig{
+	return &v1alphaAgent.OpenTSDBConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -966,12 +1090,12 @@ func schemaAgentPingdom() map[string]*schema.Schema {
 		}}
 }
 
-func marshalAgentPingdom(d *schema.ResourceData) *n9api.PingdomAgentConfig {
+func marshalAgentPingdom(d resourceInterface) *v1alphaAgent.PingdomConfig {
 	if !isAgentType(d, pingdomAgentType) {
 		return nil
 	}
 
-	return &n9api.PingdomAgentConfig{}
+	return &v1alphaAgent.PingdomConfig{}
 }
 
 /**
@@ -1002,16 +1126,15 @@ func schemaAgentPrometheus() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentPrometheus(d *schema.ResourceData, diags diag.Diagnostics) *n9api.PrometheusAgentConfig {
+func marshalAgentPrometheus(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.PrometheusConfig {
 	data := getAgentResourceData(d, prometheusAgentType, prometheusAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	url := data["url"].(string)
-	return &n9api.PrometheusAgentConfig{
-		URL: &url,
+	return &v1alphaAgent.PrometheusConfig{
+		URL: data["url"].(string),
 	}
 }
 
@@ -1038,25 +1161,12 @@ func schemaAgentRedshift() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentRedshift(d *schema.ResourceData) *n9api.RedshiftAgentConfig {
+func marshalAgentRedshift(d resourceInterface) *v1alphaAgent.RedshiftConfig {
 	if !isAgentType(d, redshiftAgentType) {
 		return nil
 	}
 
-	return &n9api.RedshiftAgentConfig{}
-}
-
-func unmarshalNewRelicAgentSpec(d *schema.ResourceData, agent n9api.Agent) diag.Diagnostics {
-	var diags diag.Diagnostics
-	if agent.Spec.NewRelic != nil {
-		accountID := agent.Spec.NewRelic.AccountID
-		accountIDVal := map[string]interface{}{"account_id": fmt.Sprint(accountID)}
-		err := d.Set(newRelicAgentConfigKey, schema.NewSet(oneElementSet, []interface{}{accountIDVal}))
-		diags = appendError(diags, err)
-		return diags
-	}
-	diags = appendError(diags, fmt.Errorf("missing newrelic agent spec"))
-	return diags
+	return &v1alphaAgent.RedshiftConfig{}
 }
 
 /**
@@ -1087,14 +1197,14 @@ func schemaAgentSplunk() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentSplunk(d *schema.ResourceData, diags diag.Diagnostics) *n9api.SplunkAgentConfig {
+func marshalAgentSplunk(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.SplunkConfig {
 	data := getAgentResourceData(d, splunkAgentType, splunkAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.SplunkAgentConfig{
+	return &v1alphaAgent.SplunkConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -1129,15 +1239,15 @@ func schemaAgentSplunkObservability() map[string]*schema.Schema {
 }
 
 func marshalAgentSplunkObservability(
-	d *schema.ResourceData,
-	diags diag.Diagnostics) *n9api.SplunkObservabilityAgentConfig {
+	d resourceInterface,
+	diags diag.Diagnostics) *v1alphaAgent.SplunkObservabilityConfig {
 	data := getAgentResourceData(d, splunkObservabilityAgentType, splunkObservabilityAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.SplunkObservabilityAgentConfig{
+	return &v1alphaAgent.SplunkObservabilityConfig{
 		Realm: data["realm"].(string),
 	}
 }
@@ -1170,14 +1280,14 @@ func schemaAgentSumoLogic() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentSumoLogic(d *schema.ResourceData, diags diag.Diagnostics) *n9api.SumoLogicAgentConfig {
+func marshalAgentSumoLogic(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.SumoLogicConfig {
 	data := getAgentResourceData(d, sumologicAgentType, sumologicAgentConfigKey, diags)
 
 	if data == nil {
 		return nil
 	}
 
-	return &n9api.SumoLogicAgentConfig{
+	return &v1alphaAgent.SumoLogicConfig{
 		URL: data["url"].(string),
 	}
 }
@@ -1204,16 +1314,56 @@ func schemaAgentThousandEyes() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentThousandEyes(d *schema.ResourceData) *n9api.ThousandEyesAgentConfig {
+func marshalAgentThousandEyes(d resourceInterface) *v1alphaAgent.ThousandEyesConfig {
 	if !isAgentType(d, thousandeyesAgentType) {
 		return nil
 	}
 
-	return &n9api.ThousandEyesAgentConfig{}
+	return &v1alphaAgent.ThousandEyesConfig{}
+}
+
+/*
+ * LogicMonitor Agent
+ * https://docs.nobl9.com/Sources/logic-monitor#logic-monitor-agent
+ */
+const logicMonitorAgentType = "logic_monitor"
+const logicMonitorAgentConfigKey = "logic_monitor_config"
+
+func schemaAgentLogicMonitor() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		logicMonitorAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#logic-monitor-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"account": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "LogicMonitor Account name.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentLogicMonitor(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.LogicMonitorConfig {
+	data := getAgentResourceData(d, logicMonitorAgentType, logicMonitorAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &v1alphaAgent.LogicMonitorConfig{
+		Account: data["account"].(string),
+	}
 }
 
 func getAgentResourceData(
-	d *schema.ResourceData,
+	d resourceInterface,
 	agentType,
 	agentConfigKey string,
 	diags diag.Diagnostics) map[string]interface{} {
@@ -1230,7 +1380,7 @@ func getAgentResourceData(
 	return resourceData
 }
 
-func isAgentType(d *schema.ResourceData, agentType string) bool {
+func isAgentType(d resourceInterface, agentType string) bool {
 	agentTypeResource := d.Get(agentTypeKey).(string)
 	return agentTypeResource == agentType
 }

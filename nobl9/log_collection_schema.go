@@ -11,7 +11,7 @@ func getLogCollectionSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,
-		Description: "[Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)",
+		Description: "[Logs documentation](https://docs.nobl9.com/features/slo-troubleshooting/event-logs)",
 	}
 }
 
@@ -19,8 +19,8 @@ func setLogCollectionSchema(s map[string]*schema.Schema) {
 	s[logCollectionConfigKey] = getLogCollectionSchema()
 }
 
-func marshalLogCollectionEnabled(d *schema.ResourceData) *bool {
-	lData := d.Get(logCollectionConfigKey)
+func marshalLogCollectionEnabled(r resourceInterface) *bool {
+	lData := r.Get(logCollectionConfigKey)
 	value, ok := lData.(bool)
 	if !ok {
 		return nil

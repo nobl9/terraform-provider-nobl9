@@ -1,15 +1,17 @@
 package nobl9
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
 )
 
+//nolint:tparallel
 func TestAcc_Nobl9SLO(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
@@ -18,25 +20,33 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 	}{
 		{"test-amazonprometheus", testAmazonPrometheusSLO},
 		{"test-appdynamics", testAppdynamicsSLO},
+		{"test-azure-monitor-metrics", testAzureMonitorMetricsSLO},
+		{"test-azure-monitor-logs", testAzureMonitorLogsSLO},
 		{"test-bigquery", testBigQuerySLO},
 		{"test-cloudwatch-with-json", testCloudWatchWithJSON},
 		{"test-cloudwatch-with-sql", testCloudWatchWithSQL},
 		{"test-cloudwatch-with-stat", testCloudWatchWithStat},
+		{"test-cloudwatch-with-stat-and-cross-account", testCloudWatchWithStatAndCrossAccount},
+		{"test-cloudwatch-with-bad-over-total", testCloudWatchWithBadOverTotal},
+		{"test-composite-occurrences-deprecated", testCompositeSLOOccurrencesDeprecated},
+		{"test-composite-time-slices-deprecated", testCompositeSLOTimeSlicesDeprecated},
 		{"test-composite-occurrences", testCompositeSLOOccurrences},
 		{"test-composite-time-slices", testCompositeSLOTimeSlices},
 		{"test-datadog", testDatadogSLO},
 		{"test-dynatrace", testDynatraceSLO},
 		{"test-grafanaloki", testGrafanaLokiSLO},
 		{"test-graphite", testGraphiteSLO},
+		{"test-honeycomb", testHoneycombSLO},
 		{"test-influxdb", testInfluxDBSLO},
 		{"test-instana-infra", testInstanaInfrastructureSLO},
 		{"test-instana-app", testInstanaApplicationSLO},
 		{"test-lightstep", testLightstepSLO},
+		{"test-logic-monitor", testLogicMonitorMetricsSLO},
 		{"test-multiple-ap", testMultipleAlertPolicies},
 		{"test-newrelic", testNewRelicSLO},
 		{"test-opentsdb", testOpenTSDBSLO},
 		{"test-pingdom", testPingdomSLO},
-		{"test-prom-full", testPrometheusSLOFULL},
+		{"test-prom-full", testPrometheusSLOFull},
 		{"test-prom-with-ap", testPrometheusSLOWithAlertPolicy},
 		{"test-prom-with-attachments-deprecated", testPrometheusWithAttachmentsDeprecated},
 		{"test-prom-with-attachment", testPrometheusWithAttachment},
@@ -52,14 +62,16 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-thousandeyes", testThousandeyesSLO},
 		{"test-anomaly-config-same-project", testAnomalyConfigNoDataSameProject},
 		{"test-anomaly-config-different-project", testAnomalyConfigNoDataDifferentProject},
+		{"test-max-one-primary-objective", testMaxOnePrimaryObjective},
+		{"test-no-primary-objective", testNoPrimaryObjective},
+		{"test-metadata-annotations", testMetadataAnnotations},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_slo", n9api.ObjectSLO),
+				CheckDestroy:      CheckDestroy("nobl9_slo", manifest.KindSLO),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
@@ -71,6 +83,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 	}
 }
 
+//nolint:tparallel
 func TestAcc_Nobl9SLOErrors(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
@@ -86,14 +99,17 @@ func TestAcc_Nobl9SLOErrors(t *testing.T) {
 			testMetricSpecRequired,
 			`At least 1 "total" blocks are required`,
 		},
+		{"test-more-than-one-primary-objective",
+			testMoreThanOnePrimaryObjective,
+			`there can be max 1 primary objective`,
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_slo.", n9api.ObjectSLO),
+				CheckDestroy:      CheckDestroy("nobl9_slo.", manifest.KindSLO),
 				Steps: []resource.TestStep{
 					{
 						Config:      tc.configFunc(tc.name),
@@ -198,8 +214,144 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       query {
         appdynamics {
-          application_name = "polakpotrafi"
+          application_name = "my_app"
           metric_path = "End User Experience|App|End User Response Time 95th percentile (ms)"
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+// nolint: lll
+func testAzureMonitorMetricsSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testAzureMonitorAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        azure_monitor {
+          data_type = "metrics"
+          resource_id = "/subscriptions/9c26f90e-24bb-4d20-a648-c6e3e1cde26a/resourceGroups/azure-monitor-test-sources/providers/microsoft.insights/components/n9-web-app"
+          metric_namespace = ""
+          metric_name = "requests/duration"
+          aggregation = "Avg"
+          dimensions {
+		  	name = "request/resultCode"
+			value = "200"
+         }
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+// nolint: lll
+func testAzureMonitorLogsSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testAzureMonitorAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        azure_monitor {
+          data_type = "logs"
+          workspace {
+			subscription_id = "9c26f90e-24bb-4d20-a648-c6e3e1cde26a"
+			resource_group = "azure-monitor-test-sources"
+			workspace_id = "e5da9ba8-cb8f-437e-aec0-61d21aab2bcd"
+          }
+          kql_query = "AppRequests | where AppRoleName == \"n9-web-app\" | summarize n9_value = avg(DurationMs) by bin(TimeGenerated, 15s) | project n9_time = TimeGenerated, n9_value"
         }
       }
     }
@@ -528,7 +680,167 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testCompositeSLOOccurrences(name string) string {
+func testCloudWatchWithBadOverTotal(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testCloudWatchAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+    project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    count_metrics {
+      incremental = true
+      bad {
+        cloudwatch {
+          region = "eu-central-1"
+          namespace = "namespace"
+          metric_name = "metric_name"
+          stat        = "Sum"
+          dimensions {
+            name  = "name1"
+            value = "value1"
+          }
+          dimensions {
+            name  = "name2"
+            value = "value3"
+          }
+        }
+      }
+      total {
+        cloudwatch {
+          region = "eu-central-1"
+          namespace = "namespace"
+          metric_name = "metric_name"
+          stat        = "Sum"
+          dimensions {
+            name  = "name1"
+            value = "value1"
+          }
+          dimensions {
+            name  = "name2"
+            value = "value3"
+          }
+        }
+      }
+    }
+  }
+
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testCloudWatchWithStatAndCrossAccount(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testCloudWatchDirectBeta(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+    project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        cloudwatch {
+		region = "eu-central-1"
+		account_id = "123456789012"
+		namespace = "namespace"
+		metric_name = "metric_name"
+		stat        = "Sum"
+		dimensions {
+		  name  = "name1"
+			value = "value1"
+		}
+		dimensions {
+			name  = "name2"
+			value = "value3"
+		}
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_direct_cloudwatch.:agentName.name
+    project = ":project"
+    kind    = "Direct"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testCompositeSLOOccurrencesDeprecated(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	config :=
@@ -611,7 +923,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testCompositeSLOTimeSlices(name string) string {
+func testCompositeSLOTimeSlicesDeprecated(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	config :=
@@ -682,6 +994,142 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
+func testCompositeSLOOccurrences(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	var sloDependencyName = name + "-dependency-slo-1"
+	config :=
+		testService(serviceName) +
+			testPrometheusAgent(agentName) +
+			testCompositeDependencySLO(serviceName, agentName, sloDependencyName) + `
+resource "nobl9_slo" ":name" {
+ name         = ":name"
+ display_name = ":name"
+ project      = ":project"
+ service      = nobl9_service.:serviceName.name
+
+
+ depends_on = [nobl9_slo.:sloDependencyName]
+
+ label {
+  key = "team"
+  values = ["green","sapphire"]
+ }
+
+ label {
+  key = "env"
+  values = ["dev", "staging", "prod"]
+ }
+
+ budgeting_method = "Occurrences"
+
+ objective {
+   display_name = "obj1"
+   name         = "tf-objective-1"
+   target       = 0.7
+   value        = 1
+   composite {
+     max_delay = "45m"
+     components {
+       objectives {
+         composite_objective {
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-1"
+           weight       = 0.8
+           when_delayed = "CountAsGood"
+         }
+		 composite_objective {
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-2"
+           weight       = 1.0
+           when_delayed = "CountAsBad"
+         }
+       }
+     }
+   }
+ }
+
+ time_window {
+   count      = 10
+   is_rolling = true
+   unit       = "Minute"
+ }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+	config = strings.ReplaceAll(config, ":sloDependencyName", sloDependencyName)
+
+	return config
+}
+
+func testCompositeSLOTimeSlices(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	var sloDependencyName = name + "-dependency-slo-2"
+	config :=
+		testService(serviceName) +
+			testPrometheusAgent(agentName) +
+			testCompositeDependencySLO(serviceName, agentName, sloDependencyName) + `
+resource "nobl9_slo" ":name" {
+ name         = ":name"
+ display_name = ":name"
+ project      = ":project"
+ service      = nobl9_service.:serviceName.name
+
+ depends_on = [nobl9_slo.:sloDependencyName]
+
+ budgeting_method = "Timeslices"
+
+ objective {
+   display_name = "obj1"
+   name         = "tf-objective-1"
+   target       = 0.7
+   value        = 1
+   time_slice_target = 0.7
+   composite {
+     max_delay = "45m"
+     components {
+       objectives {
+         composite_objective {
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-1"
+           weight       = 0.8
+           when_delayed = "CountAsGood"
+         }
+		 composite_objective {
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-2"
+           weight       = 1.0
+           when_delayed = "CountAsBad"
+         }
+       }
+     }
+   }
+ }
+
+ time_window {
+   count      = 10
+   is_rolling = true
+   unit       = "Minute"
+ }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+	config = strings.ReplaceAll(config, ":sloDependencyName", sloDependencyName)
+
+	return config
+}
+
 func testDatadogSLO(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
@@ -691,7 +1139,7 @@ func testDatadogSLO(name string) string {
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
-    project      = ":project"
+  project      = ":project"
   service      = nobl9_service.:serviceName.name
 
   label {
@@ -933,6 +1381,65 @@ resource "nobl9_slo" ":name" {
 	config = strings.ReplaceAll(config, ":agentName", agentName)
 	config = strings.ReplaceAll(config, ":project", testProject)
 
+	return config
+}
+
+func testHoneycombSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config := testService(serviceName) +
+		testHoneycombAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+	  name         = ":name"
+	  display_name = ":name"
+	  project      = ":project"
+	  service      = nobl9_service.:serviceName.name
+
+	  label {
+	   key = "team"
+	   values = ["green","sapphire"]
+	  }
+
+	  label {
+		key = "env"
+		values = ["dev", "staging", "prod"]
+	  }
+
+	budgeting_method = "Occurrences"
+
+	objective {
+		display_name = "obj1"
+		name = "tf-objective-1"
+		target = 0.7
+		value = 1
+		op = "lt"
+		raw_metric {
+			query {
+				honeycomb {
+					calculation = "SUM"
+					attribute = "test-column"
+				}
+			}
+		}
+	}
+
+	time_window {
+		count = 10
+		is_rolling = true
+		unit = "Minute"
+	}
+
+	indicator {
+		name = nobl9_agent.:agentName.name
+		project = ":project"
+		kind = "Agent"
+	}
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
 	return config
 }
 
@@ -1194,9 +1701,72 @@ resource "nobl9_slo" ":name" {
     raw_metric {
       query {
         lightstep {
-          stream_id = "DzpxcSRh"
+          stream_id = "id"
           type_of_data = "latency"
           percentile = 95
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testLogicMonitorMetricsSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testLogicMonitorAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        logic_monitor {
+          query_type = "device_metrics"
+          device_data_source_instance_id = "775430648"
+          graph_id = "11354"
+          line = "AVERAGE"
         }
       }
     }
@@ -1229,8 +1799,8 @@ func testMultipleAlertPolicies(name string) string {
 	config :=
 		testService(serviceName) +
 			testPrometheusAgent(agentName) +
-			testAlertPolicyWithoutIntegration(name+"-fast") +
-			testAlertPolicyWithoutIntegration(name+"-slow") + `
+			testAlertPolicyWithoutAnyAlertMethod(name+"-fast") +
+			testAlertPolicyWithoutAnyAlertMethod(name+"-slow") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -1473,7 +2043,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testPrometheusSLOFULL(name string) string {
+func testPrometheusSLOFull(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	config :=
@@ -1557,7 +2127,7 @@ func testPrometheusSLOWithAlertPolicy(name string) string {
 	config :=
 		testService(serviceName) +
 			testPrometheusAgent(agentName) +
-			testAlertPolicyWithoutIntegration(name+"-ap") + `
+			testAlertPolicyWithoutAnyAlertMethod(name+"-ap") + `
 resource "nobl9_slo" ":name" {
   name         = ":name"
   display_name = ":name"
@@ -2412,6 +2982,7 @@ resource "nobl9_slo" ":name" {
       query {
         thousandeyes {
           test_id = 11
+          test_type = "web-dom-load"
         }
       }
     }
@@ -2446,15 +3017,15 @@ func testAnomalyConfigNoDataSameProject(name string) string {
 	config := testService(serviceName) +
 		testThousandEyesAgent(agentName) +
 		mockAlertMethod(alertMethodName, testProject) + `
-		
+
 		resource "nobl9_slo" ":name" {
 			name         = ":name"
 			display_name = ":name"
 			project      = ":project"
 			service      = nobl9_service.:serviceName.name
-		
+
 			budgeting_method = "Occurrences"
-		
+
 			objective {
 				display_name = "obj1"
 				name         = "tf-objective-1"
@@ -2465,23 +3036,24 @@ func testAnomalyConfigNoDataSameProject(name string) string {
 					query {
 						thousandeyes {
 							test_id = 11
+							test_type = "web-dom-load"
 						}
 					}
 				}
 			}
-		
+
 			time_window {
 				count      = 10
 				is_rolling = true
 				unit       = "Minute"
 			}
-		
+
 			indicator {
 				name    = nobl9_agent.:agentName.name
 				project = ":project"
 				kind    = "Agent"
 			}
-		
+
 			anomaly_config {
 				no_data {
 					alert_method {
@@ -2510,15 +3082,15 @@ func testAnomalyConfigNoDataDifferentProject(name string) string {
 	config := testService(serviceName) +
 		testThousandEyesAgent(agentName) +
 		mockAlertMethod(alertMethodName, alertMethodProject) + `
-		
+
 		resource "nobl9_slo" ":name" {
 			name         = ":name"
 			display_name = ":name"
 			project      = ":project"
 			service      = nobl9_service.:serviceName.name
-		
+
 			budgeting_method = "Occurrences"
-		
+
 			objective {
 				display_name = "obj1"
 				name         = "tf-objective-1"
@@ -2529,23 +3101,24 @@ func testAnomalyConfigNoDataDifferentProject(name string) string {
 					query {
 						thousandeyes {
 							test_id = 11
+							test_type = "web-dom-load"
 						}
 					}
 				}
 			}
-		
+
 			time_window {
 				count      = 10
 				is_rolling = true
 				unit       = "Minute"
 			}
-		
+
 			indicator {
 				name    = nobl9_agent.:agentName.name
 				project = ":project"
 				kind    = "Agent"
 			}
-		
+
 			anomaly_config {
 				no_data {
 					alert_method {
@@ -2624,4 +3197,345 @@ resource "nobl9_slo" ":name" {
 	config = strings.ReplaceAll(config, ":project", testProject)
 
 	return config
+}
+
+func testMaxOnePrimaryObjective(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+
+	config := testService(serviceName) +
+		testThousandEyesAgent(agentName) + `
+
+		resource "nobl9_slo" ":name" {
+			name         = ":name"
+			display_name = ":name"
+			project      = ":project"
+			service      = nobl9_service.:serviceName.name
+
+			budgeting_method = "Occurrences"
+
+			objective {
+				display_name = "obj1"
+				name         = "tf-objective-1"
+				target       = 0.7
+				value        = 1
+				op           = "lt"
+                primary      = true
+				raw_metric {
+					query {
+						thousandeyes {
+							test_id = 11
+							test_type = "web-dom-load"
+						}
+					}
+				}
+			}
+
+			objective {
+				display_name = "obj2"
+				name         = "tf-objective-2"
+				target       = 0.6
+				value        = 1.1
+				op           = "lt"
+                primary      = false
+				raw_metric {
+					query {
+						thousandeyes {
+							test_id = 11
+							test_type = "web-dom-load"
+						}
+					}
+				}
+			}
+
+			time_window {
+				count      = 10
+				is_rolling = true
+				unit       = "Minute"
+			}
+
+			indicator {
+				name    = nobl9_agent.:agentName.name
+				project = ":project"
+				kind    = "Agent"
+			}
+		}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testNoPrimaryObjective(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+
+	config := testService(serviceName) +
+		testThousandEyesAgent(agentName) + `
+
+		resource "nobl9_slo" ":name" {
+			name         = ":name"
+			display_name = ":name"
+			project      = ":project"
+			service      = nobl9_service.:serviceName.name
+
+			budgeting_method = "Occurrences"
+
+			objective {
+				display_name = "obj1"
+				name         = "tf-objective-1"
+				target       = 0.7
+				value        = 1
+				op           = "lt"
+				raw_metric {
+					query {
+						thousandeyes {
+							test_id = 11
+							test_type = "web-dom-load"
+						}
+					}
+				}
+			}
+
+			objective {
+				display_name = "obj2"
+				name         = "tf-objective-2"
+				target       = 0.6
+				value        = 1.1
+				op           = "lt"
+                primary      = false
+				raw_metric {
+					query {
+						thousandeyes {
+							test_id = 11
+							test_type = "web-dom-load"
+						}
+					}
+				}
+			}
+
+			time_window {
+				count      = 10
+				is_rolling = true
+				unit       = "Minute"
+			}
+
+			indicator {
+				name    = nobl9_agent.:agentName.name
+				project = ":project"
+				kind    = "Agent"
+			}
+		}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testMoreThanOnePrimaryObjective(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+
+	config := testService(serviceName) +
+		testThousandEyesAgent(agentName) + `
+
+		resource "nobl9_slo" ":name" {
+			name         = ":name"
+			display_name = ":name"
+			project      = ":project"
+			service      = nobl9_service.:serviceName.name
+
+			budgeting_method = "Occurrences"
+
+			objective {
+				display_name = "obj1"
+				name         = "tf-objective-1"
+				target       = 0.7
+				value        = 1
+				op           = "lt"
+                primary      = true
+				raw_metric {
+					query {
+						thousandeyes {
+							test_id = 11
+							test_type = "web-dom-load"
+						}
+					}
+				}
+			}
+
+			objective {
+				display_name = "obj2"
+				name         = "tf-objective-2"
+				target       = 0.6
+				value        = 1.1
+				op           = "lt"
+                primary      = true
+				raw_metric {
+					query {
+						thousandeyes {
+							test_id = 11
+							test_type = "web-dom-load"
+						}
+					}
+				}
+			}
+
+			time_window {
+				count      = 10
+				is_rolling = true
+				unit       = "Minute"
+			}
+
+			indicator {
+				name    = nobl9_agent.:agentName.name
+				project = ":project"
+				kind    = "Agent"
+			}
+		}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testCompositeDependencySLO(serviceName, agentName, name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_slo" "%s" {
+  name             = "%s"
+  service          = nobl9_service.%s.name
+  budgeting_method = "Occurrences"
+  project          = "%s"
+
+  time_window {
+    unit       = "Day"
+    count      = 14
+    is_rolling = true
+  }
+
+  objective {
+    target       = 0.999
+    value        = 5
+    display_name = "Good"
+    name         = "objective-1"
+    op           = "lte"
+
+    raw_metric {
+      query {
+        prometheus {
+          promql = "server_requestMsec{host=\"*\",instance=\"143.146.168.125:9913\",job=\"nginx\"}"
+        }
+      }
+    }
+  }
+  objective {
+    target       = 0.80
+    value        = 2
+    display_name = "Moderate"
+    name         = "objective-2"
+    op           = "lte"
+
+    raw_metric {
+      query {
+        prometheus {
+          promql = "server_requestMsec{host=\"*\",instance=\"143.146.168.125:9913\",job=\"nginx\"}"
+        }
+      }
+    }
+  }
+
+  indicator {
+    name    = nobl9_agent.%s.name
+    kind    = "Agent"
+    project = "%s"
+  }
+}
+`, name, name, serviceName, testProject, agentName, testProject)
+}
+
+func testMetadataAnnotations(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+
+	config := testService(serviceName) +
+		testThousandEyesAgent(agentName) + `
+		resource "nobl9_slo" ":name" {
+			name         = ":name"
+			display_name = ":name"
+			project      = ":project"
+			service      = nobl9_service.:serviceName.name
+			annotations = {
+				env  = "development"
+				name = "example annotation"
+			}
+			budgeting_method = "Occurrences"
+			objective {
+				display_name = "obj1"
+				name         = "tf-objective-1"
+				target       = 0.7
+				value        = 1
+				op           = "lt"
+				raw_metric {
+					query {
+						thousandeyes {
+							test_id = 11
+							test_type = "web-dom-load"
+						}
+					}
+				}
+			}
+			time_window {
+				count      = 10
+				is_rolling = true
+				unit       = "Minute"
+			}
+			indicator {
+				name    = nobl9_agent.:agentName.name
+				project = ":project"
+				kind    = "Agent"
+			}
+		}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testAlertPolicyWithoutAnyAlertMethod(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_policy" "%s" {
+  name       = "%s"
+  project    = "%s"
+  severity   = "Medium"
+
+  condition {
+	  measurement = "burnedBudget"
+	  value 	  = 0.9
+	}
+
+  condition {
+	  measurement = "averageBurnRate"
+	  value 	  = 3
+	  lasts_for	  = "1m"
+	}
+
+  condition {
+	  measurement  = "timeToBurnBudget"
+	  value_string = "1h"
+	  lasts_for	   = "300s"
+	}
+}
+`, name, name, testProject)
 }

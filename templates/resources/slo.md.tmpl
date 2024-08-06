@@ -10,6 +10,11 @@ An SLO is a target value or range of values for a service that is measured by a 
 
 For more information, refer to {{ .Description | trimspace }}
 
+
+## Composite SLOs 2.0 note
+
+Use the `depends_on` meta-argument to specify component SLOs your composite must depend on. It addresses incorrect application order issues.
+
 ## Example Usage
 
 {{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
@@ -18,4 +23,6 @@ For more information, refer to {{ .Description | trimspace }}
 
 ## Nobl9 Official Documentation
 
-https://docs.nobl9.com/SLOs_as_code/?_highlight=slo
+https://docs.nobl9.com/getting-started/nobl9-resources/slo
+
+https://docs.nobl9.com/yaml-guide#slo

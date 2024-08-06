@@ -11,7 +11,7 @@ resource "nobl9_service" "this" {
   description  = "Front page service"
 }
 
-resource "nobl9_slo" "this" {
+resource "nobl9_slo" "slo_1" {
   name             = "${nobl9_project.this.name}-latency"
   service          = nobl9_service.this.name
   budgeting_method = "Occurrences"
@@ -28,12 +28,12 @@ resource "nobl9_slo" "this" {
   }
 
   attachment {
-    utl          = "https://www.nobl9.com/"
-    display_name = "SLO provider"
+    url          = "https://www.nobl9.com/"
+    display_name = "Nobl9 Reliability Center"
   }
 
   attachment {
-    utl          = "https://duckduckgo.com/"
+    url          = "https://duckduckgo.com/"
     display_name = "Nice search engine"
   }
 
@@ -53,12 +53,13 @@ resource "nobl9_slo" "this" {
     display_name = "OK"
     value        = 2000
     op           = "gte"
-    
+    primary      = true
+
     raw_metric {
       query {
         prometheus {
           promql = <<EOT
-          latency_west_c7{code="ALL",instance="localhost:3000",job="prometheus",service="globacount"}
+          latency_west_c7{code="ALL",instance="localhost:3000",job="prometheus",service="glob_account"}
           EOT
         }
       }
@@ -66,11 +67,11 @@ resource "nobl9_slo" "this" {
   }
 
   indicator {
-    name = "test-terraform-prom-agent"
+    name = "test-n9-terraform-prom-agent"
   }
 }
 
-resource "nobl9_slo" "this" {
+resource "nobl9_slo" "slo_2" {
   name             = "${nobl9_project.this.name}-ratio"
   service          = nobl9_service.this.name
   budgeting_method = "Occurrences"
@@ -87,6 +88,7 @@ resource "nobl9_slo" "this" {
     target       = 0.99
     display_name = "OK"
     value        = 1
+    primary      = false
 
     count_metrics {
       incremental = true
@@ -104,7 +106,7 @@ resource "nobl9_slo" "this" {
   }
 
   indicator {
-    name = "test-terraform-prom-agent"
+    name = "test-n9-terraform-prom-agent"
   }
 
   anomaly_config {
@@ -117,6 +119,51 @@ resource "nobl9_slo" "this" {
       alert_method {
         name = "bar-alert-method"
         project = "default"
+      }
+    }
+  }
+}
+
+# Composite 2.0 example.
+resource "nobl9_slo" "composite_slo" {
+  name             = "${nobl9_project.this.name}-composite"
+  service          = nobl9_service.this.name
+  budgeting_method = "Occurrences"
+  project          = nobl9_project.this.name
+
+  # List the names of component SLOs your composite 2.0 must include
+  depends_on = [nobl9_slo.slo_1, nobl9_slo.slo_2]
+
+  time_window {
+    unit       = "Day"
+    count      = 3
+    is_rolling = true
+  }
+
+  objective {
+    display_name = "OK"
+    name         = "tf-objective-1"
+    target       = 0.8
+    value        = 1
+    composite {
+      max_delay = "45m"
+      components {
+        objectives {
+          composite_objective {
+            project      = nobl9_slo.slo_1.project
+            slo          = nobl9_slo.slo_1.name
+            objective    = "tf-objective-1"
+            weight       = 0.8
+            when_delayed = "CountAsGood"
+          }
+          composite_objective {
+            project      = nobl9_slo.slo_2.project
+            slo          = nobl9_slo.slo_2.name
+            objective    = "tf-objective-1"
+            weight       = 1.5
+            when_delayed = "Ignore"
+          }
+        }
       }
     }
   }

@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_sumologic (Resource)
 
-Sumo Logic is an observability platform that provides visibility into AWS, Azure, and GCP cloud applications and infrastructure. Nobl9 connects with Sumo Logic to collect SLI measurements and compare them to SLO targets.
+Sumo Logic is an observability platform that provides visibility into AWS, Azure, and GCP cloud applications and infrastructure. Nobl9 connects to Sumo Logic for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Sumo Logic Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-direct).
 
@@ -17,7 +17,6 @@ resource "nobl9_direct_sumologic" "test-sumologic" {
   name        = "test-sumologic"
   project     = "terraform"
   description = "desc"
-  source_of   = ["Metrics"]
   url         = "http://web.net"
   access_id   = "secret"
   access_key  = "secret"
@@ -32,7 +31,6 @@ resource "nobl9_direct_sumologic" "test-sumologic" {
 
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services.
 - `url` (String) Sumo Logic API URL.
 
 ### Optional
@@ -41,8 +39,10 @@ resource "nobl9_direct_sumologic" "test-sumologic" {
 - `access_key` (String, Sensitive) [required] | Sumo Logic API Access Key.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)
-- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
+- `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/features/slo-troubleshooting/event-logs)
+- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
+- `release_channel` (String) Release channel of the created data source [stable/beta]
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

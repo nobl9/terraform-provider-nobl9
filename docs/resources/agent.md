@@ -1,7 +1,7 @@
 ---
 page_title: "nobl9_agent Resource - terraform-provider-nobl9"
 description: |-
-  Agent configuration | Nobl9 Documentation https://docs.nobl9.com/nobl9_agent
+  Agent configuration | Nobl9 Documentation https://docs.nobl9.com/nobl9-agent/
 ---
 
 # nobl9_agent (Resource)
@@ -10,7 +10,7 @@ The Agent is a lightweight application that executes the queries defined for you
 
 The Agent then sends your SLI metrics back to Nobl9 for processing and error budget calculation.
 
-For more information, refer to [Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9_agent)
+For more information, refer to [Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9-agent/)
 
 ## Example Usage
 
@@ -22,10 +22,10 @@ resource "nobl9_project" "this" {
 }
 
 resource "nobl9_agent" "this" {
-  name      =  "${nobl9_project.this.name}-prom-agent"
-  project   = nobl9_project.this.name
-  source_of = ["Metrics", "Services"]
-  agent_type = "prometheus"
+  name            = "${nobl9_project.this.name}-prom-agent"
+  project         = nobl9_project.this.name
+  agent_type      = "prometheus"
+  release_channel = "stable"
   prometheus_config {
     url = "http://web.net"
   }
@@ -40,12 +40,12 @@ resource "nobl9_agent" "this" {
 - `agent_type` (String) The type of the Agent. Check [Supported Agent types | Nobl9 Documentation](https://docs.nobl9.com/Sources/)
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services.
 
 ### Optional
 
 - `amazon_prometheus_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#ams-prometheus-agent) (see [below for nested schema](#nestedblock--amazon_prometheus_config))
 - `appdynamics_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-agent) (see [below for nested schema](#nestedblock--appdynamics_config))
+- `azure_monitor_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-agent) (see [below for nested schema](#nestedblock--azure_monitor_config))
 - `bigquery_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-agent) (see [below for nested schema](#nestedblock--bigquery_config))
 - `cloudwatch_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-agent) (see [below for nested schema](#nestedblock--cloudwatch_config))
 - `datadog_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#datadog-agent) (see [below for nested schema](#nestedblock--datadog_config))
@@ -56,15 +56,20 @@ resource "nobl9_agent" "this" {
 - `gcm_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#google-cloud-monitoring-agent) (see [below for nested schema](#nestedblock--gcm_config))
 - `grafana_loki_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#grafana-loki-agent) (see [below for nested schema](#nestedblock--grafana_loki_config))
 - `graphite_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#graphite-agent) (see [below for nested schema](#nestedblock--graphite_config))
+- `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
+- `honeycomb_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#hc-agent) (see [below for nested schema](#nestedblock--honeycomb_config))
 - `influxdb_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#influxdb-agent) (see [below for nested schema](#nestedblock--influxdb_config))
 - `instana_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/instana#instana-agent) (see [below for nested schema](#nestedblock--instana_config))
 - `lightstep_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#lightstep-agent) (see [below for nested schema](#nestedblock--lightstep_config))
+- `logic_monitor_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#logic-monitor-agent) (see [below for nested schema](#nestedblock--logic_monitor_config))
 - `newrelic_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#new-relic-agent) (see [below for nested schema](#nestedblock--newrelic_config))
 - `opentsdb_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#opentsdb-agent) (see [below for nested schema](#nestedblock--opentsdb_config))
 - `pingdom_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#pingdom-agent) (see [below for nested schema](#nestedblock--pingdom_config))
 - `prometheus_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#prometheus-agent) (see [below for nested schema](#nestedblock--prometheus_config))
-- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
+- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `redshift_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-agent) (see [below for nested schema](#nestedblock--redshift_config))
+- `release_channel` (String) Release channel of the created data source [stable/beta]
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 - `splunk_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#splunk-agent) (see [below for nested schema](#nestedblock--splunk_config))
 - `splunk_observability_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-agent) (see [below for nested schema](#nestedblock--splunk_observability_config))
 - `sumologic_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-agent) (see [below for nested schema](#nestedblock--sumologic_config))
@@ -92,6 +97,14 @@ Required:
 Required:
 
 - `url` (String) Base URL to the AppDynamics Controller.
+
+
+<a id="nestedblock--azure_monitor_config"></a>
+### Nested Schema for `azure_monitor_config`
+
+Required:
+
+- `tenant_id` (String) Azure Tenant Id.
 
 
 <a id="nestedblock--bigquery_config"></a>
@@ -146,6 +159,37 @@ Required:
 - `url` (String) API URL endpoint to the Graphite's instance.
 
 
+<a id="nestedblock--historical_data_retrieval"></a>
+### Nested Schema for `historical_data_retrieval`
+
+Required:
+
+- `default_duration` (Block List, Min: 1) Used by default for any SLOs connected to this data source. (see [below for nested schema](#nestedblock--historical_data_retrieval--default_duration))
+- `max_duration` (Block List, Min: 1) Defines the maximum period for which data can be retrieved. (see [below for nested schema](#nestedblock--historical_data_retrieval--max_duration))
+
+<a id="nestedblock--historical_data_retrieval--default_duration"></a>
+### Nested Schema for `historical_data_retrieval.default_duration`
+
+Required:
+
+- `unit` (String) Must be one of Minute, Hour, or Day.
+- `value` (Number) Must be an integer greater than or equal to 0.
+
+
+<a id="nestedblock--historical_data_retrieval--max_duration"></a>
+### Nested Schema for `historical_data_retrieval.max_duration`
+
+Required:
+
+- `unit` (String) Must be one of Minute, Hour, or Day.
+- `value` (Number) Must be an integer greater than or equal to 0.
+
+
+
+<a id="nestedblock--honeycomb_config"></a>
+### Nested Schema for `honeycomb_config`
+
+
 <a id="nestedblock--influxdb_config"></a>
 ### Nested Schema for `influxdb_config`
 
@@ -169,6 +213,18 @@ Required:
 
 - `organization` (String) Organization name registered in Lightstep.
 - `project` (String) Name of the Lightstep project.
+
+Optional:
+
+- `url` (String) Lightstep API URL. Nobl9 will use https://api.lightstep.com if empty.
+
+
+<a id="nestedblock--logic_monitor_config"></a>
+### Nested Schema for `logic_monitor_config`
+
+Required:
+
+- `account` (String) LogicMonitor Account name.
 
 
 <a id="nestedblock--newrelic_config"></a>

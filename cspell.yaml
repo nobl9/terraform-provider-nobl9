@@ -1,0 +1,59 @@
+allowCompoundWords: true
+language: en_US
+dictionaries:
+  - companies
+  - misc
+  - softwareTerms
+  - go
+  - bash
+  - typescript
+  - node
+  - npm
+ignoreRegExpList:
+  - /\|\s+[T|G]{2,}\s+\|/g
+  - /https?:\/\/.*/g
+  - /github.*/g
+  - /nolint.*/g
+  - /nosec.*/g
+ignorePaths:
+  - .golangci.yml
+  - "**/*.lock"
+  - "**/go.mod"
+  - "**/go.sum"
+  - "**/node_modules/**"
+  - cspell.json
+  - CODEOWNERS
+  - bin/**
+words:
+  - apdex
+  - bymonthday
+  - dbslo
+  - dynatrace
+  - endef
+  - gobin
+  - goimports
+  - golangci
+  - golines
+  - gopath
+  - gosec
+  - govulncheck
+  - kusto
+  - ldflags
+  - logql
+  - msteams
+  - nobl
+  - nriq
+  - nrql
+  - opentsdb
+  - plantuml
+  - promql
+  - rrule
+  - securego
+  - sloctl
+  - slos
+  - tffile
+  - tfplugindocs
+  - tpng
+  - tsdbslo
+  - vuln
+  - vulns

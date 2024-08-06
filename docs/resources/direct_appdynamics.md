@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_appdynamics (Resource)
 
-AppDynamics is a performance management program for applications. It helps users to gain a comprehensive understanding of the impact of technical difficulties on business goals, allowing IT teams to prioritize their efforts in a way that improves ROI. Nobl9 connects with AppDynamics to collect SLI measurements and compare them to SLO targets.
+AppDynamics is a performance management program for applications. It helps users to gain a comprehensive understanding of the impact of technical difficulties on business goals, allowing IT teams to prioritize their efforts in a way that improves ROI. Nobl9 connects to AppDynamics for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [AppDynamics Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-direct)
 
@@ -17,12 +17,12 @@ resource "nobl9_direct_appdynamics" "test-appdynamics" {
   name          = "test-appdynamics"
   project       = "terraform"
   description   = "desc"
-  source_of     = ["Metrics", "Services"]
   url           = "https://web.net"
   account_name  = "account name"
   client_secret = "secret"
   client_name   = "client name"
   log_collection_enabled = true
+  release_channel = "stable"
 }
 ```
 
@@ -35,7 +35,6 @@ resource "nobl9_direct_appdynamics" "test-appdynamics" {
 - `client_name` (String) AppDynamics Client Name.
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services.
 - `url` (String) Base URL to the AppDynamics Controller.
 
 ### Optional
@@ -43,14 +42,44 @@ resource "nobl9_direct_appdynamics" "test-appdynamics" {
 - `client_secret` (String, Sensitive) [required] | AppDynamics Client Secret.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)
-- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
+- `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
+- `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/features/slo-troubleshooting/event-logs)
+- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
+- `release_channel` (String) Release channel of the created data source [stable/beta]
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 
 - `client_id` (String) AppDynamics Client ID.
 - `id` (String) The ID of this resource.
 - `status` (String) The status of the created direct.
+
+<a id="nestedblock--historical_data_retrieval"></a>
+### Nested Schema for `historical_data_retrieval`
+
+Required:
+
+- `default_duration` (Block List, Min: 1) Used by default for any SLOs connected to this data source. (see [below for nested schema](#nestedblock--historical_data_retrieval--default_duration))
+- `max_duration` (Block List, Min: 1) Defines the maximum period for which data can be retrieved. (see [below for nested schema](#nestedblock--historical_data_retrieval--max_duration))
+
+<a id="nestedblock--historical_data_retrieval--default_duration"></a>
+### Nested Schema for `historical_data_retrieval.default_duration`
+
+Required:
+
+- `unit` (String) Must be one of Minute, Hour, or Day.
+- `value` (Number) Must be an integer greater than or equal to 0.
+
+
+<a id="nestedblock--historical_data_retrieval--max_duration"></a>
+### Nested Schema for `historical_data_retrieval.max_duration`
+
+Required:
+
+- `unit` (String) Must be one of Minute, Hour, or Day.
+- `value` (Number) Must be an integer greater than or equal to 0.
+
+
 
 <a id="nestedblock--query_delay"></a>
 ### Nested Schema for `query_delay`

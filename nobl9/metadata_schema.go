@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 )
 
 const (
@@ -36,12 +36,11 @@ func schemaDisplayName() *schema.Schema {
 	}
 }
 
-//nolint:unused,deadcode
 func schemaLabels() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeList,
 		Optional:         true,
-		Description:      "[Labels](https://docs.nobl9.com/Features/labels/) containing a single key and a list of values.",
+		Description:      "[Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values.",
 		DiffSuppressFunc: diffSuppressLabels,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -66,17 +65,16 @@ func schemaLabels() *schema.Schema {
 	}
 }
 
-func validateNotEmptyString(variableName string) func(interface{}, string) ([]string, []error) {
-	return func(valueRaw interface{}, _ string) ([]string, []error) {
-		if valueRaw.(string) == "" {
-			return nil, []error{fmt.Errorf("%s must not be empty", variableName)}
-		}
-		return nil, nil
+func schemaAnnotations() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeMap,
+		Optional:    true,
+		Description: "[Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.",
+		Elem: &schema.Schema{
+			Type:     schema.TypeString,
+			Optional: true,
+		},
 	}
-}
-
-func exactlyOneStringEmpty(str1, str2 string) bool {
-	return (str1 == "" && str2 != "") || (str1 != "" && str2 == "")
 }
 
 func diffSuppressLabels(fieldPath, oldValueStr, newValueStr string, d *schema.ResourceData) bool {
@@ -174,63 +172,28 @@ func schemaDescription() *schema.Schema {
 	}
 }
 
-func marshalMetadata(d *schema.ResourceData) (n9api.MetadataHolder, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
+func getMarshaledLabels(d resourceInterface) (v1alpha.Labels, diag.Diagnostics) {
 	var labels []interface{}
 	if labelsData := d.Get("label"); labelsData != nil {
 		labels = labelsData.([]interface{})
 	}
-	var labelsMarshalled n9api.Labels
-	labelsMarshalled, diags = marshalLabels(labels)
-
-	return n9api.MetadataHolder{
-		Metadata: n9api.Metadata{
-			Name:        d.Get("name").(string),
-			DisplayName: d.Get("display_name").(string),
-			Project:     d.Get("project").(string),
-			Labels:      labelsMarshalled,
-		},
-	}, diags
+	return marshalLabels(labels)
 }
 
-func unmarshalGenericMetadata(object n9api.AnyJSONObj, d *schema.ResourceData) diag.Diagnostics {
-	var diags diag.Diagnostics
+func getMarshaledAnnotations(d resourceInterface) v1alpha.MetadataAnnotations {
+	rawAnnotations := d.Get("annotations").(map[string]interface{})
+	annotations := make(map[string]string, len(rawAnnotations))
 
-	metadata := object["metadata"].(map[string]interface{})
-	err := d.Set("name", metadata["name"])
-	diags = appendError(diags, err)
-	err = d.Set("display_name", metadata["displayName"])
-	diags = appendError(diags, err)
-
-	err = d.Set("project", metadata["project"])
-	diags = appendError(diags, err)
-
-	labelsRaw, exist := metadata["labels"]
-	if exist {
-		err = d.Set("label", unmarshalLabels(labelsRaw))
-		diags = appendError(diags, err)
+	for k, v := range rawAnnotations {
+		annotations[k] = v.(string)
 	}
 
-	return diags
+	return annotations
 }
 
-func unmarshalMetadata(metadataHolder n9api.MetadataHolder, d *schema.ResourceData) diag.Diagnostics {
+func marshalLabels(labels []interface{}) (v1alpha.Labels, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	set(d, "name", metadataHolder.Metadata.Name, &diags)
-	set(d, "display_name", metadataHolder.Metadata.DisplayName, &diags)
-	set(d, "project", metadataHolder.Metadata.Project, &diags)
-	if metadataHolder.Metadata.Labels != nil {
-		set(d, "label", metadataHolder.Metadata.Labels, &diags)
-	}
-
-	return diags
-}
-
-func marshalLabels(labels []interface{}) (n9api.Labels, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	labelsResult := make(n9api.Labels, len(labels))
+	labelsResult := make(v1alpha.Labels, len(labels))
 
 labelsLoop:
 	for _, labelRaw := range labels {
@@ -271,52 +234,18 @@ labelsLoop:
 	return labelsResult, diags
 }
 
-func unmarshalLabels(labelsRaw interface{}) interface{} {
+func unmarshalLabels(labelsRaw v1alpha.Labels) interface{} {
 	resultLabels := make([]map[string]interface{}, 0)
 
-	if labelsRaw != nil {
-		labelsMap := labelsRaw.(map[string]interface{})
-		for labelKey, labelValuesRaw := range labelsMap {
-			var labelValuesStr []string
-			for _, labelValueRaw := range labelValuesRaw.([]interface{}) {
-				labelValuesStr = append(labelValuesStr, labelValueRaw.(string))
-			}
-			labelKeyWithValues := make(map[string]interface{})
-			labelKeyWithValues["key"] = labelKey
-			labelKeyWithValues["values"] = labelValuesStr
+	for labelKey, labelValuesRaw := range labelsRaw {
+		var labelValuesStr []string
+		labelValuesStr = append(labelValuesStr, labelValuesRaw...)
+		labelKeyWithValues := make(map[string]interface{})
+		labelKeyWithValues["key"] = labelKey
+		labelKeyWithValues["values"] = labelValuesStr
 
-			resultLabels = append(resultLabels, labelKeyWithValues)
-		}
+		resultLabels = append(resultLabels, labelKeyWithValues)
 	}
 
 	return resultLabels
-}
-
-// oneElementSet implements schema.SchemaSetFunc and created only one element set.
-// Never use it for sets with more elements as new elements will override the old ones.
-func oneElementSet(_ interface{}) int {
-	return 0
-}
-
-func set(d *schema.ResourceData, key string, value interface{}, diags *diag.Diagnostics) {
-	appendError(*diags, d.Set(key, value))
-}
-
-func appendError(d diag.Diagnostics, err error) diag.Diagnostics {
-	if err != nil {
-		return append(d, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  err.Error(),
-		})
-	}
-
-	return d
-}
-
-func toStringSlice(in []interface{}) []string {
-	ret := make([]string, len(in))
-	for i, v := range in {
-		ret[i] = v.(string)
-	}
-	return ret
 }

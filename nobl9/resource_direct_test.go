@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
 )
 
 func TestAcc_Nobl9Direct(t *testing.T) {
@@ -16,14 +16,17 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 		configFunc func(string, string) string
 	}{
 		{appDynamicsDirectType, testAppDynamicsDirect},
+		{azureMonitorDirectType, testAzureMonitorDirect},
 		{bigqueryDirectType, testBigQueryDirect},
 		{cloudWatchDirectType, testCloudWatchDirect},
 		{datadogDirectType, testDatadogDirect},
 		{dynatraceDirectType, testDynatraceDirect},
 		{gcmDirectType, testGoogleCloudMonitoringDirect},
+		{honeycombDirectType, testHoneycombDirect},
 		{influxdbDirectType, testInfluxDBDirect},
 		{instanaDirectType, testInstanaDirect},
 		{lightstepDirectType, testLightstepDirect},
+		{logicMonitorDirectType, testLogicMonitorDirect},
 		{newRelicDirectType, testNewrelicDirect},
 		{pingdomDirectType, testPingdomDirect},
 		{redshiftDirectType, testRedshiftDirect},
@@ -37,9 +40,8 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 		t.Run(tc.directType, func(t *testing.T) {
 			testName := strings.ReplaceAll("test-"+tc.directType, "_", "")
 			resource.Test(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_direct_%s", n9api.ObjectDirect),
+				CheckDestroy:      CheckDestroy("nobl9_direct_%s", manifest.KindDirect),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.directType, testName),
@@ -57,12 +59,51 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   url = "https://web.net"
   account_name = "account name"
   client_secret = "secret"
   client_name = "client name"
   log_collection_enabled = true
+  release_channel = "beta"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
+}
+`, directType, name, name, testProject)
+}
+
+func testAzureMonitorDirect(directType, name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
+  tenant_id = "45e4c1ed-5b6b-4555-a693-6ab7f15f3d6e"
+  client_id = "secret"
+  client_secret = "secret"
+  log_collection_enabled = true
+  release_channel = "beta"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
   query_delay {
     unit = "Minute"
     value = 6
@@ -77,9 +118,9 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
-  service_account_key = "secret"
+  service_account_key = "{}"
   log_collection_enabled = true
+  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -94,9 +135,7 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
-  access_key_id = "secret"
-  secret_access_key = "secret"
+  role_arn = "secret"
   historical_data_retrieval {
     default_duration  {
       unit = "Day"
@@ -108,6 +147,7 @@ resource "nobl9_direct_%s" "%s" {
     }
   }
   log_collection_enabled = true
+  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -122,7 +162,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   site = "eu"
   api_key = "secret"
   application_key = "secret"
@@ -137,6 +176,7 @@ resource "nobl9_direct_%s" "%s" {
     }
   }
   log_collection_enabled = true
+  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -151,7 +191,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   url = "https://web.net"
   dynatrace_token = "secret"
   log_collection_enabled = true
@@ -165,6 +204,7 @@ resource "nobl9_direct_%s" "%s" {
       value = 0
     }
   }
+  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -179,13 +219,40 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
-  service_account_key = "secret"
+  service_account_key = "{}"
   log_collection_enabled = true
+  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
   }
+}
+`, directType, name, name, testProject)
+}
+
+func testHoneycombDirect(directType, name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_direct_%s" "%s" {
+	name = "%s"
+	project = "%s"
+	description = "desc"
+	api_key = "secret"
+	log_collection_enabled = true
+	release_channel = "beta"
+	historical_data_retrieval {
+	  default_duration  {
+		unit = "Day"
+		value = 7
+	  }
+	  max_duration {
+		unit = "Day"
+		value = 7
+	  }
+	}
+	query_delay {
+	  unit = "Minute"
+	  value = 6
+	}
 }
 `, directType, name, name, testProject)
 }
@@ -196,11 +263,11 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   url = "https://web.net"
   api_token = "secret"
   organization_id = "secret"
   log_collection_enabled = true
+  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -215,10 +282,10 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   url = "https://web.net"
   api_token = "secret"
   log_collection_enabled = true
+  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -233,9 +300,9 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   lightstep_organization = "acme"
   lightstep_project = "project1"
+  url = "https://api.lightstep.com"
   app_token = "secret"
   historical_data_retrieval {
     default_duration  {
@@ -248,6 +315,26 @@ resource "nobl9_direct_%s" "%s" {
     }
   }
   log_collection_enabled = true
+  release_channel = "stable"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
+}
+`, directType, name, name, testProject)
+}
+
+func testLogicMonitorDirect(directType, name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
+  account = "account_name"
+  account_id = "secret"
+  access_key = "secret"
+  log_collection_enabled = true
+  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
@@ -262,7 +349,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   account_id = "1234"
   insights_query_key = "NRIQ-secret"
   log_collection_enabled = true
@@ -276,6 +362,7 @@ resource "nobl9_direct_%s" "%s" {
       value = 10
     }
   }
+  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -290,9 +377,9 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   api_token = "secret"
   log_collection_enabled = true
+  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -307,11 +394,10 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   secret_arn = "aws:arn"
-  access_key_id = "secret"
-  secret_access_key = "secret"
+  role_arn = "secret"
   log_collection_enabled = true
+  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -326,7 +412,6 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   url = "https://web.net"
   access_token = "secret"
   log_collection_enabled = true
@@ -340,6 +425,7 @@ resource "nobl9_direct_%s" "%s" {
       value = 10
     }
   }
+  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -354,9 +440,9 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   realm = "eu"
   access_token = "secret"
+  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -371,11 +457,11 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics"]
-  url = "http://web.net"
+  url = "https://web.net"
   access_id = "secret"
   access_key = "secret"
   log_collection_enabled = true
+  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6
@@ -390,9 +476,9 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  source_of = ["Metrics", "Services"]
   oauth_bearer_token = "secret"
   log_collection_enabled = true
+  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6

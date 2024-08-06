@@ -1,7 +1,10 @@
 package nobl9
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"net/url"
 	"os"
 	"testing"
 
@@ -9,7 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/sdk"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 //nolint:gochecknoglobals
@@ -21,6 +26,9 @@ var (
 //nolint:gochecknoinits
 func init() {
 	testProject = os.Getenv("NOBL9_PROJECT")
+	if testProject == "" {
+		testProject = "default"
+	}
 }
 
 func ProviderFactory() map[string]func() (*schema.Provider, error) {
@@ -38,30 +46,6 @@ func TestProvider(t *testing.T) {
 	}
 }
 
-func testAccPreCheck(t *testing.T) {
-	if err := os.Getenv("NOBL9_URL"); err == "" {
-		t.Fatal("NOBL9_URL must be set for acceptance tests")
-	}
-	if err := os.Getenv("NOBL9_ORG"); err == "" {
-		t.Fatal("NOBL9_ORG must be set for acceptance tests")
-	}
-	if err := os.Getenv("NOBL9_PROJECT"); err == "" {
-		t.Fatal("NOBL9_PROJECT must be set for acceptance tests")
-	}
-	if err := os.Getenv("NOBL9_CLIENT_ID"); err == "" {
-		t.Fatal("NOBL9_CLIENT_ID must be set for acceptance tests")
-	}
-	if err := os.Getenv("NOBL9_CLIENT_SECRET"); err == "" {
-		t.Fatal("NOBL9_CLIENT_SECRET must be set for acceptance tests")
-	}
-	if err := os.Getenv("NOBL9_OKTA_URL"); err == "" {
-		t.Fatal("NOBL9_OKTA_URL must be set for acceptance tests")
-	}
-	if err := os.Getenv("NOBL9_OKTA_AUTH"); err == "" {
-		t.Fatal("NOBL9_OKTA_AUTH must be set for acceptance tests")
-	}
-}
-
 func CheckObjectCreated(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
@@ -75,22 +59,42 @@ func CheckObjectCreated(name string) resource.TestCheckFunc {
 	}
 }
 
-func CheckDestroy(rsType string, objectType n9api.Object) func(s *terraform.State) error {
+func CheckStateContainData(key string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[key]
+		if !ok {
+			return fmt.Errorf("not found: %s", key)
+		}
+		if len(rs.String()) == 0 {
+			return fmt.Errorf("data not set")
+		}
+		return nil
+	}
+}
+
+func CheckDestroy(rsType string, kind manifest.Kind) func(s *terraform.State) error {
 	return func(s *terraform.State) error {
 		config, ok := testProvider.Meta().(ProviderConfig)
 		if !ok {
 			return fmt.Errorf("could not cast data to ProviderConfig")
 		}
-		client, ds := getClient(config, testProject)
+		client, ds := getClient(config)
 		if ds.HasError() {
 			return fmt.Errorf("unable create client when deleting objects")
 		}
 
+		ctx := context.Background()
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != rsType {
 				continue
 			}
-			if _, err := client.GetObject(objectType, "", rs.Primary.ID); err != nil {
+
+			if _, err := client.Objects().V1().Get(
+				ctx,
+				kind,
+				http.Header{sdk.HeaderProject: []string{testProject}},
+				url.Values{v1Objects.QueryKeyName: []string{rs.Primary.ID}},
+			); err != nil {
 				return err
 			}
 		}

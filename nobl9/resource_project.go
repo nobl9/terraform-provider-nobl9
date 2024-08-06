@@ -5,8 +5,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
+	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
 
 func resourceProject() *schema.Resource {
@@ -16,7 +17,9 @@ func resourceProject() *schema.Resource {
 			"display_name": schemaDisplayName(),
 			"description":  schemaDescription(),
 			"label":        schemaLabels(),
+			"annotations":  schemaAnnotations(),
 		},
+		CustomizeDiff: resourceProjectValidate,
 		CreateContext: resourceProjectApply,
 		UpdateContext: resourceProjectApply,
 		DeleteContext: resourceProjectDelete,
@@ -28,31 +31,29 @@ func resourceProject() *schema.Resource {
 	}
 }
 
-func marshalProject(d *schema.ResourceData) (*n9api.Project, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	var labels []interface{}
-	if labelsData := d.Get("label"); labelsData != nil {
-		labels = labelsData.([]interface{})
+func marshalProject(d resourceInterface) (*v1alphaProject.Project, diag.Diagnostics) {
+	labelsMarshaled, diags := getMarshaledLabels(d)
+	if diags.HasError() {
+		return nil, diags
 	}
-	var labelsMarshalled n9api.Labels
-	labelsMarshalled, diags = marshalLabels(labels)
 
-	return &n9api.Project{
-		APIVersion: n9api.APIVersion,
-		Kind:       n9api.KindProject,
-		Metadata: n9api.ProjectMetadata{
+	annotationsMarshaled := getMarshaledAnnotations(d)
+
+	project := v1alphaProject.New(
+		v1alphaProject.Metadata{
 			Name:        d.Get("name").(string),
 			DisplayName: d.Get("display_name").(string),
-			Labels:      labelsMarshalled,
+			Labels:      labelsMarshaled,
+			Annotations: annotationsMarshaled,
 		},
-		Spec: n9api.ProjectSpec{
+		v1alphaProject.Spec{
 			Description: d.Get("description").(string),
 		},
-	}, diags
+	)
+	return &project, diags
 }
 
-func unmarshalProject(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.Diagnostics {
+func unmarshalProject(d *schema.ResourceData, objects []v1alphaProject.Project) diag.Diagnostics {
 	if len(objects) != 1 {
 		d.SetId("")
 		return nil
@@ -60,72 +61,84 @@ func unmarshalProject(d *schema.ResourceData, objects []n9api.AnyJSONObj) diag.D
 	object := objects[0]
 	var diags diag.Diagnostics
 
-	metadata := object["metadata"].(map[string]interface{})
-	err := d.Set("name", metadata["name"])
+	metadata := object.Metadata
+	err := d.Set("name", metadata.Name)
 	diags = appendError(diags, err)
-	err = d.Set("display_name", metadata["displayName"])
-	diags = appendError(diags, err)
-	err = d.Set("label", unmarshalLabels(metadata["labels"]))
+	err = d.Set("display_name", metadata.DisplayName)
 	diags = appendError(diags, err)
 
-	spec := object["spec"].(map[string]interface{})
-	err = d.Set("description", spec["description"])
+	if labelsRaw := metadata.Labels; len(labelsRaw) > 0 {
+		err = d.Set("label", unmarshalLabels(labelsRaw))
+		diags = appendError(diags, err)
+	}
+
+	if len(metadata.Annotations) > 0 {
+		err = d.Set("annotations", metadata.Annotations)
+		diags = appendError(diags, err)
+	}
+
+	spec := object.Spec
+	err = d.Set("description", spec.Description)
 	diags = appendError(diags, err)
 
 	return diags
 }
 
+func resourceProjectValidate(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	project, diags := marshalProject(diff)
+	if diags.HasError() {
+		return diagsToSingleError(diags)
+	}
+	errs := manifest.Validate([]manifest.Object{project})
+	if errs != nil {
+		return formatErrorsAsSingleError(errs)
+	}
+	return nil
+}
+
 func resourceProjectApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, "")
+	client, ds := getClient(config)
 	if ds != nil {
 		return ds
 	}
-
-	ap, diags := marshalProject(d)
+	project, diags := marshalProject(d)
 	if diags.HasError() {
 		return diags
 	}
-
-	var p n9api.Payload
-	p.AddObject(ap)
-
-	err := client.ApplyObjects(p.GetObjects())
+	resultProject := manifest.SetDefaultProject([]manifest.Object{project}, config.Project)
+	err := client.Objects().V1().Apply(ctx, resultProject)
 	if err != nil {
 		return diag.Errorf("could not add project: %s", err.Error())
 	}
-
-	d.SetId(ap.Metadata.Name)
-
+	d.SetId(project.Metadata.Name)
 	return resourceProjectRead(ctx, d, meta)
 }
 
-func resourceProjectRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, "")
-	if ds.HasError() {
+	client, ds := getClient(config)
+	if ds != nil {
 		return ds
 	}
-
-	objects, err := client.GetObject(n9api.ObjectProject, "", d.Id())
+	projects, err := client.Objects().V1().GetV1alphaProjects(ctx, v1Objects.GetProjectsRequest{
+		Names: []string{d.Id()},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	return unmarshalProject(d, objects)
+	return unmarshalProject(d, projects)
 }
 
-func resourceProjectDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(ProviderConfig)
-	client, ds := getClient(config, "")
-	if ds.HasError() {
+	client, ds := getClient(config)
+	if ds != nil {
 		return ds
 	}
-
-	err := client.DeleteObjectsByName(n9api.ObjectProject, d.Id())
+	err := client.Objects().V1().DeleteByName(ctx, manifest.KindProject, "", d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	return nil
 }

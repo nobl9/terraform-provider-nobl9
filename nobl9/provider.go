@@ -2,12 +2,14 @@ package nobl9
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"sync"
-
-	"github.com/nobl9/nobl9-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/nobl9/nobl9-go/sdk"
 )
 
 //nolint:gochecknoglobals,revive
@@ -19,20 +21,20 @@ func Provider() *schema.Provider {
 			"ingest_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_URL", "https://app.nobl9.com/api"),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_URL", nil),
 				Description: "Nobl9 API URL.",
 			},
 
 			"organization": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_ORG", nil),
 				Description: "Nobl9 [Organization ID](https://docs.nobl9.com/API_Documentation/api-endpoints-for-slo-annotations/#common-headers) that contains resources managed by the Nobl9 Terraform provider.",
 			},
 
 			"project": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_PROJECT", nil),
 				Description: "Nobl9 project used when importing resources.",
 			},
@@ -55,19 +57,22 @@ func Provider() *schema.Provider {
 			"okta_org_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_URL", "https://accounts.nobl9.com"),
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_URL", nil),
 				Description: "Authorization service URL.",
 			},
 
 			"okta_auth_server": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_AUTH", "auseg9kiegWKEtJZC416"),
+				Type:     schema.TypeString,
+				Optional: true,
+				//cspell:ignore auseg9kiegWKEtJZC416
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_AUTH", nil),
 				Description: "Authorization service configuration.",
 			},
 		},
 
-		DataSourcesMap: map[string]*schema.Resource{},
+		DataSourcesMap: map[string]*schema.Resource{
+			"nobl9_aws_iam_role_external_id": dataSourceAWSIAMRoleAuthExternalID(),
+		},
 
 		ResourcesMap: map[string]*schema.Resource{
 			"nobl9_service":                                 resourceService(),
@@ -83,14 +88,17 @@ func Provider() *schema.Provider {
 			"nobl9_alert_method_msteams":                    resourceAlertMethodFactory(alertMethodTeams{}),
 			"nobl9_alert_method_email":                      resourceAlertMethodFactory(alertMethodEmail{}),
 			"nobl9_direct_" + appDynamicsDirectType:         resourceDirectFactory(appDynamicsDirectSpec{}),
+			"nobl9_direct_" + azureMonitorDirectType:        resourceDirectFactory(azureMonitorDirectSpec{}),
 			"nobl9_direct_" + bigqueryDirectType:            resourceDirectFactory(bigqueryDirectSpec{}),
 			"nobl9_direct_" + cloudWatchDirectType:          resourceDirectFactory(cloudWatchDirectSpec{}),
 			"nobl9_direct_" + datadogDirectType:             resourceDirectFactory(datadogDirectSpec{}),
 			"nobl9_direct_" + dynatraceDirectType:           resourceDirectFactory(dynatraceDirectSpec{}),
 			"nobl9_direct_" + gcmDirectType:                 resourceDirectFactory(gcmDirectSpec{}),
+			"nobl9_direct_" + honeycombDirectType:           resourceDirectFactory(honeycombDirectSpec{}),
 			"nobl9_direct_" + influxdbDirectType:            resourceDirectFactory(influxdbDirectSpec{}),
 			"nobl9_direct_" + instanaDirectType:             resourceDirectFactory(instanaDirectSpec{}),
 			"nobl9_direct_" + lightstepDirectType:           resourceDirectFactory(lightstepDirectSpec{}),
+			"nobl9_direct_" + logicMonitorDirectType:        resourceDirectFactory(logicMonitorDirectSpec{}),
 			"nobl9_direct_" + newRelicDirectType:            resourceDirectFactory(newRelicDirectSpec{}),
 			"nobl9_direct_" + pingdomDirectType:             resourceDirectFactory(pingdomDirectSpec{}),
 			"nobl9_direct_" + redshiftDirectType:            resourceDirectFactory(redshiftDirectSpec{}),
@@ -101,6 +109,7 @@ func Provider() *schema.Provider {
 			"nobl9_project":                                 resourceProject(),
 			"nobl9_role_binding":                            resourceRoleBinding(),
 			"nobl9_slo":                                     resourceSLO(),
+			"nobl9_budget_adjustment":                       budgetAdjustment(),
 		},
 
 		ConfigureContextFunc: providerConfigure,
@@ -133,46 +142,49 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 
 //nolint:gochecknoglobals
 var (
-	// The N9 TF Provider supports the creation of project kind. This means that the project can be different (or even
-	// missing during TF import) between requests to the N9 API. The N9 SDK requires a project to be passed when
-	// creating a new API client, and reuses this project for each call. To avoid breaking the current SDK interface,
-	// provider creates the client per project.
-	clients   = make(map[string]*nobl9.Client)
-	clientErr error
-	mu        sync.Mutex
+	sharedClient *sdk.Client
+	once         sync.Once
 )
 
-func getClient(config ProviderConfig, project string) (*nobl9.Client, diag.Diagnostics) {
-	var newClient = func() (*nobl9.Client, error) {
-		return nobl9.NewClient(
-			config.IngestURL,
-			config.Organization,
-			project,
-			"terraform-"+Version,
-			config.ClientID,
-			config.ClientSecret,
-			config.OktaOrgURL,
-			config.OktaAuthServer,
-		)
-	}
-	mu.Lock()
-	defer mu.Unlock()
-
-	client, clientInitialized := clients[project]
-	if !clientInitialized {
-		client, clientErr = newClient()
-		clients[project] = client
-	}
-
-	if clientErr != nil {
-		return nil, diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Unable to create Nobl9 client",
-				Detail:   clientErr.Error(),
-			},
+//nolint:unparam
+func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	once.Do(func() {
+		options := []sdk.ConfigOption{
+			sdk.ConfigOptionWithCredentials(providerConfig.ClientID, providerConfig.ClientSecret),
+			sdk.ConfigOptionNoConfigFile(),
+			sdk.ConfigOptionEnvPrefix("TERRAFORM_NOBL9_"),
 		}
-	}
-
-	return client, nil
+		sdkConfig, err := sdk.ReadConfig(options...)
+		if err != nil {
+			panic(err)
+		}
+		if providerConfig.IngestURL != "" {
+			sdkConfig.URL, err = url.Parse(providerConfig.IngestURL)
+			if err != nil {
+				panic(err)
+			}
+		}
+		if providerConfig.Organization != "" {
+			sdkConfig.Organization = providerConfig.Organization
+		}
+		if providerConfig.Project != "" {
+			sdkConfig.Project = providerConfig.Project
+		}
+		if providerConfig.OktaOrgURL != "" {
+			sdkConfig.OktaOrgURL, err = url.Parse(providerConfig.OktaOrgURL)
+			if err != nil {
+				panic(err)
+			}
+		}
+		if providerConfig.OktaAuthServer != "" {
+			sdkConfig.OktaAuthServer = providerConfig.OktaAuthServer
+		}
+		sharedClient, err = sdk.NewClient(sdkConfig)
+		if err != nil {
+			panic(err)
+		}
+		sharedClient.SetUserAgent(fmt.Sprintf("terraform-%s", Version))
+	})
+	return sharedClient, diags
 }

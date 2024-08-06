@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_direct_redshift (Resource)
 
-Amazon Redshift is a managed scalable database warehouse where Nobl9 users can store their metrics information. Nobl9 connects with Amazon Redshift to collect SLI measurements and compare them to SLO targets.
+Amazon Redshift is a managed scalable database warehouse where Nobl9 users can store their metrics information. Nobl9 connects to Amazon Redshift for SLI measurement collection and comparison with SLO targets.
 
 For more information, refer to [Amazon Redshift Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/?_highlight=redshift#amazon-redshift-direct).
 
@@ -17,10 +17,8 @@ resource "nobl9_direct_redshift" "test-redshift" {
   name                   = "test-redshift"
   project                = "terraform"
   description            = "desc"
-  source_of              = ["Metrics", "Services"]
   secret_arn             = "aws:arn"
-  access_key_id          = "secret"
-  secret_access_key      = "secret"
+  role_arn               = "secret"
   log_collection_enabled = true
 }
 ```
@@ -32,17 +30,17 @@ resource "nobl9_direct_redshift" "test-redshift" {
 
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `source_of` (List of String) Source of Metrics and/or Services.
 
 ### Optional
 
-- `access_key_id` (String, Sensitive) [required] | AWS Access Key ID.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/Features/SLO_troubleshooting/event-logs)
-- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/Features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
-- `secret_access_key` (String, Sensitive) [required] | AWS Secret Access Key.
+- `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/features/slo-troubleshooting/event-logs)
+- `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
+- `release_channel` (String) Release channel of the created data source [stable/beta]
+- `role_arn` (String, Sensitive) [required] | ARN of the AWS IAM Role to assume.
 - `secret_arn` (String, Sensitive) AWS Secret ARN.
+- `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only
 

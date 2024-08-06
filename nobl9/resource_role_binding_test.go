@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
 )
 
 func TestAcc_Nobl9RoleBinding(t *testing.T) {
@@ -19,14 +19,15 @@ func TestAcc_Nobl9RoleBinding(t *testing.T) {
 		// this test is skipped for now because: deleting organizational role bindings is not allowed
 		// {"org-role-binding", testOrganizationRoleBindingConfig},
 		{"role-binding-without-name", testRoleBindingWithoutName},
+		{"role-binding-without-user", testRoleBindingWithoutUser},
+		{"role-binding-without-group", testRoleBindingWithoutGroup},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.ParallelTest(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_role_binding", n9api.ObjectRoleBinding),
+				CheckDestroy:      CheckDestroy("nobl9_role_binding", manifest.KindRoleBinding),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
@@ -38,12 +39,11 @@ func TestAcc_Nobl9RoleBinding(t *testing.T) {
 	}
 }
 
-//nolint:unused
 func testProjectRoleBindingConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
   name        = "%s"
-  user        = "00u3lognksvI7G1r54x7xx"
+  user        = "test"
   role_ref    = "project-owner"
   project_ref = "%s"
 }
@@ -55,17 +55,36 @@ func testOrganizationRoleBindingConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
   name        = "%s"
-  user        = "00u3lognksvI7G1r54x7xx"
+  user        = "test"
   role_ref    = "organization-admin"
 }
 `, name, name)
 }
 
-//nolint:unused
 func testRoleBindingWithoutName(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
-  user        = "00u3lognksvI7G1r54x7xx"
+  user        = "test"
+  role_ref    = "project-owner"
+  project_ref = "%s"
+}
+`, name, testProject)
+}
+
+func testRoleBindingWithoutUser(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_role_binding" "%s" {
+  group_ref   = "group_xyzabc"
+  role_ref    = "project-owner"
+  project_ref = "%s"
+}
+`, name, testProject)
+}
+
+func testRoleBindingWithoutGroup(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_role_binding" "%s" {
+  user        = "test"
   role_ref    = "project-owner"
   project_ref = "%s"
 }

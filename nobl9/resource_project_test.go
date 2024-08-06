@@ -6,16 +6,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	n9api "github.com/nobl9/nobl9-go"
+	"github.com/nobl9/nobl9-go/manifest"
 )
 
 func TestAcc_Nobl9Project(t *testing.T) {
 	name := "test-project"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: ProviderFactory(),
-		CheckDestroy:      CheckDestroy("nobl9_project", n9api.ObjectProject),
+		CheckDestroy:      CheckDestroy("nobl9_project", manifest.KindProject),
 		Steps: []resource.TestStep{
 			{
 				Config: testProjectConfig(name),
@@ -33,11 +32,10 @@ func TestAcc_NewNobl9ProjectReference(t *testing.T) {
 	name := "test-project"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: ProviderFactory(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			CheckDestroy("nobl9_agent", n9api.ObjectAgent),
-			CheckDestroy("nobl9_project", n9api.ObjectProject),
+			CheckDestroy("nobl9_agent", manifest.KindAgent),
+			CheckDestroy("nobl9_project", manifest.KindProject),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -50,8 +48,8 @@ func TestAcc_NewNobl9ProjectReference(t *testing.T) {
 					resource "nobl9_agent" "%s" {
 					 name      = "%s"
 					 project   = nobl9_project.%s.name
-					 source_of = ["Metrics", "Services"]
 					 agent_type = "bigquery"
+					 release_channel = "stable"
 					 query_delay {
 						unit = "Second"
 						value = 0
@@ -82,6 +80,11 @@ resource "nobl9_project" "%s" {
   label {
     key    = "env"
     values = ["dev", "staging", "prod"]
+  }
+
+  annotations = {
+    env  = "development"
+    name = "example annotation"
   }
 }
 `, name, name, name)

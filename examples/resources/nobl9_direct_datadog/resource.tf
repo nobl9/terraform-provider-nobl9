@@ -2,7 +2,6 @@ resource "nobl9_direct_datadog" "test-datadog" {
   name                   = "test-datadog"
   project                = "terraform"
   description            = "desc"
-  source_of              = ["Metrics", "Services"]
   site                   = "eu"
   api_key                = "secret"
   application_key        = "secret"

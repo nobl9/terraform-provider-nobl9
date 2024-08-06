@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+The budget adjustment feature allows you to define future periods where planned maintenance, releases, and similar activities won't affect your budget in specific SLOs.
+
+For more details, refer to the {{ .Description | trimspace }}.
+
+## Example Usage
+
+Here's an example of Budget Adjustment resource configuration:
+
+{{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Useful Links
+
+[Budget Adjustment configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#budget-adjustment)
