@@ -85,7 +85,7 @@ func schemaCompositeDeprecated() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeSet,
 		Optional:    true,
-		Description: "[Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo)",
+		Description: "(\"composite\" is deprecated, use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo)",
 		Deprecated:  "\"composite\" is deprecated, use \"objective.composite\" instead.",
 		MaxItems:    1,
 		Elem: &schema.Resource{
@@ -98,7 +98,8 @@ func schemaCompositeDeprecated() *schema.Schema {
 				"burn_rate_condition": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: "Condition when the Composite SLO’s error budget is burning.",
+					Description: "(\"burn_rate_condition\" is part of deprecated composites 1.0, use [composites 2.0](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) Condition when the Composite SLO’s error budget is burning.",
+					Deprecated:  "\"burn_rate_condition\" is part of deprecated composites 1.0, use composites 2.0 (https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"op": {

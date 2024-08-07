@@ -124,13 +124,14 @@ resource "nobl9_slo" "slo_2" {
   }
 }
 
+# Composite 2.0 example.
 resource "nobl9_slo" "composite_slo" {
   name             = "${nobl9_project.this.name}-composite"
   service          = nobl9_service.this.name
   budgeting_method = "Occurrences"
   project          = nobl9_project.this.name
 
-  # List the names of component SLOs your composite must include
+  # List the names of component SLOs your composite 2.0 must include
   depends_on = [nobl9_slo.slo_1, nobl9_slo.slo_2]
 
   time_window {
