@@ -20,6 +20,7 @@ func resourceComposite() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Objectives to be assembled in your composite SLO.",
+				MaxItems:    1,
 				Elem:        resourceCompositeComponents(),
 			},
 		},
@@ -33,6 +34,7 @@ func resourceCompositeComponents() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "An additional nesting for the components of your composite SLO.",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"composite_objective": {
