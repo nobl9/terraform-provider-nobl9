@@ -164,7 +164,6 @@ resource "nobl9_slo" "composite_slo" {
     display_name = "OK"
     name         = "tf-objective-1"
     target       = 0.8
-    value        = 1
     composite {
       max_delay = "45m"
       components {
@@ -225,7 +224,6 @@ resource "nobl9_slo" "composite_slo" {
 Required:
 
 - `target` (Number) Designated value.
-- `value` (Number) Value.
 
 Optional:
 
@@ -237,6 +235,7 @@ Optional:
 - `primary` (Boolean) Is objective marked as primary.
 - `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
 - `time_slice_target` (Number) Designated value for slice.
+- `value` (Number) Value.
 
 <a id="nestedblock--objective--composite"></a>
 ### Nested Schema for `objective.composite`
