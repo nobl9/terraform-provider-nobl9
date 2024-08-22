@@ -144,7 +144,7 @@ func resourceObjective() *schema.Resource {
 			},
 			"value": {
 				Type:        schema.TypeFloat,
-				Required:    true,
+				Optional:    false,
 				Description: "Value.",
 			},
 			"name": {
@@ -545,7 +545,10 @@ func marshalObjectives(d *schema.ResourceData) ([]v1alphaSLO.Objective, diag.Dia
 	objectives := make([]v1alphaSLO.Objective, len(objectivesSchema))
 	for i, o := range objectivesSchema {
 		objective := o.(map[string]interface{})
-		value := objective["value"].(float64)
+		var valuePtr *float64
+		if value, ok := objective["value"].(float64); ok {
+			valuePtr = &value
+		}
 		target := objective["target"].(float64)
 		timeSliceTarget := objective["time_slice_target"].(float64)
 		var timeSliceTargetPtr *float64
@@ -562,7 +565,7 @@ func marshalObjectives(d *schema.ResourceData) ([]v1alphaSLO.Objective, diag.Dia
 		objectives[i] = v1alphaSLO.Objective{
 			ObjectiveBase: v1alphaSLO.ObjectiveBase{
 				DisplayName: objective["display_name"].(string),
-				Value:       &value,
+				Value:       valuePtr,
 				Name:        objective["name"].(string),
 			},
 			BudgetTarget:    &target,
@@ -803,7 +806,9 @@ func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 		objectiveTF["name"] = objective.Name
 		objectiveTF["display_name"] = objective.DisplayName
 		objectiveTF["op"] = objective.Operator
-		objectiveTF["value"] = objective.Value
+		if objective.Value != nil {
+			objectiveTF["value"] = objective.Value
+		}
 		objectiveTF["target"] = objective.BudgetTarget
 		objectiveTF["time_slice_target"] = objective.TimeSliceTarget
 		objectiveTF["primary"] = objective.Primary

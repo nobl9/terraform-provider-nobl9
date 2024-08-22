@@ -144,7 +144,6 @@ resource "nobl9_slo" "composite_slo" {
     display_name = "OK"
     name         = "tf-objective-1"
     target       = 0.8
-    value        = 1
     composite {
       max_delay = "45m"
       components {
