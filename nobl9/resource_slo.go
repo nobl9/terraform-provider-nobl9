@@ -144,7 +144,7 @@ func resourceObjective() *schema.Resource {
 			},
 			"value": {
 				Type:        schema.TypeFloat,
-				Optional:    false,
+				Optional:    true,
 				Description: "Value.",
 			},
 			"name": {
