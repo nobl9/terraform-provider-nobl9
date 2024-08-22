@@ -575,6 +575,7 @@ func (s gcmDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+	setHistoricalDataRetrievalSchema(gcmSchema)
 	setLogCollectionSchema(gcmSchema)
 
 	return gcmSchema
@@ -842,8 +843,8 @@ func (s logicMonitorDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+	setHistoricalDataRetrievalSchema(logicMonitorSchema)
 	setLogCollectionSchema(logicMonitorSchema)
-	// TODO: setHistoricalDataRetrievalSchema(logicMonitorSchema)
 
 	return logicMonitorSchema
 }
