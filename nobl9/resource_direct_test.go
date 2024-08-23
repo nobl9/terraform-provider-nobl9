@@ -21,6 +21,7 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 		{cloudWatchDirectType, testCloudWatchDirect},
 		{datadogDirectType, testDatadogDirect},
 		{dynatraceDirectType, testDynatraceDirect},
+		{gcmDirectType, testGoogleCloudMonitoringDirect},
 		{honeycombDirectType, testHoneycombDirect},
 		{influxdbDirectType, testInfluxDBDirect},
 		{instanaDirectType, testInstanaDirect},
@@ -201,6 +202,33 @@ resource "nobl9_direct_%s" "%s" {
     max_duration {
       unit = "Day"
       value = 0
+    }
+  }
+  release_channel = "stable"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
+}
+`, directType, name, name, testProject)
+}
+
+func testGoogleCloudMonitoringDirect(directType, name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
+  service_account_key = "{ \"key\": \"secret\" }"
+  log_collection_enabled = true
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
     }
   }
   release_channel = "stable"
