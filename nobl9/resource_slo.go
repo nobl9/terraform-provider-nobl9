@@ -120,6 +120,7 @@ func resourceObjective() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "An assembly of objectives from different SLOs reflecting their combined performance.",
+				MaxItems:    1,
 				Elem:        resourceComposite(),
 			},
 			"display_name": {
