@@ -152,8 +152,10 @@ func resourceObjective() *schema.Resource {
 				// in Nobl9 SDK. In Terraform SDKv2 this is the only way to determine if the value was set or not:
 				// https://discuss.hashicorp.com/t/how-to-tell-if-sub-structure-attributes-are-set-in-the-resource/46491
 				// This will become easier to handle when migrating to Terraform Framework.
-				Default:     sloSpecObjectiveValueNotSetSentinel,
-				Description: "Value.",
+				Default: sloSpecObjectiveValueNotSetSentinel,
+				Description: "Value. Should be omitted for objectives using `composite` section. Can be omitted for" +
+					" objectives using `count_metrics` section. Is required for objectives using `raw_metric` section." +
+					" Must be unique in a scope of SLO if that SLO has multiple objectives.",
 			},
 			"name": {
 				Type:        schema.TypeString,

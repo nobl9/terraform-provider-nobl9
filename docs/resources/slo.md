@@ -235,7 +235,7 @@ Optional:
 - `primary` (Boolean) Is objective marked as primary.
 - `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
 - `time_slice_target` (Number) Designated value for slice.
-- `value` (Number) Value.
+- `value` (Number) Value. Should be omitted for objectives using `composite` section. Can be omitted for objectives using `count_metrics` section. Is required for objectives using `raw_metric` section. Must be unique in a scope of SLO if that SLO has multiple objectives.
 
 <a id="nestedblock--objective--composite"></a>
 ### Nested Schema for `objective.composite`
