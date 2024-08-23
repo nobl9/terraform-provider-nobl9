@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"regexp"
 	"sort"
@@ -20,6 +21,8 @@ import (
 
 	"github.com/nobl9/nobl9-go/manifest"
 )
+
+const sloSpecObjectiveValueNotSetSentinel = math.SmallestNonzeroFloat64
 
 func resourceSLO() *schema.Resource {
 	return &schema.Resource{
@@ -143,8 +146,13 @@ func resourceObjective() *schema.Resource {
 				Description: "Designated value for slice.",
 			},
 			"value": {
-				Type:        schema.TypeFloat,
-				Optional:    true,
+				Type:     schema.TypeFloat,
+				Optional: true,
+				// This is a sentinel value which is used to determine if the value was set or not. It is set to nil
+				// in Nobl9 SDK. In Terraform SDKv2 this is the only way to determine if the value was set or not:
+				// https://discuss.hashicorp.com/t/how-to-tell-if-sub-structure-attributes-are-set-in-the-resource/46491
+				// This will become easier to handle when migrating to Terraform Framework.
+				Default:     sloSpecObjectiveValueNotSetSentinel,
 				Description: "Value.",
 			},
 			"name": {
@@ -340,8 +348,7 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 	resultSlo := manifest.SetDefaultProject([]manifest.Object{slo}, config.Project)
 
 	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *retry.RetryError {
-		err := client.Objects().V1().Apply(ctx, resultSlo)
-		if err != nil {
+		if err := client.Objects().V1().Apply(ctx, resultSlo); err != nil {
 			if errors.Is(err, errConcurrencyIssue) {
 				return retry.RetryableError(err)
 			}
@@ -541,12 +548,14 @@ func marshalIndicator(d *schema.ResourceData) *v1alphaSLO.Indicator {
 }
 
 func marshalObjectives(d *schema.ResourceData) ([]v1alphaSLO.Objective, diag.Diagnostics) {
-	objectivesSchema := d.Get("objective").(*schema.Set).List()
+	objectivesSchemaSet := d.Get("objective").(*schema.Set)
+	objectivesSchema := objectivesSchemaSet.List()
 	objectives := make([]v1alphaSLO.Objective, len(objectivesSchema))
 	for i, o := range objectivesSchema {
 		objective := o.(map[string]interface{})
 		var valuePtr *float64
-		if value, ok := objective["value"].(float64); ok {
+		value := objective["value"].(float64)
+		if value != sloSpecObjectiveValueNotSetSentinel {
 			valuePtr = &value
 		}
 		target := objective["target"].(float64)
@@ -806,7 +815,9 @@ func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 		objectiveTF["name"] = objective.Name
 		objectiveTF["display_name"] = objective.DisplayName
 		objectiveTF["op"] = objective.Operator
-		if objective.Value != nil {
+		if objective.Value == nil {
+			objectiveTF["value"] = sloSpecObjectiveValueNotSetSentinel
+		} else {
 			objectiveTF["value"] = objective.Value
 		}
 		objectiveTF["target"] = objective.BudgetTarget
