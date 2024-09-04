@@ -120,8 +120,13 @@ Required:
 
 Required:
 
-- `site` (String) `com` or `eu`, Datadog SaaS instance, which corresponds to one of Datadog's two locations (https://www.datadoghq.com/ in the U.S. or https://datadoghq.eu/ in the European Union)
-
+- `site` (String) Datadog SaaS instance that corresponds to one of Datadog's available locations (see [Datadog docs](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site) for an up to date list):
+    - `datadoghq.com` (formerly referred to as `com`)
+    - `us3.datadoghq.com`
+    - `us5.datadoghq.com`
+    - `datadoghq.eu` (formerly referred to as `eu`)
+    - `ddog-gov.com`
+    - `ap1.datadoghq.com`
 
 <a id="nestedblock--dynatrace_config"></a>
 ### Nested Schema for `dynatrace_config`
