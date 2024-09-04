@@ -475,8 +475,10 @@ func (s datadogDirectSpec) GetSchema() map[string]*schema.Schema {
 	datadogSchema := map[string]*schema.Schema{
 		"site": {
 			Type: schema.TypeString,
-			Description: "Datadog SaaS instance that corresponds to one of Datadog's available locations" +
-				" (see [Datadog docs](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site) for an up to date list):\n" +
+			Description: "Datadog SaaS instance that corresponds to one of Datadog's available locations " +
+				"(see " +
+				"[Datadog docs](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site)" +
+				"for an up to date list):\n" +
 				"  - `datadoghq.com` (formerly referred to as `com`)\n" +
 				"  - `us3.datadoghq.com`\n" +
 				"  - `us5.datadoghq.com`\n" +

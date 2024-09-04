@@ -597,8 +597,10 @@ func schemaAgentDatadog() map[string]*schema.Schema {
 				"site": {
 					Type:     schema.TypeString,
 					Required: true,
-					Description: "Datadog SaaS instance that corresponds to one of Datadog's available locations" +
-						" (see [Datadog docs](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site) for an up to date list):\n" +
+					Description: "Datadog SaaS instance that corresponds to one of Datadog's available locations " +
+						"(see " +
+						"[Datadog docs](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site)" +
+						"for an up to date list):\n" +
 						"  - `datadoghq.com` (formerly referred to as `com`)\n" +
 						"  - `us3.datadoghq.com`\n" +
 						"  - `us5.datadoghq.com`\n" +

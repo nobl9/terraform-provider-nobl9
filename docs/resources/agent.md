@@ -120,7 +120,7 @@ Required:
 
 Required:
 
-- `site` (String) Datadog SaaS instance that corresponds to one of Datadog's available locations (see [Datadog docs](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site) for an up to date list):
+- `site` (String) Datadog SaaS instance that corresponds to one of Datadog's available locations (see [Datadog docs](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site)for an up to date list):
   - `datadoghq.com` (formerly referred to as `com`)
   - `us3.datadoghq.com`
   - `us5.datadoghq.com`
