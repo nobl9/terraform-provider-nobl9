@@ -162,7 +162,7 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  site = "eu"
+  site = "datadoghq.eu"
   api_key = "secret"
   application_key = "secret"
   historical_data_retrieval {

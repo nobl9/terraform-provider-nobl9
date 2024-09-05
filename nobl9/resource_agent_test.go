@@ -206,7 +206,7 @@ resource "nobl9_agent" "%s" {
   agent_type = "datadog"
   release_channel = "stable"
   datadog_config {
-    site = "eu"
+    site = "datadoghq.eu"
   }
   query_delay {
     unit = "Minute"

@@ -17,7 +17,7 @@ resource "nobl9_direct_datadog" "test-datadog" {
   name                   = "test-datadog"
   project                = "terraform"
   description            = "desc"
-  site                   = "eu"
+  site                   = "datadoghq.eu"
   api_key                = "secret"
   application_key        = "secret"
   log_collection_enabled = true
