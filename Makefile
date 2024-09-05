@@ -69,7 +69,7 @@ test/acc:
 .PHONY: release-dry-run
 ## Run Goreleaser in dry-run mode.
 release-dry-run:
-	goreleaser release --snapshot --skip-publish --rm-dist
+	goreleaser release --snapshot --skip-publish --clean
 
 .PHONY: check check/vet check/lint check/gosec check/spell check/trailing check/markdown check/format check/generate check/vulns
 ## Run all checks.
