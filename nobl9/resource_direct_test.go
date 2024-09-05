@@ -343,6 +343,16 @@ resource "nobl9_direct_%s" "%s" {
   account = "account_name"
   account_id = "secret"
   access_key = "secret"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
   log_collection_enabled = true
   release_channel = "beta"
   query_delay {
