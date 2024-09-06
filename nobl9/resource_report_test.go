@@ -17,7 +17,11 @@ func TestAcc_Nobl9Reports(t *testing.T) {
 		{"system-health-review-by-project-latest-snapshot", "system_health_review", testSHRLatestSnapshotByProject},
 		{"system-health-review-by-service-latest-snapshot", "system_health_review", testSHRLatestSnapshot},
 		{"system-health-review-by-service-past-snapshot-without-rrule", "system_health_review", testSHRPastSnapshot},
-		{"system-health-review-by-service-past-snapshot-with-rrule", "system_health_review", testSHRPastSnapshotWithRrule},
+		{
+			"system-health-review-by-service-past-snapshot-with-rrule",
+			"system_health_review",
+			testSHRPastSnapshotWithRrule,
+		},
 	}
 
 	for _, tc := range cases {
