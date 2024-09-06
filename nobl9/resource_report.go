@@ -159,6 +159,9 @@ func (r reportResource) unmarshalReport(
 }
 
 func marshalReportFilters(filtersRaw interface{}) *v1alphaReport.Filters {
+	if len(filtersRaw.([]interface{})) == 0 {
+		return nil
+	}
 	filters := filtersRaw.([]interface{})[0].(map[string]interface{})
 
 	projectList := filters["projects"].([]interface{})
@@ -307,7 +310,7 @@ func resourceReportDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	if ds != nil {
 		return ds
 	}
-	err := client.Objects().V1().DeleteByName(ctx, manifest.KindAlertMethod, "", d.Id())
+	err := client.Objects().V1().DeleteByName(ctx, manifest.KindReport, "", d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
