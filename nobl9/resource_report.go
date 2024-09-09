@@ -74,7 +74,7 @@ func schemaFilters() *schema.Schema {
 					Description: "Projects to pull data for report from.",
 					Elem: &schema.Schema{
 						Type:        schema.TypeString,
-						Description: "Project name.",
+						Description: "Project name, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
 					},
 				},
 				"service": {
