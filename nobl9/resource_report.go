@@ -122,7 +122,6 @@ func schemaFilters() *schema.Schema {
 }
 
 func (r reportResource) marshalReport(ri resourceInterface) *v1alphaReport.Report {
-	displayName, _ := ri.Get("display_name").(string)
 	spec := v1alphaReport.Spec{
 		Shared:  ri.Get("shared").(bool),
 		Filters: marshalReportFilters(ri.Get("filters")),
@@ -130,7 +129,7 @@ func (r reportResource) marshalReport(ri resourceInterface) *v1alphaReport.Repor
 	report := v1alphaReport.New(
 		v1alphaReport.Metadata{
 			Name:        ri.Get("name").(string),
-			DisplayName: displayName,
+			DisplayName: ri.Get("display_name").(string),
 		},
 		r.MarshalSpec(spec, ri),
 	)
