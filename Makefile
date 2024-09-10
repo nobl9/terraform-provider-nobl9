@@ -7,14 +7,14 @@ NAMESPACE=nobl9
 NAME=nobl9
 BIN_DIR=./bin
 BINARY=$(BIN_DIR)/terraform-provider-$(NAME)
-VERSION=0.28.0
+VERSION=0.29.2
 BUILD_FLAGS="-X github.com/nobl9/terraform-provider-nobl9/nobl9.Version=$(VERSION)"
 OS_ARCH?=linux_amd64
 
 # renovate datasource=github-releases depName=securego/gosec
-GOSEC_VERSION := v2.20.0
+GOSEC_VERSION := v2.21.2
 # renovate datasource=github-releases depName=golangci/golangci-lint
-GOLANGCI_LINT_VERSION := v1.60.1
+GOLANGCI_LINT_VERSION := v1.61.0
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
 GOVULNCHECK_VERSION := v1.1.3
 # renovate datasource=go depName=golang.org/x/tools/cmd/goimports
@@ -69,7 +69,7 @@ test/acc:
 .PHONY: release-dry-run
 ## Run Goreleaser in dry-run mode.
 release-dry-run:
-	goreleaser release --snapshot --skip-publish --rm-dist
+	goreleaser release --snapshot --skip-publish --clean
 
 .PHONY: check check/vet check/lint check/gosec check/spell check/trailing check/markdown check/format check/generate check/vulns
 ## Run all checks.

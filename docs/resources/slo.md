@@ -227,7 +227,7 @@ Required:
 
 Optional:
 
-- `composite` (Block Set) An assembly of objectives from different SLOs reflecting their combined performance. (see [below for nested schema](#nestedblock--objective--composite))
+- `composite` (Block Set, Max: 1) An assembly of objectives from different SLOs reflecting their combined performance. (see [below for nested schema](#nestedblock--objective--composite))
 - `count_metrics` (Block Set) Compares two time series, calculating the ratio of either good or bad values to the total number of values. Fill either the 'good' or 'bad' series, but not both. (see [below for nested schema](#nestedblock--objective--count_metrics))
 - `display_name` (String) Name to be displayed.
 - `name` (String) Objective's name. This field is computed if not provided.
@@ -246,14 +246,14 @@ Required:
 
 Optional:
 
-- `components` (Block Set) Objectives to be assembled in your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components))
+- `components` (Block Set, Max: 1) Objectives to be assembled in your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components))
 
 <a id="nestedblock--objective--composite--components"></a>
 ### Nested Schema for `objective.composite.components`
 
 Optional:
 
-- `objectives` (Block Set) An additional nesting for the components of your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components--objectives))
+- `objectives` (Block Set, Max: 1) An additional nesting for the components of your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components--objectives))
 
 <a id="nestedblock--objective--composite--components--objectives"></a>
 ### Nested Schema for `objective.composite.components.objectives`

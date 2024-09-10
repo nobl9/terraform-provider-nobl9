@@ -162,7 +162,7 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  site = "eu"
+  site = "datadoghq.eu"
   api_key = "secret"
   application_key = "secret"
   historical_data_retrieval {
@@ -219,8 +219,18 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  service_account_key = "{}"
+  service_account_key = "{ \"key\": \"secret\" }"
   log_collection_enabled = true
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
   release_channel = "stable"
   query_delay {
     unit = "Minute"
