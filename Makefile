@@ -12,13 +12,13 @@ BUILD_FLAGS="-X github.com/nobl9/terraform-provider-nobl9/nobl9.Version=$(VERSIO
 OS_ARCH?=linux_amd64
 
 # renovate datasource=github-releases depName=securego/gosec
-GOSEC_VERSION := v2.21.1
+GOSEC_VERSION := v2.21.2
 # renovate datasource=github-releases depName=golangci/golangci-lint
-GOLANGCI_LINT_VERSION := v1.60.3
+GOLANGCI_LINT_VERSION := v1.61.0
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
 GOVULNCHECK_VERSION := v1.1.3
 # renovate datasource=go depName=golang.org/x/tools/cmd/goimports
-GOIMPORTS_VERSION := v0.24.0
+GOIMPORTS_VERSION := v0.25.0
 # renovate datasource=github-releases depName=segmentio/golines
 GOLINES_VERSION := v0.12.2
 
