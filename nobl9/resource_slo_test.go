@@ -1027,7 +1027,7 @@ resource "nobl9_slo" ":name" {
    display_name = "obj1"
    name         = "tf-objective-1"
    target       = 0.7
-   value        = 1
+   value        = 0
    composite {
      max_delay = "45m"
      components {
