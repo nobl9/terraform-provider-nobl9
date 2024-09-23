@@ -24,7 +24,7 @@ func exactlyOneStringEmpty(str1, str2 string) bool {
 	return (str1 == "" && str2 != "") || (str1 != "" && str2 == "")
 }
 
-// oneElementSet implements schema.SchemaSetFunc and created only one element set.
+// oneElementSet implements schema.SchemaSetFunc and creates only one element set.
 // Never use it for sets with more elements as new elements will override the old ones.
 func oneElementSet(_ interface{}) int {
 	return 0

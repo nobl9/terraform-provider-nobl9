@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+The System Health Review report facilitates recurring reliability check-ins by grouping your Nobl9 SLOs by projects or services and labels of your choice through the remaining error budget metric in a table-form report.
+
+## Example Usage
+
+Here's an example of Error Budget Status Report resource configuration:
+
+{{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Useful Links
+
+[Reports in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/reports/)
+
+[Reports YAML Configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#report)
