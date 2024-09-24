@@ -537,7 +537,7 @@ resource "nobl9_agent" "%s" {
   splunk_observability_config {
     realm = "eu"
   }
-  release_channel = "alpha"
+  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
