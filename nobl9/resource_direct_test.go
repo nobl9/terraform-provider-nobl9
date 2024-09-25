@@ -452,7 +452,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   realm = "eu"
   access_token = "secret"
-  release_channel = "stable"
+  release_channel = "alpha"
   query_delay {
     unit = "Minute"
     value = 6

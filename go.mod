@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
 	github.com/hashicorp/terraform-plugin-docs v0.19.4
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.34.0
-	github.com/nobl9/nobl9-go v0.84.1-rc6
+	github.com/nobl9/nobl9-go v0.85.1-rc2
 	github.com/stretchr/testify v1.9.0
 	github.com/teambition/rrule-go v1.8.2
 )
@@ -18,8 +18,8 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
-	github.com/MicahParks/jwkset v0.5.18 // indirect
-	github.com/MicahParks/keyfunc/v3 v3.3.3 // indirect
+	github.com/MicahParks/jwkset v0.5.20 // indirect
+	github.com/MicahParks/keyfunc/v3 v3.3.5 // indirect
 	github.com/ProtonMail/go-crypto v1.1.0-alpha.2 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
@@ -66,7 +66,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/nobl9/go-yaml v1.0.1 // indirect
-	github.com/nobl9/govy v0.1.1 // indirect
+	github.com/nobl9/govy v0.2.0 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
