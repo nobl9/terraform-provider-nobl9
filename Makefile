@@ -144,7 +144,7 @@ format/go:
 	echo "Formatting Go files..."
 	$(call _ensure_installed,binary,goimports)
 	$(call _ensure_installed,binary,golines)
-	go fmt ./...
+	gofmt -w -l -s .
 	$(BIN_DIR)/goimports -local=github.com/nobl9/terraform-provider-nobl9 -w .
 	$(BIN_DIR)/golines --ignore-generated -m 120 -w .
 
