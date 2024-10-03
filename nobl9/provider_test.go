@@ -76,7 +76,7 @@ func CheckDestroy(rsType string, kind manifest.Kind) func(s *terraform.State) er
 	return func(s *terraform.State) error {
 		config, ok := testProvider.Meta().(ProviderConfig)
 		if !ok {
-			return fmt.Errorf("could not cast data to ProviderConfig")
+			return fmt.Errorf("could not cast data to ProviderConfig, actual type: %T", testProvider.Meta())
 		}
 		client, ds := getClient(config)
 		if ds.HasError() {
