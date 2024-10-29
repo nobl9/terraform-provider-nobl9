@@ -79,7 +79,8 @@ func marshalHistoricalDataRetrieval(d resourceInterface) *v1alpha.HistoricalData
 	historicalDataRetrieval := hData.([]interface{})[0].(map[string]interface{})
 	defaultDuration := historicalDataRetrieval["default_duration"].([]interface{})[0].(map[string]interface{})
 	maxDuration := historicalDataRetrieval["max_duration"].([]interface{})[0].(map[string]interface{})
-	triggeredBySloCreation := historicalDataRetrieval["triggered_by_slo_creation"].([]interface{})[0].(map[string]interface{})
+	triggeredBySloCreation :=
+		historicalDataRetrieval["triggered_by_slo_creation"].([]interface{})[0].(map[string]interface{})
 	triggeredBySloEdit := historicalDataRetrieval["triggered_by_slo_edit"].([]interface{})[0].(map[string]interface{})
 
 	valueDefaultDuration := defaultDuration["value"].(int)
@@ -111,7 +112,7 @@ func unmarshalHistoricalDataRetrieval(
 	h *v1alpha.HistoricalDataRetrieval,
 ) (diags diag.Diagnostics) {
 	if h == nil {
-		return
+		return diags
 	}
 	config := map[string]interface{}{
 		"default_duration": []interface{}{
@@ -141,5 +142,5 @@ func unmarshalHistoricalDataRetrieval(
 	}
 	set(d, historicalDataRetrievalConfigKey, []interface{}{config}, &diags)
 
-	return
+	return diags
 }

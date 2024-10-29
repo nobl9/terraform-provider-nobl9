@@ -237,11 +237,11 @@ resource "nobl9_direct_%s" "%s" {
     }
 	triggered_by_slo_creation {
 	  unit = "Day"
-      value = 10
+      value = 0
 	}
 	triggered_by_slo_edit {
 	  unit = "Day"
-      value = 10
+      value = 0
 	}
   }
   release_channel = "stable"
@@ -308,11 +308,11 @@ resource "nobl9_direct_%s" "%s" {
 	  }
 	  triggered_by_slo_creation {
 	    unit = "Day"
-        value = 10
+        value = 7
 	  }
 	  triggered_by_slo_edit {
 	    unit = "Day"
-        value = 10
+        value = 7
 	  }
 	}
 	query_delay {
