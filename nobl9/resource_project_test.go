@@ -52,7 +52,7 @@ func TestAcc_NewNobl9ProjectReference(t *testing.T) {
 					 release_channel = "stable"
 					 query_delay {
 						unit = "Second"
-						value = 0
+						value = 1
 					  }
 					}
 				`, name, name, name, name, name, name),
