@@ -463,6 +463,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 	}
 	annotationsMarshaled := getMarshaledAnnotations(d)
 
+	tier := d.Get("tier").(string)
 	slo := v1alphaSLO.New(
 		v1alphaSLO.Metadata{
 			Name:        d.Get("name").(string),
@@ -482,7 +483,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
 			Attachments:     marshalAttachments(attachments.([]interface{})),
 			AnomalyConfig:   marshalAnomalyConfig(d.Get("anomaly_config")),
-			Tier:            d.Get("tier").(string),
+			Tier:            &tier,
 		})
 	return &slo, diags
 }
