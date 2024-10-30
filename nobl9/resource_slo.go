@@ -269,6 +269,10 @@ func schemaSLO() map[string]*schema.Schema {
 				},
 			},
 		},
+		"tier": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
 		"alert_policies": {
 			Type:        schema.TypeList,
 			Optional:    true,
@@ -459,6 +463,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 	}
 	annotationsMarshaled := getMarshaledAnnotations(d)
 
+	tier := d.Get("tier").(string)
 	slo := v1alphaSLO.New(
 		v1alphaSLO.Metadata{
 			Name:        d.Get("name").(string),
@@ -478,6 +483,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
 			Attachments:     marshalAttachments(attachments.([]interface{})),
 			AnomalyConfig:   marshalAnomalyConfig(d.Get("anomaly_config")),
+			Tier:            &tier,
 		})
 	return &slo, diags
 }
@@ -707,6 +713,10 @@ func unmarshalSLO(d *schema.ResourceData, objects []v1alphaSLO.SLO) diag.Diagnos
 	diags = appendError(diags, err)
 
 	err = unmarshalCompositeDeprecated(d, spec)
+	diags = appendError(diags, err)
+
+	tier := spec.Tier
+	err = d.Set("tier", tier)
 	diags = appendError(diags, err)
 
 	err = unmarshalAttachments(d, spec)
