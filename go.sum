@@ -178,10 +178,10 @@ github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zx
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/nobl9/go-yaml v1.0.1 h1:Aj1kSaYdRQTKlvS6ihvXzQJhCpoHhtf9nfA95zqWH4Q=
 github.com/nobl9/go-yaml v1.0.1/go.mod h1:t7vCO8ctYdBweZxU5lUgxzAw31+ZcqJYeqRtrv+5RHI=
-github.com/nobl9/govy v0.2.0 h1:KXZRzHte3uJSpB2i0wBD+3fUoON5ptvlfMrkvtRO8Sc=
-github.com/nobl9/govy v0.2.0/go.mod h1:O+xSiKwZ6gs/orRvH5qLkfkgyT7CkuXprRIq3C5uNXQ=
-github.com/nobl9/nobl9-go v0.86.0 h1:TpBjVgcluHwgBHtTUuyJF9UCcTiGtHQN5VrFKSjfL00=
-github.com/nobl9/nobl9-go v0.86.0/go.mod h1:DPGLjkUkf2BHDj72BbKFuJzD/gxO/qTLtgFU9wKtqzE=
+github.com/nobl9/govy v0.3.0 h1:OokgZ9PHfFNt2TkX8h/9rF0Y3doj/nnr0BlPo1BsasY=
+github.com/nobl9/govy v0.3.0/go.mod h1:O+xSiKwZ6gs/orRvH5qLkfkgyT7CkuXprRIq3C5uNXQ=
+github.com/nobl9/nobl9-go v0.89.0-rc6 h1:jH5PtMzh6HfcunZEMxCV+BIhf0wLczsO+1zDYl4Ktek=
+github.com/nobl9/nobl9-go v0.89.0-rc6/go.mod h1:jICYB6/RFcKs/Mqm3ltGbsD2Ign64/uy8JMaHxpYQ5o=
 github.com/oklog/run v1.1.0 h1:GEenZ1cK0+q0+wsJew9qUg/DyD8k3JzYsZAi5gYi2mA=
 github.com/oklog/run v1.1.0/go.mod h1:sVPdnTZT1zYwAJeCMu2Th4T21pA3FPOQRfWjQlk7DVU=
 github.com/pjbgf/sha1cd v0.3.0 h1:4D5XXmUUBUl/xQ6IjCkEAbqXskkq/4O7LmGn0AqMDs4=
