@@ -79,15 +79,10 @@ func marshalHistoricalDataRetrieval(d resourceInterface) *v1alpha.HistoricalData
 	historicalDataRetrieval := hData.([]interface{})[0].(map[string]interface{})
 	defaultDuration := historicalDataRetrieval["default_duration"].([]interface{})[0].(map[string]interface{})
 	maxDuration := historicalDataRetrieval["max_duration"].([]interface{})[0].(map[string]interface{})
-	triggeredBySloCreation :=
-		historicalDataRetrieval["triggered_by_slo_creation"].([]interface{})[0].(map[string]interface{})
-	triggeredBySloEdit := historicalDataRetrieval["triggered_by_slo_edit"].([]interface{})[0].(map[string]interface{})
 
 	valueDefaultDuration := defaultDuration["value"].(int)
 	valueMaxDuration := maxDuration["value"].(int)
-	valueTriggeredBySloCreation := triggeredBySloCreation["value"].(int)
-	valueTriggeredBySloEdit := triggeredBySloEdit["value"].(int)
-	return &v1alpha.HistoricalDataRetrieval{
+	v1alphaHistoricalDataRetrieval := &v1alpha.HistoricalDataRetrieval{
 		DefaultDuration: v1alpha.HistoricalRetrievalDuration{
 			Value: &valueDefaultDuration,
 			Unit:  v1alpha.HistoricalRetrievalDurationUnit(defaultDuration["unit"].(string)),
@@ -96,15 +91,27 @@ func marshalHistoricalDataRetrieval(d resourceInterface) *v1alpha.HistoricalData
 			Value: &valueMaxDuration,
 			Unit:  v1alpha.HistoricalRetrievalDurationUnit(maxDuration["unit"].(string)),
 		},
-		TriggeredBySloCreation: &v1alpha.HistoricalRetrievalDuration{
+	}
+	if len(historicalDataRetrieval["triggered_by_slo_creation"].([]interface{})) > 0 {
+		triggeredBySloCreation :=
+			historicalDataRetrieval["triggered_by_slo_creation"].([]interface{})[0].(map[string]interface{})
+
+		valueTriggeredBySloCreation := triggeredBySloCreation["value"].(int)
+		v1alphaHistoricalDataRetrieval.TriggeredBySloCreation = &v1alpha.HistoricalRetrievalDuration{
 			Value: &valueTriggeredBySloCreation,
 			Unit:  v1alpha.HistoricalRetrievalDurationUnit(triggeredBySloCreation["unit"].(string)),
-		},
-		TriggeredBySloEdit: &v1alpha.HistoricalRetrievalDuration{
+		}
+	}
+	if len(historicalDataRetrieval["triggered_by_slo_edit"].([]interface{})) > 0 {
+		triggeredBySloEdit :=
+			historicalDataRetrieval["triggered_by_slo_edit"].([]interface{})[0].(map[string]interface{})
+		valueTriggeredBySloEdit := triggeredBySloEdit["value"].(int)
+		v1alphaHistoricalDataRetrieval.TriggeredBySloEdit = &v1alpha.HistoricalRetrievalDuration{
 			Value: &valueTriggeredBySloEdit,
 			Unit:  v1alpha.HistoricalRetrievalDurationUnit(triggeredBySloEdit["unit"].(string)),
-		},
+		}
 	}
+	return v1alphaHistoricalDataRetrieval
 }
 
 func unmarshalHistoricalDataRetrieval(
@@ -127,19 +134,30 @@ func unmarshalHistoricalDataRetrieval(
 				"value": h.MaxDuration.Value,
 			},
 		},
-		"triggered_by_slo_creation": []interface{}{
+	}
+
+	if h.TriggeredBySloCreation != nil {
+		config["triggered_by_slo_creation"] = []interface{}{
 			map[string]interface{}{
 				"unit":  h.TriggeredBySloCreation.Unit,
 				"value": h.TriggeredBySloCreation.Value,
 			},
-		},
-		"triggered_by_slo_edit": []interface{}{
+		}
+	} else {
+		delete(config, "triggered_by_slo_creation")
+	}
+
+	if h.TriggeredBySloEdit != nil {
+		config["triggered_by_slo_edit"] = []interface{}{
 			map[string]interface{}{
 				"unit":  h.TriggeredBySloEdit.Unit,
 				"value": h.TriggeredBySloEdit.Value,
 			},
-		},
+		}
+	} else {
+		delete(config, "triggered_by_slo_edit")
 	}
+
 	set(d, historicalDataRetrievalConfigKey, []interface{}{config}, &diags)
 
 	return diags
