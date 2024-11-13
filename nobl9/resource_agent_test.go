@@ -103,12 +103,12 @@ resource "nobl9_agent" "%s" {
 		value = 19
 	}
 	triggered_by_slo_creation {
-	  unit = "Hour"
-      value = 19
+		unit = "Hour"
+		value = 19
 	}
 	triggered_by_slo_edit {
-	  unit = "Hour"
-      value = 19
+		unit = "Hour"
+		value = 19
 	}
   }
 }
@@ -203,7 +203,7 @@ resource "nobl9_direct_cloudwatch" "%s" {
 	}
 	triggered_by_slo_edit {
 	  unit = "Hour"
-      value = 19
+	  value = 19
 	}
   }
   query_delay {
@@ -300,11 +300,11 @@ resource "nobl9_agent" "%s" {
 	}
 	triggered_by_slo_creation {
 	  unit = "Hour"
-      value = 19
+	  value = 19
 	}
 	triggered_by_slo_edit {
 	  unit = "Hour"
-      value = 19
+	  value = 19
 	}
   }
   query_delay {
@@ -443,11 +443,11 @@ resource "nobl9_agent" "%s" {
 	}
 	triggered_by_slo_creation {
 	  unit = "Hour"
-      value = 19
+	  value = 19
 	}
 	triggered_by_slo_edit {
 	  unit = "Hour"
-      value = 19
+	  value = 19
 	}
   }
   query_delay {
