@@ -84,8 +84,8 @@ Required:
 
 Optional:
 
-- `triggered_by_slo_creation` (Block List) Defines the period for which data can be retrieved when an SLO is created. (see [below for nested schema](#nestedblock--historical_data_retrieval--triggered_by_slo_creation))
-- `triggered_by_slo_edit` (Block List) Defines the period for which data can be retrieved when an SLO is edited. (see [below for nested schema](#nestedblock--historical_data_retrieval--triggered_by_slo_edit))
+- `triggered_by_slo_creation` (Block List) Defines the period for which data will be retrieved when an SLO is created. (see [below for nested schema](#nestedblock--historical_data_retrieval--triggered_by_slo_creation))
+- `triggered_by_slo_edit` (Block List) Defines the period for which data will be retrieved when an SLO is edited. (see [below for nested schema](#nestedblock--historical_data_retrieval--triggered_by_slo_edit))
 
 <a id="nestedblock--historical_data_retrieval--default_duration"></a>
 ### Nested Schema for `historical_data_retrieval.default_duration`
