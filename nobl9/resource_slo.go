@@ -270,8 +270,9 @@ func schemaSLO() map[string]*schema.Schema {
 			},
 		},
 		"tier": {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Internal field, do not use.",
 		},
 		"alert_policies": {
 			Type:        schema.TypeList,
