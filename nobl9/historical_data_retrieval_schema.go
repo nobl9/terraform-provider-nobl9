@@ -53,7 +53,7 @@ func getHistoricalDataRetrievalSchema() map[string]*schema.Schema {
 						Type:        schema.TypeList,
 						Optional:    true,
 						Computed:    true,
-						Description: "Defines the period for which data can be retrieved when an SLO is created.",
+						Description: "Defines the period for which data will be retrieved when an SLO is created.",
 						Elem:        &schema.Resource{Schema: durationSchema},
 					},
 					"triggered_by_slo_edit": {
