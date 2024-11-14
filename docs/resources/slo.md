@@ -214,6 +214,7 @@ resource "nobl9_slo" "composite_slo" {
 - `display_name` (String) User-friendly display name of the resource.
 - `indicator` (Block Set, Max: 1) (see [below for nested schema](#nestedblock--indicator))
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
+- `tier` (String) Internal field, do not use.
 
 ### Read-Only
 

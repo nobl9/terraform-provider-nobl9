@@ -42,10 +42,14 @@ jobs:
           go-version-file: go.mod
           cache: false
       - name: Run acceptance tests
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 20
+          max_attempts: 3
+          command: make test/acc
         env:
           NOBL9_CLIENT_ID: "${{ inputs.clientId }}"
           NOBL9_CLIENT_SECRET: "${{ secrets.clientSecret }}"
           TERRAFORM_NOBL9_OKTA_ORG_URL: "${{ inputs.oktaOrgUrl }}"
           TERRAFORM_NOBL9_OKTA_AUTH_SERVER: "${{ inputs.oktaAuthServer }}"
           TERRAFORM_NOBL9_PROJECT: "${{ inputs.project }}"
-        run: make test/acc

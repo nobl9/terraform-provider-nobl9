@@ -36,7 +36,7 @@ jobs:
     needs: [test, qa-approval]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
       - name: Unshallow
         run: git fetch --prune --unshallow
       - name: Set up Go
@@ -46,7 +46,7 @@ jobs:
           check-latest: true
       - name: Import GPG key
         id: import_gpg
-        uses:  crazy-max/ghaction-import-gpg@v5
+        uses:  crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY_2024_03 }}
           passphrase: ${{ secrets.PASSPHRASE_2024_03 }}

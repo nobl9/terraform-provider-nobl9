@@ -43,7 +43,7 @@ func resourceAlertPolicy() *schema.Resource {
 						"measurement": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "One of `timeToBurnBudget` | `timeToBurnEntireBudget` | `burnRate` | `burnedBudget` | `budgetDrop`.",
+							Description: "One of `timeToBurnBudget` | `timeToBurnEntireBudget` | `averageBurnRate` | `burnedBudget` | `budgetDrop`.",
 						},
 						"value": {
 							Type:        schema.TypeFloat,

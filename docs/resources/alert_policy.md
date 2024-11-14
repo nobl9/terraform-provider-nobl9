@@ -291,7 +291,7 @@ resource "nobl9_alert_policy" "slow_budget_drop" {
 
 Required:
 
-- `measurement` (String) One of `timeToBurnBudget` | `timeToBurnEntireBudget` | `burnRate` | `burnedBudget` | `budgetDrop`.
+- `measurement` (String) One of `timeToBurnBudget` | `timeToBurnEntireBudget` | `averageBurnRate` | `burnedBudget` | `budgetDrop`.
 
 Optional:
 

@@ -21,6 +21,7 @@ The Nobl9 Provider delivers tools working with the Nobl9 API to create and manag
 - Alert Methods
 - Data Sources
 - Role Bindings
+- Reports
 
 The Nobl9 Terraform Provider does not support the configuration of the following resources:
 - [SLO Annotations](https://docs.nobl9.com/features/slo-annotations/)
@@ -37,7 +38,7 @@ terraform {
   required_providers {
     nobl9 = {
       source  = "nobl9/nobl9"
-      version = "0.25.0"
+      version = "0.31.0"
     }
   }
 }
