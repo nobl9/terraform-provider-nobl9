@@ -1,10 +1,13 @@
 package nobl9
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"reflect"
 	"regexp"
 	"sort"
@@ -15,10 +18,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
-	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
-
 	"github.com/nobl9/nobl9-go/manifest"
+	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
+	"github.com/nobl9/nobl9-go/sdk"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
 )
 
 func resourceSLO() *schema.Resource {
@@ -329,6 +333,12 @@ func schemaSLO() map[string]*schema.Schema {
 			},
 		},
 		"anomaly_config": schemaAnomalyConfig(),
+		"replay_from": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Replay from date.",
+			MaxItems:    1,
+		},
 	}
 }
 
@@ -356,6 +366,30 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 		return nil
 	}); err != nil {
 		return diag.FromErr(err)
+	}
+
+	replayFrom := d.Get("replay_from").(string)
+	if replayFrom != "" {
+		replayFromTs, err := time.Parse(time.RFC3339, replayFrom)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		const startOffsetMinutes = 5
+		windowDuration := time.Now().Sub(replayFromTs)
+		replayModel := sdkModels.Replay{
+			Project: config.Project,
+			Slo:     slo.Metadata.Name,
+			Duration: sdkModels.ReplayDuration{
+				Unit:  sdkModels.DurationUnitMinute,
+				Value: startOffsetMinutes + int(windowDuration.Minutes()),
+			},
+		}
+		_, httpCode, err := triggerReplay(ctx, client, replayModel)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		fmt.Print(httpCode)
+
 	}
 
 	d.SetId(slo.Metadata.Name)
@@ -2797,4 +2831,35 @@ func unmarshalThousandeyesMetric(metric interface{}) map[string]interface{} {
 	res["test_id"] = teMetric.TestID
 	res["test_type"] = teMetric.TestType
 	return res
+}
+
+const endpointReplay = "/timetravel"
+
+func triggerReplay(
+	ctx context.Context,
+	client *sdk.Client,
+	payload interface{},
+) (data []byte, httpCode int, err error) {
+	var body io.Reader
+	if payload != nil {
+		buf := new(bytes.Buffer)
+		if err := json.NewEncoder(buf).Encode(payload); err != nil {
+			return nil, 0, err
+		}
+		body = buf
+	}
+	req, err := client.CreateRequest(ctx, http.MethodPost, endpointReplay, nil, nil, body)
+	if err != nil {
+		return nil, 0, err
+	}
+	resp, err := client.HTTP.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	data, err = io.ReadAll(resp.Body)
+	if resp.StatusCode >= 300 {
+		return nil, resp.StatusCode, fmt.Errorf("bad response (status: %d): %s", resp.StatusCode, string(data))
+	}
+	return data, resp.StatusCode, err
 }
