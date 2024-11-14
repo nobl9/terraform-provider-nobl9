@@ -334,9 +334,10 @@ func schemaSLO() map[string]*schema.Schema {
 		},
 		"anomaly_config": schemaAnomalyConfig(),
 		"replay_from": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Replay from date.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: validateDateTime,
+			Description:      "Replay from date.",
 		},
 	}
 }
@@ -367,29 +368,14 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 		return diag.FromErr(err)
 	}
 
-	project := resultSlo[0].(manifest.ProjectScopedObject).GetProject()
 	replayFrom := d.Get("replay_from").(string)
 	if replayFrom != "" {
-		replayFromTs, err := time.Parse(time.RFC3339, replayFrom)
+		project := resultSlo[0].(manifest.ProjectScopedObject).GetProject()
+		replayPayload := buildReplayPayload(project, slo.GetName(), replayFrom)
+		err := triggerReplayRequest(ctx, client, project, replayPayload)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		const startOffsetMinutes = 5
-		windowDuration := time.Now().Sub(replayFromTs)
-		replayModel := sdkModels.Replay{
-			Project: project,
-			Slo:     slo.Metadata.Name,
-			Duration: sdkModels.ReplayDuration{
-				Unit:  sdkModels.DurationUnitMinute,
-				Value: startOffsetMinutes + int(windowDuration.Minutes()),
-			},
-		}
-		_, httpCode, err := triggerReplay(ctx, client, project, replayModel)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		fmt.Print(httpCode)
-
 	}
 
 	d.SetId(slo.Metadata.Name)
@@ -2835,33 +2821,48 @@ func unmarshalThousandeyesMetric(metric interface{}) map[string]interface{} {
 
 const endpointReplay = "/timetravel"
 
-func triggerReplay(
+func buildReplayPayload(project, sloName, replayFrom string) sdkModels.Replay {
+	replayFromTs, _ := time.Parse(time.RFC3339, replayFrom)
+	const startOffsetMinutes = 5
+	windowDuration := time.Now().Sub(replayFromTs)
+	return sdkModels.Replay{
+		Project: project,
+		Slo:     sloName,
+		Duration: sdkModels.ReplayDuration{
+			Unit:  sdkModels.DurationUnitMinute,
+			Value: startOffsetMinutes + int(windowDuration.Minutes()),
+		},
+	}
+}
+
+func triggerReplayRequest(
 	ctx context.Context,
 	client *sdk.Client,
 	project string,
 	payload interface{},
-) (data []byte, httpCode int, err error) {
+) (err error) {
 	var body io.Reader
 	if payload != nil {
 		buf := new(bytes.Buffer)
 		if err := json.NewEncoder(buf).Encode(payload); err != nil {
-			return nil, 0, err
+			return err
 		}
 		body = buf
 	}
 	header := http.Header{sdk.HeaderProject: []string{project}}
 	req, err := client.CreateRequest(ctx, http.MethodPost, endpointReplay, header, nil, body)
 	if err != nil {
-		return nil, 0, err
+		return err
 	}
 	resp, err := client.HTTP.Do(req)
 	if err != nil {
-		return nil, 0, err
+		return err
 	}
 	defer func() { _ = resp.Body.Close() }()
+	var data []byte
 	data, err = io.ReadAll(resp.Body)
 	if resp.StatusCode >= 300 {
-		return nil, resp.StatusCode, fmt.Errorf("bad response (status: %d): %s", resp.StatusCode, string(data))
+		return fmt.Errorf("bad response (status: %d): %s", resp.StatusCode, string(data))
 	}
-	return data, resp.StatusCode, err
+	return err
 }
