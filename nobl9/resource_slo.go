@@ -367,6 +367,7 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 		return diag.FromErr(err)
 	}
 
+	project := resultSlo[0].(manifest.ProjectScopedObject).GetProject()
 	replayFrom := d.Get("replay_from").(string)
 	if replayFrom != "" {
 		replayFromTs, err := time.Parse(time.RFC3339, replayFrom)
@@ -376,14 +377,14 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 		const startOffsetMinutes = 5
 		windowDuration := time.Now().Sub(replayFromTs)
 		replayModel := sdkModels.Replay{
-			Project: config.Project,
+			Project: project,
 			Slo:     slo.Metadata.Name,
 			Duration: sdkModels.ReplayDuration{
 				Unit:  sdkModels.DurationUnitMinute,
 				Value: startOffsetMinutes + int(windowDuration.Minutes()),
 			},
 		}
-		_, httpCode, err := triggerReplay(ctx, client, replayModel)
+		_, httpCode, err := triggerReplay(ctx, client, project, replayModel)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -2837,6 +2838,7 @@ const endpointReplay = "/timetravel"
 func triggerReplay(
 	ctx context.Context,
 	client *sdk.Client,
+	project string,
 	payload interface{},
 ) (data []byte, httpCode int, err error) {
 	var body io.Reader
@@ -2847,7 +2849,7 @@ func triggerReplay(
 		}
 		body = buf
 	}
-	header := http.Header{sdk.HeaderProject: []string{client.Config.Project}}
+	header := http.Header{sdk.HeaderProject: []string{project}}
 	req, err := client.CreateRequest(ctx, http.MethodPost, endpointReplay, header, nil, body)
 	if err != nil {
 		return nil, 0, err
