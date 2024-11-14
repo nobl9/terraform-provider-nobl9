@@ -337,7 +337,6 @@ func schemaSLO() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "Replay from date.",
-			MaxItems:    1,
 		},
 	}
 }
