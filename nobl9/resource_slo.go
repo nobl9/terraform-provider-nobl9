@@ -2847,7 +2847,8 @@ func triggerReplay(
 		}
 		body = buf
 	}
-	req, err := client.CreateRequest(ctx, http.MethodPost, endpointReplay, nil, nil, body)
+	header := http.Header{sdk.HeaderProject: []string{client.Config.Project}}
+	req, err := client.CreateRequest(ctx, http.MethodPost, endpointReplay, header, nil, body)
 	if err != nil {
 		return nil, 0, err
 	}
