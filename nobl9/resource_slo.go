@@ -337,12 +337,17 @@ func schemaSLO() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: validateDateTime,
-			Description:      "If set, the retrieval of historical data for this SLO will be triggered, starting from the specified date.",
+			Description: "If set, the retrieval of historical data for this SLO will be triggered, " +
+				"starting from the specified date.",
 		},
 	}
 }
 
-func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) (diag.Diagnostics, manifest.ProjectScopedObject) {
+func resourceSLOApply(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) (diag.Diagnostics, manifest.ProjectScopedObject) {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config)
 	if ds != nil {
@@ -2852,7 +2857,7 @@ const historicalDataRetrievalEndpoint = "/timetravel"
 func buildReplayPayload(project, sloName, replayFrom string) sdkModels.Replay {
 	replayFromTs, _ := time.Parse(time.RFC3339, replayFrom)
 	const startOffsetMinutes = 5
-	windowDuration := time.Now().Sub(replayFromTs)
+	windowDuration := time.Since(replayFromTs)
 	return sdkModels.Replay{
 		Project: project,
 		Slo:     sloName,
