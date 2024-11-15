@@ -337,7 +337,7 @@ func schemaSLO() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: validateDateTime,
-			Description:      "If set, a retrieval of historical data for this SLO will be triggered starting from the provided date.",
+			Description:      "If set, the retrieval of historical data for this SLO will be triggered, starting from the specified date.",
 		},
 	}
 }
@@ -378,8 +378,8 @@ func resourceSLOUpdate(ctx context.Context, d *schema.ResourceData, meta interfa
 	if retrieveHistoricalDataFrom != "" {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
-			Summary:  "Unsupported `retrieve_historical_data_from` parameter for SLO update",
-			Detail:   "Triggering historical data retrieval for SLO is supported only when creating new SLO object",
+			Summary:  "The `retrieve_historical_data_from` parameter is not supported for SLO updates.",
+			Detail:   "Triggering historical data retrieval for an SLO is supported only when creating a new SLO object.",
 		})
 	}
 	return diags
@@ -403,7 +403,7 @@ func resourceSLOCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 		}
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
-			Summary:  "Historical data retrieval for SLO has been triggered",
+			Summary:  "Historical data retrieval for the SLO has been triggered.",
 		})
 	}
 
