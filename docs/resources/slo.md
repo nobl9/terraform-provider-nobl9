@@ -215,6 +215,7 @@ resource "nobl9_slo" "composite_slo" {
 - `indicator` (Block Set, Max: 1) (see [below for nested schema](#nestedblock--indicator))
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 - `tier` (String) Internal field, do not use.
+- `retrieve_historical_data_from` (String) If set, the retrieval of historical data for this SLO will be triggered, starting from the specified date.
 
 ### Read-Only
 
