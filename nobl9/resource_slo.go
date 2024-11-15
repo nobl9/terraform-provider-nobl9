@@ -333,11 +333,11 @@ func schemaSLO() map[string]*schema.Schema {
 			},
 		},
 		"anomaly_config": schemaAnomalyConfig(),
-		"replay_from": {
+		"retrieve_historical_data_from": {
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: validateDateTime,
-			Description:      "Replay from date.",
+			Description:      "If set, a retrieval of historical data for this SLO will be triggered starting from the provided date.",
 		},
 	}
 }
@@ -368,11 +368,11 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 		return diag.FromErr(err)
 	}
 
-	replayFrom := d.Get("replay_from").(string)
-	if replayFrom != "" {
+	retrieveHistoricalDataFrom := d.Get("retrieve_historical_data_from").(string)
+	if retrieveHistoricalDataFrom != "" {
 		project := resultSlo[0].(manifest.ProjectScopedObject).GetProject()
-		replayPayload := buildReplayPayload(project, slo.GetName(), replayFrom)
-		err := triggerReplayRequest(ctx, client, project, replayPayload)
+		replayPayload := buildReplayPayload(project, slo.GetName(), retrieveHistoricalDataFrom)
+		err := triggerHistoricalDataRetrieval(ctx, client, project, replayPayload)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -2819,7 +2819,7 @@ func unmarshalThousandeyesMetric(metric interface{}) map[string]interface{} {
 	return res
 }
 
-const endpointReplay = "/timetravel"
+const historicalDataRetrievalEndpoint = "/timetravel"
 
 func buildReplayPayload(project, sloName, replayFrom string) sdkModels.Replay {
 	replayFromTs, _ := time.Parse(time.RFC3339, replayFrom)
@@ -2835,7 +2835,7 @@ func buildReplayPayload(project, sloName, replayFrom string) sdkModels.Replay {
 	}
 }
 
-func triggerReplayRequest(
+func triggerHistoricalDataRetrieval(
 	ctx context.Context,
 	client *sdk.Client,
 	project string,
@@ -2850,7 +2850,7 @@ func triggerReplayRequest(
 		body = buf
 	}
 	header := http.Header{sdk.HeaderProject: []string{project}}
-	req, err := client.CreateRequest(ctx, http.MethodPost, endpointReplay, header, nil, body)
+	req, err := client.CreateRequest(ctx, http.MethodPost, historicalDataRetrievalEndpoint, header, nil, body)
 	if err != nil {
 		return err
 	}
