@@ -28,8 +28,8 @@ import (
 func resourceSLO() *schema.Resource {
 	return &schema.Resource{
 		Schema:        schemaSLO(),
-		CreateContext: resourceSLOApply,
-		UpdateContext: resourceSLOApply,
+		CreateContext: resourceSLOCreate,
+		UpdateContext: resourceSLOUpdate,
 		DeleteContext: resourceSLODelete,
 		ReadContext:   resourceSLORead,
 		Importer: &schema.ResourceImporter{
@@ -342,16 +342,16 @@ func schemaSLO() map[string]*schema.Schema {
 	}
 }
 
-func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) (diag.Diagnostics, manifest.ProjectScopedObject) {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config)
 	if ds != nil {
-		return ds
+		return ds, nil
 	}
 
 	slo, diags := marshalSLO(d)
 	if diags.HasError() {
-		return diags
+		return diags, nil
 	}
 	resultSlo := manifest.SetDefaultProject([]manifest.Object{slo}, config.Project)
 
@@ -365,21 +365,49 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 		}
 		return nil
 	}); err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(err), nil
 	}
+
+	d.SetId(slo.Metadata.Name)
+	return resourceSLORead(ctx, d, meta), resultSlo[0].(manifest.ProjectScopedObject)
+}
+
+func resourceSLOUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	diags, _ := resourceSLOApply(ctx, d, meta)
+	retrieveHistoricalDataFrom := d.Get("retrieve_historical_data_from").(string)
+	if retrieveHistoricalDataFrom != "" {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Unsupported `retrieve_historical_data_from` parameter for SLO update",
+			Detail:   "Triggering historical data retrieval for SLO is supported only when creating new SLO object",
+		})
+	}
+	return diags
+}
+
+func resourceSLOCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	diags, slo := resourceSLOApply(ctx, d, meta)
 
 	retrieveHistoricalDataFrom := d.Get("retrieve_historical_data_from").(string)
 	if retrieveHistoricalDataFrom != "" {
-		project := resultSlo[0].(manifest.ProjectScopedObject).GetProject()
+		config := meta.(ProviderConfig)
+		client, ds := getClient(config)
+		if ds != nil {
+			return ds
+		}
+		project := slo.GetProject()
 		replayPayload := buildReplayPayload(project, slo.GetName(), retrieveHistoricalDataFrom)
 		err := triggerHistoricalDataRetrieval(ctx, client, project, replayPayload)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Historical data retrieval for SLO has been triggered",
+		})
 	}
 
-	d.SetId(slo.Metadata.Name)
-	return resourceSLORead(ctx, d, meta)
+	return diags
 }
 
 func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
