@@ -379,14 +379,6 @@ func resourceSLOApply(
 
 func resourceSLOUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags, _ := resourceSLOApply(ctx, d, meta)
-	retrieveHistoricalDataFrom := d.Get("retrieve_historical_data_from").(string)
-	if retrieveHistoricalDataFrom != "" {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "The `retrieve_historical_data_from` parameter is not supported for SLO updates.",
-			Detail:   "Triggering historical data retrieval for an SLO is supported only when creating a new SLO object.",
-		})
-	}
 	return diags
 }
 
