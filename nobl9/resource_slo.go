@@ -337,7 +337,7 @@ func schemaSLO() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: validateDateTime,
-			Description: "If set, the retrieval of historical data for this SLO will be triggered, " +
+			Description: "If set, the retrieval of historical data for a newly created SLO will be triggered, " +
 				"starting from the specified date.",
 		},
 	}
