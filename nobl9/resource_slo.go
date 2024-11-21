@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -2887,16 +2888,17 @@ func triggerHistoricalDataRetrieval(
 	var data []byte
 	data, err = io.ReadAll(resp.Body)
 	if resp.StatusCode >= 300 {
-		return errors.New(replayUnavailabilityReasonExplanation(string(data), resp.StatusCode))
+		return errors.New(replayUnavailabilityReasonExplanation(data, resp.StatusCode))
 	}
 	return err
 }
 
 func replayUnavailabilityReasonExplanation(
-	reason string,
+	reason []byte,
 	statusCode int,
 ) string {
-	switch reason {
+	strReason := strings.TrimSpace(string(reason))
+	switch strReason {
 	case sdkModels.ReplayIntegrationDoesNotSupportReplay:
 		return "The Data Source does not support Replay yet"
 	case sdkModels.ReplayAgentVersionDoesNotSupportReplay:
@@ -2915,6 +2917,6 @@ func replayUnavailabilityReasonExplanation(
 	case "promql_in_gcm_not_supported":
 		return "Historical data retrieval for PromQL metrics is not supported"
 	default:
-		return fmt.Sprintf("bad response (status: %d): %s", statusCode, reason)
+		return fmt.Sprintf("bad response (status: %d): %s", statusCode, strReason)
 	}
 }
