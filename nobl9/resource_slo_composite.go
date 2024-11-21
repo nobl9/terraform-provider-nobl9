@@ -95,7 +95,7 @@ func schemaCompositeDeprecated() *schema.Schema {
 				"target": {
 					Type:        schema.TypeFloat,
 					Required:    true,
-					Description: "Designated value.",
+					Description: "The numeric target for your objective.",
 				},
 				"burn_rate_condition": {
 					Type:        schema.TypeSet,

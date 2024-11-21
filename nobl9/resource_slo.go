@@ -135,12 +135,12 @@ func resourceObjective() *schema.Resource {
 			"op": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Type of logical operation.",
+				Description: "For threshold metrics, the logical operator applied to the threshold.",
 			},
 			"target": {
 				Type:        schema.TypeFloat,
 				Required:    true,
-				Description: "Designated value.",
+				Description: "The numeric target for your objective.",
 			},
 			"time_slice_target": {
 				Type:        schema.TypeFloat,
@@ -150,7 +150,7 @@ func resourceObjective() *schema.Resource {
 			"value": {
 				Type:        schema.TypeFloat,
 				Required:    true,
-				Description: "Value.",
+				Description: "For threshold metrics, the threshold value. For ratio metrics, for legacy reasons, this must be a unique value per objective.",
 			},
 			"name": {
 				Type:        schema.TypeString,
