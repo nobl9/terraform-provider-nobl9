@@ -2887,7 +2887,34 @@ func triggerHistoricalDataRetrieval(
 	var data []byte
 	data, err = io.ReadAll(resp.Body)
 	if resp.StatusCode >= 300 {
-		return fmt.Errorf("bad response (status: %d): %s", resp.StatusCode, string(data))
+		return errors.New(replayUnavailabilityReasonExplanation(string(data), resp.StatusCode))
 	}
 	return err
+}
+
+func replayUnavailabilityReasonExplanation(
+	reason string,
+	statusCode int,
+) string {
+	switch reason {
+	case sdkModels.ReplayIntegrationDoesNotSupportReplay:
+		return "The Data Source does not support Replay yet"
+	case sdkModels.ReplayAgentVersionDoesNotSupportReplay:
+		return "Update your Agent version to the latest to use Replay for this Data Source."
+	case sdkModels.ReplayMaxHistoricalDataRetrievalTooLow:
+		return "Value configured for spec.historicalDataRetrieval.maxDuration.value" +
+			" for the Data Source is lower than the duration you're trying to run Replay for."
+	case sdkModels.ReplayConcurrentReplayRunsLimitExhausted:
+		return "You've exceeded the limit of concurrent Replay runs. Wait until the current Replay(s) are done."
+	case sdkModels.ReplayUnknownAgentVersion:
+		return "Your Agent isn't connected to the Data Source. Deploy the Agent and run Replay once again."
+	case "single_query_not_supported":
+		return "Historical data retrieval for single-query ratio metrics is not supported"
+	case "composite_slo_not_supported":
+		return "Historical data retrieval for Composite SLO is not supported"
+	case "promql_in_gcm_not_supported":
+		return "Historical data retrieval for PromQL metrics is not supported"
+	default:
+		return fmt.Sprintf("bad response (status: %d): %s", statusCode, reason)
+	}
 }
