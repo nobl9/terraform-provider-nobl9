@@ -146,7 +146,7 @@ func resourceObjective() *schema.Resource {
 			"value": {
 				Type:        schema.TypeFloat,
 				Required:    true,
-				Description: "For threshold metrics, the threshold value. For ratio metrics, for legacy reasons, this must be a unique value per objective."
+				Description: "For threshold metrics, the threshold value. For ratio metrics, for legacy reasons, this must be a unique value per objective.",
 			},
 			"name": {
 				Type:        schema.TypeString,
