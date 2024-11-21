@@ -190,6 +190,7 @@ func schemaSLO() map[string]*schema.Schema {
 		"service": {
 			Type:        schema.TypeString,
 			Required:    true,
+			ForceNew:    true,
 			Description: "Name of the service.",
 		},
 		"indicator": {
