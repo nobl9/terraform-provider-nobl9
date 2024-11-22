@@ -340,7 +340,7 @@ func schemaSLO() map[string]*schema.Schema {
 			Optional:         true,
 			ValidateDiagFunc: validateDateTime,
 			Description: "If set, the retrieval of historical data for a newly created SLO will be triggered, " +
-				"starting from the specified date.",
+				"starting from the specified date. Needs to be RFC3339 format.",
 		},
 	}
 }
