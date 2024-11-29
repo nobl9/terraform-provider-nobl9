@@ -9,13 +9,13 @@ import (
 
 // ProviderModel describes the [Provider] data model.
 type ProviderModel struct {
-	ClientID       types.String `tfsdk:"client_id" envconfig:"CLIENT_ID"`
-	ClientSecret   types.String `tfsdk:"client_secret" envconfig:"CLIENT_SECRET"`
-	OktaOrgURL     types.String `tfsdk:"okta_org_url" envconfig:"OKTA_URL"`
+	ClientID       types.String `tfsdk:"client_id"        envconfig:"CLIENT_ID"`
+	ClientSecret   types.String `tfsdk:"client_secret"    envconfig:"CLIENT_SECRET"`
+	OktaOrgURL     types.String `tfsdk:"okta_org_url"     envconfig:"OKTA_URL"`
 	OktaAuthServer types.String `tfsdk:"okta_auth_server" envconfig:"OKTA_AUTH"`
-	Project        types.String `tfsdk:"project" envconfig:"PROJECT"`
-	IngestURL      types.String `tfsdk:"ingest_url" envconfig:"URL"`
-	Organization   types.String `tfsdk:"organization" envconfig:"ORG"`
+	Project        types.String `tfsdk:"project"          envconfig:"PROJECT"`
+	IngestURL      types.String `tfsdk:"ingest_url"       envconfig:"URL"`
+	Organization   types.String `tfsdk:"organization"     envconfig:"ORG"`
 }
 
 // setDefaultsFromEnv sets the default values for the [ProviderModel] from the

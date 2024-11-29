@@ -72,7 +72,10 @@ func (s sdkClient) ApplyObject(ctx context.Context, obj manifest.Object) diag.Di
 	err := s.client.Objects().V1().Apply(ctx, []manifest.Object{obj})
 	if err != nil {
 		return diag.Diagnostics{
-			diag.NewErrorDiagnostic(fmt.Sprintf("Failed to create %s %s", obj.GetVersion(), obj.GetKind()), err.Error()),
+			diag.NewErrorDiagnostic(
+				fmt.Sprintf("Failed to create %s %s", obj.GetVersion(), obj.GetKind()),
+				err.Error(),
+			),
 		}
 	}
 	tflog.Trace(ctx, fmt.Sprintf("created %s %s", obj.GetVersion(), obj.GetKind()), getManifestObjectTraceAttrs(obj))

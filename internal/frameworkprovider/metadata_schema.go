@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+//
 //nolint:lll
 const dnsRFC1123NamingConventionNotice = "must conform to the [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names) naming convention"
 
@@ -34,8 +35,11 @@ func metadataDisplayNameAttr() schema.StringAttribute {
 
 func metadataProjectAttr() schema.StringAttribute {
 	return schema.StringAttribute{
-		Required:            true,
-		MarkdownDescription: fmt.Sprintf("Name of the Nobl9 project the resource sits in, %s.", dnsRFC1123NamingConventionNotice),
+		Required: true,
+		MarkdownDescription: fmt.Sprintf(
+			"Name of the Nobl9 project the resource sits in, %s.",
+			dnsRFC1123NamingConventionNotice,
+		),
 		PlanModifiers: []planmodifier.String{
 			stringplanmodifier.RequiresReplace(),
 		},

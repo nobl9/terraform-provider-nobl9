@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/nobl9/nobl9-go/manifest"
@@ -11,6 +12,7 @@ import (
 
 // Ensure [ServiceResource] fully satisfies framework interfaces.
 var _ resource.Resource = &ServiceResource{}
+var _ resource.ResourceWithImportState = &ServiceResource{}
 
 func NewServiceResource() resource.Resource {
 	return &ServiceResource{}
@@ -129,7 +131,19 @@ func (s *ServiceResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 }
 
-func (r *ServiceResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (s *ServiceResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
+	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
+}
+
+func (s *ServiceResource) Configure(
+	ctx context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -137,9 +151,12 @@ func (r *ServiceResource) Configure(ctx context.Context, req resource.ConfigureR
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *sdkClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf(
+				"Expected *sdkClient, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
 		)
 		return
 	}
-	r.client = client
+	s.client = client
 }

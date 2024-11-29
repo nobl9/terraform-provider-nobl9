@@ -2,16 +2,11 @@ package frameworkprovider
 
 import (
 	"context"
-	"fmt"
-	"net/url"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/nobl9/nobl9-go/sdk"
 )
 
 const providerEnvPrefix = "NOBL9"
