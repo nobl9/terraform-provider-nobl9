@@ -101,7 +101,7 @@ func (s sdkClient) GetService(ctx context.Context, name, project string) (*v1alp
 	if diags.HasError() {
 		return nil, diags
 	}
-	svc, ok := obj.(*v1alphaService.Service)
+	svc, ok := obj.(v1alphaService.Service)
 	if !ok {
 		return nil, diag.Diagnostics{
 			diag.NewErrorDiagnostic(
@@ -109,7 +109,7 @@ func (s sdkClient) GetService(ctx context.Context, name, project string) (*v1alp
 				"Please report this issue to the provider developers."),
 		}
 	}
-	return svc, nil
+	return &svc, nil
 }
 
 // genericGetObject should only be called by [sdkClient].

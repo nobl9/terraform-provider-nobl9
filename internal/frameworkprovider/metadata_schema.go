@@ -3,12 +3,9 @@ package frameworkprovider
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -59,32 +56,5 @@ func metadataAnnotationsAttr() *schema.MapAttribute {
 		ElementType:         types.StringType,
 		Optional:            true,
 		MarkdownDescription: "[Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.", //nolint:lll
-	}
-}
-
-func metadataLabelsBlock() *schema.ListNestedBlock {
-	return &schema.ListNestedBlock{
-		Description: "[Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values.",
-		NestedObject: schema.NestedBlockObject{
-			Attributes: map[string]schema.Attribute{
-				"key": schema.StringAttribute{
-					Required:    true,
-					Description: "A key for the label, unique within the associated resource.",
-					Validators: []validator.String{
-						stringvalidator.LengthAtLeast(1),
-					},
-				},
-				"values": schema.ListAttribute{
-					ElementType: types.StringType,
-					Optional:    true,
-					Description: "A list of unique values for a single key.",
-					Validators: []validator.List{
-						listvalidator.SizeAtLeast(1),
-					},
-				},
-			},
-			// TODO: Add DiffSuppressFunc
-			PlanModifiers: []planmodifier.Object{},
-		},
 	}
 }

@@ -76,7 +76,7 @@ func (s *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	service, diags := s.client.GetService(ctx, model.Name.ValueString(), model.Project.ValueString())
+	service, diags := s.client.GetService(ctx, model.Name, model.Project)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -124,7 +124,7 @@ func (s *ServiceResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	diags := s.client.DeleteObject(ctx, manifest.KindService, model.Name.ValueString(), model.Project.ValueString())
+	diags := s.client.DeleteObject(ctx, manifest.KindService, model.Name, model.Project)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
