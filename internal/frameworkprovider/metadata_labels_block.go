@@ -4,7 +4,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
@@ -51,8 +50,8 @@ func (l Labels) ToManifest() v1alpha.Labels {
 
 // metadataLabelsBlock returns a nested block for metadata labels.
 // Every resource which supports labels can reuse it.
-func metadataLabelsBlock() *schema.ListNestedBlock {
-	return &schema.ListNestedBlock{
+func metadataLabelsBlock() *schema.SetNestedBlock {
+	return &schema.SetNestedBlock{
 		Description: "[Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values.",
 		NestedObject: schema.NestedBlockObject{
 			Attributes: map[string]schema.Attribute{
@@ -72,8 +71,6 @@ func metadataLabelsBlock() *schema.ListNestedBlock {
 					},
 				},
 			},
-			// TODO: Add DiffSuppressFunc
-			PlanModifiers: []planmodifier.Object{},
 		},
 	}
 }
