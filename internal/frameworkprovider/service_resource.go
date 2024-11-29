@@ -39,9 +39,9 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"description":  specDescriptionAttr(),
 			"annotations":  metadataAnnotationsAttr(),
 		},
-		// Blocks: map[string]schema.Block{
-		// 	"label": metadataLabelsBlock(),
-		// },
+		Blocks: map[string]schema.Block{
+			"label": metadataLabelsBlock(),
+		},
 		Description: "[Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service)",
 	}
 }
