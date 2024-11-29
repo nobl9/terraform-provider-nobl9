@@ -1,7 +1,6 @@
 package frameworkprovider
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 )
@@ -16,7 +15,7 @@ type ServiceResourceModel struct {
 	Labels      Labels            `tfsdk:"label"`
 }
 
-func newServiceResourceConfigFromManifest(svc v1alphaService.Service) (*ServiceResourceModel, diag.Diagnostics) {
+func newServiceResourceConfigFromManifest(svc v1alphaService.Service) *ServiceResourceModel {
 	return &ServiceResourceModel{
 		Name:        svc.Metadata.Name,
 		DisplayName: types.StringValue(svc.Metadata.DisplayName),
@@ -24,7 +23,7 @@ func newServiceResourceConfigFromManifest(svc v1alphaService.Service) (*ServiceR
 		Description: types.StringValue(svc.Spec.Description),
 		Annotations: svc.Metadata.Annotations,
 		Labels:      newLabelsFromManifest(svc.Metadata.Labels),
-	}, nil
+	}
 }
 
 func (s ServiceResourceModel) ToManifest() v1alphaService.Service {

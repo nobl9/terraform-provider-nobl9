@@ -82,12 +82,8 @@ func (s *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	updatedModel, diags := newServiceResourceConfigFromManifest(*service)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	// Save updated data into Terraform state
+	updatedModel := newServiceResourceConfigFromManifest(*service)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedModel)...)
 }
 

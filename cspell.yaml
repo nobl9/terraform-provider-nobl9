@@ -53,7 +53,10 @@ words:
   - sloctl
   - slos
   - tffile
+  - tflog
   - tfplugindocs
+  - tfprotov
+  - tfsdk
   - tpng
   - tsdbslo
   - vuln

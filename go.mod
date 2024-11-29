@@ -2,6 +2,8 @@ module github.com/nobl9/terraform-provider-nobl9
 
 go 1.22.0
 
+toolchain go1.23.2
+
 require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637

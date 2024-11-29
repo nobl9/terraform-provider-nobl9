@@ -2,14 +2,14 @@
 page_title: "nobl9_service Resource - terraform-provider-nobl9"
 subcategory: "Groupings and Utilities"
 description: |-
-  Service configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#service
+  Example resource
 ---
 
 # nobl9_service (Resource)
 
 A **service** in Nobl9 is a high-level grouping of Service Level Objectives (SLOs). A service can represent a logical service endpoint like an API, a database, an application, or anything else you care about setting an SLO for. Every SLO in Nobl9 is tied to a service, and the service can have one or more SLOs.
 
-For more details, refer to the [Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service).
+For more details, refer to the Example resource.
 
 ## Example Usage
 
@@ -45,20 +45,15 @@ resource "nobl9_service" "this" {
 
 ### Required
 
-- `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, must conform to the [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names) naming convention.
+- `project` (String) Name of the Nobl9 project the resource sits in, must conform to the [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names) naming convention.
 
 ### Optional
 
 - `annotations` (Map of String) [Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
-
-### Read-Only
-
-- `id` (String) The ID of this resource.
-- `status` (Map of Number) Status of created service.
+- `label` (Block Set) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 
 <a id="nestedblock--label"></a>
 ### Nested Schema for `label`
@@ -66,6 +61,9 @@ resource "nobl9_service" "this" {
 Required:
 
 - `key` (String) A key for the label, unique within the associated resource.
+
+Optional:
+
 - `values` (List of String) A list of unique values for a single key.
 
 ## Useful Links
