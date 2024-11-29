@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/nobl9/nobl9-go/manifest"
 )
 
@@ -38,6 +40,14 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"project":      metadataProjectAttr(),
 			"description":  specDescriptionAttr(),
 			"annotations":  metadataAnnotationsAttr(),
+			"status": schema.ObjectAttribute{
+				Computed:    true,
+				Optional:    true,
+				Description: "Status of created service.",
+				AttributeTypes: map[string]attr.Type{
+					"slo_count": types.Int64Type,
+				},
+			},
 		},
 		Blocks: map[string]schema.Block{
 			"label": metadataLabelsBlock(),
@@ -58,6 +68,13 @@ func (s *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 
 	service := model.ToManifest()
 	resp.Diagnostics.Append(s.client.ApplyObject(ctx, service)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Read the Service after creation to fetch the computed fields.
+	service, diags := s.client.GetService(ctx, model.Name, model.Project)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -83,7 +100,7 @@ func (s *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	// Save updated data into Terraform state
-	updatedModel := newServiceResourceConfigFromManifest(*service)
+	updatedModel := newServiceResourceConfigFromManifest(service)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedModel)...)
 }
 
@@ -99,6 +116,13 @@ func (s *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	service := model.ToManifest()
 	resp.Diagnostics.Append(s.client.ApplyObject(ctx, service)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Read the Service after update to fetch the computed fields.
+	service, diags := s.client.GetService(ctx, model.Name, model.Project)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

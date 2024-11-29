@@ -7,15 +7,26 @@ import (
 
 // ExampleResourceConfig describes the [ServiceResource] data model.
 type ServiceResourceModel struct {
-	Name        string            `tfsdk:"name"`
-	DisplayName types.String      `tfsdk:"display_name"`
-	Project     string            `tfsdk:"project"`
-	Description types.String      `tfsdk:"description"`
-	Annotations map[string]string `tfsdk:"annotations"`
-	Labels      Labels            `tfsdk:"label"`
+	Name        string                      `tfsdk:"name"`
+	DisplayName types.String                `tfsdk:"display_name"`
+	Project     string                      `tfsdk:"project"`
+	Description types.String                `tfsdk:"description"`
+	Annotations map[string]string           `tfsdk:"annotations"`
+	Labels      Labels                      `tfsdk:"label"`
+	Status      *ServiceResourceStatusModel `tfsdk:"status"`
+}
+
+type ServiceResourceStatusModel struct {
+	SLOCount int `tfsdk:"slo_count"`
 }
 
 func newServiceResourceConfigFromManifest(svc v1alphaService.Service) *ServiceResourceModel {
+	var status *ServiceResourceStatusModel
+	if svc.Status != nil {
+		status = &ServiceResourceStatusModel{
+			SLOCount: svc.Status.SloCount,
+		}
+	}
 	return &ServiceResourceModel{
 		Name:        svc.Metadata.Name,
 		DisplayName: types.StringValue(svc.Metadata.DisplayName),
@@ -23,11 +34,12 @@ func newServiceResourceConfigFromManifest(svc v1alphaService.Service) *ServiceRe
 		Description: types.StringValue(svc.Spec.Description),
 		Annotations: svc.Metadata.Annotations,
 		Labels:      newLabelsFromManifest(svc.Metadata.Labels),
+		Status:      status,
 	}
 }
 
 func (s ServiceResourceModel) ToManifest() v1alphaService.Service {
-	return v1alphaService.New(
+	svc := v1alphaService.New(
 		v1alphaService.Metadata{
 			Name:        s.Name,
 			DisplayName: s.DisplayName.ValueString(),
@@ -39,4 +51,10 @@ func (s ServiceResourceModel) ToManifest() v1alphaService.Service {
 			Description: s.Description.ValueString(),
 		},
 	)
+	if s.Status != nil {
+		svc.Status = &v1alphaService.Status{
+			SloCount: s.Status.SLOCount,
+		}
+	}
+	return svc
 }

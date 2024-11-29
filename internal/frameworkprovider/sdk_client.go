@@ -96,20 +96,23 @@ func (s sdkClient) DeleteObject(ctx context.Context, kind manifest.Kind, name, p
 	return nil
 }
 
-func (s sdkClient) GetService(ctx context.Context, name, project string) (*v1alphaService.Service, diag.Diagnostics) {
+func (s sdkClient) GetService(
+	ctx context.Context,
+	name, project string,
+) (svc v1alphaService.Service, diags diag.Diagnostics) {
 	obj, diags := genericGetObject(ctx, s.client, manifest.KindService, name, project)
 	if diags.HasError() {
-		return nil, diags
+		return svc, diags
 	}
 	svc, ok := obj.(v1alphaService.Service)
 	if !ok {
-		return nil, diag.Diagnostics{
+		return svc, diag.Diagnostics{
 			diag.NewErrorDiagnostic(
 				fmt.Sprintf("Failed to cast %T to %T", obj, svc),
 				"Please report this issue to the provider developers."),
 		}
 	}
-	return &svc, nil
+	return svc, nil
 }
 
 // genericGetObject should only be called by [sdkClient].
