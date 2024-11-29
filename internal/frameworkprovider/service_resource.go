@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/nobl9/nobl9-go/sdk"
+	"github.com/nobl9/nobl9-go/manifest"
 )
 
 // Ensure [ServiceResource] fully satisfies framework interfaces.
@@ -18,7 +18,7 @@ func NewServiceResource() resource.Resource {
 
 // ServiceResource defines the [v1alpha.Service] resource implementation.
 type ServiceResource struct {
-	client *sdk.Client
+	client *sdkClient
 }
 
 // Metadata implements [resource.Resource.Metadata] function.
@@ -37,9 +37,9 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"description":  specDescriptionAttr(),
 			"annotations":  metadataAnnotationsAttr(),
 		},
-		Blocks: map[string]schema.Block{
-			"label": metadataLabelsBlock(),
-		},
+		// Blocks: map[string]schema.Block{
+		// 	"label": metadataLabelsBlock(),
+		// },
 		Description: "[Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service)",
 	}
 }
@@ -48,20 +48,65 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 // and planned state values should be read from the
 // CreateRequest and new state values set on the CreateResponse.
 func (s *ServiceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var model ServiceResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &model)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	service := model.ToManifest()
+	resp.Diagnostics.Append(s.client.ApplyObject(ctx, service)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Save data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &model)...)
 }
 
 // Read is called when the provider must read resource values in order
 // to update state. Planned state values should be read from the
 // ReadRequest and new state values set on the ReadResponse.
-func (s *ServiceResource) Read(_ context.Context, _ resource.ReadRequest, _ *resource.ReadResponse) {
-	panic("not implemented") // TODO: Implement
+func (s *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var model ServiceResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &model)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	service, diags := s.client.GetService(ctx, model.Name.ValueString(), model.Project.ValueString())
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	updatedModel, diags := newServiceResourceConfigFromManifest(*service)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// Save updated data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedModel)...)
 }
 
 // Update is called to update the state of the resource. Config, planned
 // state, and prior state values should be read from the
 // UpdateRequest and new state values set on the UpdateResponse.
-func (s *ServiceResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {
-	panic("not implemented") // TODO: Implement
+func (s *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var model ServiceResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &model)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	service := model.ToManifest()
+	resp.Diagnostics.Append(s.client.ApplyObject(ctx, service)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Save data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &model)...)
 }
 
 // Delete is called when the provider must delete the resource. Config
@@ -70,20 +115,29 @@ func (s *ServiceResource) Update(_ context.Context, _ resource.UpdateRequest, _ 
 // If execution completes without error, the framework will automatically
 // call DeleteResponse.State.RemoveResource(), so it can be omitted
 // from provider logic.
-func (s *ServiceResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
-	panic("not implemented") // TODO: Implement
+func (s *ServiceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var model ServiceResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &model)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	diags := s.client.DeleteObject(ctx, manifest.KindService, model.Name.ValueString(), model.Project.ValueString())
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (r *ServiceResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
-	client, ok := req.ProviderData.(*sdk.Client)
+	client, ok := req.ProviderData.(*sdkClient)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *http.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *sdkClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 		return
 	}

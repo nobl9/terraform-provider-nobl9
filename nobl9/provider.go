@@ -75,7 +75,7 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"nobl9_service":                                 resourceService(),
+			// "nobl9_service":                                 resourceService(),
 			"nobl9_agent":                                   resourceAgent(),
 			"nobl9_alert_policy":                            resourceAlertPolicy(),
 			"nobl9_alert_method_webhook":                    resourceAlertMethodFactory(alertMethodWebhook{}),
