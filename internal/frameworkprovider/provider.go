@@ -35,13 +35,13 @@ func (p *Provider) Schema(ctx context.Context, req provider.SchemaRequest, resp 
 		Attributes: map[string]schema.Attribute{
 			"client_id": schema.StringAttribute{
 				Optional: true,
-				MarkdownDescription: "The [Client ID](https://docs.nobl9.com/sloctl-user-guide/#configuration) " +
+				Description: "The [Client ID](https://docs.nobl9.com/sloctl-user-guide/#configuration) " +
 					"of your Nobl9 account required to connect to Nobl9.",
 			},
 			"client_secret": schema.StringAttribute{
 				Optional:  true,
 				Sensitive: true,
-				MarkdownDescription: "The [Client Secret](https://docs.nobl9.com/sloctl-user-guide/#configuration) " +
+				Description: "The [Client Secret](https://docs.nobl9.com/sloctl-user-guide/#configuration) " +
 					"of your Nobl9 account required to connect to Nobl9.",
 			},
 			"okta_org_url": schema.StringAttribute{

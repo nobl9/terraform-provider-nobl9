@@ -29,7 +29,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_ORG", nil),
-				Description: "Nobl9 [Organization ID](https://docs.nobl9.com/API_Documentation/api-endpoints-for-slo-annotations/#common-headers) that contains resources managed by the Nobl9 Terraform provider.",
+				Description: "Nobl9 Organization ID that contains resources managed by the provider.",
 			},
 
 			"project": {
@@ -41,17 +41,19 @@ func Provider() *schema.Provider {
 
 			"client_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_ID", nil),
-				Description: "the [Client ID](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.",
+				Description: "The [Client ID](https://docs.nobl9.com/sloctl-user-guide/#configuration) " +
+					"of your Nobl9 account required to connect to Nobl9.",
 			},
 
 			"client_secret": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_SECRET", nil),
-				Description: "the [Client Secret](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.",
+				Description: "The [Client Secret](https://docs.nobl9.com/sloctl-user-guide/#configuration) " +
+					"of your Nobl9 account required to connect to Nobl9.",
 			},
 
 			"okta_org_url": {
