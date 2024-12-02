@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/nobl9/nobl9-go/manifest"
 )
 
@@ -41,12 +41,10 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"description":  specDescriptionAttr(),
 			"annotations":  metadataAnnotationsAttr(),
 			"status": schema.ObjectAttribute{
-				Computed:    true,
-				Optional:    true,
-				Description: "Status of created service.",
-				AttributeTypes: map[string]attr.Type{
-					"slo_count": types.Int64Type,
-				},
+				Computed:       true,
+				Optional:       true,
+				Description:    "Status of created service.",
+				AttributeTypes: serviceStatusTypes,
 			},
 		},
 		Blocks: map[string]schema.Block{
@@ -60,27 +58,7 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 // and planned state values should be read from the
 // CreateRequest and new state values set on the CreateResponse.
 func (s *ServiceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var model ServiceResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &model)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	service := model.ToManifest()
-	resp.Diagnostics.Append(s.client.ApplyObject(ctx, service)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Read the Service after creation to fetch the computed fields.
-	service, diags := s.client.GetService(ctx, model.Name, model.Project)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Save data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &model)...)
+	resp.Diagnostics.Append(s.applyResource(ctx, req.Plan, &resp.State)...)
 }
 
 // Read is called when the provider must read resource values in order
@@ -93,14 +71,12 @@ func (s *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	service, diags := s.client.GetService(ctx, model.Name, model.Project)
+	// Read the Service after update to fetch the computed fields.
+	updatedModel, diags := s.readResource(ctx, model)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// Save updated data into Terraform state
-	updatedModel := newServiceResourceConfigFromManifest(service)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedModel)...)
 }
 
@@ -108,27 +84,7 @@ func (s *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 // state, and prior state values should be read from the
 // UpdateRequest and new state values set on the UpdateResponse.
 func (s *ServiceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var model ServiceResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &model)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	service := model.ToManifest()
-	resp.Diagnostics.Append(s.client.ApplyObject(ctx, service)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Read the Service after update to fetch the computed fields.
-	service, diags := s.client.GetService(ctx, model.Name, model.Project)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Save data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &model)...)
+	resp.Diagnostics.Append(s.applyResource(ctx, req.Plan, &resp.State)...)
 }
 
 // Delete is called when the provider must delete the resource. Config
@@ -179,4 +135,45 @@ func (s *ServiceResource) Configure(
 		return
 	}
 	s.client = client
+}
+
+func (s *ServiceResource) applyResource(ctx context.Context, plan tfsdk.Plan, state *tfsdk.State) diag.Diagnostics {
+	var model ServiceResourceModel
+	diagnostics := plan.Get(ctx, &model)
+	if diagnostics.HasError() {
+		return diagnostics
+	}
+
+	service, diags := model.ToManifest(ctx)
+	diagnostics.Append(diags...)
+	if diagnostics.HasError() {
+		return diagnostics
+	}
+	diags.Append(s.client.ApplyObject(ctx, service)...)
+	if diagnostics.HasError() {
+		return diagnostics
+	}
+
+	// Read the Service after creation to fetch the computed fields.
+	appliedModel, diagnostics := s.readResource(ctx, model)
+	if diagnostics.HasError() {
+		return diagnostics
+	}
+	// Save data into Terraform state
+	diagnostics.Append(state.Set(ctx, appliedModel)...)
+	return diagnostics
+}
+
+// readResource reads the current state of the resource from the Nobl9 API.
+func (s *ServiceResource) readResource(
+	ctx context.Context,
+	model ServiceResourceModel,
+) (*ServiceResourceModel, diag.Diagnostics) {
+	service, diagnostics := s.client.GetService(ctx, model.Name, model.Project)
+	if diagnostics.HasError() {
+		return nil, diagnostics
+	}
+	updatedModel, diags := newServiceResourceConfigFromManifest(ctx, service)
+	diagnostics.Append(diags...)
+	return updatedModel, diagnostics
 }
