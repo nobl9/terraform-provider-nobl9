@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 )
 
@@ -56,8 +55,8 @@ func newServiceResourceConfigFromManifest(
 	}, nil
 }
 
-func (s ServiceResourceModel) ToManifest(ctx context.Context) (svc v1alphaService.Service, diags diag.Diagnostics) {
-	svc = v1alphaService.New(
+func (s ServiceResourceModel) ToManifest(ctx context.Context) v1alphaService.Service {
+	return v1alphaService.New(
 		v1alphaService.Metadata{
 			Name:        s.Name,
 			DisplayName: s.DisplayName.ValueString(),
@@ -69,15 +68,4 @@ func (s ServiceResourceModel) ToManifest(ctx context.Context) (svc v1alphaServic
 			Description: s.Description.ValueString(),
 		},
 	)
-	if !s.Status.IsNull() && !s.Status.IsUnknown() {
-		var status ServiceResourceStatusModel
-		diags = s.Status.As(ctx, &status, basetypes.ObjectAsOptions{})
-		if diags.HasError() {
-			return svc, diags
-		}
-		svc.Status = &v1alphaService.Status{
-			SloCount: int(status.SLOCount.ValueInt64()),
-		}
-	}
-	return svc, nil
 }

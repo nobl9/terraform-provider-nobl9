@@ -1,7 +1,7 @@
 package frameworkprovider
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -62,12 +62,12 @@ func metadataLabelsBlock() *schema.SetNestedBlock {
 						stringvalidator.LengthAtLeast(1),
 					},
 				},
-				"values": schema.ListAttribute{
+				"values": schema.SetAttribute{
 					ElementType: types.StringType,
 					Optional:    true,
-					Description: "A list of unique values for a single key.",
-					Validators: []validator.List{
-						listvalidator.SizeAtLeast(1),
+					Description: "A set of values for a single key.",
+					Validators: []validator.Set{
+						setvalidator.SizeAtLeast(1),
 					},
 				},
 			},

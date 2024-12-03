@@ -144,12 +144,8 @@ func (s *ServiceResource) applyResource(ctx context.Context, plan tfsdk.Plan, st
 		return diagnostics
 	}
 
-	service, diags := model.ToManifest(ctx)
-	diagnostics.Append(diags...)
-	if diagnostics.HasError() {
-		return diagnostics
-	}
-	diags.Append(s.client.ApplyObject(ctx, service)...)
+	service := model.ToManifest(ctx)
+	diagnostics.Append(s.client.ApplyObject(ctx, service)...)
 	if diagnostics.HasError() {
 		return diagnostics
 	}
