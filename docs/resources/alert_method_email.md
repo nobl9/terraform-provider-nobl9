@@ -39,11 +39,9 @@ resource "nobl9_alert_method_email" "this" {
 ### Optional
 
 - `bcc` (List of String) Blind carbon copy recipients. The maximum number of recipients is 10.
-- `body` (String, Deprecated) This value was used as the template for the email alert's body. 'body' is deprecated and not used anywhere; however, its' kept for backward compatibility.
 - `cc` (List of String) Carbon copy recipients. The maximum number of recipients is 10.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `subject` (String, Deprecated) This value was used as the email alert's subject. 'subject' is deprecated and not used anywhere; however, its' kept for backward compatibility.
 
 ### Read-Only
 

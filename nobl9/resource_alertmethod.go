@@ -575,18 +575,6 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 				Type: schema.TypeString,
 			},
 		},
-		"subject": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Deprecated:  "'subject' indicated the email alert's subject. It has been deprecated since the Nobl9 1.57 release and is no longer used to generate emails. You can safely remove it from your configuration file.",
-			Description: "This value was used as the email alert's subject. 'subject' is deprecated and not used anywhere; however, its' kept for backward compatibility.",
-		},
-		"body": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Deprecated:  "'body' indicated the email alert's body. It has been deprecated since the Nobl9 1.57 release and is no longer used to generate emails. You can safely remove it from your configuration file.",
-			Description: "This value was used as the template for the email alert's body. 'body' is deprecated and not used anywhere; however, its' kept for backward compatibility.",
-		},
 	}
 }
 
@@ -594,11 +582,9 @@ func (i alertMethodEmail) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Sp
 	return v1alphaAlertMethod.Spec{
 		Description: r.Get("description").(string),
 		Email: &v1alphaAlertMethod.EmailAlertMethod{
-			To:      toStringSlice(r.Get("to").([]interface{})),
-			Cc:      toStringSlice(r.Get("cc").([]interface{})),
-			Bcc:     toStringSlice(r.Get("bcc").([]interface{})),
-			Subject: r.Get("subject").(string),
-			Body:    r.Get("body").(string),
+			To:  toStringSlice(r.Get("to").([]interface{})),
+			Cc:  toStringSlice(r.Get("cc").([]interface{})),
+			Bcc: toStringSlice(r.Get("bcc").([]interface{})),
 		},
 	}
 }
@@ -612,12 +598,6 @@ func (i alertMethodEmail) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAler
 	err = d.Set("cc", config.Cc)
 	diags = appendError(diags, err)
 	err = d.Set("bcc", config.Bcc)
-	diags = appendError(diags, err)
-	//nolint:staticcheck
-	err = d.Set("subject", config.Subject)
-	diags = appendError(diags, err)
-	//nolint:staticcheck
-	err = d.Set("body", config.Body)
 	diags = appendError(diags, err)
 
 	return diags
