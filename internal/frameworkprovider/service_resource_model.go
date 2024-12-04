@@ -9,7 +9,7 @@ import (
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 )
 
-// ExampleResourceConfig describes the [ServiceResource] data model.
+// ServiceResourceModel describes the [ServiceResource] data model.
 type ServiceResourceModel struct {
 	Name        string            `tfsdk:"name"`
 	DisplayName types.String      `tfsdk:"display_name"`

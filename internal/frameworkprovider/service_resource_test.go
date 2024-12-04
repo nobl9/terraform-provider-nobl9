@@ -1,10 +1,11 @@
 package frameworkprovider
 
 import (
-	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccExampleResource(t *testing.T) {
@@ -14,14 +15,14 @@ func TestAccExampleResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccExampleResourceConfig("one"),
+				Config: newServiceResource(t, serviceResourceTemplateModel{}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("nobl9_service.test", "name", "one"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "nobl9_service.test",
+				ResourceName:      "nobl9_service.this",
 				ImportState:       true,
 				ImportStateVerify: true,
 				// This is not normally necessary, but is here because this
@@ -32,7 +33,7 @@ func TestAccExampleResource(t *testing.T) {
 			},
 			// Update and Read testing
 			{
-				Config: testAccExampleResourceConfig("two"),
+				Config: newServiceResource(t, serviceResourceTemplateModel{}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("scaffolding_example.test", "configurable_attribute", "two"),
 				),
@@ -42,10 +43,56 @@ func TestAccExampleResource(t *testing.T) {
 	})
 }
 
-func testAccExampleResourceConfig(name string) string {
-	return fmt.Sprintf(`
-resource "nobl9_service" "test" {
-  name = %[1]q
+func TestRenderServiceResourceTemplate(t *testing.T) {
+	t.Parallel()
+
+	actual := newServiceResource(t, serviceResourceTemplateModel{
+		ResourceName: "this",
+		ServiceResourceModel: ServiceResourceModel{
+			Name:        "service",
+			DisplayName: types.StringValue("Service"),
+			Project:     "default",
+			Description: types.StringValue("Example service"),
+			Annotations: map[string]string{"key": "value"},
+			Labels: Labels{
+				{Key: "team", Values: []string{"green"}},
+				{Key: "env", Values: []string{"prod", "dev"}},
+			},
+		},
+	})
+
+	expected := `resource "nobl9_service" "this" {
+  name = "service"
+  display_name = "Service"
+  project = "default"
+  annotations = {
+    key = "value",
+  }
+  label {
+    key = "team"
+    values = [
+      "green",
+    ]
+  }
+  label {
+    key = "env"
+    values = [
+      "prod",
+      "dev",
+    ]
+  }
+  description = "Example service"
 }
-`, name)
+`
+
+	assert.Equal(t, expected, actual)
+}
+
+type serviceResourceTemplateModel struct {
+	ResourceName string
+	ServiceResourceModel
+}
+
+func newServiceResource(t *testing.T, model serviceResourceTemplateModel) string {
+	return executeTemplate(t, "service_resource.hcl.tmpl", model)
 }
