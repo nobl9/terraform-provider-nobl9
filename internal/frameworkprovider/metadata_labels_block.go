@@ -50,8 +50,8 @@ func (l Labels) ToManifest() v1alpha.Labels {
 
 // metadataLabelsBlock returns a nested block for metadata labels.
 // Every resource which supports labels can reuse it.
-func metadataLabelsBlock() *schema.SetNestedBlock {
-	return &schema.SetNestedBlock{
+func metadataLabelsBlock() *schema.ListNestedBlock {
+	return &schema.ListNestedBlock{
 		Description: "[Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values.",
 		NestedObject: schema.NestedBlockObject{
 			Attributes: map[string]schema.Attribute{
@@ -73,4 +73,15 @@ func metadataLabelsBlock() *schema.SetNestedBlock {
 			},
 		},
 	}
+}
+
+// sortLabels sorts the API returned list based on the user-defined list as a reference for sorting order.
+func sortLabels(userDefinedLabels, apiReturnedList Labels) Labels {
+	return sortListBasedOnReferenceList(
+		apiReturnedList,
+		userDefinedLabels,
+		func(a, b LabelBlockModel) bool {
+			return a.Key == b.Key
+		},
+	)
 }

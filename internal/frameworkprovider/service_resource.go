@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/nobl9/nobl9-go/manifest"
 )
@@ -45,6 +47,9 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Optional:       true,
 				Description:    "Status of created service.",
 				AttributeTypes: serviceStatusTypes,
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 		Blocks: map[string]schema.Block{
@@ -77,6 +82,7 @@ func (s *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedModel)...)
 }
 
@@ -171,5 +177,10 @@ func (s *ServiceResource) readResource(
 	}
 	updatedModel, diags := newServiceResourceConfigFromManifest(ctx, service)
 	diagnostics.Append(diags...)
+	if diagnostics.HasError() {
+		return nil, diagnostics
+	}
+	// SORT LABELS.
+	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
 	return updatedModel, diagnostics
 }
