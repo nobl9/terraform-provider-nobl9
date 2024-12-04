@@ -53,7 +53,8 @@ resource "nobl9_service" "this" {
 - `annotations` (Map of String) [Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `label` (Block Set) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
+- `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
+- `status` (Object) Status of created service. (see [below for nested schema](#nestedatt--status))
 
 <a id="nestedblock--label"></a>
 ### Nested Schema for `label`
@@ -64,7 +65,15 @@ Required:
 
 Optional:
 
-- `values` (List of String) A list of unique values for a single key.
+- `values` (Set of String) A set of values for a single key.
+
+
+<a id="nestedatt--status"></a>
+### Nested Schema for `status`
+
+Optional:
+
+- `slo_count` (Number)
 
 ## Useful Links
 
