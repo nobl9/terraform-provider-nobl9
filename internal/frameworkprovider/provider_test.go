@@ -71,16 +71,11 @@ func appendTestLabels(labels Labels) Labels {
 
 // assertResourceWasApplied is a test check function that asserts if the resource was applied
 // and that it matches the expected [manifest.Object] shape.
-func assertResourceWasApplied(t *testing.T, expected manifest.Object) resource.TestCheckFunc {
+func assertResourceWasApplied(t *testing.T, ctx context.Context, expected manifest.Object) resource.TestCheckFunc {
 	failureErr := errors.New("failed to assert if resource was applied")
 	return func(s *terraform.State) error {
-		headers := http.Header{}
-		if projectScoped, ok := expected.(manifest.ProjectScopedObject); ok {
-			headers.Set(sdk.HeaderProject, projectScoped.GetProject())
-		}
-		params := url.Values{v1Objects.QueryKeyName: []string{expected.GetName()}}
-		objects, err := testSDKClient.client.Objects().V1().Get(context.Background(), expected.GetKind(), headers, params)
-		if !assert.NoError(t, err) {
+		objects, err := getObjectsFromTheNobl9API(t, ctx, expected)
+		if err != nil {
 			return errors.Wrap(failureErr, err.Error())
 		}
 		if !assert.Len(t, objects, 1) {
@@ -91,4 +86,44 @@ func assertResourceWasApplied(t *testing.T, expected manifest.Object) resource.T
 		}
 		return nil
 	}
+}
+
+// assertResourceWasDeleted is a test check function that asserts if the resource was deleted from the Nobl9 platform.
+func assertResourceWasDeleted(t *testing.T, ctx context.Context, expected manifest.Object) resource.TestCheckFunc {
+	t.Helper()
+
+	failureErr := errors.New("failed to assert if resource was deleted")
+	return func(s *terraform.State) error {
+		objects, err := getObjectsFromTheNobl9API(t, ctx, expected)
+		if err != nil {
+			return errors.Wrap(failureErr, err.Error())
+		}
+		if !assert.Len(t, objects, 0) {
+			return errors.Wrap(failureErr, "expected no objects to be returned by the API")
+		}
+		return nil
+	}
+}
+
+// applyNobl9Objects is a helper function that applies the provided objects to the Nobl9 platform.
+func applyNobl9Objects(t *testing.T, ctx context.Context, objects ...manifest.Object) {
+	t.Helper()
+
+	err := testSDKClient.client.Objects().V1().Apply(ctx, objects)
+	assert.NoError(t, err)
+}
+
+func getObjectsFromTheNobl9API(t *testing.T, ctx context.Context, object manifest.Object) ([]manifest.Object, error) {
+	t.Helper()
+
+	headers := http.Header{}
+	if projectScoped, ok := object.(manifest.ProjectScopedObject); ok {
+		headers.Set(sdk.HeaderProject, projectScoped.GetProject())
+	}
+	params := url.Values{v1Objects.QueryKeyName: []string{object.GetName()}}
+	objects, err := testSDKClient.client.Objects().V1().Get(ctx, object.GetKind(), headers, params)
+	if !assert.NoError(t, err) {
+		return nil, err
+	}
+	return objects, nil
 }

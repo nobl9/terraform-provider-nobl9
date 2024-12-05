@@ -1,6 +1,8 @@
 package frameworkprovider
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -8,12 +10,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAccExampleResource(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
 	serviceName := fmt.Sprintf("service-%d", time.Now().UnixNano())
 
 	serviceResource := serviceResourceTemplateModel{
@@ -47,11 +53,11 @@ func TestAccExampleResource(t *testing.T) {
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing.
+			// Create and Read.
 			{
 				Config: newServiceResource(t, serviceResource),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assertResourceWasApplied(t, manifestService),
+					assertResourceWasApplied(t, ctx, manifestService),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -60,18 +66,38 @@ func TestAccExampleResource(t *testing.T) {
 					},
 				},
 			},
-			//// ImportState testing.
-			//{
-			//	ResourceName:      "nobl9_service.test",
-			//	ImportState:       true,
-			//	ImportStateVerify: true,
-			//	// This is not normally necessary, but is here because this
-			//	// example code does not have an actual upstream service.
-			//	// Once the Read method is able to refresh information from
-			//	// the upstream service, this can be removed.
-			//	ImportStateVerifyIgnore: []string{"configurable_attribute", "defaulted"},
-			//},
-			// Update and Read testing.
+			// Delete.
+			{
+				Config: newServiceResource(t, serviceResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasDeleted(t, ctx, manifestService),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionDestroy),
+					},
+				},
+				Destroy: true,
+			},
+			// ImportState.
+			{
+				ImportStateId: "default/" + serviceName,
+				ResourceName:  "nobl9_service.test",
+				ImportState:   true,
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					if !assert.Len(t, states, 1) {
+						return errors.New("expected exactly one state")
+					}
+					assert.Equal(t, serviceName, states[0].Attributes["name"])
+					assert.Equal(t, "default", states[0].Attributes["project"])
+					return nil
+				},
+				// In the next step we're also verifying the imported state, so we need to persist it.
+				ImportStatePersist: true,
+				PreConfig:          func() { applyNobl9Objects(t, ctx, manifestService) },
+			},
+			// Update and Read.
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
@@ -80,7 +106,7 @@ func TestAccExampleResource(t *testing.T) {
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("nobl9_service.test", "display_name", "New Service Display Name"),
-					assertResourceWasApplied(t, func() v1alphaService.Service {
+					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
 						svc := manifestService
 						svc.Metadata.DisplayName = "New Service Display Name"
 						return svc
@@ -93,7 +119,7 @@ func TestAccExampleResource(t *testing.T) {
 					},
 				},
 			},
-			// Delete testing automatically occurs in TestCase
+			// Delete automatically occurs in TestCase, no need to clean up.
 		},
 	})
 }

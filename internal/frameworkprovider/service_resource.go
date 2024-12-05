@@ -3,6 +3,7 @@ package frameworkprovider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -37,6 +38,10 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Example resource",
 		Attributes: map[string]schema.Attribute{
+			//"id": schema.StringAttribute{
+			//	Computed:    true,
+			//	Description: "The ID of this resource.",
+			//},
 			"name":         metadataNameAttr(),
 			"display_name": metadataDisplayNameAttr(),
 			"project":      metadataProjectAttr(),
@@ -113,16 +118,26 @@ func (s *ServiceResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 }
 
+// ImportState is called when the provider must import the resource's state.
 func (s *ServiceResource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
+	parts := strings.Split(req.ID, "/")
+	if len(parts) != 2 {
+		resp.Diagnostics.AddError(
+			"Invalid import ID",
+			"Expected ID to be in the format '<project-name>/<service-name>'.",
+		)
+		return
+	}
+	resp.State.SetAttribute(ctx, path.Root("project"), parts[0])
+	resp.State.SetAttribute(ctx, path.Root("name"), parts[1])
 }
 
 func (s *ServiceResource) Configure(
-	ctx context.Context,
+	_ context.Context,
 	req resource.ConfigureRequest,
 	resp *resource.ConfigureResponse,
 ) {
