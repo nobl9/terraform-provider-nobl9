@@ -3,19 +3,18 @@ package frameworkprovider
 import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/kelseyhightower/envconfig"
 )
 
 // ProviderModel describes the [Provider] data model.
 type ProviderModel struct {
-	ClientID       types.String `tfsdk:"client_id"        envconfig:"CLIENT_ID"`
-	ClientSecret   types.String `tfsdk:"client_secret"    envconfig:"CLIENT_SECRET"`
-	OktaOrgURL     types.String `tfsdk:"okta_org_url"     envconfig:"OKTA_URL"`
-	OktaAuthServer types.String `tfsdk:"okta_auth_server" envconfig:"OKTA_AUTH"`
-	Project        types.String `tfsdk:"project"          envconfig:"PROJECT"`
-	IngestURL      types.String `tfsdk:"ingest_url"       envconfig:"URL"`
-	Organization   types.String `tfsdk:"organization"     envconfig:"ORG"`
+	ClientID       envConfigurableString `tfsdk:"client_id"        envconfig:"CLIENT_ID"`
+	ClientSecret   envConfigurableString `tfsdk:"client_secret"    envconfig:"CLIENT_SECRET"`
+	OktaOrgURL     envConfigurableString `tfsdk:"okta_org_url"     envconfig:"OKTA_URL"`
+	OktaAuthServer envConfigurableString `tfsdk:"okta_auth_server" envconfig:"OKTA_AUTH"`
+	Project        envConfigurableString `tfsdk:"project"          envconfig:"PROJECT"`
+	IngestURL      envConfigurableString `tfsdk:"ingest_url"       envconfig:"URL"`
+	Organization   envConfigurableString `tfsdk:"organization"     envconfig:"ORG"`
 }
 
 // setDefaultsFromEnv sets the default values for the [ProviderModel] from the
@@ -55,7 +54,8 @@ func (p *ProviderModel) setDefaultsFromEnv() diag.Diagnostics {
 
 // validate ensures required fields are set.
 // It should be called after [ProviderModel.setDefaultsFromEnv] is called.
-func (p *ProviderModel) validate() (diags diag.Diagnostics) {
+func (p *ProviderModel) validate() diag.Diagnostics {
+	diags := diag.Diagnostics{}
 	if p.ClientID.IsNull() {
 		diags.Append(diag.NewAttributeErrorDiagnostic(
 			path.Root("client_id"),
