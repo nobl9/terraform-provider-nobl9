@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -35,7 +36,7 @@ func resourceService() *schema.Resource {
 		UpdateContext: resourceServiceApply,
 		DeleteContext: resourceServiceDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: resourceServiceImport,
 		},
 		Description: "[Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service)",
 	}
@@ -171,4 +172,15 @@ func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 	return nil
+}
+
+func resourceServiceImport(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+	project, resourceID := parseImportID(d.Id())
+	if project != "" {
+		if err := d.Set("project", project); err != nil {
+			return nil, fmt.Errorf("error setting project: %w", err)
+		}
+	}
+	d.SetId(resourceID)
+	return []*schema.ResourceData{d}, nil
 }
