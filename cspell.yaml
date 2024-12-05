@@ -57,6 +57,8 @@ words:
   - tfplugindocs
   - tfprotov
   - tfsdk
+  - tftypes
+  - tmpl
   - tpng
   - tsdbslo
   - vuln

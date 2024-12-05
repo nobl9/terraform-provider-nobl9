@@ -26,9 +26,10 @@ func (e expectNoChangeInPlan) CheckPlan(
 		return
 	}
 	change := req.Plan.ResourceChanges[0].Change
-	before, _ := change.Before.(map[string]any)[e.attrName]
-	after, _ := change.After.(map[string]any)[e.attrName]
-	if !reflect.DeepEqual(before, after) {
-		resp.Error = fmt.Errorf("expected no change in %s, but got '%v' -> '%v'", e.attrName, before, after)
+	before, _ := change.Before.(map[string]any)
+	after, _ := change.After.(map[string]any)
+	if !reflect.DeepEqual(before[e.attrName], after[e.attrName]) {
+		resp.Error = fmt.Errorf("expected no change in %s, but got '%v' -> '%v'",
+			e.attrName, before[e.attrName], after[e.attrName])
 	}
 }
