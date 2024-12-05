@@ -149,11 +149,12 @@ func resourceObjective() *schema.Resource {
 				Description: "Designated value for slice.",
 			},
 			"value": {
-				Type:        schema.TypeFloat,
-				Required:    true,
-				Description: "For threshold metrics, the threshold value. For ratio metrics, for legacy reasons, this " +
-					"must be a unique value per objective. For composite SLOs it should be omitted. If for composite " +
-					"SLO it was set previously to a non zero value, then it should remain set to that value.",
+				Type:     schema.TypeFloat,
+				Optional: true,
+				Description: "Required for threshold and ratio metrics. Optional for composite SLOs. For threshold" +
+					"metrics, the threshold value. For ratio metrics, for legacy reasons, this must be a unique value" +
+					"per objective. For composite SLOs it should be omitted. If, for composite SLO, it was set" +
+					"previously to a non zero value then it should remain set to that value.",
 			},
 			"name": {
 				Type:        schema.TypeString,
