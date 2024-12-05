@@ -11,13 +11,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/nobl9/nobl9-go/manifest"
 )
 
 // Ensure [ServiceResource] fully satisfies framework interfaces.
-var _ resource.Resource = &ServiceResource{}
-var _ resource.ResourceWithImportState = &ServiceResource{}
+var (
+	_ resource.Resource                = &ServiceResource{}
+	_ resource.ResourceWithImportState = &ServiceResource{}
+	_ resource.ResourceWithConfigure   = &ServiceResource{}
+)
 
 func NewServiceResource() resource.Resource {
 	return &ServiceResource{}
@@ -38,11 +42,24 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Example resource",
 		Attributes: map[string]schema.Attribute{
-			//"id": schema.StringAttribute{
-			//	Computed:    true,
-			//	Description: "The ID of this resource.",
-			//},
-			"name":         metadataNameAttr(),
+			"name": func() schema.StringAttribute {
+				attr := metadataNameAttr()
+				changeDescription := "If the value of 'name' attribute changes, Nobl9 API will remove all SLOs associated with this Service."
+				attr.PlanModifiers = append(attr.PlanModifiers, stringplanmodifier.RequiresReplaceIf(
+					func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
+						resp.Diagnostics.AddWarning(
+							"Changing Service name results in removal of all associated SLOs and their data.",
+							"When Service name is changed the Service object is removed and than recreated with the new name."+
+								" When the Service is removed, all associated SLOs and their data are also removed."+
+								" If you wish to change the Service name without removing the SLOs, please create a new Service with the desired name first,"+
+								" change the Service name reference in the associated SLOs to the new Service and than remove the old Service.",
+						)
+					},
+					changeDescription,
+					changeDescription,
+				))
+				return attr
+			}(),
 			"display_name": metadataDisplayNameAttr(),
 			"project":      metadataProjectAttr(),
 			"description":  specDescriptionAttr(),

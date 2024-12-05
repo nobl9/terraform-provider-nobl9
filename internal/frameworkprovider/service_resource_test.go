@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -20,7 +21,9 @@ func TestAccExampleResource(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	serviceName := fmt.Sprintf("service-%d", time.Now().UnixNano())
+	unixNow := time.Now().UnixNano()
+	serviceName := fmt.Sprintf("service-%d", unixNow)
+	serviceNameRecreatedByNameChange := fmt.Sprintf("service-name-recreated-%d", unixNow)
 
 	serviceResource := serviceResourceTemplateModel{
 		ResourceName:         "test",
@@ -80,10 +83,17 @@ func TestAccExampleResource(t *testing.T) {
 				},
 				Destroy: true,
 			},
+			// ImportState - invalid id.
+			{
+				ResourceName:  "nobl9_service.test",
+				ImportStateId: serviceName,
+				ImportState:   true,
+				ExpectError:   regexp.MustCompile(`Invalid import ID`),
+			},
 			// ImportState.
 			{
-				ImportStateId: "default/" + serviceName,
 				ResourceName:  "nobl9_service.test",
+				ImportStateId: "default/" + serviceName,
 				ImportState:   true,
 				ImportStateCheck: func(states []*terraform.InstanceState) error {
 					if !assert.Len(t, states, 1) {
@@ -116,6 +126,53 @@ func TestAccExampleResource(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// Update name - recreate.
+			{
+				Config: newServiceResource(t, func() serviceResourceTemplateModel {
+					m := serviceResource
+					m.ServiceResourceModel.Name = serviceNameRecreatedByNameChange
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "name", serviceNameRecreatedByNameChange),
+					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
+						svc := manifestService
+						svc.Metadata.Name = serviceNameRecreatedByNameChange
+						return svc
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
+					},
+				},
+			},
+			// Update project - recreate.
+			{
+				Config: newServiceResource(t, func() serviceResourceTemplateModel {
+					m := serviceResource
+					m.ServiceResourceModel.Name = serviceNameRecreatedByNameChange
+					m.ServiceResourceModel.Project = "default-recreated"
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "name", serviceNameRecreatedByNameChange),
+					resource.TestCheckResourceAttr("nobl9_service.test", "project", "default-recreated"),
+					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
+						svc := manifestService
+						svc.Metadata.Name = serviceNameRecreatedByNameChange
+						svc.Metadata.Project = "default-recreated"
+						return svc
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
 					},
 				},
 			},
