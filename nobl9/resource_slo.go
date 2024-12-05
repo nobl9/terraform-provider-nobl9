@@ -1850,6 +1850,7 @@ func unmarshalHoneycombMetric(metric interface{}) map[string]interface{} {
 		return nil
 	}
 	res := make(map[string]interface{})
+	// nolint: staticcheck
 	res["calculation"] = hMetric.Calculation
 	res["attribute"] = hMetric.Attribute
 	return res
