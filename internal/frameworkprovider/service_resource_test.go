@@ -107,7 +107,7 @@ func TestAccExampleResource(t *testing.T) {
 				ImportStatePersist: true,
 				PreConfig:          func() { applyNobl9Objects(t, ctx, manifestService) },
 			},
-			// Update and Read.
+			// Update and Read, ensure computed field does not pollute the plan.
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
@@ -124,6 +124,7 @@ func TestAccExampleResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
+						expectNoChangeInPlan{attrName: "status"},
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
 					},

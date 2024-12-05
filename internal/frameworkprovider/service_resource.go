@@ -52,7 +52,7 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 							"When Service name is changed the Service object is removed and than recreated with the new name."+
 								" When the Service is removed, all associated SLOs and their data are also removed."+
 								" If you wish to change the Service name without removing the SLOs, please create a new Service with the desired name first,"+
-								" change the Service name reference in the associated SLOs to the new Service and than remove the old Service.",
+								" change the Service name reference in the associated SLOs to the new Service and only than remove the old Service.",
 						)
 					},
 					changeDescription,
@@ -61,9 +61,24 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				return attr
 			}(),
 			"display_name": metadataDisplayNameAttr(),
-			"project":      metadataProjectAttr(),
-			"description":  specDescriptionAttr(),
-			"annotations":  metadataAnnotationsAttr(),
+			"project": func() schema.StringAttribute {
+				attr := metadataNameAttr()
+				changeDescription := "If the value of 'project' attribute changes, Nobl9 API will remove all SLOs associated with this Service."
+				attr.PlanModifiers = append(attr.PlanModifiers, stringplanmodifier.RequiresReplaceIf(
+					func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
+						resp.Diagnostics.AddWarning(
+							"Changing Service project results in removal of all associated SLOs and their data.",
+							"When Service project is changed the Service object is removed and than recreated inside the new project."+
+								" When the Service is removed, all associated SLOs and their data are also removed.",
+						)
+					},
+					changeDescription,
+					changeDescription,
+				))
+				return attr
+			}(),
+			"description": specDescriptionAttr(),
+			"annotations": metadataAnnotationsAttr(),
 			"status": schema.ObjectAttribute{
 				Computed:       true,
 				Optional:       true,
