@@ -74,6 +74,14 @@ resource "nobl9_direct_%s" "%s" {
       unit = "Day"
       value = 10
     }
+	triggered_by_slo_creation {
+	  unit = "Day"
+      value = 10
+	}
+	triggered_by_slo_edit {
+	  unit = "Day"
+      value = 10
+	}
   }
   query_delay {
     unit = "Minute"
@@ -103,6 +111,14 @@ resource "nobl9_direct_%s" "%s" {
       unit = "Day"
       value = 10
     }
+	triggered_by_slo_creation {
+	  unit = "Day"
+      value = 10
+	}
+	triggered_by_slo_edit {
+	  unit = "Day"
+      value = 10
+	}
   }
   query_delay {
     unit = "Minute"
@@ -145,6 +161,14 @@ resource "nobl9_direct_%s" "%s" {
       unit = "Day"
       value = 10
     }
+	triggered_by_slo_creation {
+	  unit = "Day"
+      value = 10
+	}
+	triggered_by_slo_edit {
+	  unit = "Day"
+      value = 10
+	}
   }
   log_collection_enabled = true
   release_channel = "beta"
@@ -174,6 +198,14 @@ resource "nobl9_direct_%s" "%s" {
       unit = "Day"
       value = 10
     }
+	triggered_by_slo_creation {
+	  unit = "Day"
+      value = 10
+	}
+	triggered_by_slo_edit {
+	  unit = "Day"
+      value = 10
+	}
   }
   log_collection_enabled = true
   release_channel = "beta"
@@ -203,6 +235,14 @@ resource "nobl9_direct_%s" "%s" {
       unit = "Day"
       value = 0
     }
+	triggered_by_slo_creation {
+	  unit = "Day"
+      value = 0
+	}
+	triggered_by_slo_edit {
+	  unit = "Day"
+      value = 0
+	}
   }
   release_channel = "stable"
   query_delay {
@@ -230,6 +270,14 @@ resource "nobl9_direct_%s" "%s" {
       unit = "Day"
       value = 10
     }
+	triggered_by_slo_creation {
+	  unit = "Day"
+      value = 10
+	}
+	triggered_by_slo_edit {
+	  unit = "Day"
+      value = 10
+	}
   }
   release_channel = "stable"
   query_delay {
@@ -257,6 +305,14 @@ resource "nobl9_direct_%s" "%s" {
 	  max_duration {
 		unit = "Day"
 		value = 7
+	  }
+	  triggered_by_slo_creation {
+	    unit = "Day"
+        value = 7
+	  }
+	  triggered_by_slo_edit {
+	    unit = "Day"
+        value = 7
 	  }
 	}
 	query_delay {
@@ -323,6 +379,14 @@ resource "nobl9_direct_%s" "%s" {
       unit = "Day"
       value = 10
     }
+	triggered_by_slo_creation {
+	  unit = "Day"
+      value = 10
+	}
+	triggered_by_slo_edit {
+	  unit = "Day"
+      value = 10
+	}
   }
   log_collection_enabled = true
   release_channel = "stable"
@@ -343,6 +407,16 @@ resource "nobl9_direct_%s" "%s" {
   account = "account_name"
   account_id = "secret"
   access_key = "secret"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
   log_collection_enabled = true
   release_channel = "beta"
   query_delay {
@@ -371,6 +445,14 @@ resource "nobl9_direct_%s" "%s" {
       unit = "Day"
       value = 10
     }
+	triggered_by_slo_creation {
+	  unit = "Day"
+      value = 10
+	}
+	triggered_by_slo_edit {
+	  unit = "Day"
+      value = 10
+	}
   }
   release_channel = "stable"
   query_delay {
@@ -434,6 +516,14 @@ resource "nobl9_direct_%s" "%s" {
       unit = "Day"
       value = 10
     }
+	triggered_by_slo_creation {
+	  unit = "Day"
+      value = 10
+	}
+	triggered_by_slo_edit {
+	  unit = "Day"
+      value = 10
+	}
   }
   release_channel = "stable"
   query_delay {
@@ -452,7 +542,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   realm = "eu"
   access_token = "secret"
-  release_channel = "stable"
+  release_channel = "alpha"
   query_delay {
     unit = "Minute"
     value = 6

@@ -213,6 +213,8 @@ resource "nobl9_slo" "composite_slo" {
 - `display_name` (String) User-friendly display name of the resource.
 - `indicator` (Block Set, Max: 1) (see [below for nested schema](#nestedblock--indicator))
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
+- `retrieve_historical_data_from` (String) If set, the retrieval of historical data for a newly created SLO will be triggered, starting from the specified date. Needs to be RFC3339 format.
+- `tier` (String) Internal field, do not use.
 
 ### Read-Only
 
@@ -223,7 +225,8 @@ resource "nobl9_slo" "composite_slo" {
 
 Required:
 
-- `target` (Number) Designated value.
+- `target` (Number) The numeric target for your objective.
+- `value` (Number) For threshold metrics, the threshold value. For ratio metrics, for legacy reasons, this must be a unique value per objective.
 
 Optional:
 
@@ -231,7 +234,7 @@ Optional:
 - `count_metrics` (Block Set) Compares two time series, calculating the ratio of either good or bad values to the total number of values. Fill either the 'good' or 'bad' series, but not both. (see [below for nested schema](#nestedblock--objective--count_metrics))
 - `display_name` (String) Name to be displayed.
 - `name` (String) Objective's name. This field is computed if not provided.
-- `op` (String) Type of logical operation.
+- `op` (String) For threshold metrics, the logical operator applied to the threshold.
 - `primary` (Boolean) Is objective marked as primary.
 - `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
 - `time_slice_target` (Number) Designated value for slice.
@@ -1841,7 +1844,7 @@ Optional:
 
 Required:
 
-- `target` (Number) Designated value.
+- `target` (Number) The numeric target for your objective.
 
 Optional:
 

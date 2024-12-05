@@ -7,18 +7,18 @@ NAMESPACE=nobl9
 NAME=nobl9
 BIN_DIR=./bin
 BINARY=$(BIN_DIR)/terraform-provider-$(NAME)
-VERSION=0.29.2
+VERSION=0.32.1
 BUILD_FLAGS="-X github.com/nobl9/terraform-provider-nobl9/nobl9.Version=$(VERSION)"
 OS_ARCH?=linux_amd64
 
 # renovate datasource=github-releases depName=securego/gosec
-GOSEC_VERSION := v2.21.2
+GOSEC_VERSION := v2.21.4
 # renovate datasource=github-releases depName=golangci/golangci-lint
-GOLANGCI_LINT_VERSION := v1.61.0
+GOLANGCI_LINT_VERSION := v1.62.2
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
 GOVULNCHECK_VERSION := v1.1.3
 # renovate datasource=go depName=golang.org/x/tools/cmd/goimports
-GOIMPORTS_VERSION := v0.25.0
+GOIMPORTS_VERSION := v0.28.0
 # renovate datasource=github-releases depName=segmentio/golines
 GOLINES_VERSION := v0.12.2
 
@@ -144,7 +144,7 @@ format/go:
 	echo "Formatting Go files..."
 	$(call _ensure_installed,binary,goimports)
 	$(call _ensure_installed,binary,golines)
-	go fmt ./...
+	gofmt -w -l -s .
 	$(BIN_DIR)/goimports -local=github.com/nobl9/terraform-provider-nobl9 -w .
 	$(BIN_DIR)/golines --ignore-generated -m 120 -w .
 

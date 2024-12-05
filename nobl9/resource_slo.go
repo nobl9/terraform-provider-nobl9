@@ -1,13 +1,17 @@
 package nobl9
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"reflect"
 	"regexp"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -15,17 +19,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
-	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
-
 	"github.com/nobl9/nobl9-go/manifest"
+	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
+	"github.com/nobl9/nobl9-go/sdk"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
 )
 
 func resourceSLO() *schema.Resource {
 	return &schema.Resource{
 		Schema:        schemaSLO(),
-		CreateContext: resourceSLOApply,
-		UpdateContext: resourceSLOApply,
+		CreateContext: resourceSLOCreate,
+		UpdateContext: resourceSLOUpdate,
 		DeleteContext: resourceSLODelete,
 		ReadContext:   resourceSLORead,
 		Importer: &schema.ResourceImporter{
@@ -131,12 +136,12 @@ func resourceObjective() *schema.Resource {
 			"op": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Type of logical operation.",
+				Description: "For threshold metrics, the logical operator applied to the threshold.",
 			},
 			"target": {
 				Type:        schema.TypeFloat,
 				Required:    true,
-				Description: "Designated value.",
+				Description: "The numeric target for your objective.",
 			},
 			"time_slice_target": {
 				Type:        schema.TypeFloat,
@@ -144,12 +149,11 @@ func resourceObjective() *schema.Resource {
 				Description: "Designated value for slice.",
 			},
 			"value": {
-				Type:     schema.TypeFloat,
-				Optional: true,
-				Default:  0,
-				Description: "Value. Should be omitted for objectives using `composite` section. Can be omitted for" +
-					" objectives using `count_metrics` section. Is required for objectives using `raw_metric` section." +
-					" Must be unique in a scope of SLO if that SLO has multiple objectives.",
+				Type:        schema.TypeFloat,
+				Required:    true,
+				Description: "For threshold metrics, the threshold value. For ratio metrics, for legacy reasons, this " +
+					"must be a unique value per objective. For composite SLOs it should be omitted. If for composite " +
+					"SLO it was set previously to a non zero value, then it should remain set to that value.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -272,6 +276,11 @@ func schemaSLO() map[string]*schema.Schema {
 				},
 			},
 		},
+		"tier": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Internal field, do not use.",
+		},
 		"alert_policies": {
 			Type:        schema.TypeList,
 			Optional:    true,
@@ -327,19 +336,30 @@ func schemaSLO() map[string]*schema.Schema {
 			},
 		},
 		"anomaly_config": schemaAnomalyConfig(),
+		"retrieve_historical_data_from": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: validateDateTime,
+			Description: "If set, the retrieval of historical data for a newly created SLO will be triggered, " +
+				"starting from the specified date. Needs to be RFC3339 format.",
+		},
 	}
 }
 
-func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSLOApply(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) (diag.Diagnostics, manifest.ProjectScopedObject) {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config)
 	if ds != nil {
-		return ds
+		return ds, nil
 	}
 
 	slo, diags := marshalSLO(d)
 	if diags.HasError() {
-		return diags
+		return diags, nil
 	}
 	resultSlo := manifest.SetDefaultProject([]manifest.Object{slo}, config.Project)
 
@@ -352,11 +372,41 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 		}
 		return nil
 	}); err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(err), nil
 	}
 
 	d.SetId(slo.Metadata.Name)
-	return resourceSLORead(ctx, d, meta)
+	return resourceSLORead(ctx, d, meta), resultSlo[0].(manifest.ProjectScopedObject)
+}
+
+func resourceSLOUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	diags, _ := resourceSLOApply(ctx, d, meta)
+	return diags
+}
+
+func resourceSLOCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	diags, slo := resourceSLOApply(ctx, d, meta)
+
+	retrieveHistoricalDataFrom := d.Get("retrieve_historical_data_from").(string)
+	if retrieveHistoricalDataFrom != "" {
+		config := meta.(ProviderConfig)
+		client, ds := getClient(config)
+		if ds != nil {
+			return ds
+		}
+		project := slo.GetProject()
+		replayPayload := buildReplayPayload(project, slo.GetName(), retrieveHistoricalDataFrom)
+		err := triggerHistoricalDataRetrieval(ctx, client, project, replayPayload)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Historical data retrieval for the SLO has been triggered.",
+		})
+	}
+
+	return diags
 }
 
 func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -461,6 +511,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 	}
 	annotationsMarshaled := getMarshaledAnnotations(d)
 
+	tier := d.Get("tier").(string)
 	slo := v1alphaSLO.New(
 		v1alphaSLO.Metadata{
 			Name:        d.Get("name").(string),
@@ -480,6 +531,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
 			Attachments:     marshalAttachments(attachments.([]interface{})),
 			AnomalyConfig:   marshalAnomalyConfig(d.Get("anomaly_config")),
+			Tier:            &tier,
 		})
 	return &slo, diags
 }
@@ -714,6 +766,10 @@ func unmarshalSLO(d *schema.ResourceData, objects []v1alphaSLO.SLO) diag.Diagnos
 	diags = appendError(diags, err)
 
 	err = unmarshalCompositeDeprecated(d, spec)
+	diags = appendError(diags, err)
+
+	tier := spec.Tier
+	err = d.Set("tier", tier)
 	diags = appendError(diags, err)
 
 	err = unmarshalAttachments(d, spec)
@@ -2795,4 +2851,80 @@ func unmarshalThousandeyesMetric(metric interface{}) map[string]interface{} {
 	res["test_id"] = teMetric.TestID
 	res["test_type"] = teMetric.TestType
 	return res
+}
+
+const historicalDataRetrievalEndpoint = "/timetravel"
+
+func buildReplayPayload(project, sloName, replayFrom string) sdkModels.Replay {
+	replayFromTs, _ := time.Parse(time.RFC3339, replayFrom)
+	const startOffsetMinutes = 5
+	windowDuration := time.Since(replayFromTs)
+	return sdkModels.Replay{
+		Project: project,
+		Slo:     sloName,
+		Duration: sdkModels.ReplayDuration{
+			Unit:  sdkModels.DurationUnitMinute,
+			Value: startOffsetMinutes + int(windowDuration.Minutes()),
+		},
+	}
+}
+
+func triggerHistoricalDataRetrieval(
+	ctx context.Context,
+	client *sdk.Client,
+	project string,
+	payload interface{},
+) (err error) {
+	var body io.Reader
+	if payload != nil {
+		buf := new(bytes.Buffer)
+		if err := json.NewEncoder(buf).Encode(payload); err != nil {
+			return err
+		}
+		body = buf
+	}
+	header := http.Header{sdk.HeaderProject: []string{project}}
+	req, err := client.CreateRequest(ctx, http.MethodPost, historicalDataRetrievalEndpoint, header, nil, body)
+	if err != nil {
+		return err
+	}
+	resp, err := client.HTTP.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	var data []byte
+	data, err = io.ReadAll(resp.Body)
+	if resp.StatusCode >= 300 {
+		return errors.New(replayUnavailabilityReasonExplanation(data, resp.StatusCode))
+	}
+	return err
+}
+
+func replayUnavailabilityReasonExplanation(
+	reason []byte,
+	statusCode int,
+) string {
+	strReason := strings.TrimSpace(string(reason))
+	switch strReason {
+	case sdkModels.ReplayIntegrationDoesNotSupportReplay:
+		return "The Data Source does not support Replay yet"
+	case sdkModels.ReplayAgentVersionDoesNotSupportReplay:
+		return "Update your Agent version to the latest to use Replay for this Data Source."
+	case sdkModels.ReplayMaxHistoricalDataRetrievalTooLow:
+		return "Value configured for spec.historicalDataRetrieval.maxDuration.value" +
+			" for the Data Source is lower than the duration you're trying to run Replay for."
+	case sdkModels.ReplayConcurrentReplayRunsLimitExhausted:
+		return "You've exceeded the limit of concurrent Replay runs. Wait until the current Replay(s) are done."
+	case sdkModels.ReplayUnknownAgentVersion:
+		return "Your Agent isn't connected to the Data Source. Deploy the Agent and run Replay once again."
+	case "single_query_not_supported":
+		return "Historical data retrieval for single-query ratio metrics is not supported"
+	case "composite_slo_not_supported":
+		return "Historical data retrieval for Composite SLO is not supported"
+	case "promql_in_gcm_not_supported":
+		return "Historical data retrieval for PromQL metrics is not supported"
+	default:
+		return fmt.Sprintf("bad response (status: %d): %s", statusCode, strReason)
+	}
 }
