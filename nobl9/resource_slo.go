@@ -149,9 +149,12 @@ func resourceObjective() *schema.Resource {
 				Description: "Designated value for slice.",
 			},
 			"value": {
-				Type:        schema.TypeFloat,
-				Required:    true,
-				Description: "For threshold metrics, the threshold value. For ratio metrics, for legacy reasons, this must be a unique value per objective.",
+				Type:     schema.TypeFloat,
+				Optional: true,
+				Description: "Required for threshold and ratio metrics. Optional for composite SLOs. For threshold" +
+					"metrics, the threshold value. For ratio metrics, for legacy reasons, this must be a unique value" +
+					"per objective. For composite SLOs it should be omitted. If, for composite SLO, it was set" +
+					"previously to a non zero value then it should remain set to that value.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -362,8 +365,7 @@ func resourceSLOApply(
 	resultSlo := manifest.SetDefaultProject([]manifest.Object{slo}, config.Project)
 
 	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *retry.RetryError {
-		err := client.Objects().V1().Apply(ctx, resultSlo)
-		if err != nil {
+		if err := client.Objects().V1().Apply(ctx, resultSlo); err != nil {
 			if errors.Is(err, errConcurrencyIssue) {
 				return retry.RetryableError(err)
 			}
@@ -595,11 +597,11 @@ func marshalIndicator(d *schema.ResourceData) *v1alphaSLO.Indicator {
 }
 
 func marshalObjectives(d *schema.ResourceData) ([]v1alphaSLO.Objective, diag.Diagnostics) {
-	objectivesSchema := d.Get("objective").(*schema.Set).List()
+	objectivesSchemaSet := d.Get("objective").(*schema.Set)
+	objectivesSchema := objectivesSchemaSet.List()
 	objectives := make([]v1alphaSLO.Objective, len(objectivesSchema))
 	for i, o := range objectivesSchema {
 		objective := o.(map[string]interface{})
-		value := objective["value"].(float64)
 		target := objective["target"].(float64)
 		timeSliceTarget := objective["time_slice_target"].(float64)
 		var timeSliceTargetPtr *float64
@@ -612,11 +614,16 @@ func marshalObjectives(d *schema.ResourceData) ([]v1alphaSLO.Objective, diag.Dia
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
-
+		var valuePtr *float64
+		value := objective["value"].(float64)
+		valuePtr = &value
+		if value == 0 && compositeSpec != nil {
+			valuePtr = nil
+		}
 		objectives[i] = v1alphaSLO.Objective{
 			ObjectiveBase: v1alphaSLO.ObjectiveBase{
 				DisplayName: objective["display_name"].(string),
-				Value:       &value,
+				Value:       valuePtr,
 				Name:        objective["name"].(string),
 			},
 			BudgetTarget:    &target,
@@ -861,7 +868,9 @@ func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 		objectiveTF["name"] = objective.Name
 		objectiveTF["display_name"] = objective.DisplayName
 		objectiveTF["op"] = objective.Operator
-		objectiveTF["value"] = objective.Value
+		if objective.Value != nil && (*objective.Value != 0 || objective.Composite == nil) {
+			objectiveTF["value"] = objective.Value
+		}
 		objectiveTF["target"] = objective.BudgetTarget
 		objectiveTF["time_slice_target"] = objective.TimeSliceTarget
 		objectiveTF["primary"] = objective.Primary
@@ -1841,6 +1850,7 @@ func unmarshalHoneycombMetric(metric interface{}) map[string]interface{} {
 		return nil
 	}
 	res := make(map[string]interface{})
+	// nolint: staticcheck
 	res["calculation"] = hMetric.Calculation
 	res["attribute"] = hMetric.Attribute
 	return res
