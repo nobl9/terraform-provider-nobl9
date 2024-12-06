@@ -39,8 +39,10 @@ func (s *ServiceResource) Metadata(_ context.Context, req resource.MetadataReque
 
 // Schema implements [resource.Resource.Schema] function.
 func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	description := "[Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service)"
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Example resource",
+		MarkdownDescription: description,
+		Description:         description,
 		Attributes: map[string]schema.Attribute{
 			"name": func() schema.StringAttribute {
 				attr := metadataNameAttr()
@@ -66,7 +68,6 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 		Blocks: map[string]schema.Block{
 			"label": metadataLabelsBlock(),
 		},
-		Description: "[Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service)",
 	}
 }
 

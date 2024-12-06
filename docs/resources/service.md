@@ -2,14 +2,14 @@
 page_title: "nobl9_service Resource - terraform-provider-nobl9"
 subcategory: "Groupings and Utilities"
 description: |-
-  Example resource
+  Service configuration | Nobl9 Documentation https://docs.nobl9.com/yaml-guide#service
 ---
 
 # nobl9_service (Resource)
 
 A **service** in Nobl9 is a high-level grouping of Service Level Objectives (SLOs). A service can represent a logical service endpoint like an API, a database, an application, or anything else you care about setting an SLO for. Every SLO in Nobl9 is tied to a service, and the service can have one or more SLOs.
 
-For more details, refer to the Example resource.
+For more details, refer to the [Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service).
 
 ## Example Usage
 
