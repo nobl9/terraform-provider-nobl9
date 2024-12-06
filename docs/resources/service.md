@@ -45,8 +45,8 @@ resource "nobl9_service" "this" {
 
 ### Required
 
-- `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, must conform to the [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names) naming convention.
+- `project` (String) Name of the Nobl9 project the resource sits in, must conform to the [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names) naming convention.
 
 ### Optional
 
@@ -54,11 +54,7 @@ resource "nobl9_service" "this" {
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
-
-### Read-Only
-
-- `id` (String) The ID of this resource.
-- `status` (Map of Number) Status of created service.
+- `status` (Object) Status of created service. (see [below for nested schema](#nestedatt--status))
 
 <a id="nestedblock--label"></a>
 ### Nested Schema for `label`
@@ -66,7 +62,18 @@ resource "nobl9_service" "this" {
 Required:
 
 - `key` (String) A key for the label, unique within the associated resource.
-- `values` (List of String) A list of unique values for a single key.
+
+Optional:
+
+- `values` (Set of String) A set of values for a single key.
+
+
+<a id="nestedatt--status"></a>
+### Nested Schema for `status`
+
+Optional:
+
+- `slo_count` (Number)
 
 ## Useful Links
 
