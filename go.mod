@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
 	github.com/hashicorp/terraform-plugin-docs v0.20.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.35.0
-	github.com/nobl9/nobl9-go v0.92.1
+	github.com/nobl9/nobl9-go v0.92.1-0.20241209150937-ec9b686140a9
 	github.com/stretchr/testify v1.10.0
 	github.com/teambition/rrule-go v1.8.2
 )
