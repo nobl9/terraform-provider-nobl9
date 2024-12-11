@@ -17,13 +17,5 @@ resource "nobl9_direct_appdynamics" "test-appdynamics" {
         unit  = "Day"
         value = 30
       }
-      triggered_by_slo_creation {
-        unit  = "Day"
-        value = 10
-      }
-      triggered_by_slo_edit {
-        unit  = "Day"
-        value = 10
-      }
     }
 }

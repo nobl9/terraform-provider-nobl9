@@ -173,11 +173,6 @@ Required:
 - `default_duration` (Block List, Min: 1) Used by default for any SLOs connected to this data source. (see [below for nested schema](#nestedblock--historical_data_retrieval--default_duration))
 - `max_duration` (Block List, Min: 1) Defines the maximum period for which data can be retrieved. (see [below for nested schema](#nestedblock--historical_data_retrieval--max_duration))
 
-Optional:
-
-- `triggered_by_slo_creation` (Block List) (Block List) Defines the timeframe Nobl9 will reach back to fetch historical data for SLOs based on this data source once they're created (see [below for nested schema](#nestedblock--historical_data_retrieval--triggered_by_slo_creation))
-- `triggered_by_slo_edit` (Block List) (Block List) Defines the timeframe Nobl9 will reach back to fetch historical data for SLOs based on this data source after modifying their budget-sensitive fields (see [below for nested schema](#nestedblock--historical_data_retrieval--triggered_by_slo_edit))
-
 <a id="nestedblock--historical_data_retrieval--default_duration"></a>
 ### Nested Schema for `historical_data_retrieval.default_duration`
 
@@ -194,25 +189,6 @@ Required:
 
 - `unit` (String) Must be one of Minute, Hour, or Day.
 - `value` (Number) Must be an integer greater than or equal to 0.
-
-
-<a id="nestedblock--historical_data_retrieval--triggered_by_slo_creation"></a>
-### Nested Schema for `historical_data_retrieval.triggered_by_slo_creation`
-
-Required:
-
-- `unit` (String) Must be one of Minute, Hour, or Day.
-- `value` (Number) Must be an integer greater than or equal to 0.
-
-
-<a id="nestedblock--historical_data_retrieval--triggered_by_slo_edit"></a>
-### Nested Schema for `historical_data_retrieval.triggered_by_slo_edit`
-
-Required:
-
-- `unit` (String) Must be one of Minute, Hour, or Day.
-- `value` (Number) Must be an integer greater than or equal to 0.
-
 
 
 <a id="nestedblock--honeycomb_config"></a>

@@ -14,14 +14,6 @@ resource "nobl9_direct_honeycomb" "test-honeycomb" {
       unit = "Day"
       value = 7
     }
-    triggered_by_slo_creation {
-      unit  = "Day"
-      value = 10
-    }
-    triggered_by_slo_edit {
-      unit  = "Day"
-      value = 10
-    }
   }
   query_delay {
     unit = "Minute"
