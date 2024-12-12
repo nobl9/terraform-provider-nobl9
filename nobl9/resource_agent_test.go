@@ -102,14 +102,6 @@ resource "nobl9_agent" "%s" {
 		unit = "Hour"
 		value = 19
 	}
-	triggered_by_slo_creation {
-		unit = "Hour"
-		value = 19
-	}
-	triggered_by_slo_edit {
-		unit = "Hour"
-		value = 19
-	}
   }
 }
 `, name, name, testProject)
@@ -196,14 +188,6 @@ resource "nobl9_direct_cloudwatch" "%s" {
 	max_duration {
 	  unit  = "Day"
 	  value = 15
-	}
-	triggered_by_slo_creation {
-	  unit = "Hour"
-      value = 19
-	}
-	triggered_by_slo_edit {
-	  unit = "Hour"
-	  value = 19
 	}
   }
   query_delay {
@@ -297,14 +281,6 @@ resource "nobl9_agent" "%s" {
 	max_duration {
       unit = "Hour"
       value = 19
-	}
-	triggered_by_slo_creation {
-	  unit = "Hour"
-	  value = 19
-	}
-	triggered_by_slo_edit {
-	  unit = "Hour"
-	  value = 19
 	}
   }
   query_delay {
@@ -440,14 +416,6 @@ resource "nobl9_agent" "%s" {
 	max_duration {
       unit = "Hour"
       value = 19
-	}
-	triggered_by_slo_creation {
-	  unit = "Hour"
-	  value = 19
-	}
-	triggered_by_slo_edit {
-	  unit = "Hour"
-	  value = 19
 	}
   }
   query_delay {

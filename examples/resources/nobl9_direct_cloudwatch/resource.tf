@@ -13,13 +13,5 @@ resource "nobl9_direct_cloudwatch" "test-cloudwatch" {
       unit  = "Day"
       value = 15
     }
-    triggered_by_slo_creation {
-      unit  = "Day"
-      value = 10
-    }
-    triggered_by_slo_edit {
-      unit  = "Day"
-      value = 10
-    }
   }
 }
