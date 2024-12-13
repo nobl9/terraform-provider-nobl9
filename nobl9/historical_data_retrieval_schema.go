@@ -49,22 +49,6 @@ func getHistoricalDataRetrievalSchema() map[string]*schema.Schema {
 						Description: "Defines the maximum period for which data can be retrieved.",
 						Elem:        &schema.Resource{Schema: durationSchema},
 					},
-					"triggered_by_slo_creation": {
-						Type:     schema.TypeList,
-						Optional: true,
-						Computed: true,
-						Description: "(Block List) Defines the timeframe Nobl9 will reach back to fetch historical " +
-							"data for SLOs based on this data source once they're created ",
-						Elem: &schema.Resource{Schema: durationSchema},
-					},
-					"triggered_by_slo_edit": {
-						Type:     schema.TypeList,
-						Optional: true,
-						Computed: true,
-						Description: "(Block List) Defines the timeframe Nobl9 will reach back to fetch historical " +
-							"data for SLOs based on this data source after modifying their budget-sensitive fields ",
-						Elem: &schema.Resource{Schema: durationSchema},
-					},
 				},
 			},
 		},
@@ -86,7 +70,7 @@ func marshalHistoricalDataRetrieval(d resourceInterface) *v1alpha.HistoricalData
 
 	valueDefaultDuration := defaultDuration["value"].(int)
 	valueMaxDuration := maxDuration["value"].(int)
-	v1alphaHistoricalDataRetrieval := &v1alpha.HistoricalDataRetrieval{
+	return &v1alpha.HistoricalDataRetrieval{
 		DefaultDuration: v1alpha.HistoricalRetrievalDuration{
 			Value: &valueDefaultDuration,
 			Unit:  v1alpha.HistoricalRetrievalDurationUnit(defaultDuration["unit"].(string)),
@@ -96,26 +80,6 @@ func marshalHistoricalDataRetrieval(d resourceInterface) *v1alpha.HistoricalData
 			Unit:  v1alpha.HistoricalRetrievalDurationUnit(maxDuration["unit"].(string)),
 		},
 	}
-	if len(historicalDataRetrieval["triggered_by_slo_creation"].([]interface{})) > 0 {
-		triggeredBySloCreation :=
-			historicalDataRetrieval["triggered_by_slo_creation"].([]interface{})[0].(map[string]interface{})
-
-		valueTriggeredBySloCreation := triggeredBySloCreation["value"].(int)
-		v1alphaHistoricalDataRetrieval.TriggeredBySloCreation = &v1alpha.HistoricalRetrievalDuration{
-			Value: &valueTriggeredBySloCreation,
-			Unit:  v1alpha.HistoricalRetrievalDurationUnit(triggeredBySloCreation["unit"].(string)),
-		}
-	}
-	if len(historicalDataRetrieval["triggered_by_slo_edit"].([]interface{})) > 0 {
-		triggeredBySloEdit :=
-			historicalDataRetrieval["triggered_by_slo_edit"].([]interface{})[0].(map[string]interface{})
-		valueTriggeredBySloEdit := triggeredBySloEdit["value"].(int)
-		v1alphaHistoricalDataRetrieval.TriggeredBySloEdit = &v1alpha.HistoricalRetrievalDuration{
-			Value: &valueTriggeredBySloEdit,
-			Unit:  v1alpha.HistoricalRetrievalDurationUnit(triggeredBySloEdit["unit"].(string)),
-		}
-	}
-	return v1alphaHistoricalDataRetrieval
 }
 
 func unmarshalHistoricalDataRetrieval(
@@ -138,28 +102,6 @@ func unmarshalHistoricalDataRetrieval(
 				"value": h.MaxDuration.Value,
 			},
 		},
-	}
-
-	if h.TriggeredBySloCreation != nil {
-		config["triggered_by_slo_creation"] = []interface{}{
-			map[string]interface{}{
-				"unit":  h.TriggeredBySloCreation.Unit,
-				"value": h.TriggeredBySloCreation.Value,
-			},
-		}
-	} else {
-		delete(config, "triggered_by_slo_creation")
-	}
-
-	if h.TriggeredBySloEdit != nil {
-		config["triggered_by_slo_edit"] = []interface{}{
-			map[string]interface{}{
-				"unit":  h.TriggeredBySloEdit.Unit,
-				"value": h.TriggeredBySloEdit.Value,
-			},
-		}
-	} else {
-		delete(config, "triggered_by_slo_edit")
 	}
 
 	set(d, historicalDataRetrievalConfigKey, []interface{}{config}, &diags)

@@ -30,6 +30,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-composite-time-slices-deprecated", testCompositeSLOTimeSlicesDeprecated},
 		{"test-composite-occurrences", testCompositeSLOOccurrences},
 		{"test-composite-time-slices", testCompositeSLOTimeSlices},
+		{"test-composite-with-value", testCompositeSLOValueZeroBackwardCompatibility},
 		{"test-datadog", testDatadogSLO},
 		{"test-dynatrace", testDynatraceSLO},
 		{"test-grafanaloki", testGrafanaLokiSLO},
@@ -1023,7 +1024,6 @@ resource "nobl9_slo" ":name" {
    display_name = "obj1"
    name         = "tf-objective-1"
    target       = 0.7
-   value        = 0
    composite {
      max_delay = "45m"
      components {
@@ -1085,8 +1085,80 @@ resource "nobl9_slo" ":name" {
    display_name = "obj1"
    name         = "tf-objective-1"
    target       = 0.7
-   value        = 0
    time_slice_target = 0.7
+   composite {
+     max_delay = "45m"
+     components {
+       objectives {
+         composite_objective {
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-1"
+           weight       = 0.8
+           when_delayed = "CountAsGood"
+         }
+		 composite_objective {
+           project      = ":project"
+           slo          = ":sloDependencyName"
+           objective    = "objective-2"
+           weight       = 1.0
+           when_delayed = "CountAsBad"
+         }
+       }
+     }
+   }
+ }
+
+ time_window {
+   count      = 10
+   is_rolling = true
+   unit       = "Minute"
+ }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+	config = strings.ReplaceAll(config, ":sloDependencyName", sloDependencyName)
+
+	return config
+}
+
+func testCompositeSLOValueZeroBackwardCompatibility(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	var sloDependencyName = name + "-dependency-slo-1"
+	config :=
+		testService(serviceName) +
+			testPrometheusAgent(agentName) +
+			testCompositeDependencySLO(serviceName, agentName, sloDependencyName) + `
+resource "nobl9_slo" ":name" {
+ name         = ":name"
+ display_name = ":name"
+ project      = ":project"
+ service      = nobl9_service.:serviceName.name
+
+
+ depends_on = [nobl9_slo.:sloDependencyName]
+
+ label {
+  key = "team"
+  values = ["green","sapphire"]
+ }
+
+ label {
+  key = "env"
+  values = ["dev", "staging", "prod"]
+ }
+
+ budgeting_method = "Occurrences"
+
+ objective {
+   display_name = "obj1"
+   name         = "tf-objective-1"
+   target       = 0.7
+   value        = 0
    composite {
      max_delay = "45m"
      components {

@@ -92,7 +92,6 @@ func TestAcc_Nobl9ReportsErrors(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			resource.Test(t, resource.TestCase{
