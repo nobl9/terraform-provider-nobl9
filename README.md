@@ -59,6 +59,6 @@ resource "nobl9_service" "test" {
 
 # Documentation
 
-Generated documentation is located under [docs](./docs) folder.
+Generated documentation is located under [docs](./docs) folder. It's available online [here](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs).
 
 Developers' documentation sits under [dev-docs](./dev-docs) folder.
