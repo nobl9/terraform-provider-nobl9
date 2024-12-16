@@ -3607,3 +3607,29 @@ resource "nobl9_alert_policy" "%s" {
 }
 `, name, name, testProject)
 }
+
+func testService(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_service" "%s" {
+  name              = "%s"
+  display_name = "%s"
+  project             = "%s"
+  description       = "Test of service"
+
+  label {
+   key = "env"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "dev"
+   values = ["dev", "staging", "prod"]
+  }
+
+  annotations = {
+   env = "development"
+   name = "example annotation"
+  }
+}
+`, name, name, name, testProject)
+}
