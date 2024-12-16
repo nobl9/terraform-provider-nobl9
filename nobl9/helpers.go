@@ -87,7 +87,7 @@ func equalSlices(a, b []interface{}) bool {
 	return true
 }
 
-func parseImportID(id string) (project string, resourceID string) {
+func parseImportID(id string) (project, resourceID string) {
 	parts := strings.Split(id, "/")
 	if len(parts) == 1 {
 		return "", id
