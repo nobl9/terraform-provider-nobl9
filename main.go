@@ -21,6 +21,10 @@ import (
 //
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs -provider-name=terraform-provider-nobl9
 
+// Version is the version of the provider.
+// It is set at compile-time.
+var Version string
+
 func main() {
 	ctx := context.Background()
 	var debugMode bool
@@ -29,8 +33,8 @@ func main() {
 
 	muxServer, err := tf5muxserver.NewMuxServer(
 		ctx,
-		newSDKProvider(),
-		newFrameworkProvider(),
+		newSDKProvider(Version),
+		newFrameworkProvider(Version),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -52,13 +56,13 @@ func main() {
 	}
 }
 
-func newSDKProvider() func() tfprotov5.ProviderServer {
+func newSDKProvider(version string) func() tfprotov5.ProviderServer {
 	return func() tfprotov5.ProviderServer {
-		return schema.NewGRPCProviderServer(nobl9.Provider())
+		return schema.NewGRPCProviderServer(nobl9.Provider(version))
 	}
 }
 
-func newFrameworkProvider() func() tfprotov5.ProviderServer {
-	provider := frameworkprovider.New("TODO")
+func newFrameworkProvider(version string) func() tfprotov5.ProviderServer {
+	provider := frameworkprovider.New(version)
 	return providerserver.NewProtocol5(provider)
 }
