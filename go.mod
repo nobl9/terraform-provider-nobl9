@@ -5,7 +5,7 @@ go 1.23
 require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
-	github.com/hashicorp/terraform-plugin-docs v0.19.4
+	github.com/hashicorp/terraform-plugin-docs v0.20.1
 	github.com/hashicorp/terraform-plugin-framework v1.13.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.16.0
 	github.com/hashicorp/terraform-plugin-go v0.25.0
@@ -16,7 +16,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nobl9/nobl9-go v0.92.2
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/teambition/rrule-go v1.8.2
 )
 
