@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/nobl9/nobl9-go/manifest"
 )
@@ -336,7 +336,7 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 			res := alertPolicyConfig.Build(resourceName, alertPolicyName, testProject)
 
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: ProviderFactory(),
+				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 				CheckDestroy: destroyMultiple(
 					[]string{"nobl9_alert_policy", "nobl9_alert_method_slack"},
 					[]manifest.Kind{manifest.KindAlertPolicy, manifest.KindAlertMethod},

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/nobl9/nobl9-go/manifest"
 )
@@ -40,8 +40,8 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 		t.Run(tc.directType, func(t *testing.T) {
 			testName := strings.ReplaceAll("test-"+tc.directType, "_", "")
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_direct_%s", manifest.KindDirect),
+				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				CheckDestroy:             CheckDestroy("nobl9_direct_%s", manifest.KindDirect),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.directType, testName),

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAcc_Nobl9DataSource(t *testing.T) {
@@ -18,7 +18,7 @@ func TestAcc_Nobl9DataSource(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: ProviderFactory(),
+				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),

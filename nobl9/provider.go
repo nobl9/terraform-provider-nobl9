@@ -12,10 +12,7 @@ import (
 	"github.com/nobl9/nobl9-go/sdk"
 )
 
-//nolint:gochecknoglobals,revive
-var Version string
-
-func Provider() *schema.Provider {
+func Provider(version string) *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"ingest_url": {
@@ -114,7 +111,9 @@ func Provider() *schema.Provider {
 			"nobl9_report_system_health_review":             resourceReportFactory(reportSystemHealthReview{}),
 		},
 
-		ConfigureContextFunc: providerConfigure,
+		ConfigureContextFunc: func(_ context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+			return getProviderConfig(data, version), nil
+		},
 	}
 }
 
@@ -126,10 +125,11 @@ type ProviderConfig struct {
 	ClientSecret   string
 	OktaOrgURL     string
 	OktaAuthServer string
+	Version        string
 }
 
-func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	config := ProviderConfig{
+func getProviderConfig(data *schema.ResourceData, version string) ProviderConfig {
+	return ProviderConfig{
 		IngestURL:      data.Get("ingest_url").(string),
 		Organization:   data.Get("organization").(string),
 		Project:        data.Get("project").(string),
@@ -137,12 +137,10 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 		ClientSecret:   data.Get("client_secret").(string),
 		OktaOrgURL:     data.Get("okta_org_url").(string),
 		OktaAuthServer: data.Get("okta_auth_server").(string),
+		Version:        version,
 	}
-
-	return config, nil
 }
 
-//nolint:gochecknoglobals
 var (
 	sharedClient *sdk.Client
 	once         sync.Once
@@ -186,7 +184,7 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 		if err != nil {
 			panic(err)
 		}
-		sharedClient.SetUserAgent(fmt.Sprintf("terraform-%s", Version))
+		sharedClient.SetUserAgent(fmt.Sprintf("terraform-%s", providerConfig.Version))
 	})
 	return sharedClient, diags
 }

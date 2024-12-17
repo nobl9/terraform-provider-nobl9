@@ -9,7 +9,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/nobl9/nobl9-go/manifest"
@@ -18,14 +20,32 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/nobl9/terraform-provider-nobl9/nobl9"
 )
 
-// testAccProtoV6ProviderFactories are used to instantiate a provider during
+// testAccNewMux returns a new provider server which can multiplex
+// between the SDK and framework provider implementations.
+func testAccNewMux(ctx context.Context, version string) (tfprotov5.ProviderServer, error) {
+	mux, err := tf5muxserver.NewMuxServer(
+		ctx,
+		func() tfprotov5.ProviderServer { return schema.NewGRPCProviderServer(nobl9.Provider(version)) },
+		providerserver.NewProtocol5(New(version)),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return mux.ProviderServer(), nil
+}
+
+// testAccProtoV5ProviderFactories are used to instantiate a provider during
 // acceptance testing. The factory function will be invoked for every Terraform
 // CLI command executed to create a provider server to which the CLI can
 // reattach.
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"nobl9": providerserver.NewProtocol6WithError(New("test")),
+var testAccProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
+	"nobl9": func() (tfprotov5.ProviderServer, error) {
+		return testAccNewMux(context.Background(), "test")
+	},
 }
 
 var testSDKClient = struct {
