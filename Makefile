@@ -1,15 +1,15 @@
 .DEFAULT_GOAL := help
 MAKEFLAGS += --silent --no-print-directory
 
-TEST?=$$(go list ./... | grep -v 'vendor')
-HOSTNAME=nobl9.com
-NAMESPACE=nobl9
-NAME=nobl9
-BIN_DIR=./bin
-BINARY=$(BIN_DIR)/terraform-provider-$(NAME)
-VERSION=0.35.0
-BUILD_FLAGS="-X github.com/nobl9/terraform-provider-nobl9/Version=$(VERSION)"
-OS_ARCH:=$(shell go env GOOS)_$(shell go env GOARCH)
+TEST ?= $$(go list ./... | grep -v 'vendor')
+HOSTNAME = nobl9.com
+NAMESPACE = nobl9
+NAME = nobl9
+BIN_DIR = ./bin
+BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
+VERSION = 0.35.0
+LDFLAGS += -X main.Version=$(VERSION)
+OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 
 # renovate datasource=github-releases depName=securego/gosec
 GOSEC_VERSION := v2.21.4
@@ -51,7 +51,7 @@ install/provider: build
 .PHONY: build
 ## Build provider binary.
 build:
-	go build -ldflags $(BUILD_FLAGS) -o $(BINARY)
+	go build -ldflags="$(LDFLAGS)" -o $(BINARY)
 
 .PHONY: test test/unit test/acc
 ## Run all tests.
