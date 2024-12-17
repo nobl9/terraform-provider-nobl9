@@ -25,6 +25,7 @@ ignorePaths:
   - CODEOWNERS
   - bin/**
 words:
+  - GOARCH
   - apdex
   - bymonthday
   - dbslo
