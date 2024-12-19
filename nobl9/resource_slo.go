@@ -34,7 +34,7 @@ func resourceSLO() *schema.Resource {
 		DeleteContext: resourceSLODelete,
 		ReadContext:   resourceSLORead,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: resourceSLOImport,
 		},
 		Description: "[SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)",
 	}
@@ -454,6 +454,17 @@ func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interfa
 		return diag.FromErr(err)
 	}
 	return nil
+}
+
+func resourceSLOImport(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+	project, resourceID := parseImportID(d.Id())
+	if project != "" {
+		if err := d.Set("project", project); err != nil {
+			return nil, fmt.Errorf("error setting project: %w", err)
+		}
+	}
+	d.SetId(resourceID)
+	return []*schema.ResourceData{d}, nil
 }
 
 func schemaMetricSpec() *schema.Resource {
