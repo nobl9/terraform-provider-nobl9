@@ -27,7 +27,7 @@ The Nobl9 Terraform Provider does not support the configuration of the following
 - [SLO Annotations](https://docs.nobl9.com/features/slo-annotations/)
 - [Alert Silence](https://docs.nobl9.com/alerting/alert-silence/)
 
-The Nobl9 Terraform Provider supports `terraform import` command. For project-bound resources, use `project_name/service_name` format.
+The Nobl9 Terraform Provider supports `terraform import` command. For project-bound resources, use `project_name/resource_name` format.
 
 ## Configuration
 
