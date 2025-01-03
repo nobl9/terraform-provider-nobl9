@@ -388,23 +388,25 @@ func resourceSLOUpdate(ctx context.Context, d *schema.ResourceData, meta interfa
 func resourceSLOCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags, slo := resourceSLOApply(ctx, d, meta)
 
-	retrieveHistoricalDataFrom := d.Get("retrieve_historical_data_from").(string)
-	if retrieveHistoricalDataFrom != "" {
-		config := meta.(ProviderConfig)
-		client, ds := getClient(config)
-		if ds != nil {
-			return ds
+	if !diags.HasError() {
+		retrieveHistoricalDataFrom := d.Get("retrieve_historical_data_from").(string)
+		if retrieveHistoricalDataFrom != "" {
+			config := meta.(ProviderConfig)
+			client, ds := getClient(config)
+			if ds != nil {
+				return ds
+			}
+			project := slo.GetProject()
+			replayPayload := buildReplayPayload(project, slo.GetName(), retrieveHistoricalDataFrom)
+			err := triggerHistoricalDataRetrieval(ctx, client, project, replayPayload)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Historical data retrieval for the SLO has been triggered.",
+			})
 		}
-		project := slo.GetProject()
-		replayPayload := buildReplayPayload(project, slo.GetName(), retrieveHistoricalDataFrom)
-		err := triggerHistoricalDataRetrieval(ctx, client, project, replayPayload)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Historical data retrieval for the SLO has been triggered.",
-		})
 	}
 
 	return diags
