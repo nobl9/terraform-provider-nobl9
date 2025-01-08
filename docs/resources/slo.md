@@ -237,7 +237,7 @@ Optional:
 - `primary` (Boolean) Is objective marked as primary.
 - `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
 - `time_slice_target` (Number) Designated value for slice.
-- `value` (Number) Required for threshold and ratio metrics. Optional for composite SLOs. For thresholdmetrics, the threshold value. For ratio metrics, for legacy reasons, this must be a unique valueper objective. For composite SLOs it should be omitted. If, for composite SLO, it was setpreviously to a non zero value then it should remain set to that value.
+- `value` (Number) Required for threshold and ratio metrics. Optional for composite SLOs. For threshold metrics, the threshold value. For ratio metrics, for legacy reasons, this must be a unique value per objective. For composite SLOs it should be omitted. If, for composite SLO, it was set previously to a non zero value then it should remain set to that value.
 
 <a id="nestedblock--objective--composite"></a>
 ### Nested Schema for `objective.composite`
