@@ -2981,9 +2981,10 @@ resource "nobl9_slo" ":name" {
   objective {
     display_name = "obj1"
     name         = "tf-objective-1"
+    primary      = false
     target       = 0.7
+    time_slice_target = 0
     value        = 1
-    op           = "lt"
     count_metrics {
       incremental = true
       good_total {
