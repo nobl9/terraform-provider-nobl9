@@ -158,9 +158,9 @@ func resourceObjective() *schema.Resource {
 				Type:     schema.TypeFloat,
 				Optional: true,
 				Description: "Required for threshold and ratio metrics. Optional for composite SLOs. For threshold" +
-					"metrics, the threshold value. For ratio metrics, for legacy reasons, this must be a unique value" +
-					"per objective. For composite SLOs it should be omitted. If, for composite SLO, it was set" +
-					"previously to a non zero value then it should remain set to that value.",
+					" metrics, the threshold value. For ratio metrics, this must be a unique value per objective (for" +
+					" legacy reasons). For composite SLOs, it should be omitted. If, for composite SLO, it was set" +
+					" previously to a non-zero value, then it must remain unchanged.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -394,23 +394,25 @@ func resourceSLOUpdate(ctx context.Context, d *schema.ResourceData, meta interfa
 func resourceSLOCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags, slo := resourceSLOApply(ctx, d, meta)
 
-	retrieveHistoricalDataFrom := d.Get("retrieve_historical_data_from").(string)
-	if retrieveHistoricalDataFrom != "" {
-		config := meta.(ProviderConfig)
-		client, ds := getClient(config)
-		if ds != nil {
-			return ds
+	if !diags.HasError() {
+		retrieveHistoricalDataFrom := d.Get("retrieve_historical_data_from").(string)
+		if retrieveHistoricalDataFrom != "" {
+			config := meta.(ProviderConfig)
+			client, ds := getClient(config)
+			if ds != nil {
+				return ds
+			}
+			project := slo.GetProject()
+			replayPayload := buildReplayPayload(project, slo.GetName(), retrieveHistoricalDataFrom)
+			err := triggerHistoricalDataRetrieval(ctx, client, project, replayPayload)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Historical data retrieval for the SLO has been triggered.",
+			})
 		}
-		project := slo.GetProject()
-		replayPayload := buildReplayPayload(project, slo.GetName(), retrieveHistoricalDataFrom)
-		err := triggerHistoricalDataRetrieval(ctx, client, project, replayPayload)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Historical data retrieval for the SLO has been triggered.",
-		})
 	}
 
 	return diags
