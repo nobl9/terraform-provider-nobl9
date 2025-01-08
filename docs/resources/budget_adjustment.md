@@ -6,7 +6,7 @@ description: |-
 
 # nobl9_budget_adjustment (Resource)
 
-The budget adjustment feature allows you to define future periods where planned maintenance, releases, and similar activities won't affect your budget in specific SLOs.
+The budget adjustment feature allows you to [create and update](https://docs.nobl9.com/features/budget-adjustments/#actions-applicable-to-budget-adjustments) future as well as past periods where planned maintenance, releases, and similar activities won't affect your budget in specific SLOs.
 
 For more details, refer to the [Budget adjustment configuration documentation](https://docs.nobl9.com/features/budget-adjustment).
 
