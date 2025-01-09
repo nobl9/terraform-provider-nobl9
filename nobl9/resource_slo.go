@@ -1650,7 +1650,7 @@ func unmarshalElasticsearchMetric(metric interface{}) map[string]interface{} {
 
 /**
  * Google Cloud Monitoring (GCM) Metric
- * https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring
+ * https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring
  */
 const gcmMetric = "gcm"
 
@@ -1660,7 +1660,7 @@ func schemaMetricGCM() map[string]*schema.Schema {
 			Type:     schema.TypeSet,
 			Optional: true,
 			Description: "[Configuration documentation]" +
-				"(https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring)",
+				"(https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"project_id": {
@@ -1669,9 +1669,15 @@ func schemaMetricGCM() map[string]*schema.Schema {
 						Description: "Project ID",
 					},
 					"query": {
+						Type:     schema.TypeString,
+						Optional: true,
+						Description: "Query for the metrics in MQL format" +
+							" ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))",
+					},
+					"promql": {
 						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Query for the metrics",
+						Optional:    true,
+						Description: "Query for the metrics in PromQL format",
 					},
 				},
 			},
@@ -1689,6 +1695,7 @@ func marshalGCMMetric(s *schema.Set) *v1alphaSLO.GCMMetric {
 	return &v1alphaSLO.GCMMetric{
 		ProjectID: metric["project_id"].(string),
 		Query:     metric["query"].(string),
+		PromQL:    metric["promql"].(string),
 	}
 }
 
@@ -1700,6 +1707,7 @@ func unmarshalGCMMetric(metric interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	res["project_id"] = gMetric.ProjectID
 	res["query"] = gMetric.Query
+	res["promql"] = gMetric.PromQL
 
 	return res
 }
