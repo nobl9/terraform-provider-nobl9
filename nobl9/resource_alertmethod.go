@@ -202,7 +202,7 @@ func (i alertMethodWebhook) GetSchema() map[string]*schema.Schema {
 			Optional:  true,
 			Sensitive: true,
 			// nolint:lll
-			Description: "Custom HTTP headers to include in the webhook request. The values are treated as sensitive, will not be displayed in the Terraform state and will be encrypted at the Nobl9.",
+			Description: "Custom HTTP headers to include in the webhook request. The values are treated as sensitive, will not be displayed in the Terraform state and will be encrypted by Nobl9 platform.",
 		},
 	}
 }
