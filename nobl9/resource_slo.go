@@ -94,8 +94,14 @@ func resourceObjective() *schema.Resource {
 						},
 						"total": {
 							Type:        schema.TypeSet,
-							Required:    true,
+							Optional:    true,
 							Description: "Configuration for metric source.",
+							Elem:        schemaMetricSpec(),
+						},
+						"good_total": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Description: "Configuration for single query series metrics.",
 							Elem:        schemaMetricSpec(),
 						},
 						"incremental": {
@@ -668,17 +674,21 @@ func marshalCountMetrics(countMetricsTf map[string]interface{}) *v1alphaSLO.Coun
 
 	incremental := countMetrics["incremental"].(bool)
 
-	total := countMetrics["total"].(*schema.Set).List()[0].(map[string]interface{})
 	spec := &v1alphaSLO.CountMetricsSpec{
 		Incremental: &incremental,
-		TotalMetric: marshalMetric(total),
 	}
 
+	if total := countMetrics["total"].(*schema.Set).List(); len(total) > 0 {
+		spec.TotalMetric = marshalMetric(total[0].(map[string]interface{}))
+	}
 	if good := countMetrics["good"].(*schema.Set).List(); len(good) > 0 {
 		spec.GoodMetric = marshalMetric(good[0].(map[string]interface{}))
 	}
 	if bad := countMetrics["bad"].(*schema.Set).List(); len(bad) > 0 {
 		spec.BadMetric = marshalMetric(bad[0].(map[string]interface{}))
+	}
+	if goodTotal := countMetrics["good_total"].(*schema.Set).List(); len(goodTotal) > 0 {
+		spec.GoodTotalMetric = marshalMetric(goodTotal[0].(map[string]interface{}))
 	}
 
 	return spec
@@ -888,8 +898,12 @@ func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 			if cm.BadMetric != nil {
 				countMetricsTF["bad"] = unmarshalSLOMetric(cm.BadMetric)
 			}
-			total := unmarshalSLOMetric(cm.TotalMetric)
-			countMetricsTF["total"] = total
+			if cm.TotalMetric != nil {
+				countMetricsTF["total"] = unmarshalSLOMetric(cm.TotalMetric)
+			}
+			if cm.GoodTotalMetric != nil {
+				countMetricsTF["good_total"] = unmarshalSLOMetric(cm.GoodTotalMetric)
+			}
 			objectiveTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
 		}
 
