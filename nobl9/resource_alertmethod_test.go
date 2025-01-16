@@ -137,7 +137,7 @@ resource "nobl9_alert_method_slack" "%s" {
   name        = "%s"
   project     = "%s"
   description = "slack"
-  url         = "https://slack.com"
+  url         = "https://hooks.slack.com/services/321/123/secret"
 }
 `, name, name, testProject)
 }
@@ -159,7 +159,7 @@ resource "nobl9_alert_method_opsgenie" "%s" {
   name        = "%s"
   project     = "%s"
   description = "opsgenie"
-  url         = "https://discord.com"
+  url         = "https://api.opsgenie.com"
   auth		  = "GenieKey 12345"
 }
 `, name, name, testProject)
@@ -222,7 +222,7 @@ resource "nobl9_alert_method_slack" "%s" {
   name        = "%s"
   project     = "%s"
   description = "slack"
-  url         = "https://slack.com"
+  url         = "https://hooks.slack.com/services/321/123/secret"
 }
 `, name, name, project)
 }
