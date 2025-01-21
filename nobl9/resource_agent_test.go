@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/nobl9/nobl9-go/manifest"
 )
@@ -46,8 +46,8 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_agent", manifest.KindAgent),
+				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				CheckDestroy:             CheckDestroy("nobl9_agent", manifest.KindAgent),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
@@ -99,14 +99,6 @@ resource "nobl9_agent" "%s" {
     	value = 10
 	}
 	max_duration {
-		unit = "Hour"
-		value = 19
-	}
-	triggered_by_slo_creation {
-		unit = "Hour"
-		value = 19
-	}
-	triggered_by_slo_edit {
 		unit = "Hour"
 		value = 19
 	}
@@ -196,14 +188,6 @@ resource "nobl9_direct_cloudwatch" "%s" {
 	max_duration {
 	  unit  = "Day"
 	  value = 15
-	}
-	triggered_by_slo_creation {
-	  unit = "Hour"
-      value = 19
-	}
-	triggered_by_slo_edit {
-	  unit = "Hour"
-	  value = 19
 	}
   }
   query_delay {
@@ -297,14 +281,6 @@ resource "nobl9_agent" "%s" {
 	max_duration {
       unit = "Hour"
       value = 19
-	}
-	triggered_by_slo_creation {
-	  unit = "Hour"
-	  value = 19
-	}
-	triggered_by_slo_edit {
-	  unit = "Hour"
-	  value = 19
 	}
   }
   query_delay {
@@ -440,14 +416,6 @@ resource "nobl9_agent" "%s" {
 	max_duration {
       unit = "Hour"
       value = 19
-	}
-	triggered_by_slo_creation {
-	  unit = "Hour"
-	  value = 19
-	}
-	triggered_by_slo_edit {
-	  unit = "Hour"
-	  value = 19
 	}
   }
   query_delay {

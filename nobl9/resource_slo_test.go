@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/nobl9/nobl9-go/manifest"
 )
@@ -70,8 +70,8 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_slo", manifest.KindSLO),
+				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				CheckDestroy:             CheckDestroy("nobl9_slo", manifest.KindSLO),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
@@ -106,8 +106,8 @@ func TestAcc_Nobl9SLOErrors(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_slo.", manifest.KindSLO),
+				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				CheckDestroy:             CheckDestroy("nobl9_slo.", manifest.KindSLO),
 				Steps: []resource.TestStep{
 					{
 						Config:      tc.configFunc(tc.name),
@@ -3671,4 +3671,30 @@ resource "nobl9_alert_policy" "%s" {
 	}
 }
 `, name, name, testProject)
+}
+
+func testService(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_service" "%s" {
+  name              = "%s"
+  display_name = "%s"
+  project             = "%s"
+  description       = "Test of service"
+
+  label {
+   key = "env"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "dev"
+   values = ["dev", "staging", "prod"]
+  }
+
+  annotations = {
+   env = "development"
+   name = "example annotation"
+  }
+}
+`, name, name, name, testProject)
 }

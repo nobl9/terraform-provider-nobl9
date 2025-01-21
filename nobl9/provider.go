@@ -12,10 +12,7 @@ import (
 	"github.com/nobl9/nobl9-go/sdk"
 )
 
-//nolint:gochecknoglobals,revive
-var Version string
-
-func Provider() *schema.Provider {
+func Provider(version string) *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"ingest_url": {
@@ -29,7 +26,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_ORG", nil),
-				Description: "Nobl9 [Organization ID](https://docs.nobl9.com/API_Documentation/api-endpoints-for-slo-annotations/#common-headers) that contains resources managed by the Nobl9 Terraform provider.",
+				Description: "Nobl9 Organization ID that contains resources managed by the provider.",
 			},
 
 			"project": {
@@ -41,17 +38,19 @@ func Provider() *schema.Provider {
 
 			"client_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_ID", nil),
-				Description: "the [Client ID](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.",
+				Description: "The [Client ID](https://docs.nobl9.com/sloctl-user-guide/#configuration) " +
+					"of your Nobl9 account required to connect to Nobl9.",
 			},
 
 			"client_secret": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_CLIENT_SECRET", nil),
-				Description: "the [Client Secret](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.",
+				Description: "The [Client Secret](https://docs.nobl9.com/sloctl-user-guide/#configuration) " +
+					"of your Nobl9 account required to connect to Nobl9.",
 			},
 
 			"okta_org_url": {
@@ -75,7 +74,6 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"nobl9_service":                                 resourceService(),
 			"nobl9_agent":                                   resourceAgent(),
 			"nobl9_alert_policy":                            resourceAlertPolicy(),
 			"nobl9_alert_method_webhook":                    resourceAlertMethodFactory(alertMethodWebhook{}),
@@ -113,7 +111,9 @@ func Provider() *schema.Provider {
 			"nobl9_report_system_health_review":             resourceReportFactory(reportSystemHealthReview{}),
 		},
 
-		ConfigureContextFunc: providerConfigure,
+		ConfigureContextFunc: func(_ context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+			return getProviderConfig(data, version), nil
+		},
 	}
 }
 
@@ -125,10 +125,11 @@ type ProviderConfig struct {
 	ClientSecret   string
 	OktaOrgURL     string
 	OktaAuthServer string
+	Version        string
 }
 
-func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	config := ProviderConfig{
+func getProviderConfig(data *schema.ResourceData, version string) ProviderConfig {
+	return ProviderConfig{
 		IngestURL:      data.Get("ingest_url").(string),
 		Organization:   data.Get("organization").(string),
 		Project:        data.Get("project").(string),
@@ -136,12 +137,10 @@ func providerConfigure(_ context.Context, data *schema.ResourceData) (interface{
 		ClientSecret:   data.Get("client_secret").(string),
 		OktaOrgURL:     data.Get("okta_org_url").(string),
 		OktaAuthServer: data.Get("okta_auth_server").(string),
+		Version:        version,
 	}
-
-	return config, nil
 }
 
-//nolint:gochecknoglobals
 var (
 	sharedClient *sdk.Client
 	once         sync.Once
@@ -185,7 +184,7 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 		if err != nil {
 			panic(err)
 		}
-		sharedClient.SetUserAgent(fmt.Sprintf("terraform-%s", Version))
+		sharedClient.SetUserAgent(fmt.Sprintf("terraform-%s", providerConfig.Version))
 	})
 	return sharedClient, diags
 }

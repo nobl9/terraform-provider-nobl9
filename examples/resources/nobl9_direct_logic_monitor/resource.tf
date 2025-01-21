@@ -11,4 +11,14 @@ resource "nobl9_direct_logic_monitor" "logic_monitor" {
     unit = "Minute"
     value = 6
   }
+  historical_data_retrieval {
+    default_duration {
+      unit  = "Day"
+      value = 0
+    }
+    max_duration {
+      unit  = "Day"
+      value = 30
+    }
+  }
 }

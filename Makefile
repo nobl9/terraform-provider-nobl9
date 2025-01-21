@@ -1,24 +1,24 @@
 .DEFAULT_GOAL := help
 MAKEFLAGS += --silent --no-print-directory
 
-TEST?=$$(go list ./... | grep -v 'vendor')
-HOSTNAME=nobl9.com
-NAMESPACE=nobl9
-NAME=nobl9
-BIN_DIR=./bin
-BINARY=$(BIN_DIR)/terraform-provider-$(NAME)
-VERSION=0.33.0
-BUILD_FLAGS="-X github.com/nobl9/terraform-provider-nobl9/nobl9.Version=$(VERSION)"
-OS_ARCH?=darwin_arm64
+TEST ?= $$(go list ./... | grep -v 'vendor')
+HOSTNAME = nobl9.com
+NAMESPACE = nobl9
+NAME = nobl9
+BIN_DIR = ./bin
+BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
+VERSION = 0.35.0
+LDFLAGS += -X main.Version=$(VERSION)
+OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 
 # renovate datasource=github-releases depName=securego/gosec
 GOSEC_VERSION := v2.21.4
 # renovate datasource=github-releases depName=golangci/golangci-lint
-GOLANGCI_LINT_VERSION := v1.62.2
+GOLANGCI_LINT_VERSION := v1.63.4
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
-GOVULNCHECK_VERSION := v1.1.3
+GOVULNCHECK_VERSION := v1.1.4
 # renovate datasource=go depName=golang.org/x/tools/cmd/goimports
-GOIMPORTS_VERSION := v0.28.0
+GOIMPORTS_VERSION := v0.29.0
 # renovate datasource=github-releases depName=segmentio/golines
 GOLINES_VERSION := v0.12.2
 
@@ -51,7 +51,7 @@ install/provider: build
 .PHONY: build
 ## Build provider binary.
 build:
-	go build -ldflags $(BUILD_FLAGS) -o $(BINARY)
+	go build -ldflags="$(LDFLAGS)" -o $(BINARY)
 
 .PHONY: test test/unit test/acc
 ## Run all tests.

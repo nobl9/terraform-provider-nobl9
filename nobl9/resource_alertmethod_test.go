@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/nobl9/nobl9-go/manifest"
 )
@@ -17,6 +17,7 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 	}{
 		{"test-webhook", "webhook", testWebhookTemplateConfig},
 		{"test-webhook-fields", "webhook", testWebhookTemplateFieldsConfig},
+		{"test-webhook-headers", "webhook", testWebhookHeadersConfig},
 		{"test-pagerduty", "pagerduty", testPagerDutyConfig},
 		{"test-pagerduty-send-resolution", "pagerduty", testPagerDutyWithSendResolutionConfig},
 		{"test-pagerduty-send-resolution-message", "pagerduty", testPagerDutyWithSendResolutionWithMessageConfig},
@@ -32,8 +33,11 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.ParallelTest(t, resource.TestCase{
-				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_alert_method_"+tc.resourceSuffix, manifest.KindAlertMethod),
+				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				CheckDestroy: CheckDestroy(
+					"nobl9_alert_method_"+tc.resourceSuffix,
+					manifest.KindAlertMethod,
+				),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
@@ -65,6 +69,24 @@ resource "nobl9_alert_method_webhook" "%s" {
   description	  = "WebHook"
   url             = "http://web.net"
   template_fields = [ "slo_name", "slo_details_link" ]
+}
+`, name, name, testProject)
+}
+
+func testWebhookHeadersConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_webhook" "%s" {
+  name            = "%s"
+  project         = "%s"
+  description	    = "WebHook"
+  url             = "http://web.net"
+  template        = "SLO needs attention $slo_name"
+  headers         = {
+    "X-Custom-Header" = "custom value"
+  }
+  sensitive_headers = {
+    "Authorization" = "Bearer xyz"
+  }
 }
 `, name, name, testProject)
 }
@@ -115,7 +137,7 @@ resource "nobl9_alert_method_slack" "%s" {
   name        = "%s"
   project     = "%s"
   description = "slack"
-  url         = "https://slack.com"
+  url         = "https://hooks.slack.com/services/321/123/secret"
 }
 `, name, name, testProject)
 }
@@ -137,7 +159,7 @@ resource "nobl9_alert_method_opsgenie" "%s" {
   name        = "%s"
   project     = "%s"
   description = "opsgenie"
-  url         = "https://discord.com"
+  url         = "https://api.opsgenie.com"
   auth		  = "GenieKey 12345"
 }
 `, name, name, testProject)
@@ -192,4 +214,15 @@ resource "nobl9_alert_method_email" "%s" {
   bcc		  = [ "testUser@nobl9.com" ]
 }
 `, name, name, testProject)
+}
+
+func mockAlertMethod(name, project string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_slack" "%s" {
+  name        = "%s"
+  project     = "%s"
+  description = "slack"
+  url         = "https://hooks.slack.com/services/321/123/secret"
+}
+`, name, name, project)
 }

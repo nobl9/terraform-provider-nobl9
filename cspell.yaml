@@ -25,6 +25,7 @@ ignorePaths:
   - CODEOWNERS
   - bin/**
 words:
+  - GOARCH
   - apdex
   - bymonthday
   - dbslo
@@ -53,7 +54,12 @@ words:
   - sloctl
   - slos
   - tffile
+  - tflog
   - tfplugindocs
+  - tfprotov
+  - tfsdk
+  - tftypes
+  - tmpl
   - tpng
   - tsdbslo
   - vuln
