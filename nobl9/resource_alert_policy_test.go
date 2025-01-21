@@ -94,19 +94,19 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 				name        = "%s"
 				project     = "%s"
 				description = "slack"
-				url         = "https://slack.com"
+				url         = "https://hooks.slack.com/services/321/123/secret"
 			}
 			resource "nobl9_alert_method_slack" "%s" {
 				name        = "%s"
 				project     = "%s"
 				description = "slack"
-				url         = "https://slack.com"
+				url         = "https://hooks.slack.com/services/321/123/secret"
 			}
 			resource "nobl9_alert_method_slack" "%s" {
 				name        = "%s"
 				project     = "%s"
 				description = "slack"
-				url         = "https://slack.com"
+				url         = "https://hooks.slack.com/services/321/123/secret"
 			}
 			`,
 				"am1", "am1", testProject,
@@ -134,19 +134,19 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 				name        = "%s"
 				project     = "%s"
 				description = "slack"
-				url         = "https://slack.com"
+				url         = "https://hooks.slack.com/services/321/123/secret"
 			}
 			resource "nobl9_alert_method_slack" "%s" {
 				name        = "%s"
 				project     = "%s"
 				description = "slack"
-				url         = "https://slack.com"
+				url         = "https://hooks.slack.com/services/321/123/secret"
 			}
 			resource "nobl9_alert_method_slack" "%s" {
 				name        = "%s"
 				project     = "%s"
 				description = "slack"
-				url         = "https://slack.com"
+				url         = "https://hooks.slack.com/services/321/123/secret"
 			}
 			`,
 				"am1", "am1", testProject,
