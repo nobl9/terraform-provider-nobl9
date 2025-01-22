@@ -2989,7 +2989,9 @@ resource "nobl9_slo" ":name" {
       incremental = true
       good_total {
 		splunk {
-		  query = "| mstats avg(\"spl.intr.resource_usage.IOWait.data.avg_cpu_pct\") as n9good WHERE index=\"_metrics\" span=15s | join type=left _time [ | mstats avg(\"spl.intr.resource_usage.IOWait.data.max_cpus_pct\") as n9total WHERE index=\"_metrics\" span=15s] | rename _time as n9time | fields n9time n9good n9total"
+		  query = "| mstats avg(\"spl.intr.resource_usage.IOWait.data.avg_cpu_pct\") as n9good WHERE index=\"_metrics\" 
+		span=15s | join type=left _time [ | mstats avg(\"spl.intr.resource_usage.IOWait.data.max_cpus_pct\") as n9total
+		WHERE index=\"_metrics\" span=15s] | rename _time as n9time | fields n9time n9good n9total"
 		}
       }
     }
