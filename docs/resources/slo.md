@@ -561,10 +561,16 @@ Optional:
 
 Required:
 
-- `device_data_source_instance_id` (Number) Device Datasource Instance ID
-- `graph_id` (Number) Graph ID
 - `line` (String) Line
-- `query_type` (String) Query type: device_metrics
+- `query_type` (String) Query type: device_metrics or website_metrics
+
+Optional:
+
+- `checkpoint_id` (String) Checkpoint ID. Used by Query type = website_metrics
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID. Used by Query type = device_metrics
+- `graph_id` (Number) Graph ID. Used by Query type = device_metrics
+- `graph_name` (String) Graph Name. Used by Query type = website_metrics
+- `website_id` (String) Website ID. Used by Query type = website_metrics
 
 
 <a id="nestedblock--objective--count_metrics--bad--newrelic"></a>
@@ -926,10 +932,16 @@ Optional:
 
 Required:
 
-- `device_data_source_instance_id` (Number) Device Datasource Instance ID
-- `graph_id` (Number) Graph ID
 - `line` (String) Line
-- `query_type` (String) Query type: device_metrics
+- `query_type` (String) Query type: device_metrics or website_metrics
+
+Optional:
+
+- `checkpoint_id` (String) Checkpoint ID. Used by Query type = website_metrics
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID. Used by Query type = device_metrics
+- `graph_id` (Number) Graph ID. Used by Query type = device_metrics
+- `graph_name` (String) Graph Name. Used by Query type = website_metrics
+- `website_id` (String) Website ID. Used by Query type = website_metrics
 
 
 <a id="nestedblock--objective--count_metrics--good--newrelic"></a>
@@ -1291,10 +1303,16 @@ Optional:
 
 Required:
 
-- `device_data_source_instance_id` (Number) Device Datasource Instance ID
-- `graph_id` (Number) Graph ID
 - `line` (String) Line
-- `query_type` (String) Query type: device_metrics
+- `query_type` (String) Query type: device_metrics or website_metrics
+
+Optional:
+
+- `checkpoint_id` (String) Checkpoint ID. Used by Query type = website_metrics
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID. Used by Query type = device_metrics
+- `graph_id` (Number) Graph ID. Used by Query type = device_metrics
+- `graph_name` (String) Graph Name. Used by Query type = website_metrics
+- `website_id` (String) Website ID. Used by Query type = website_metrics
 
 
 <a id="nestedblock--objective--count_metrics--good_total--newrelic"></a>
@@ -1656,10 +1674,16 @@ Optional:
 
 Required:
 
-- `device_data_source_instance_id` (Number) Device Datasource Instance ID
-- `graph_id` (Number) Graph ID
 - `line` (String) Line
-- `query_type` (String) Query type: device_metrics
+- `query_type` (String) Query type: device_metrics or website_metrics
+
+Optional:
+
+- `checkpoint_id` (String) Checkpoint ID. Used by Query type = website_metrics
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID. Used by Query type = device_metrics
+- `graph_id` (Number) Graph ID. Used by Query type = device_metrics
+- `graph_name` (String) Graph Name. Used by Query type = website_metrics
+- `website_id` (String) Website ID. Used by Query type = website_metrics
 
 
 <a id="nestedblock--objective--count_metrics--total--newrelic"></a>
@@ -2029,10 +2053,16 @@ Optional:
 
 Required:
 
-- `device_data_source_instance_id` (Number) Device Datasource Instance ID
-- `graph_id` (Number) Graph ID
 - `line` (String) Line
-- `query_type` (String) Query type: device_metrics
+- `query_type` (String) Query type: device_metrics or website_metrics
+
+Optional:
+
+- `checkpoint_id` (String) Checkpoint ID. Used by Query type = website_metrics
+- `device_data_source_instance_id` (Number) Device Datasource Instance ID. Used by Query type = device_metrics
+- `graph_id` (Number) Graph ID. Used by Query type = device_metrics
+- `graph_name` (String) Graph Name. Used by Query type = website_metrics
+- `website_id` (String) Website ID. Used by Query type = website_metrics
 
 
 <a id="nestedblock--objective--raw_metric--query--newrelic"></a>

@@ -2267,6 +2267,20 @@ func unmarshalLightstepMetric(metric interface{}) map[string]interface{} {
 const logicMonitorMetric = "logic_monitor"
 
 func schemaLogicMonitorMetric() map[string]*schema.Schema {
+	validateQueryType := func(v any, p cty.Path) diag.Diagnostics {
+		value := v.(string)
+		var diags diag.Diagnostics
+		if value != v1alphaSLO.LMQueryTypeDeviceMetrics && value != v1alphaSLO.LMQueryTypeWebsiteMetrics {
+			diagnostic := diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "wrong value",
+				Detail: fmt.Sprintf("%q is not %q or %q", value,
+					v1alphaSLO.LMQueryTypeDeviceMetrics, v1alphaSLO.LMQueryTypeWebsiteMetrics),
+			}
+			diags = append(diags, diagnostic)
+		}
+		return diags
+	}
 	return map[string]*schema.Schema{
 		logicMonitorMetric: {
 			Type:        schema.TypeSet,
@@ -2275,19 +2289,35 @@ func schemaLogicMonitorMetric() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"query_type": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Query type: device_metrics",
+						Type:             schema.TypeString,
+						Required:         true,
+						Description:      "Query type: device_metrics or website_metrics",
+						ValidateDiagFunc: validateQueryType,
 					},
 					"device_data_source_instance_id": {
 						Type:        schema.TypeInt,
-						Required:    true,
-						Description: "Device Datasource Instance ID",
+						Optional:    true,
+						Description: "Device Datasource Instance ID. Used by Query type = device_metrics",
 					},
 					"graph_id": {
 						Type:        schema.TypeInt,
-						Required:    true,
-						Description: "Graph ID",
+						Optional:    true,
+						Description: "Graph ID. Used by Query type = device_metrics",
+					},
+					"website_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Website ID. Used by Query type = website_metrics",
+					},
+					"checkpoint_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Checkpoint ID. Used by Query type = website_metrics",
+					},
+					"graph_name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Graph Name. Used by Query type = website_metrics",
 					},
 					"line": {
 						Type:        schema.TypeString,
@@ -2311,17 +2341,22 @@ func marshalLogicMonitorMetric(s *schema.Set) *v1alphaSLO.LogicMonitorMetric {
 	if value := metric["query_type"].(string); value != "" {
 		QueryType = value
 	}
+	line := metric["line"].(string)
 
 	deviceDataSourceInstanceID := metric["device_data_source_instance_id"].(int)
-
 	graphId := metric["graph_id"].(int)
 
-	line := metric["line"].(string)
+	websiteID := metric["website_id"].(string)
+	checkpointID := metric["checkpoint_id"].(string)
+	graphName := metric["graph_name"].(string)
 
 	return &v1alphaSLO.LogicMonitorMetric{
 		QueryType:                  QueryType,
 		DeviceDataSourceInstanceID: deviceDataSourceInstanceID,
 		GraphID:                    graphId,
+		WebsiteID:                  websiteID,
+		CheckpointID:               checkpointID,
+		GraphName:                  graphName,
 		Line:                       line,
 	}
 }
@@ -2333,9 +2368,16 @@ func unmarshalLogicMonitorMetric(metric interface{}) map[string]interface{} {
 	}
 	res := make(map[string]interface{})
 	res["query_type"] = lMetric.QueryType
+	res["line"] = lMetric.Line
+
+	// For QueryType = LMQueryTypeDeviceMetrics
 	res["device_data_source_instance_id"] = lMetric.DeviceDataSourceInstanceID
 	res["graph_id"] = lMetric.GraphID
-	res["line"] = lMetric.Line
+
+	// For QueryType = LMQueryTypeWebsiteMetrics
+	res["website_id"] = lMetric.WebsiteID
+	res["checkpoint_id"] = lMetric.CheckpointID
+	res["graph_name"] = lMetric.GraphName
 
 	return res
 }
