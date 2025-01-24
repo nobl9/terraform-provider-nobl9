@@ -97,7 +97,7 @@ func TestAcc_Nobl9SLOErrors(t *testing.T) {
 		},
 		{"test-metric-spec-required",
 			testMetricSpecRequired,
-			`At least 1 "total" blocks are required`,
+			`one of \[goodTotal, total\] properties must be set, none was provided`,
 		},
 		{"test-more-than-one-primary-objective",
 			testMoreThanOnePrimaryObjective,
