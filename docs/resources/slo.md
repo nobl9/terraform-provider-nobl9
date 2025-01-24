@@ -306,7 +306,7 @@ Optional:
 - `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--datadog))
 - `dynatrace` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--dynatrace))
 - `elasticsearch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--elasticsearch))
-- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--gcm))
+- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--gcm))
 - `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--grafana_loki))
 - `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--graphite))
 - `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--honeycomb))
@@ -446,7 +446,11 @@ Required:
 Required:
 
 - `project_id` (String) Project ID
-- `query` (String) Query for the metrics
+
+Optional:
+
+- `promql` (String) Query for the metrics in PromQL format
+- `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
 
 
 <a id="nestedblock--objective--count_metrics--bad--grafana_loki"></a>
@@ -677,7 +681,7 @@ Optional:
 - `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--good--datadog))
 - `dynatrace` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--good--dynatrace))
 - `elasticsearch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--good--elasticsearch))
-- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--good--gcm))
+- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--good--gcm))
 - `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--good--grafana_loki))
 - `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--good--graphite))
 - `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--honeycomb))
@@ -817,7 +821,11 @@ Required:
 Required:
 
 - `project_id` (String) Project ID
-- `query` (String) Query for the metrics
+
+Optional:
+
+- `promql` (String) Query for the metrics in PromQL format
+- `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
 
 
 <a id="nestedblock--objective--count_metrics--good--grafana_loki"></a>
@@ -1048,7 +1056,7 @@ Optional:
 - `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--datadog))
 - `dynatrace` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--dynatrace))
 - `elasticsearch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--elasticsearch))
-- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--gcm))
+- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--gcm))
 - `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--grafana_loki))
 - `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--graphite))
 - `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--honeycomb))
@@ -1188,7 +1196,11 @@ Required:
 Required:
 
 - `project_id` (String) Project ID
-- `query` (String) Query for the metrics
+
+Optional:
+
+- `promql` (String) Query for the metrics in PromQL format
+- `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
 
 
 <a id="nestedblock--objective--count_metrics--good_total--grafana_loki"></a>
@@ -1419,7 +1431,7 @@ Optional:
 - `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--total--datadog))
 - `dynatrace` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--total--dynatrace))
 - `elasticsearch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--total--elasticsearch))
-- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--total--gcm))
+- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--total--gcm))
 - `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--total--grafana_loki))
 - `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--total--graphite))
 - `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--honeycomb))
@@ -1559,7 +1571,11 @@ Required:
 Required:
 
 - `project_id` (String) Project ID
-- `query` (String) Query for the metrics
+
+Optional:
+
+- `promql` (String) Query for the metrics in PromQL format
+- `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
 
 
 <a id="nestedblock--objective--count_metrics--total--grafana_loki"></a>
@@ -1798,7 +1814,7 @@ Optional:
 - `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--raw_metric--query--datadog))
 - `dynatrace` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--raw_metric--query--dynatrace))
 - `elasticsearch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--raw_metric--query--elasticsearch))
-- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--raw_metric--query--gcm))
+- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--raw_metric--query--gcm))
 - `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--raw_metric--query--grafana_loki))
 - `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--raw_metric--query--graphite))
 - `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--raw_metric--query--honeycomb))
@@ -1938,7 +1954,11 @@ Required:
 Required:
 
 - `project_id` (String) Project ID
-- `query` (String) Query for the metrics
+
+Optional:
+
+- `promql` (String) Query for the metrics in PromQL format
+- `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
 
 
 <a id="nestedblock--objective--raw_metric--query--grafana_loki"></a>
