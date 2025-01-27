@@ -94,8 +94,14 @@ func resourceObjective() *schema.Resource {
 						},
 						"total": {
 							Type:        schema.TypeSet,
-							Required:    true,
+							Optional:    true,
 							Description: "Configuration for metric source.",
+							Elem:        schemaMetricSpec(),
+						},
+						"good_total": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Description: "Configuration for single query series metrics.",
 							Elem:        schemaMetricSpec(),
 						},
 						"incremental": {
@@ -668,17 +674,21 @@ func marshalCountMetrics(countMetricsTf map[string]interface{}) *v1alphaSLO.Coun
 
 	incremental := countMetrics["incremental"].(bool)
 
-	total := countMetrics["total"].(*schema.Set).List()[0].(map[string]interface{})
 	spec := &v1alphaSLO.CountMetricsSpec{
 		Incremental: &incremental,
-		TotalMetric: marshalMetric(total),
 	}
 
+	if total := countMetrics["total"].(*schema.Set).List(); len(total) > 0 {
+		spec.TotalMetric = marshalMetric(total[0].(map[string]interface{}))
+	}
 	if good := countMetrics["good"].(*schema.Set).List(); len(good) > 0 {
 		spec.GoodMetric = marshalMetric(good[0].(map[string]interface{}))
 	}
 	if bad := countMetrics["bad"].(*schema.Set).List(); len(bad) > 0 {
 		spec.BadMetric = marshalMetric(bad[0].(map[string]interface{}))
+	}
+	if goodTotal := countMetrics["good_total"].(*schema.Set).List(); len(goodTotal) > 0 {
+		spec.GoodTotalMetric = marshalMetric(goodTotal[0].(map[string]interface{}))
 	}
 
 	return spec
@@ -888,8 +898,12 @@ func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 			if cm.BadMetric != nil {
 				countMetricsTF["bad"] = unmarshalSLOMetric(cm.BadMetric)
 			}
-			total := unmarshalSLOMetric(cm.TotalMetric)
-			countMetricsTF["total"] = total
+			if cm.TotalMetric != nil {
+				countMetricsTF["total"] = unmarshalSLOMetric(cm.TotalMetric)
+			}
+			if cm.GoodTotalMetric != nil {
+				countMetricsTF["good_total"] = unmarshalSLOMetric(cm.GoodTotalMetric)
+			}
 			objectiveTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
 		}
 
@@ -1650,7 +1664,7 @@ func unmarshalElasticsearchMetric(metric interface{}) map[string]interface{} {
 
 /**
  * Google Cloud Monitoring (GCM) Metric
- * https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring
+ * https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring
  */
 const gcmMetric = "gcm"
 
@@ -1660,7 +1674,7 @@ func schemaMetricGCM() map[string]*schema.Schema {
 			Type:     schema.TypeSet,
 			Optional: true,
 			Description: "[Configuration documentation]" +
-				"(https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring)",
+				"(https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"project_id": {
@@ -1669,9 +1683,15 @@ func schemaMetricGCM() map[string]*schema.Schema {
 						Description: "Project ID",
 					},
 					"query": {
+						Type:     schema.TypeString,
+						Optional: true,
+						Description: "Query for the metrics in MQL format" +
+							" ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))",
+					},
+					"promql": {
 						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Query for the metrics",
+						Optional:    true,
+						Description: "Query for the metrics in PromQL format",
 					},
 				},
 			},
@@ -1689,6 +1709,7 @@ func marshalGCMMetric(s *schema.Set) *v1alphaSLO.GCMMetric {
 	return &v1alphaSLO.GCMMetric{
 		ProjectID: metric["project_id"].(string),
 		Query:     metric["query"].(string),
+		PromQL:    metric["promql"].(string),
 	}
 }
 
@@ -1700,6 +1721,7 @@ func unmarshalGCMMetric(metric interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	res["project_id"] = gMetric.ProjectID
 	res["query"] = gMetric.Query
+	res["promql"] = gMetric.PromQL
 
 	return res
 }
@@ -2253,6 +2275,20 @@ func unmarshalLightstepMetric(metric interface{}) map[string]interface{} {
 const logicMonitorMetric = "logic_monitor"
 
 func schemaLogicMonitorMetric() map[string]*schema.Schema {
+	validateQueryType := func(v any, p cty.Path) diag.Diagnostics {
+		value := v.(string)
+		var diags diag.Diagnostics
+		if value != v1alphaSLO.LMQueryTypeDeviceMetrics && value != v1alphaSLO.LMQueryTypeWebsiteMetrics {
+			diagnostic := diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "wrong value",
+				Detail: fmt.Sprintf("%q is not %q or %q", value,
+					v1alphaSLO.LMQueryTypeDeviceMetrics, v1alphaSLO.LMQueryTypeWebsiteMetrics),
+			}
+			diags = append(diags, diagnostic)
+		}
+		return diags
+	}
 	return map[string]*schema.Schema{
 		logicMonitorMetric: {
 			Type:        schema.TypeSet,
@@ -2261,19 +2297,35 @@ func schemaLogicMonitorMetric() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"query_type": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Query type: device_metrics",
+						Type:             schema.TypeString,
+						Required:         true,
+						Description:      "Query type: device_metrics or website_metrics",
+						ValidateDiagFunc: validateQueryType,
 					},
 					"device_data_source_instance_id": {
 						Type:        schema.TypeInt,
-						Required:    true,
-						Description: "Device Datasource Instance ID",
+						Optional:    true,
+						Description: "Device Datasource Instance ID. Used by Query type = device_metrics",
 					},
 					"graph_id": {
 						Type:        schema.TypeInt,
-						Required:    true,
-						Description: "Graph ID",
+						Optional:    true,
+						Description: "Graph ID. Used by Query type = device_metrics",
+					},
+					"website_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Website ID. Used by Query type = website_metrics",
+					},
+					"checkpoint_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Checkpoint ID. Used by Query type = website_metrics",
+					},
+					"graph_name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Graph Name. Used by Query type = website_metrics",
 					},
 					"line": {
 						Type:        schema.TypeString,
@@ -2297,17 +2349,22 @@ func marshalLogicMonitorMetric(s *schema.Set) *v1alphaSLO.LogicMonitorMetric {
 	if value := metric["query_type"].(string); value != "" {
 		QueryType = value
 	}
+	line := metric["line"].(string)
 
 	deviceDataSourceInstanceID := metric["device_data_source_instance_id"].(int)
-
 	graphId := metric["graph_id"].(int)
 
-	line := metric["line"].(string)
+	websiteID := metric["website_id"].(string)
+	checkpointID := metric["checkpoint_id"].(string)
+	graphName := metric["graph_name"].(string)
 
 	return &v1alphaSLO.LogicMonitorMetric{
 		QueryType:                  QueryType,
 		DeviceDataSourceInstanceID: deviceDataSourceInstanceID,
 		GraphID:                    graphId,
+		WebsiteID:                  websiteID,
+		CheckpointID:               checkpointID,
+		GraphName:                  graphName,
 		Line:                       line,
 	}
 }
@@ -2319,9 +2376,16 @@ func unmarshalLogicMonitorMetric(metric interface{}) map[string]interface{} {
 	}
 	res := make(map[string]interface{})
 	res["query_type"] = lMetric.QueryType
+	res["line"] = lMetric.Line
+
+	// For QueryType = LMQueryTypeDeviceMetrics
 	res["device_data_source_instance_id"] = lMetric.DeviceDataSourceInstanceID
 	res["graph_id"] = lMetric.GraphID
-	res["line"] = lMetric.Line
+
+	// For QueryType = LMQueryTypeWebsiteMetrics
+	res["website_id"] = lMetric.WebsiteID
+	res["checkpoint_id"] = lMetric.CheckpointID
+	res["graph_name"] = lMetric.GraphName
 
 	return res
 }

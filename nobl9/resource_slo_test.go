@@ -33,6 +33,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-composite-with-value", testCompositeSLOValueZeroBackwardCompatibility},
 		{"test-datadog", testDatadogSLO},
 		{"test-dynatrace", testDynatraceSLO},
+		{"test-google-cloud-monitoring", testGoogleCloudMonitoringPromQLSLO},
 		{"test-grafanaloki", testGrafanaLokiSLO},
 		{"test-graphite", testGraphiteSLO},
 		{"test-honeycomb", testHoneycombSLO},
@@ -40,7 +41,8 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-instana-infra", testInstanaInfrastructureSLO},
 		{"test-instana-app", testInstanaApplicationSLO},
 		{"test-lightstep", testLightstepSLO},
-		{"test-logic-monitor", testLogicMonitorMetricsSLO},
+		{"test-logic-monitor", testLogicMonitorDeviceMetricsSLO},
+		{"test-logic-monitor-website", testLogicMonitorWebsiteMetricsSLO},
 		{"test-multiple-ap", testMultipleAlertPolicies},
 		{"test-newrelic", testNewRelicSLO},
 		{"test-opentsdb", testOpenTSDBSLO},
@@ -57,6 +59,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-redshift", testRedshiftSLO},
 		{"test-splunk", testSplunkSLO},
 		{"test-splunk-observability", testSplunkObservabilitySLO},
+		{"test-splunk-single-query", testSplunkSingleQuerySLO},
 		{"test-sumologic", testSumoLogicSLO},
 		{"test-thousandeyes", testThousandeyesSLO},
 		{"test-anomaly-config-same-project", testAnomalyConfigNoDataSameProject},
@@ -94,7 +97,7 @@ func TestAcc_Nobl9SLOErrors(t *testing.T) {
 		},
 		{"test-metric-spec-required",
 			testMetricSpecRequired,
-			`At least 1 "total" blocks are required`,
+			`one of \[goodTotal, total\] properties must be set, none was provided`,
 		},
 		{"test-more-than-one-primary-objective",
 			testMoreThanOnePrimaryObjective,
@@ -1323,6 +1326,67 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
+func testGoogleCloudMonitoringPromQLSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testGoogleCloudMonitoringAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+    project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        gcm {
+          project_id = "project1"
+		  promql = "sum(rate(http_requests_total{job=\"api-server\"}[5m]))"
+		}
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+      kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
 func testGrafanaLokiSLO(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
@@ -1798,7 +1862,7 @@ resource "nobl9_slo" ":name" {
 	return config
 }
 
-func testLogicMonitorMetricsSLO(name string) string {
+func testLogicMonitorDeviceMetricsSLO(name string) string {
 	var serviceName = name + "-tf-service"
 	var agentName = name + "-tf-agent"
 	config :=
@@ -1834,6 +1898,70 @@ resource "nobl9_slo" ":name" {
           query_type = "device_metrics"
           device_data_source_instance_id = "775430648"
           graph_id = "11354"
+          line = "AVERAGE"
+        }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testLogicMonitorWebsiteMetricsSLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testLogicMonitorAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    target       = 0.7
+    value        = 1
+    op           = "lt"
+    raw_metric {
+      query {
+        logic_monitor {
+          query_type = "website_metrics"
+          website_id = "1"
+          checkpoint_id = "775430648"
+          graph_name = "responseTime"
           line = "AVERAGE"
         }
       }
@@ -2928,6 +3056,70 @@ resource "nobl9_slo" ":name" {
         splunk_observability {
           program = "TODO"
         }
+      }
+    }
+  }
+
+  time_window {
+    count      = 10
+    is_rolling = true
+    unit       = "Minute"
+  }
+
+  indicator {
+    name    = nobl9_agent.:agentName.name
+    project = ":project"
+    kind    = "Agent"
+  }
+}
+`
+	config = strings.ReplaceAll(config, ":name", name)
+	config = strings.ReplaceAll(config, ":serviceName", serviceName)
+	config = strings.ReplaceAll(config, ":agentName", agentName)
+	config = strings.ReplaceAll(config, ":project", testProject)
+
+	return config
+}
+
+func testSplunkSingleQuerySLO(name string) string {
+	var serviceName = name + "-tf-service"
+	var agentName = name + "-tf-agent"
+	config :=
+		testService(serviceName) +
+			testSplunkAgent(agentName) + `
+resource "nobl9_slo" ":name" {
+  name         = ":name"
+  display_name = ":name"
+  project      = ":project"
+  service      = nobl9_service.:serviceName.name
+
+  label {
+   key = "team"
+   values = ["green","sapphire"]
+  }
+
+  label {
+   key = "env"
+   values = ["dev", "staging", "prod"]
+  }
+
+  budgeting_method = "Occurrences"
+
+  objective {
+    display_name = "obj1"
+    name         = "tf-objective-1"
+    primary      = false
+    target       = 0.7
+    time_slice_target = 0
+    value        = 1
+    count_metrics {
+      incremental = true
+      good_total {
+		splunk {
+		query = "| mstats avg(\"spl.intr.resource_usage.IOWait.data.avg_cpu_pct\") as n9good WHERE index=\"_metrics\"` +
+			` span=15s | join type=left _time [ | mstats avg(\"spl.intr.resource_usage.IOWait.data.max_cpus_pct\") ` +
+			`as n9total WHERE index=\"_metrics\" span=15s] | rename _time as n9time | fields n9time n9good n9total"
+		}
       }
     }
   }
