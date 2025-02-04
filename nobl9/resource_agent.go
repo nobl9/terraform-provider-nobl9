@@ -30,7 +30,7 @@ func resourceAgent() *schema.Resource {
 		DeleteContext: resourceAgentDelete,
 		ReadContext:   resourceAgentRead,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: resourceAgentImport,
 		},
 		Description: "[Agent configuration | Nobl9 Documentation](https://docs.nobl9.com/nobl9-agent/)",
 	}
@@ -211,6 +211,17 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(err)
 	}
 	return nil
+}
+
+func resourceAgentImport(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+	project, resourceID := parseImportID(d.Id())
+	if project != "" {
+		if err := d.Set("project", project); err != nil {
+			return nil, fmt.Errorf("error setting project: %w", err)
+		}
+	}
+	d.SetId(resourceID)
+	return []*schema.ResourceData{d}, nil
 }
 
 //nolint:unparam
