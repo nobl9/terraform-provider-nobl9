@@ -4,17 +4,20 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/nobl9/nobl9-go/manifest"
 )
 
 func TestAcc_Nobl9Project(t *testing.T) {
-	name := "test-project"
+	name := "test-project-1"
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: ProviderFactory(),
-		CheckDestroy:      CheckDestroy("nobl9_project", manifest.KindProject),
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			CheckDestroy("nobl9_agent", manifest.KindAgent),
+			CheckDestroy("nobl9_project", manifest.KindProject),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testProjectConfig(name),
@@ -29,10 +32,10 @@ func TestAcc_Nobl9Project(t *testing.T) {
 }
 
 func TestAcc_NewNobl9ProjectReference(t *testing.T) {
-	name := "test-project"
+	name := "test-project-2"
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: ProviderFactory(),
+		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			CheckDestroy("nobl9_agent", manifest.KindAgent),
 			CheckDestroy("nobl9_project", manifest.KindProject),
@@ -52,7 +55,7 @@ func TestAcc_NewNobl9ProjectReference(t *testing.T) {
 					 release_channel = "stable"
 					 query_delay {
 						unit = "Second"
-						value = 0
+						value = 1
 					  }
 					}
 				`, name, name, name, name, name, name),

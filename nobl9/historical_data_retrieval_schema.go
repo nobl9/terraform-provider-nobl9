@@ -87,7 +87,7 @@ func unmarshalHistoricalDataRetrieval(
 	h *v1alpha.HistoricalDataRetrieval,
 ) (diags diag.Diagnostics) {
 	if h == nil {
-		return
+		return diags
 	}
 	config := map[string]interface{}{
 		"default_duration": []interface{}{
@@ -103,7 +103,8 @@ func unmarshalHistoricalDataRetrieval(
 			},
 		},
 	}
+
 	set(d, historicalDataRetrievalConfigKey, []interface{}{config}, &diags)
 
-	return
+	return diags
 }

@@ -20,6 +20,7 @@ func resourceComposite() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Objectives to be assembled in your composite SLO.",
+				MaxItems:    1,
 				Elem:        resourceCompositeComponents(),
 			},
 		},
@@ -33,6 +34,7 @@ func resourceCompositeComponents() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "An additional nesting for the components of your composite SLO.",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"composite_objective": {
@@ -93,7 +95,7 @@ func schemaCompositeDeprecated() *schema.Schema {
 				"target": {
 					Type:        schema.TypeFloat,
 					Required:    true,
-					Description: "Designated value.",
+					Description: "The numeric target for your objective.",
 				},
 				"burn_rate_condition": {
 					Type:        schema.TypeSet,

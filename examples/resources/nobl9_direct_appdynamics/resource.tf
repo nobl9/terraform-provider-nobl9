@@ -8,4 +8,14 @@ resource "nobl9_direct_appdynamics" "test-appdynamics" {
   client_name   = "client name"
   log_collection_enabled = true
   release_channel = "stable"
+  historical_data_retrieval {
+      default_duration  {
+        unit  = "Day"
+        value = 0
+      }
+      max_duration {
+        unit  = "Day"
+        value = 30
+      }
+    }
 }

@@ -190,6 +190,20 @@ func (i alertMethodWebhook) GetSchema() map[string]*schema.Schema {
 				Type: schema.TypeString,
 			},
 		},
+		"headers": {
+			Type:        schema.TypeMap,
+			Elem:        &schema.Schema{Type: schema.TypeString},
+			Optional:    true,
+			Description: "Custom HTTP headers to include in the webhook request.",
+		},
+		"sensitive_headers": {
+			Type:      schema.TypeMap,
+			Elem:      &schema.Schema{Type: schema.TypeString},
+			Optional:  true,
+			Sensitive: true,
+			// nolint:lll
+			Description: "Custom HTTP headers to include in the webhook request. The values are treated as sensitive, will not be displayed in the Terraform state and will be encrypted by Nobl9 platform.",
+		},
 	}
 }
 
@@ -205,12 +219,31 @@ func (i alertMethodWebhook) MarshalSpec(r resourceInterface) v1alphaAlertMethod.
 		templateFields = nil
 	}
 
+	headers := make([]v1alphaAlertMethod.WebhookHeader, 0)
+	for key, value := range r.Get("headers").(map[string]interface{}) {
+		header := v1alphaAlertMethod.WebhookHeader{
+			Name:     key,
+			Value:    value.(string),
+			IsSecret: false,
+		}
+		headers = append(headers, header)
+	}
+	for key, value := range r.Get("sensitive_headers").(map[string]interface{}) {
+		header := v1alphaAlertMethod.WebhookHeader{
+			Name:     key,
+			Value:    value.(string),
+			IsSecret: true,
+		}
+		headers = append(headers, header)
+	}
+
 	return v1alphaAlertMethod.Spec{
 		Description: r.Get("description").(string),
 		Webhook: &v1alphaAlertMethod.WebhookAlertMethod{
 			URL:            r.Get("url").(string),
 			Template:       template,
 			TemplateFields: templateFields,
+			Headers:        headers,
 		},
 	}
 }
@@ -222,6 +255,17 @@ func (i alertMethodWebhook) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAl
 	err := d.Set("template", config.Template)
 	diags = appendError(diags, err)
 	err = d.Set("template_fields", config.TemplateFields)
+	diags = appendError(diags, err)
+
+	headers := make(map[string]interface{})
+
+	for _, header := range config.Headers {
+		if !header.IsSecret { // secrets will be returned from the API as [hidden] values
+			headers[header.Name] = header.Value
+		}
+	}
+
+	err = d.Set("headers", headers)
 	diags = appendError(diags, err)
 
 	return diags
@@ -575,18 +619,6 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 				Type: schema.TypeString,
 			},
 		},
-		"subject": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Deprecated:  "'subject' indicated the email alert's subject. It has been deprecated since the Nobl9 1.57 release and is no longer used to generate emails. You can safely remove it from your configuration file.",
-			Description: "This value was used as the email alert's subject. 'subject' is deprecated and not used anywhere; however, its' kept for backward compatibility.",
-		},
-		"body": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Deprecated:  "'body' indicated the email alert's body. It has been deprecated since the Nobl9 1.57 release and is no longer used to generate emails. You can safely remove it from your configuration file.",
-			Description: "This value was used as the template for the email alert's body. 'body' is deprecated and not used anywhere; however, its' kept for backward compatibility.",
-		},
 	}
 }
 
@@ -594,11 +626,9 @@ func (i alertMethodEmail) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Sp
 	return v1alphaAlertMethod.Spec{
 		Description: r.Get("description").(string),
 		Email: &v1alphaAlertMethod.EmailAlertMethod{
-			To:      toStringSlice(r.Get("to").([]interface{})),
-			Cc:      toStringSlice(r.Get("cc").([]interface{})),
-			Bcc:     toStringSlice(r.Get("bcc").([]interface{})),
-			Subject: r.Get("subject").(string),
-			Body:    r.Get("body").(string),
+			To:  toStringSlice(r.Get("to").([]interface{})),
+			Cc:  toStringSlice(r.Get("cc").([]interface{})),
+			Bcc: toStringSlice(r.Get("bcc").([]interface{})),
 		},
 	}
 }
@@ -612,12 +642,6 @@ func (i alertMethodEmail) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAler
 	err = d.Set("cc", config.Cc)
 	diags = appendError(diags, err)
 	err = d.Set("bcc", config.Bcc)
-	diags = appendError(diags, err)
-	//nolint:staticcheck
-	err = d.Set("subject", config.Subject)
-	diags = appendError(diags, err)
-	//nolint:staticcheck
-	err = d.Set("body", config.Body)
 	diags = appendError(diags, err)
 
 	return diags

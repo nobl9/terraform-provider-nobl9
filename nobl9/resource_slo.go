@@ -1,13 +1,17 @@
 package nobl9
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"reflect"
 	"regexp"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -15,17 +19,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
-	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
-
 	"github.com/nobl9/nobl9-go/manifest"
+	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
+	"github.com/nobl9/nobl9-go/sdk"
+	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
 )
 
 func resourceSLO() *schema.Resource {
 	return &schema.Resource{
 		Schema:        schemaSLO(),
-		CreateContext: resourceSLOApply,
-		UpdateContext: resourceSLOApply,
+		CreateContext: resourceSLOCreate,
+		UpdateContext: resourceSLOUpdate,
 		DeleteContext: resourceSLODelete,
 		ReadContext:   resourceSLORead,
 		Importer: &schema.ResourceImporter{
@@ -89,8 +94,14 @@ func resourceObjective() *schema.Resource {
 						},
 						"total": {
 							Type:        schema.TypeSet,
-							Required:    true,
+							Optional:    true,
 							Description: "Configuration for metric source.",
+							Elem:        schemaMetricSpec(),
+						},
+						"good_total": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Description: "Configuration for single query series metrics.",
 							Elem:        schemaMetricSpec(),
 						},
 						"incremental": {
@@ -120,6 +131,7 @@ func resourceObjective() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "An assembly of objectives from different SLOs reflecting their combined performance.",
+				MaxItems:    1,
 				Elem:        resourceComposite(),
 			},
 			"display_name": {
@@ -130,12 +142,12 @@ func resourceObjective() *schema.Resource {
 			"op": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Type of logical operation.",
+				Description: "For threshold metrics, the logical operator applied to the threshold.",
 			},
 			"target": {
 				Type:        schema.TypeFloat,
 				Required:    true,
-				Description: "Designated value.",
+				Description: "The numeric target for your objective.",
 			},
 			"time_slice_target": {
 				Type:        schema.TypeFloat,
@@ -143,9 +155,12 @@ func resourceObjective() *schema.Resource {
 				Description: "Designated value for slice.",
 			},
 			"value": {
-				Type:        schema.TypeFloat,
-				Required:    true,
-				Description: "Value.",
+				Type:     schema.TypeFloat,
+				Optional: true,
+				Description: "Required for threshold and ratio metrics. Optional for composite SLOs. For threshold" +
+					" metrics, the threshold value. For ratio metrics, this must be a unique value per objective (for" +
+					" legacy reasons). For composite SLOs, it should be omitted. If, for composite SLO, it was set" +
+					" previously to a non-zero value, then it must remain unchanged.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -268,6 +283,11 @@ func schemaSLO() map[string]*schema.Schema {
 				},
 			},
 		},
+		"tier": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Internal field, do not use.",
+		},
 		"alert_policies": {
 			Type:        schema.TypeList,
 			Optional:    true,
@@ -323,25 +343,35 @@ func schemaSLO() map[string]*schema.Schema {
 			},
 		},
 		"anomaly_config": schemaAnomalyConfig(),
+		"retrieve_historical_data_from": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: validateDateTime,
+			Description: "If set, the retrieval of historical data for a newly created SLO will be triggered, " +
+				"starting from the specified date. Needs to be RFC3339 format.",
+		},
 	}
 }
 
-func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSLOApply(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) (diag.Diagnostics, manifest.ProjectScopedObject) {
 	config := meta.(ProviderConfig)
 	client, ds := getClient(config)
 	if ds != nil {
-		return ds
+		return ds, nil
 	}
 
 	slo, diags := marshalSLO(d)
 	if diags.HasError() {
-		return diags
+		return diags, nil
 	}
 	resultSlo := manifest.SetDefaultProject([]manifest.Object{slo}, config.Project)
 
 	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *retry.RetryError {
-		err := client.Objects().V1().Apply(ctx, resultSlo)
-		if err != nil {
+		if err := client.Objects().V1().Apply(ctx, resultSlo); err != nil {
 			if errors.Is(err, errConcurrencyIssue) {
 				return retry.RetryableError(err)
 			}
@@ -349,11 +379,43 @@ func resourceSLOApply(ctx context.Context, d *schema.ResourceData, meta interfac
 		}
 		return nil
 	}); err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(err), nil
 	}
 
 	d.SetId(slo.Metadata.Name)
-	return resourceSLORead(ctx, d, meta)
+	return resourceSLORead(ctx, d, meta), resultSlo[0].(manifest.ProjectScopedObject)
+}
+
+func resourceSLOUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	diags, _ := resourceSLOApply(ctx, d, meta)
+	return diags
+}
+
+func resourceSLOCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	diags, slo := resourceSLOApply(ctx, d, meta)
+
+	if !diags.HasError() {
+		retrieveHistoricalDataFrom := d.Get("retrieve_historical_data_from").(string)
+		if retrieveHistoricalDataFrom != "" {
+			config := meta.(ProviderConfig)
+			client, ds := getClient(config)
+			if ds != nil {
+				return ds
+			}
+			project := slo.GetProject()
+			replayPayload := buildReplayPayload(project, slo.GetName(), retrieveHistoricalDataFrom)
+			err := triggerHistoricalDataRetrieval(ctx, client, project, replayPayload)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Historical data retrieval for the SLO has been triggered.",
+			})
+		}
+	}
+
+	return diags
 }
 
 func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -458,6 +520,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 	}
 	annotationsMarshaled := getMarshaledAnnotations(d)
 
+	tier := d.Get("tier").(string)
 	slo := v1alphaSLO.New(
 		v1alphaSLO.Metadata{
 			Name:        d.Get("name").(string),
@@ -477,6 +540,7 @@ func marshalSLO(d *schema.ResourceData) (*v1alphaSLO.SLO, diag.Diagnostics) {
 			AlertPolicies:   toStringSlice(d.Get("alert_policies").([]interface{})),
 			Attachments:     marshalAttachments(attachments.([]interface{})),
 			AnomalyConfig:   marshalAnomalyConfig(d.Get("anomaly_config")),
+			Tier:            &tier,
 		})
 	return &slo, diags
 }
@@ -541,11 +605,11 @@ func marshalIndicator(d *schema.ResourceData) *v1alphaSLO.Indicator {
 }
 
 func marshalObjectives(d *schema.ResourceData) ([]v1alphaSLO.Objective, diag.Diagnostics) {
-	objectivesSchema := d.Get("objective").(*schema.Set).List()
+	objectivesSchemaSet := d.Get("objective").(*schema.Set)
+	objectivesSchema := objectivesSchemaSet.List()
 	objectives := make([]v1alphaSLO.Objective, len(objectivesSchema))
 	for i, o := range objectivesSchema {
 		objective := o.(map[string]interface{})
-		value := objective["value"].(float64)
 		target := objective["target"].(float64)
 		timeSliceTarget := objective["time_slice_target"].(float64)
 		var timeSliceTargetPtr *float64
@@ -558,11 +622,16 @@ func marshalObjectives(d *schema.ResourceData) ([]v1alphaSLO.Objective, diag.Dia
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
-
+		var valuePtr *float64
+		value := objective["value"].(float64)
+		valuePtr = &value
+		if value == 0 && compositeSpec != nil {
+			valuePtr = nil
+		}
 		objectives[i] = v1alphaSLO.Objective{
 			ObjectiveBase: v1alphaSLO.ObjectiveBase{
 				DisplayName: objective["display_name"].(string),
-				Value:       &value,
+				Value:       valuePtr,
 				Name:        objective["name"].(string),
 			},
 			BudgetTarget:    &target,
@@ -605,17 +674,21 @@ func marshalCountMetrics(countMetricsTf map[string]interface{}) *v1alphaSLO.Coun
 
 	incremental := countMetrics["incremental"].(bool)
 
-	total := countMetrics["total"].(*schema.Set).List()[0].(map[string]interface{})
 	spec := &v1alphaSLO.CountMetricsSpec{
 		Incremental: &incremental,
-		TotalMetric: marshalMetric(total),
 	}
 
+	if total := countMetrics["total"].(*schema.Set).List(); len(total) > 0 {
+		spec.TotalMetric = marshalMetric(total[0].(map[string]interface{}))
+	}
 	if good := countMetrics["good"].(*schema.Set).List(); len(good) > 0 {
 		spec.GoodMetric = marshalMetric(good[0].(map[string]interface{}))
 	}
 	if bad := countMetrics["bad"].(*schema.Set).List(); len(bad) > 0 {
 		spec.BadMetric = marshalMetric(bad[0].(map[string]interface{}))
+	}
+	if goodTotal := countMetrics["good_total"].(*schema.Set).List(); len(goodTotal) > 0 {
+		spec.GoodTotalMetric = marshalMetric(goodTotal[0].(map[string]interface{}))
 	}
 
 	return spec
@@ -706,6 +779,10 @@ func unmarshalSLO(d *schema.ResourceData, objects []v1alphaSLO.SLO) diag.Diagnos
 	diags = appendError(diags, err)
 
 	err = unmarshalCompositeDeprecated(d, spec)
+	diags = appendError(diags, err)
+
+	tier := spec.Tier
+	err = d.Set("tier", tier)
 	diags = appendError(diags, err)
 
 	err = unmarshalAttachments(d, spec)
@@ -803,7 +880,9 @@ func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 		objectiveTF["name"] = objective.Name
 		objectiveTF["display_name"] = objective.DisplayName
 		objectiveTF["op"] = objective.Operator
-		objectiveTF["value"] = objective.Value
+		if objective.Value != nil && (*objective.Value != 0 || objective.Composite == nil) {
+			objectiveTF["value"] = objective.Value
+		}
 		objectiveTF["target"] = objective.BudgetTarget
 		objectiveTF["time_slice_target"] = objective.TimeSliceTarget
 		objectiveTF["primary"] = objective.Primary
@@ -819,8 +898,12 @@ func unmarshalObjectives(d *schema.ResourceData, spec v1alphaSLO.Spec) error {
 			if cm.BadMetric != nil {
 				countMetricsTF["bad"] = unmarshalSLOMetric(cm.BadMetric)
 			}
-			total := unmarshalSLOMetric(cm.TotalMetric)
-			countMetricsTF["total"] = total
+			if cm.TotalMetric != nil {
+				countMetricsTF["total"] = unmarshalSLOMetric(cm.TotalMetric)
+			}
+			if cm.GoodTotalMetric != nil {
+				countMetricsTF["good_total"] = unmarshalSLOMetric(cm.GoodTotalMetric)
+			}
 			objectiveTF["count_metrics"] = schema.NewSet(oneElementSet, []interface{}{countMetricsTF})
 		}
 
@@ -1581,7 +1664,7 @@ func unmarshalElasticsearchMetric(metric interface{}) map[string]interface{} {
 
 /**
  * Google Cloud Monitoring (GCM) Metric
- * https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring
+ * https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring
  */
 const gcmMetric = "gcm"
 
@@ -1591,7 +1674,7 @@ func schemaMetricGCM() map[string]*schema.Schema {
 			Type:     schema.TypeSet,
 			Optional: true,
 			Description: "[Configuration documentation]" +
-				"(https://docs.nobl9.com/Sources/google-cloud-monitoring#creating-slos-with-google-cloud-monitoring)",
+				"(https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"project_id": {
@@ -1600,9 +1683,15 @@ func schemaMetricGCM() map[string]*schema.Schema {
 						Description: "Project ID",
 					},
 					"query": {
+						Type:     schema.TypeString,
+						Optional: true,
+						Description: "Query for the metrics in MQL format" +
+							" ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))",
+					},
+					"promql": {
 						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Query for the metrics",
+						Optional:    true,
+						Description: "Query for the metrics in PromQL format",
 					},
 				},
 			},
@@ -1620,6 +1709,7 @@ func marshalGCMMetric(s *schema.Set) *v1alphaSLO.GCMMetric {
 	return &v1alphaSLO.GCMMetric{
 		ProjectID: metric["project_id"].(string),
 		Query:     metric["query"].(string),
+		PromQL:    metric["promql"].(string),
 	}
 }
 
@@ -1631,6 +1721,7 @@ func unmarshalGCMMetric(metric interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	res["project_id"] = gMetric.ProjectID
 	res["query"] = gMetric.Query
+	res["promql"] = gMetric.PromQL
 
 	return res
 }
@@ -1783,6 +1874,7 @@ func unmarshalHoneycombMetric(metric interface{}) map[string]interface{} {
 		return nil
 	}
 	res := make(map[string]interface{})
+	// nolint: staticcheck
 	res["calculation"] = hMetric.Calculation
 	res["attribute"] = hMetric.Attribute
 	return res
@@ -2183,6 +2275,20 @@ func unmarshalLightstepMetric(metric interface{}) map[string]interface{} {
 const logicMonitorMetric = "logic_monitor"
 
 func schemaLogicMonitorMetric() map[string]*schema.Schema {
+	validateQueryType := func(v any, p cty.Path) diag.Diagnostics {
+		value := v.(string)
+		var diags diag.Diagnostics
+		if value != v1alphaSLO.LMQueryTypeDeviceMetrics && value != v1alphaSLO.LMQueryTypeWebsiteMetrics {
+			diagnostic := diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "wrong value",
+				Detail: fmt.Sprintf("%q is not %q or %q", value,
+					v1alphaSLO.LMQueryTypeDeviceMetrics, v1alphaSLO.LMQueryTypeWebsiteMetrics),
+			}
+			diags = append(diags, diagnostic)
+		}
+		return diags
+	}
 	return map[string]*schema.Schema{
 		logicMonitorMetric: {
 			Type:        schema.TypeSet,
@@ -2191,19 +2297,35 @@ func schemaLogicMonitorMetric() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"query_type": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Query type: device_metrics",
+						Type:             schema.TypeString,
+						Required:         true,
+						Description:      "Query type: device_metrics or website_metrics",
+						ValidateDiagFunc: validateQueryType,
 					},
 					"device_data_source_instance_id": {
 						Type:        schema.TypeInt,
-						Required:    true,
-						Description: "Device Datasource Instance ID",
+						Optional:    true,
+						Description: "Device Datasource Instance ID. Used by Query type = device_metrics",
 					},
 					"graph_id": {
 						Type:        schema.TypeInt,
-						Required:    true,
-						Description: "Graph ID",
+						Optional:    true,
+						Description: "Graph ID. Used by Query type = device_metrics",
+					},
+					"website_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Website ID. Used by Query type = website_metrics",
+					},
+					"checkpoint_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Checkpoint ID. Used by Query type = website_metrics",
+					},
+					"graph_name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Graph Name. Used by Query type = website_metrics",
 					},
 					"line": {
 						Type:        schema.TypeString,
@@ -2227,17 +2349,22 @@ func marshalLogicMonitorMetric(s *schema.Set) *v1alphaSLO.LogicMonitorMetric {
 	if value := metric["query_type"].(string); value != "" {
 		QueryType = value
 	}
+	line := metric["line"].(string)
 
 	deviceDataSourceInstanceID := metric["device_data_source_instance_id"].(int)
-
 	graphId := metric["graph_id"].(int)
 
-	line := metric["line"].(string)
+	websiteID := metric["website_id"].(string)
+	checkpointID := metric["checkpoint_id"].(string)
+	graphName := metric["graph_name"].(string)
 
 	return &v1alphaSLO.LogicMonitorMetric{
 		QueryType:                  QueryType,
 		DeviceDataSourceInstanceID: deviceDataSourceInstanceID,
 		GraphID:                    graphId,
+		WebsiteID:                  websiteID,
+		CheckpointID:               checkpointID,
+		GraphName:                  graphName,
 		Line:                       line,
 	}
 }
@@ -2249,9 +2376,16 @@ func unmarshalLogicMonitorMetric(metric interface{}) map[string]interface{} {
 	}
 	res := make(map[string]interface{})
 	res["query_type"] = lMetric.QueryType
+	res["line"] = lMetric.Line
+
+	// For QueryType = LMQueryTypeDeviceMetrics
 	res["device_data_source_instance_id"] = lMetric.DeviceDataSourceInstanceID
 	res["graph_id"] = lMetric.GraphID
-	res["line"] = lMetric.Line
+
+	// For QueryType = LMQueryTypeWebsiteMetrics
+	res["website_id"] = lMetric.WebsiteID
+	res["checkpoint_id"] = lMetric.CheckpointID
+	res["graph_name"] = lMetric.GraphName
 
 	return res
 }
@@ -2785,4 +2919,80 @@ func unmarshalThousandeyesMetric(metric interface{}) map[string]interface{} {
 	res["test_id"] = teMetric.TestID
 	res["test_type"] = teMetric.TestType
 	return res
+}
+
+const historicalDataRetrievalEndpoint = "/timetravel"
+
+func buildReplayPayload(project, sloName, replayFrom string) sdkModels.Replay {
+	replayFromTs, _ := time.Parse(time.RFC3339, replayFrom)
+	const startOffsetMinutes = 5
+	windowDuration := time.Since(replayFromTs)
+	return sdkModels.Replay{
+		Project: project,
+		Slo:     sloName,
+		Duration: sdkModels.ReplayDuration{
+			Unit:  sdkModels.DurationUnitMinute,
+			Value: startOffsetMinutes + int(windowDuration.Minutes()),
+		},
+	}
+}
+
+func triggerHistoricalDataRetrieval(
+	ctx context.Context,
+	client *sdk.Client,
+	project string,
+	payload interface{},
+) (err error) {
+	var body io.Reader
+	if payload != nil {
+		buf := new(bytes.Buffer)
+		if err := json.NewEncoder(buf).Encode(payload); err != nil {
+			return err
+		}
+		body = buf
+	}
+	header := http.Header{sdk.HeaderProject: []string{project}}
+	req, err := client.CreateRequest(ctx, http.MethodPost, historicalDataRetrievalEndpoint, header, nil, body)
+	if err != nil {
+		return err
+	}
+	resp, err := client.HTTP.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	var data []byte
+	data, err = io.ReadAll(resp.Body)
+	if resp.StatusCode >= 300 {
+		return errors.New(replayUnavailabilityReasonExplanation(data, resp.StatusCode))
+	}
+	return err
+}
+
+func replayUnavailabilityReasonExplanation(
+	reason []byte,
+	statusCode int,
+) string {
+	strReason := strings.TrimSpace(string(reason))
+	switch strReason {
+	case sdkModels.ReplayIntegrationDoesNotSupportReplay:
+		return "The Data Source does not support Replay yet"
+	case sdkModels.ReplayAgentVersionDoesNotSupportReplay:
+		return "Update your Agent version to the latest to use Replay for this Data Source."
+	case sdkModels.ReplayMaxHistoricalDataRetrievalTooLow:
+		return "Value configured for spec.historicalDataRetrieval.maxDuration.value" +
+			" for the Data Source is lower than the duration you're trying to run Replay for."
+	case sdkModels.ReplayConcurrentReplayRunsLimitExhausted:
+		return "You've exceeded the limit of concurrent Replay runs. Wait until the current Replay(s) are done."
+	case sdkModels.ReplayUnknownAgentVersion:
+		return "Your Agent isn't connected to the Data Source. Deploy the Agent and run Replay once again."
+	case "single_query_not_supported":
+		return "Historical data retrieval for single-query ratio metrics is not supported"
+	case "composite_slo_not_supported":
+		return "Historical data retrieval for Composite SLO is not supported"
+	case "promql_in_gcm_not_supported":
+		return "Historical data retrieval for PromQL metrics is not supported"
+	default:
+		return fmt.Sprintf("bad response (status: %d): %s", statusCode, strReason)
+	}
 }

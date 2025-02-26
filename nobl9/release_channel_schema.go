@@ -22,6 +22,7 @@ func schemaReleaseChannel() *schema.Schema {
 			validation.StringInSlice([]string{
 				v1alpha.ReleaseChannelStable.String(),
 				v1alpha.ReleaseChannelBeta.String(),
+				v1alpha.ReleaseChannelAlpha.String(),
 			}, false),
 		),
 	}

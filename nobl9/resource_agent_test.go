@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/nobl9/nobl9-go/manifest"
 )
@@ -46,8 +46,8 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_agent", manifest.KindAgent),
+				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				CheckDestroy:             CheckDestroy("nobl9_agent", manifest.KindAgent),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.name),
@@ -206,7 +206,7 @@ resource "nobl9_agent" "%s" {
   agent_type = "datadog"
   release_channel = "stable"
   datadog_config {
-    site = "eu"
+    site = "datadoghq.eu"
   }
   query_delay {
     unit = "Minute"
@@ -273,6 +273,16 @@ resource "nobl9_agent" "%s" {
   project   = "%s"
   agent_type = "gcm"
   release_channel = "beta"
+  historical_data_retrieval {
+	default_duration {
+      unit = "Minute"
+      value = 10
+	}
+	max_duration {
+      unit = "Hour"
+      value = 19
+	}
+  }
   query_delay {
     unit = "Minute"
     value = 6
@@ -398,6 +408,16 @@ resource "nobl9_agent" "%s" {
     account = "account-name"
   }
   release_channel = "beta"
+  historical_data_retrieval {
+	default_duration {
+      unit = "Minute"
+      value = 10
+	}
+	max_duration {
+      unit = "Hour"
+      value = 19
+	}
+  }
   query_delay {
     unit = "Minute"
     value = 6

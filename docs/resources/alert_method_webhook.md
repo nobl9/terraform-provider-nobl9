@@ -9,7 +9,7 @@ description: |-
 
 The **Webhook Alert Method** enables sending alerts through an HTTP callback handler that is triggered by an event. You can create webhooks and configure them to handle different incident notifications, using either custom or predefined notification templates.
 
--> **NOTE** For details on how to use Webhook message templates, check the [Nobl9 documentation](https://docs.nobl9.com/alerting/webhook#creating-webhook-custom-templates-through-yaml).
+-> **NOTE** For details on how to use Webhook message templates, check the [Nobl9 documentation](https://docs.nobl9.com/alerting/alert-methods/webhook#creating-webhook-custom-templates-through-yaml).
 
 For more details, refer to [Webhook Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/webhook).
 
@@ -57,6 +57,8 @@ resource "nobl9_alert_method_webhook" "this" {
 
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
+- `headers` (Map of String) Custom HTTP headers to include in the webhook request.
+- `sensitive_headers` (Map of String, Sensitive) Custom HTTP headers to include in the webhook request. The values are treated as sensitive, will not be displayed in the Terraform state and will be encrypted by Nobl9 platform.
 - `template` (String) Webhook message template. See documentation for template format and samples.
 - `template_fields` (List of String) Webhook message fields. The message contains JSON payload with specified fields. See documentation for allowed fields.
 - `url` (String, Sensitive) URL of the webhook endpoint.

@@ -1,24 +1,24 @@
 .DEFAULT_GOAL := help
 MAKEFLAGS += --silent --no-print-directory
 
-TEST?=$$(go list ./... | grep -v 'vendor')
-HOSTNAME=nobl9.com
-NAMESPACE=nobl9
-NAME=nobl9
-BIN_DIR=./bin
-BINARY=$(BIN_DIR)/terraform-provider-$(NAME)
-VERSION=0.28.0
-BUILD_FLAGS="-X github.com/nobl9/terraform-provider-nobl9/nobl9.Version=$(VERSION)"
-OS_ARCH?=linux_amd64
+TEST ?= $$(go list ./... | grep -v 'vendor')
+HOSTNAME = nobl9.com
+NAMESPACE = nobl9
+NAME = nobl9
+BIN_DIR = ./bin
+BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
+VERSION = 0.37.0
+LDFLAGS += -X main.Version=$(VERSION)
+OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 
 # renovate datasource=github-releases depName=securego/gosec
-GOSEC_VERSION := v2.20.0
+GOSEC_VERSION := v2.22.1
 # renovate datasource=github-releases depName=golangci/golangci-lint
-GOLANGCI_LINT_VERSION := v1.59.1
+GOLANGCI_LINT_VERSION := v1.64.5
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
-GOVULNCHECK_VERSION := v1.1.3
+GOVULNCHECK_VERSION := v1.1.4
 # renovate datasource=go depName=golang.org/x/tools/cmd/goimports
-GOIMPORTS_VERSION := v0.24.0
+GOIMPORTS_VERSION := v0.30.0
 # renovate datasource=github-releases depName=segmentio/golines
 GOLINES_VERSION := v0.12.2
 
@@ -51,7 +51,7 @@ install/provider: build
 .PHONY: build
 ## Build provider binary.
 build:
-	go build -ldflags $(BUILD_FLAGS) -o $(BINARY)
+	go build -ldflags="$(LDFLAGS)" -o $(BINARY)
 
 .PHONY: test test/unit test/acc
 ## Run all tests.
@@ -69,7 +69,7 @@ test/acc:
 .PHONY: release-dry-run
 ## Run Goreleaser in dry-run mode.
 release-dry-run:
-	goreleaser release --snapshot --skip-publish --rm-dist
+	goreleaser release --snapshot --skip-publish --clean
 
 .PHONY: check check/vet check/lint check/gosec check/spell check/trailing check/markdown check/format check/generate check/vulns
 ## Run all checks.
@@ -144,7 +144,7 @@ format/go:
 	echo "Formatting Go files..."
 	$(call _ensure_installed,binary,goimports)
 	$(call _ensure_installed,binary,golines)
-	go fmt ./...
+	gofmt -w -l -s .
 	$(BIN_DIR)/goimports -local=github.com/nobl9/terraform-provider-nobl9 -w .
 	$(BIN_DIR)/golines --ignore-generated -m 120 -w .
 

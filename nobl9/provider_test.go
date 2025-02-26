@@ -8,20 +8,21 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+
+	"github.com/nobl9/terraform-provider-nobl9/internal/frameworkprovider"
 )
 
-//nolint:gochecknoglobals
-var (
-	testProvider *schema.Provider
-	testProject  string
-)
+var testProject string
 
 //nolint:gochecknoinits
 func init() {
@@ -31,17 +32,35 @@ func init() {
 	}
 }
 
-func ProviderFactory() map[string]func() (*schema.Provider, error) {
-	testProvider = Provider()
-	return map[string]func() (*schema.Provider, error){
-		"nobl9": func() (*schema.Provider, error) {
-			return testProvider, nil
+// testAccNewMux returns a new provider server which can multiplex
+// between the SDK and framework provider implementations.
+func testAccNewMux(ctx context.Context, version string) (tfprotov5.ProviderServer, error) {
+	mux, err := tf5muxserver.NewMuxServer(
+		ctx,
+		func() tfprotov5.ProviderServer {
+			provider := Provider(version)
+			return schema.NewGRPCProviderServer(provider)
 		},
+		providerserver.NewProtocol5(frameworkprovider.New(version)),
+	)
+	if err != nil {
+		return nil, err
 	}
+	return mux.ProviderServer(), nil
+}
+
+// testAccProtoV5ProviderFactories are used to instantiate a provider during
+// acceptance testing. The factory function will be invoked for every Terraform
+// CLI command executed to create a provider server to which the CLI can
+// reattach.
+var testAccProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
+	"nobl9": func() (tfprotov5.ProviderServer, error) {
+		return testAccNewMux(context.Background(), "test")
+	},
 }
 
 func TestProvider(t *testing.T) {
-	if err := Provider().InternalValidate(); err != nil {
+	if err := Provider("test").InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
@@ -59,26 +78,11 @@ func CheckObjectCreated(name string) resource.TestCheckFunc {
 	}
 }
 
-func CheckStateContainData(key string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[key]
-		if !ok {
-			return fmt.Errorf("not found: %s", key)
-		}
-		if len(rs.String()) == 0 {
-			return fmt.Errorf("data not set")
-		}
-		return nil
-	}
-}
-
 func CheckDestroy(rsType string, kind manifest.Kind) func(s *terraform.State) error {
 	return func(s *terraform.State) error {
-		config, ok := testProvider.Meta().(ProviderConfig)
-		if !ok {
-			return fmt.Errorf("could not cast data to ProviderConfig")
-		}
-		client, ds := getClient(config)
+		// When CheckDestroy is called, the client is already created.
+		// There's no need to pass any config to this function at that point.
+		client, ds := getClient(ProviderConfig{})
 		if ds.HasError() {
 			return fmt.Errorf("unable create client when deleting objects")
 		}

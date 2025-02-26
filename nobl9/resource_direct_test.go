@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/nobl9/nobl9-go/manifest"
 )
@@ -40,8 +40,8 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 		t.Run(tc.directType, func(t *testing.T) {
 			testName := strings.ReplaceAll("test-"+tc.directType, "_", "")
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: ProviderFactory(),
-				CheckDestroy:      CheckDestroy("nobl9_direct_%s", manifest.KindDirect),
+				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				CheckDestroy:             CheckDestroy("nobl9_direct_%s", manifest.KindDirect),
 				Steps: []resource.TestStep{
 					{
 						Config: tc.configFunc(tc.directType, testName),
@@ -162,7 +162,7 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  site = "eu"
+  site = "datadoghq.eu"
   api_key = "secret"
   application_key = "secret"
   historical_data_retrieval {
@@ -219,8 +219,18 @@ resource "nobl9_direct_%s" "%s" {
   name = "%s"
   project = "%s"
   description = "desc"
-  service_account_key = "{}"
+  service_account_key = "{ \"key\": \"secret\" }"
   log_collection_enabled = true
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
   release_channel = "stable"
   query_delay {
     unit = "Minute"
@@ -333,6 +343,16 @@ resource "nobl9_direct_%s" "%s" {
   account = "account_name"
   account_id = "secret"
   access_key = "secret"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
   log_collection_enabled = true
   release_channel = "beta"
   query_delay {
@@ -442,7 +462,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   realm = "eu"
   access_token = "secret"
-  release_channel = "stable"
+  release_channel = "alpha"
   query_delay {
     unit = "Minute"
     value = 6
