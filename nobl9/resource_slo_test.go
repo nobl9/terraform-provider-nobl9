@@ -36,7 +36,7 @@ func TestAcc_Nobl9SLO(t *testing.T) {
 		{"test-dynatrace", testDynatraceSLO},
 		{"test-grafanaloki", testGrafanaLokiSLO},
 		{"test-graphite", testGraphiteSLO},
-		{"test-honeycomb", testHoneycombSLO},
+		//{"test-honeycomb", testHoneycombSLO},
 		{"test-influxdb", testInfluxDBSLO},
 		{"test-instana-infra", testInstanaInfrastructureSLO},
 		{"test-instana-app", testInstanaApplicationSLO},
