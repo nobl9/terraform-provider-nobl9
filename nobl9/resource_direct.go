@@ -3,6 +3,7 @@ package nobl9
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -60,7 +61,7 @@ func resourceDirectFactory(directSpec directSpecResource) *schema.Resource {
 		DeleteContext: i.resourceDirectDelete,
 		ReadContext:   i.resourceDirectRead,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: resourceDirectImport,
 		},
 		Description: directSpec.GetDescription(),
 	}
@@ -137,7 +138,6 @@ func (dr directResource) resourceDirectRead(
 
 	project := d.Get("project").(string)
 	if project == "" {
-		// project is empty when importing
 		project = config.Project
 	}
 	directs, err := client.Objects().V1().GetV1alphaDirects(ctx, v1Objects.GetDirectsRequest{
@@ -176,6 +176,17 @@ func (dr directResource) resourceDirectDelete(
 	}
 
 	return nil
+}
+
+func resourceDirectImport(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+	project, resourceID := parseImportID(d.Id())
+	if project != "" {
+		if err := d.Set("project", project); err != nil {
+			return nil, fmt.Errorf("error setting project: %w", err)
+		}
+	}
+	d.SetId(resourceID)
+	return []*schema.ResourceData{d}, nil
 }
 
 //nolint:unparam
