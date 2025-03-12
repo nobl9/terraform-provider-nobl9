@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/nobl9/nobl9-go/manifest"
+	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
@@ -113,6 +114,25 @@ func (s sdkClient) GetService(
 		}
 	}
 	return svc, nil
+}
+
+func (s sdkClient) GetProject(
+	ctx context.Context,
+	name string,
+) (project v1alphaProject.Project, diags diag.Diagnostics) {
+	obj, diags := genericGetObject(ctx, s.client, manifest.KindProject, name, "")
+	if diags.HasError() {
+		return project, diags
+	}
+	project, ok := obj.(v1alphaProject.Project)
+	if !ok {
+		return project, diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				fmt.Sprintf("Failed to cast %T to %T", obj, project),
+				"Please report this issue to the provider developers."),
+		}
+	}
+	return project, nil
 }
 
 // genericGetObject should only be called by [sdkClient].
