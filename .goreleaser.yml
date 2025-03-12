@@ -53,8 +53,9 @@ signs:
       - "${artifact}"
 release:
   make_latest: false
+  draft: true
+  replace_existing_draft: false
+  prerelease: auto
   extra_files:
     - glob: 'terraform-registry-manifest.json'
       name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
-  # If you want to manually examine the release before its live, uncomment this line:
-  # draft: true
