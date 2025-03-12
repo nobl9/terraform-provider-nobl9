@@ -14,7 +14,7 @@ OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 # renovate datasource=github-releases depName=securego/gosec
 GOSEC_VERSION := v2.22.2
 # renovate datasource=github-releases depName=golangci/golangci-lint
-GOLANGCI_LINT_VERSION := v1.64.6
+GOLANGCI_LINT_VERSION := v1.64.7
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
 GOVULNCHECK_VERSION := v1.1.4
 # renovate datasource=go depName=golang.org/x/tools/cmd/goimports
