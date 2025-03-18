@@ -61,7 +61,7 @@ provider "nobl9" {
 - `okta_org_url` (String) Authorization service URL.
 - `organization` (String) Nobl9 Organization ID that contains resources managed by the provider.
 - `project` (String) Nobl9 project used when importing resources.
-- `no_config_file` (Bool) Disable reading configuration from file.
+- `no_config_file` (Boolean) Disable reading configuration from file.
 
 ## Useful Links
 
