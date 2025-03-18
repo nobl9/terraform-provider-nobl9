@@ -26,6 +26,9 @@ func newSDKClient(provider ProviderModel, version string) (*sdkClient, diag.Diag
 		sdk.ConfigOptionWithCredentials(provider.ClientID.ValueString(), provider.ClientSecret.ValueString()),
 		sdk.ConfigOptionEnvPrefix("TERRAFORM_NOBL9_"),
 	}
+	if provider.NoConfigFile.ValueBool() {
+		options = append(options, sdk.ConfigOptionNoConfigFile())
+	}
 	sdkConfig, err := sdk.ReadConfig(options...)
 	if err != nil {
 		return nil, diag.Diagnostics{diag.NewErrorDiagnostic("failed to read Nobl9 SDK configuration", err.Error())}
