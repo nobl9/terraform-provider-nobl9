@@ -164,8 +164,10 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 			sdk.ConfigOptionEnvPrefix("TERRAFORM_NOBL9_"),
 		}
 		if providerConfig.NoConfigFile {
+			println("No config file option")
 			options = append(options, sdk.ConfigOptionNoConfigFile())
 		}
+		println("-- further step -- ")
 
 		sdkConfig, err := sdk.ReadConfig(options...)
 		if err != nil {
