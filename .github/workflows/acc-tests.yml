@@ -54,3 +54,4 @@ jobs:
           TERRAFORM_NOBL9_OKTA_AUTH_SERVER: "${{ inputs.oktaAuthServer }}"
           TERRAFORM_NOBL9_PROJECT: "${{ inputs.project }}"
           TERRAFORM_NOBL9_NO_CONFIG_FILE: false
+          NOBL9_NO_CONFIG_FILE: false
