@@ -71,11 +71,6 @@ func (p *Provider) Schema(_ context.Context, _ provider.SchemaRequest, resp *pro
 				Description: "Nobl9 API URL.",
 				CustomType:  envConfigurableStringType{},
 			},
-			"no_config_file": schema.BoolAttribute{
-				Optional:    true,
-				Description: "Disable reading configuration from file.",
-				CustomType:  envConfigurableBoolType{},
-			},
 		},
 	}
 }
