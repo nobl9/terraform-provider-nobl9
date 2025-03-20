@@ -229,15 +229,10 @@ func marshalAlertConditions(r resourceInterface) []v1alphaAlertPolicy.AlertCondi
 	return resultConditions
 }
 
-func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alphaAlertPolicy.AlertPolicy) diag.Diagnostics {
-	if len(objects) != 1 {
-		d.SetId("")
-		return nil
-	}
-	object := objects[0]
+func unmarshalAlertPolicy(d *schema.ResourceData, alertPolicy v1alphaAlertPolicy.AlertPolicy) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	metadata := object.Metadata
+	metadata := alertPolicy.Metadata
 	err := d.Set("name", metadata.Name)
 	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata.DisplayName)
@@ -255,7 +250,7 @@ func unmarshalAlertPolicy(d *schema.ResourceData, objects []v1alphaAlertPolicy.A
 		diags = appendError(diags, err)
 	}
 
-	spec := object.Spec
+	spec := alertPolicy.Spec
 	err = d.Set("description", spec.Description)
 	diags = appendError(diags, err)
 	err = d.Set("severity", spec.Severity)
@@ -361,7 +356,7 @@ func resourceAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalAlertPolicy(d, alertPolicies)
+	return handleResourceReadResult(d, alertPolicies, unmarshalAlertPolicy)
 }
 
 func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
