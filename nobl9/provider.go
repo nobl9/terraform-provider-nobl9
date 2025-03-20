@@ -67,6 +67,13 @@ func Provider(version string) *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("NOBL9_OKTA_AUTH", nil),
 				Description: "Authorization service configuration.",
 			},
+
+			"no_config_file": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_NO_CONFIG_FILE", true),
+				Description: "Disable reading configuration from file.",
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -126,6 +133,7 @@ type ProviderConfig struct {
 	OktaOrgURL     string
 	OktaAuthServer string
 	Version        string
+	NoConfigFile   bool
 }
 
 func getProviderConfig(data *schema.ResourceData, version string) ProviderConfig {
@@ -138,6 +146,7 @@ func getProviderConfig(data *schema.ResourceData, version string) ProviderConfig
 		OktaOrgURL:     data.Get("okta_org_url").(string),
 		OktaAuthServer: data.Get("okta_auth_server").(string),
 		Version:        version,
+		NoConfigFile:   data.Get("no_config_file").(bool),
 	}
 }
 
@@ -152,9 +161,12 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 	once.Do(func() {
 		options := []sdk.ConfigOption{
 			sdk.ConfigOptionWithCredentials(providerConfig.ClientID, providerConfig.ClientSecret),
-			sdk.ConfigOptionNoConfigFile(),
 			sdk.ConfigOptionEnvPrefix("TERRAFORM_NOBL9_"),
 		}
+		if providerConfig.NoConfigFile {
+			options = append(options, sdk.ConfigOptionNoConfigFile())
+		}
+
 		sdkConfig, err := sdk.ReadConfig(options...)
 		if err != nil {
 			panic(err)
