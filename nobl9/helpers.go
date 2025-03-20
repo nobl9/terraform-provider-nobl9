@@ -92,3 +92,20 @@ func exactlyOneObjectErr[T manifest.Object](objects []T) diag.Diagnostics {
 	return diag.Errorf("Expected exactly one %T but got %d.\n"+
 		"This is most likely an issue in Nobl9 platform.", *new(T), len(objects))
 }
+
+type objectUnmarhsalFunc[T manifest.Object] func(*schema.ResourceData, T) diag.Diagnostics
+
+func handleResourceReadResult[T manifest.Object](
+	data *schema.ResourceData,
+	objects []T,
+	unmarshalFunc objectUnmarhsalFunc[T],
+) diag.Diagnostics {
+	switch len(objects) {
+	case 0:
+		data.SetId("")
+		return nil
+	case 1:
+		return exactlyOneObjectErr(objects)
+	}
+	return unmarshalFunc(data, objects[0])
+}

@@ -147,10 +147,7 @@ func (dr directResource) resourceDirectRead(
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if len(directs) != 1 {
-		return exactlyOneObjectErr(directs)
-	}
-	return dr.unmarshalDirect(d, directs[0])
+	return handleResourceReadResult(d, directs, dr.unmarshalDirect)
 }
 
 func (dr directResource) resourceDirectDelete(

@@ -185,10 +185,7 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if len(agents) != 1 {
-		return exactlyOneObjectErr(agents)
-	}
-	return unmarshalAgent(d, agents[0])
+	return handleResourceReadResult(d, agents, unmarshalAgent)
 }
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

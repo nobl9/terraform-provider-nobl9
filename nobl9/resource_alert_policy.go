@@ -356,10 +356,7 @@ func resourceAlertPolicyRead(ctx context.Context, d *schema.ResourceData, meta i
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if len(alertPolicies) != 1 {
-		return exactlyOneObjectErr(alertPolicies)
-	}
-	return unmarshalAlertPolicy(d, alertPolicies[0])
+	return handleResourceReadResult(d, alertPolicies, unmarshalAlertPolicy)
 }
 
 func resourceAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

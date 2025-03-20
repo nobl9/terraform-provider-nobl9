@@ -134,10 +134,7 @@ func (a alertMethod) resourceAlertMethodRead(
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if len(alertMethods) != 1 {
-		return exactlyOneObjectErr(alertMethods)
-	}
-	return a.unmarshalAlertMethod(d, alertMethods[0])
+	return handleResourceReadResult(d, alertMethods, a.unmarshalAlertMethod)
 }
 
 func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

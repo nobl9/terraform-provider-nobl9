@@ -292,10 +292,7 @@ func (r reportResource) resourceReportRead(
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if len(reports) != 1 {
-		return exactlyOneObjectErr(reports)
-	}
-	return r.unmarshalReport(d, reports[0])
+	return handleResourceReadResult(d, reports, r.unmarshalReport)
 }
 
 func resourceReportDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

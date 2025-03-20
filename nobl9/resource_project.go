@@ -122,10 +122,7 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if len(projects) != 1 {
-		return exactlyOneObjectErr(projects)
-	}
-	return unmarshalProject(d, projects[0])
+	return handleResourceReadResult(d, projects, unmarshalProject)
 }
 
 func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

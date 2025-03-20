@@ -180,7 +180,7 @@ func resourceBudgetAdjustmentRead(ctx context.Context, d *schema.ResourceData, m
 	if len(budgetAdjustments) != 1 {
 		return exactlyOneObjectErr(budgetAdjustments)
 	}
-	return unmarshalBudgetAdjustment(d, budgetAdjustments[0])
+	return handleResourceReadResult(d, budgetAdjustments, unmarshalBudgetAdjustment)
 }
 
 func unmarshalBudgetAdjustment(d *schema.ResourceData, adjustment budgetadjustment.BudgetAdjustment) diag.Diagnostics {

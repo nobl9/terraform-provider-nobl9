@@ -435,10 +435,7 @@ func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if len(slos) != 1 {
-		return exactlyOneObjectErr(slos)
-	}
-	return unmarshalSLO(d, slos[0])
+	return handleResourceReadResult(d, slos, unmarshalSLO)
 }
 
 func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
