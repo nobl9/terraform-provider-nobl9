@@ -147,7 +147,10 @@ func (dr directResource) resourceDirectRead(
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return dr.unmarshalDirect(d, directs)
+	if len(directs) != 1 {
+		return exactlyOneObjectErr(directs)
+	}
+	return dr.unmarshalDirect(d, directs[0])
 }
 
 func (dr directResource) resourceDirectDelete(
@@ -209,14 +212,8 @@ func (dr directResource) marshalDirect(r resourceInterface) (*v1alphaDirect.Dire
 	return &direct, diags
 }
 
-func (dr directResource) unmarshalDirect(d *schema.ResourceData, directs []v1alphaDirect.Direct) diag.Diagnostics {
+func (dr directResource) unmarshalDirect(d *schema.ResourceData, direct v1alphaDirect.Direct) diag.Diagnostics {
 	var diags diag.Diagnostics
-
-	if len(directs) != 1 {
-		d.SetId("")
-		return nil
-	}
-	direct := directs[0]
 
 	set(d, "status", direct.Status.DirectType, &diags)
 	set(d, "name", direct.Metadata.Name, &diags)

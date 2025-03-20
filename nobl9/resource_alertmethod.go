@@ -64,22 +64,17 @@ func (a alertMethod) marshalAlertMethod(r resourceInterface) *v1alphaAlertMethod
 
 func (a alertMethod) unmarshalAlertMethod(
 	d *schema.ResourceData,
-	objects []v1alphaAlertMethod.AlertMethod,
+	alertMethod v1alphaAlertMethod.AlertMethod,
 ) diag.Diagnostics {
-	if len(objects) != 1 {
-		d.SetId("")
-		return nil
-	}
-	object := objects[0]
 	var diags diag.Diagnostics
-	metadata := object.Metadata
+	metadata := alertMethod.Metadata
 	err := d.Set("name", metadata.Name)
 	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata.DisplayName)
 	diags = appendError(diags, err)
 	err = d.Set("project", metadata.Project)
 	diags = appendError(diags, err)
-	spec := object.Spec
+	spec := alertMethod.Spec
 	err = d.Set("description", spec.Description)
 	diags = appendError(diags, err)
 	errs := a.UnmarshalSpec(d, spec)
@@ -139,7 +134,10 @@ func (a alertMethod) resourceAlertMethodRead(
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return a.unmarshalAlertMethod(d, alertMethods)
+	if len(alertMethods) != 1 {
+		return exactlyOneObjectErr(alertMethods)
+	}
+	return a.unmarshalAlertMethod(d, alertMethods[0])
 }
 
 func resourceAlertMethodDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

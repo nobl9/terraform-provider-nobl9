@@ -53,15 +53,10 @@ func marshalProject(d resourceInterface) (*v1alphaProject.Project, diag.Diagnost
 	return &project, diags
 }
 
-func unmarshalProject(d *schema.ResourceData, objects []v1alphaProject.Project) diag.Diagnostics {
-	if len(objects) != 1 {
-		d.SetId("")
-		return nil
-	}
-	object := objects[0]
+func unmarshalProject(d *schema.ResourceData, project v1alphaProject.Project) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	metadata := object.Metadata
+	metadata := project.Metadata
 	err := d.Set("name", metadata.Name)
 	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata.DisplayName)
@@ -77,7 +72,7 @@ func unmarshalProject(d *schema.ResourceData, objects []v1alphaProject.Project) 
 		diags = appendError(diags, err)
 	}
 
-	spec := object.Spec
+	spec := project.Spec
 	err = d.Set("description", spec.Description)
 	diags = appendError(diags, err)
 
@@ -127,7 +122,10 @@ func resourceProjectRead(ctx context.Context, d *schema.ResourceData, meta inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalProject(d, projects)
+	if len(projects) != 1 {
+		return exactlyOneObjectErr(projects)
+	}
+	return unmarshalProject(d, projects[0])
 }
 
 func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
