@@ -50,6 +50,7 @@ jobs:
         env:
           NOBL9_CLIENT_ID: "${{ inputs.clientId }}"
           NOBL9_CLIENT_SECRET: "${{ secrets.clientSecret }}"
-          TERRAFORM_NOBL9_OKTA_ORG_URL: "${{ inputs.oktaOrgUrl }}"
-          TERRAFORM_NOBL9_OKTA_AUTH_SERVER: "${{ inputs.oktaAuthServer }}"
-          TERRAFORM_NOBL9_PROJECT: "${{ inputs.project }}"
+          NOBL9_OKTA_URL: "${{ inputs.oktaOrgUrl }}"
+          NOBL9_OKTA_AUTH: "${{ inputs.oktaAuthServer }}"
+          NOBL9_PROJECT: "${{ inputs.project }}"
+          NOBL9_NO_CONFIG_FILE: false

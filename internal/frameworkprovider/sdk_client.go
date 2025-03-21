@@ -24,8 +24,10 @@ type sdkClient struct {
 func newSDKClient(provider ProviderModel, version string) (*sdkClient, diag.Diagnostics) {
 	options := []sdk.ConfigOption{
 		sdk.ConfigOptionWithCredentials(provider.ClientID.ValueString(), provider.ClientSecret.ValueString()),
-		sdk.ConfigOptionNoConfigFile(),
 		sdk.ConfigOptionEnvPrefix("TERRAFORM_NOBL9_"),
+	}
+	if provider.NoConfigFile.ValueBool() {
+		options = append(options, sdk.ConfigOptionNoConfigFile())
 	}
 	sdkConfig, err := sdk.ReadConfig(options...)
 	if err != nil {
