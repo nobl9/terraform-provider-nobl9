@@ -81,14 +81,13 @@ func TestAccProjectResource(t *testing.T) {
 			// ImportState.
 			{
 				ResourceName:  "nobl9_project.test",
-				ImportStateId: "default/" + projectName,
+				ImportStateId: projectName,
 				ImportState:   true,
 				ImportStateCheck: func(states []*terraform.InstanceState) error {
 					if !assert.Len(t, states, 1) {
 						return errors.New("expected exactly one state")
 					}
 					assert.Equal(t, projectName, states[0].Attributes["name"])
-					assert.Equal(t, "default", states[0].Attributes["project"])
 					return nil
 				},
 				// In the next step we're also verifying the imported state, so we need to persist it.
