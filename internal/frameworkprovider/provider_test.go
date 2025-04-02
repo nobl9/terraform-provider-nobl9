@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/nobl9/nobl9-go/manifest"
+	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 	"github.com/pkg/errors"
@@ -101,7 +102,12 @@ func assertResourceWasApplied(t *testing.T, ctx context.Context, expected manife
 		if !assert.Len(t, objects, 1) {
 			return errors.Wrap(failureErr, "API returned unexpected number of objects")
 		}
-		if !assert.Equal(t, objects[0], expected) {
+		switch v := objects[0].(type) {
+		case v1alphaProject.Project:
+			v.Spec.CreatedAt = ""
+			v.Spec.CreatedBy = ""
+		}
+		if !assert.Equal(t, expected, objects[0]) {
 			return errors.Wrap(failureErr, "objects are not equal")
 		}
 		return nil
