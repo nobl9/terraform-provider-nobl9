@@ -27,7 +27,7 @@ func (d *ProjectDataSource) Metadata(_ context.Context, req datasource.MetadataR
 	resp.TypeName = req.ProviderTypeName + "_project"
 }
 
-// Schema implements [resource.Resource.Schema] function.
+// Schema implements [datasource.DataSource.Schema] function.
 func (d *ProjectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	description := "[Project configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#project)"
 	resp.Schema = schema.Schema{
