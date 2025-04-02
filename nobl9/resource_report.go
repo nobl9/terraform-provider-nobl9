@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/nobl9/nobl9-go/manifest"
+	v1alpha "github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaReport "github.com/nobl9/nobl9-go/manifest/v1alpha/report"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
@@ -231,16 +232,16 @@ func unmarshalReportFilters(d *schema.ResourceData, filters *v1alphaReport.Filte
 	return d.Set("filters", []interface{}{f})
 }
 
-func marshalReportLabels(labelList []interface{}) v1alphaReport.Labels {
+func marshalReportLabels(labelList []interface{}) v1alpha.Labels {
 	labels, _ := marshalLabels(labelList)
-	reportLabels := make(map[v1alphaReport.LabelKey][]v1alphaReport.LabelValue, len(labels))
+	reportLabels := make(v1alpha.Labels, len(labels))
 	for key, values := range labels {
 		reportLabels[key] = append(reportLabels[key], values...)
 	}
 	return reportLabels
 }
 
-func unmarshalReportLabels(labelsRaw v1alphaReport.Labels) interface{} {
+func unmarshalReportLabels(labelsRaw v1alpha.Labels) interface{} {
 	resultLabels := make([]map[string]interface{}, 0)
 
 	for labelKey, labelValuesRaw := range labelsRaw {

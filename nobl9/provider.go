@@ -111,7 +111,6 @@ func Provider(version string) *schema.Provider {
 			"nobl9_direct_" + splunkObservabilityDirectType: resourceDirectFactory(splunkObservabilityDirectSpec{}),
 			"nobl9_direct_" + sumologicDirectType:           resourceDirectFactory(sumologicDirectSpec{}),
 			"nobl9_direct_" + thousandeyesDirectType:        resourceDirectFactory(thousandeyesDirectSpec{}),
-			"nobl9_project":                                 resourceProject(),
 			"nobl9_role_binding":                            resourceRoleBinding(),
 			"nobl9_slo":                                     resourceSLO(),
 			"nobl9_budget_adjustment":                       budgetAdjustment(),

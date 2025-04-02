@@ -27,7 +27,7 @@ func NewServiceResource() resource.Resource {
 	return &ServiceResource{}
 }
 
-// ServiceResource defines the [v1alpha.Service] resource implementation.
+// ServiceResource defines the [manifest.KindService] resource implementation.
 type ServiceResource struct {
 	client *sdkClient
 }
@@ -202,7 +202,7 @@ func (s *ServiceResource) readResource(
 	if diagnostics.HasError() {
 		return nil, diagnostics
 	}
-	// SORT LABELS.
+	// Sort Labels.
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
 	return updatedModel, diagnostics
 }
