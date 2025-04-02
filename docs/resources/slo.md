@@ -472,10 +472,6 @@ Required:
 <a id="nestedblock--objective--count_metrics--bad--honeycomb"></a>
 ### Nested Schema for `objective.count_metrics.bad.honeycomb`
 
-Required:
-
-- `calculation` (String) Calculation type
-
 Optional:
 
 - `attribute` (String) Column name - required for all calculation types besides 'CONCURRENCY' and 'COUNT'
@@ -846,10 +842,6 @@ Required:
 
 <a id="nestedblock--objective--count_metrics--good--honeycomb"></a>
 ### Nested Schema for `objective.count_metrics.good.honeycomb`
-
-Required:
-
-- `calculation` (String) Calculation type
 
 Optional:
 
@@ -1222,10 +1214,6 @@ Required:
 <a id="nestedblock--objective--count_metrics--good_total--honeycomb"></a>
 ### Nested Schema for `objective.count_metrics.good_total.honeycomb`
 
-Required:
-
-- `calculation` (String) Calculation type
-
 Optional:
 
 - `attribute` (String) Column name - required for all calculation types besides 'CONCURRENCY' and 'COUNT'
@@ -1596,10 +1584,6 @@ Required:
 
 <a id="nestedblock--objective--count_metrics--total--honeycomb"></a>
 ### Nested Schema for `objective.count_metrics.total.honeycomb`
-
-Required:
-
-- `calculation` (String) Calculation type
 
 Optional:
 
@@ -1979,10 +1963,6 @@ Required:
 
 <a id="nestedblock--objective--raw_metric--query--honeycomb"></a>
 ### Nested Schema for `objective.raw_metric.query.honeycomb`
-
-Required:
-
-- `calculation` (String) Calculation type
 
 Optional:
 
