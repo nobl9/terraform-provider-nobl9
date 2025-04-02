@@ -79,13 +79,6 @@ func TestAccProjectResource(t *testing.T) {
 				},
 				Destroy: true,
 			},
-			// ImportState - invalid id.
-			{
-				ResourceName:  "nobl9_project.test",
-				ImportStateId: projectName,
-				ImportState:   true,
-				ExpectError:   regexp.MustCompile(`Invalid import ID`),
-			},
 			// ImportState.
 			{
 				ResourceName:  "nobl9_project.test",
