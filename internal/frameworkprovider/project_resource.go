@@ -173,11 +173,7 @@ func (s *ProjectResource) readResource(
 	if diagnostics.HasError() {
 		return nil, diagnostics
 	}
-	updatedModel, diags := newProjectResourceConfigFromManifest(ctx, project)
-	diagnostics.Append(diags...)
-	if diagnostics.HasError() {
-		return nil, diagnostics
-	}
+	updatedModel := newProjectResourceConfigFromManifest(project)
 	// Sort Labels.
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
 	return updatedModel, diagnostics

@@ -3,7 +3,6 @@ package frameworkprovider
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 )
@@ -17,17 +16,14 @@ type ProjectResourceModel struct {
 	Labels      Labels            `tfsdk:"label"`
 }
 
-func newProjectResourceConfigFromManifest(
-	ctx context.Context,
-	svc v1alphaProject.Project,
-) (*ProjectResourceModel, diag.Diagnostics) {
+func newProjectResourceConfigFromManifest(project v1alphaProject.Project) *ProjectResourceModel {
 	return &ProjectResourceModel{
-		Name:        svc.Metadata.Name,
-		DisplayName: stringValue(svc.Metadata.DisplayName),
-		Description: stringValue(svc.Spec.Description),
-		Annotations: svc.Metadata.Annotations,
-		Labels:      newLabelsFromManifest(svc.Metadata.Labels),
-	}, nil
+		Name:        project.Metadata.Name,
+		DisplayName: stringValue(project.Metadata.DisplayName),
+		Description: stringValue(project.Spec.Description),
+		Annotations: project.Metadata.Annotations,
+		Labels:      newLabelsFromManifest(project.Metadata.Labels),
+	}
 }
 
 func (s ProjectResourceModel) ToManifest(ctx context.Context) v1alphaProject.Project {
