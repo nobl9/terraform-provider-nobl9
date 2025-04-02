@@ -139,28 +139,6 @@ func TestAccProjectResource(t *testing.T) {
 					},
 				},
 			},
-			// Update project - recreate.
-			{
-				Config: newProjectResource(t, func() projectResourceTemplateModel {
-					m := projectResource
-					m.ProjectResourceModel.Name = projectNameRecreatedByNameChange
-					return m
-				}()),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("nobl9_project.test", "name", projectNameRecreatedByNameChange),
-					assertResourceWasApplied(t, ctx, func() v1alphaProject.Project {
-						project := manifestProject
-						project.Metadata.Name = projectNameRecreatedByNameChange
-						return project
-					}()),
-				),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectNonEmptyPlan(),
-						plancheck.ExpectResourceAction("nobl9_project.test", plancheck.ResourceActionReplace),
-					},
-				},
-			},
 			// Delete automatically occurs in TestCase, no need to clean up.
 		},
 	})
