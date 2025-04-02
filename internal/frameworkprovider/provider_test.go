@@ -106,6 +106,7 @@ func assertResourceWasApplied(t *testing.T, ctx context.Context, expected manife
 		case v1alphaProject.Project:
 			v.Spec.CreatedAt = ""
 			v.Spec.CreatedBy = ""
+			objects[0] = v
 		}
 		if !assert.Equal(t, expected, objects[0]) {
 			return errors.Wrap(failureErr, "objects are not equal")
