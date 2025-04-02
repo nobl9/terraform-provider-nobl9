@@ -187,9 +187,9 @@ func addProjectResourceNameChangeWarning(attr schema.StringAttribute) schema.Str
 		func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
 			resp.Diagnostics.AddWarning(
 				"Changing Project name results in removal of all associated objects and their data.",
-				"When Project name is changed the Project object is removed and than recreated with the new name."+
+				"When Project name is changed the Project object is removed and then recreated with the new name."+
 					" When the Project is removed, all associated objects, including SLOs, and their data are removed."+
-					" Currently there's no way to transfer resources between Projects without loosing their data.",
+					" Currently there's no way to transfer resources between Projects without losing their data.",
 			)
 		},
 		changeDescription,
