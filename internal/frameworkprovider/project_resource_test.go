@@ -81,7 +81,7 @@ func TestAccProjectResource(t *testing.T) {
 			},
 			// ImportState - invalid id.
 			{
-				ResourceName:  fmt.Sprintf("nobl9_project.test_", unixNow),
+				ResourceName:  fmt.Sprintf("nobl9_project.test_%d", unixNow),
 				ImportStateId: projectName,
 				ImportState:   true,
 				ExpectError:   regexp.MustCompile(`Invalid import ID`),

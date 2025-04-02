@@ -85,7 +85,7 @@ func TestAccServiceResource(t *testing.T) {
 			},
 			// ImportState - invalid id.
 			{
-				ResourceName:  fmt.Sprintf("nobl9_service.test_", unixNow),
+				ResourceName:  fmt.Sprintf("nobl9_service.test_%d", unixNow),
 				ImportStateId: serviceName,
 				ImportState:   true,
 				ExpectError:   regexp.MustCompile(`Invalid import ID`),
