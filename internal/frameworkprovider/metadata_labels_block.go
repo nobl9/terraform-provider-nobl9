@@ -64,7 +64,7 @@ func metadataLabelsBlock() *schema.ListNestedBlock {
 				},
 				"values": schema.SetAttribute{
 					ElementType: types.StringType,
-					Optional:    true,
+					Required:    true,
 					Description: "A set of values for a single key.",
 					Validators: []validator.Set{
 						setvalidator.SizeAtLeast(1),
