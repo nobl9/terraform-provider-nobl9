@@ -55,9 +55,6 @@ resource "nobl9_project" "this" {
 Required:
 
 - `key` (String) A key for the label, unique within the associated resource.
-
-Optional:
-
 - `values` (Set of String) A set of values for a single key.
 
 ## Useful Links
