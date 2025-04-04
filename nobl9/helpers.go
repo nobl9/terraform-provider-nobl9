@@ -102,10 +102,12 @@ func handleResourceReadResult[T manifest.Object](
 ) diag.Diagnostics {
 	switch len(objects) {
 	case 0:
+		// When we deleted the object.
 		data.SetId("")
 		return nil
 	case 1:
-		return exactlyOneObjectErr(objects)
+		// When we applied the object.
+		return unmarshalFunc(data, objects[0])
 	}
-	return unmarshalFunc(data, objects[0])
+	return exactlyOneObjectErr(objects)
 }
