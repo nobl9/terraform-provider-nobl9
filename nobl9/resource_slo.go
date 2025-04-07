@@ -435,7 +435,7 @@ func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalSLO(d, slos)
+	return handleResourceReadResult(d, slos, unmarshalSLO)
 }
 
 func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -724,16 +724,11 @@ func marshalMetric(metric map[string]interface{}) *v1alphaSLO.MetricSpec {
 	}
 }
 
-func unmarshalSLO(d *schema.ResourceData, objects []v1alphaSLO.SLO) diag.Diagnostics {
-	if len(objects) != 1 {
-		d.SetId("")
-		return nil
-	}
-	object := objects[0]
+func unmarshalSLO(d *schema.ResourceData, slo v1alphaSLO.SLO) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var err error
 
-	metadata := object.Metadata
+	metadata := slo.Metadata
 	err = d.Set("name", metadata.Name)
 	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata.DisplayName)
@@ -752,7 +747,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []v1alphaSLO.SLO) diag.Diagnos
 		diags = appendError(diags, err)
 	}
 
-	spec := object.Spec
+	spec := slo.Spec
 
 	err = d.Set("alert_policies", spec.AlertPolicies)
 	diags = appendError(diags, err)

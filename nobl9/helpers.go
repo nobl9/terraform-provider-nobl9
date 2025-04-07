@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/nobl9/nobl9-go/manifest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -85,4 +86,28 @@ func equalSlices(a, b []interface{}) bool {
 		}
 	}
 	return true
+}
+
+func exactlyOneObjectErr[T manifest.Object](objects []T) diag.Diagnostics {
+	return diag.Errorf("Expected exactly one %T but got %d.\n"+
+		"This is most likely an issue in Nobl9 platform.", *new(T), len(objects))
+}
+
+type objectUnmarshalFunc[T manifest.Object] func(*schema.ResourceData, T) diag.Diagnostics
+
+func handleResourceReadResult[T manifest.Object](
+	data *schema.ResourceData,
+	objects []T,
+	unmarshalFunc objectUnmarshalFunc[T],
+) diag.Diagnostics {
+	switch len(objects) {
+	case 0:
+		// When we deleted the object.
+		data.SetId("")
+		return nil
+	case 1:
+		// When we applied the object.
+		return unmarshalFunc(data, objects[0])
+	}
+	return exactlyOneObjectErr(objects)
 }

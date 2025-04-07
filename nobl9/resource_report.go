@@ -137,23 +137,15 @@ func (r reportResource) marshalReport(ri resourceInterface) *v1alphaReport.Repor
 	return &report
 }
 
-func (r reportResource) unmarshalReport(
-	d *schema.ResourceData,
-	objects []v1alphaReport.Report,
-) diag.Diagnostics {
-	if len(objects) != 1 {
-		d.SetId("")
-		return nil
-	}
-	object := objects[0]
+func (r reportResource) unmarshalReport(d *schema.ResourceData, report v1alphaReport.Report) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	diags = appendError(diags, d.Set("name", object.Metadata.Name))
-	diags = appendError(diags, d.Set("display_name", object.Metadata.DisplayName))
-	diags = appendError(diags, d.Set("shared", object.Spec.Shared))
-	diags = appendError(diags, unmarshalReportFilters(d, object.Spec.Filters))
+	diags = appendError(diags, d.Set("name", report.Metadata.Name))
+	diags = appendError(diags, d.Set("display_name", report.Metadata.DisplayName))
+	diags = appendError(diags, d.Set("shared", report.Spec.Shared))
+	diags = appendError(diags, unmarshalReportFilters(d, report.Spec.Filters))
 
-	errs := r.UnmarshalSpec(d, object.Spec)
+	errs := r.UnmarshalSpec(d, report.Spec)
 	diags = append(diags, errs...)
 	return diags
 }
@@ -301,7 +293,7 @@ func (r reportResource) resourceReportRead(
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return r.unmarshalReport(d, reports)
+	return handleResourceReadResult(d, reports, r.unmarshalReport)
 }
 
 func resourceReportDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

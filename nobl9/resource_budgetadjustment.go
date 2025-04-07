@@ -177,26 +177,24 @@ func resourceBudgetAdjustmentRead(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalBudgetAdjustment(d, budgetAdjustments)
+	if len(budgetAdjustments) != 1 {
+		return exactlyOneObjectErr(budgetAdjustments)
+	}
+	return handleResourceReadResult(d, budgetAdjustments, unmarshalBudgetAdjustment)
 }
 
-func unmarshalBudgetAdjustment(d *schema.ResourceData, objects []budgetadjustment.BudgetAdjustment) diag.Diagnostics {
-	if len(objects) != 1 {
-		d.SetId("")
-		return nil
-	}
-	object := objects[0]
+func unmarshalBudgetAdjustment(d *schema.ResourceData, adjustment budgetadjustment.BudgetAdjustment) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var err error
 
-	diags = appendError(diags, d.Set("name", object.Metadata.Name))
-	diags = appendError(diags, d.Set("display_name", object.Metadata.DisplayName))
-	diags = appendError(diags, d.Set("description", object.Spec.Description))
-	diags = appendError(diags, d.Set("first_event_start", object.Spec.FirstEventStart.Format(time.RFC3339)))
-	diags = appendError(diags, d.Set("duration", object.Spec.Duration))
-	diags = appendError(diags, d.Set("rrule", object.Spec.Rrule))
+	diags = appendError(diags, d.Set("name", adjustment.Metadata.Name))
+	diags = appendError(diags, d.Set("display_name", adjustment.Metadata.DisplayName))
+	diags = appendError(diags, d.Set("description", adjustment.Spec.Description))
+	diags = appendError(diags, d.Set("first_event_start", adjustment.Spec.FirstEventStart.Format(time.RFC3339)))
+	diags = appendError(diags, d.Set("duration", adjustment.Spec.Duration))
+	diags = appendError(diags, d.Set("rrule", adjustment.Spec.Rrule))
 
-	err = unmarshalFilters(d, object.Spec.Filters)
+	err = unmarshalFilters(d, adjustment.Spec.Filters)
 	diags = appendError(diags, err)
 
 	return diags
