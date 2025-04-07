@@ -185,7 +185,7 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalAgent(d, agents)
+	return handleResourceReadResult(d, agents, unmarshalAgent)
 }
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -261,14 +261,8 @@ func marshalAgent(d resourceInterface) (*v1alphaAgent.Agent, diag.Diagnostics) {
 	return &agent, diags
 }
 
-func unmarshalAgent(d *schema.ResourceData, agents []v1alphaAgent.Agent) diag.Diagnostics {
+func unmarshalAgent(d *schema.ResourceData, agent v1alphaAgent.Agent) diag.Diagnostics {
 	var diags diag.Diagnostics
-
-	if len(agents) != 1 {
-		d.SetId("")
-		return nil
-	}
-	agent := agents[0]
 
 	status := map[string]interface{}{
 		"agent_type":      agent.Status.AgentType,

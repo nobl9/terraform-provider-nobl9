@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/nobl9/nobl9-go/manifest"
+	v1alpha "github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaReport "github.com/nobl9/nobl9-go/manifest/v1alpha/report"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
@@ -136,23 +137,15 @@ func (r reportResource) marshalReport(ri resourceInterface) *v1alphaReport.Repor
 	return &report
 }
 
-func (r reportResource) unmarshalReport(
-	d *schema.ResourceData,
-	objects []v1alphaReport.Report,
-) diag.Diagnostics {
-	if len(objects) != 1 {
-		d.SetId("")
-		return nil
-	}
-	object := objects[0]
+func (r reportResource) unmarshalReport(d *schema.ResourceData, report v1alphaReport.Report) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	diags = appendError(diags, d.Set("name", object.Metadata.Name))
-	diags = appendError(diags, d.Set("display_name", object.Metadata.DisplayName))
-	diags = appendError(diags, d.Set("shared", object.Spec.Shared))
-	diags = appendError(diags, unmarshalReportFilters(d, object.Spec.Filters))
+	diags = appendError(diags, d.Set("name", report.Metadata.Name))
+	diags = appendError(diags, d.Set("display_name", report.Metadata.DisplayName))
+	diags = appendError(diags, d.Set("shared", report.Spec.Shared))
+	diags = appendError(diags, unmarshalReportFilters(d, report.Spec.Filters))
 
-	errs := r.UnmarshalSpec(d, object.Spec)
+	errs := r.UnmarshalSpec(d, report.Spec)
 	diags = append(diags, errs...)
 	return diags
 }
@@ -231,16 +224,16 @@ func unmarshalReportFilters(d *schema.ResourceData, filters *v1alphaReport.Filte
 	return d.Set("filters", []interface{}{f})
 }
 
-func marshalReportLabels(labelList []interface{}) v1alphaReport.Labels {
+func marshalReportLabels(labelList []interface{}) v1alpha.Labels {
 	labels, _ := marshalLabels(labelList)
-	reportLabels := make(map[v1alphaReport.LabelKey][]v1alphaReport.LabelValue, len(labels))
+	reportLabels := make(v1alpha.Labels, len(labels))
 	for key, values := range labels {
 		reportLabels[key] = append(reportLabels[key], values...)
 	}
 	return reportLabels
 }
 
-func unmarshalReportLabels(labelsRaw v1alphaReport.Labels) interface{} {
+func unmarshalReportLabels(labelsRaw v1alpha.Labels) interface{} {
 	resultLabels := make([]map[string]interface{}, 0)
 
 	for labelKey, labelValuesRaw := range labelsRaw {
@@ -300,7 +293,7 @@ func (r reportResource) resourceReportRead(
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return r.unmarshalReport(d, reports)
+	return handleResourceReadResult(d, reports, r.unmarshalReport)
 }
 
 func resourceReportDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -40,7 +40,7 @@ resource "nobl9_project" "this" {
 
 ### Required
 
-- `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, must conform to the [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names) naming convention.
 
 ### Optional
 
@@ -49,17 +49,13 @@ resource "nobl9_project" "this" {
 - `display_name` (String) User-friendly display name of the resource.
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 
-### Read-Only
-
-- `id` (String) The ID of this resource.
-
 <a id="nestedblock--label"></a>
 ### Nested Schema for `label`
 
 Required:
 
 - `key` (String) A key for the label, unique within the associated resource.
-- `values` (List of String) A list of unique values for a single key.
+- `values` (Set of String) A set of values for a single key.
 
 ## Useful Links
 

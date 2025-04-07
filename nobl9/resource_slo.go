@@ -435,7 +435,7 @@ func resourceSLORead(ctx context.Context, d *schema.ResourceData, meta interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return unmarshalSLO(d, slos)
+	return handleResourceReadResult(d, slos, unmarshalSLO)
 }
 
 func resourceSLODelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -724,16 +724,11 @@ func marshalMetric(metric map[string]interface{}) *v1alphaSLO.MetricSpec {
 	}
 }
 
-func unmarshalSLO(d *schema.ResourceData, objects []v1alphaSLO.SLO) diag.Diagnostics {
-	if len(objects) != 1 {
-		d.SetId("")
-		return nil
-	}
-	object := objects[0]
+func unmarshalSLO(d *schema.ResourceData, slo v1alphaSLO.SLO) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var err error
 
-	metadata := object.Metadata
+	metadata := slo.Metadata
 	err = d.Set("name", metadata.Name)
 	diags = appendError(diags, err)
 	err = d.Set("display_name", metadata.DisplayName)
@@ -752,7 +747,7 @@ func unmarshalSLO(d *schema.ResourceData, objects []v1alphaSLO.SLO) diag.Diagnos
 		diags = appendError(diags, err)
 	}
 
-	spec := object.Spec
+	spec := slo.Spec
 
 	err = d.Set("alert_policies", spec.AlertPolicies)
 	diags = appendError(diags, err)
@@ -1839,11 +1834,6 @@ func schemaMetricHoneycomb() map[string]*schema.Schema {
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb)",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"calculation": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Calculation type",
-					},
 					"attribute": {
 						Type:        schema.TypeString,
 						Optional:    true,
@@ -1860,11 +1850,9 @@ func marshalHoneycombMetric(s *schema.Set) *v1alphaSLO.HoneycombMetric {
 		return nil
 	}
 	metric := s.List()[0].(map[string]interface{})
-	calculation := metric["calculation"].(string)
 	attribute := metric["attribute"].(string)
 	return &v1alphaSLO.HoneycombMetric{
-		Calculation: calculation,
-		Attribute:   attribute,
+		Attribute: attribute,
 	}
 }
 
@@ -1875,7 +1863,6 @@ func unmarshalHoneycombMetric(metric interface{}) map[string]interface{} {
 	}
 	res := make(map[string]interface{})
 	// nolint: staticcheck
-	res["calculation"] = hMetric.Calculation
 	res["attribute"] = hMetric.Attribute
 	return res
 }

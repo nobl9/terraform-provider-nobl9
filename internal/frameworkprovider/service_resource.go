@@ -195,7 +195,7 @@ func (s *ServiceResource) readResource(
 	if diagnostics.HasError() {
 		return nil, diagnostics
 	}
-	// SORT LABELS.
+	// Sort Labels.
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
 	return updatedModel, diagnostics
 }
@@ -208,10 +208,10 @@ func addServiceResourceNameChangeWarning(attr schema.StringAttribute) schema.Str
 		func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
 			resp.Diagnostics.AddWarning(
 				"Changing Service name results in removal of all associated SLOs and their data.",
-				"When Service name is changed the Service object is removed and than recreated with the new name."+
+				"When Service name is changed the Service object is removed and then recreated with the new name."+
 					" When the Service is removed, all associated SLOs and their data are also removed."+
 					" If you wish to change the Service name without removing the SLOs, please create a new Service with the desired name first,"+
-					" change the Service name reference in the associated SLOs to the new Service and only than remove the old Service.",
+					" change the Service name reference in the associated SLOs to the new Service and only then remove the old Service.",
 			)
 		},
 		changeDescription,
@@ -227,7 +227,7 @@ func addServiceResourceProjectChangeWarning(attr schema.StringAttribute) schema.
 		func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
 			resp.Diagnostics.AddWarning(
 				"Changing Service project results in removal of all associated SLOs and their data.",
-				"When Service project is changed the Service object is removed and than recreated inside the new project."+
+				"When Service project is changed the Service object is removed and then recreated inside the new project."+
 					" When the Service is removed, all associated SLOs and their data are also removed.",
 			)
 		},
