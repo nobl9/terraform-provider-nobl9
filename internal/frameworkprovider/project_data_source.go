@@ -23,7 +23,11 @@ type ProjectDataSource struct {
 }
 
 // Metadata returns the data source type name.
-func (d *ProjectDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *ProjectDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_project"
 }
 
