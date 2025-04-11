@@ -34,13 +34,13 @@ func (d *ProjectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 		Description:         description,
 		MarkdownDescription: description,
 		Attributes: map[string]schema.Attribute{
-			"name": metadataNameAttr(),
-			"display_name": schema.StringAttribute{
-				Computed: true,
-			},
-			"description": schema.StringAttribute{
-				Computed: true,
-			},
+			"name":         metadataNameAttr(),
+			"display_name": metadataDisplayNameAttr(),
+			"description":  specDescriptionAttr(),
+			"annotations":  metadataAnnotationsAttr(),
+		},
+		Blocks: map[string]schema.Block{
+			"label": metadataLabelsBlock(),
 		},
 	}
 }

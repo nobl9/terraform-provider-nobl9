@@ -4,6 +4,13 @@ This document describes the intricacies of Terraform Provider development
 workflow.
 If you see anything missing, feel free to contribute :)
 
+> [!IMPORTANT]
+> Nobl9 Terraform Provider is being actively rewritten in
+> Terraform Plugin Framework.
+> For more details on this process and how to work with
+> both the old SDK and Plugin Framework, please see
+> [this document](./plugin-framework-migration.md).
+
 ## Pull requests
 
 [Pull request template](../.github/pull_request_template.md)
