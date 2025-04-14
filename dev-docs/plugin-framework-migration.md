@@ -42,7 +42,7 @@ If happen to updated provider definition in one of them but forget
 to do that in the other, the tests will fail and the discrepancy
 should be detected.
 
-The glue which binds these two together is a 
+The glue which binds these two together is a
 [multiplexer](https://github.com/hashicorp/terraform-plugin-mux),
 located at the entrypoint [main.go](../main.go).
 
