@@ -69,9 +69,15 @@ func marshalAnomalyConfig(anomalyConfigRaw interface{}) *v1alphaSLO.AnomalyConfi
 	noDataAlertMethods := noDataAnomalyConfig["alert_method"].([]interface{})
 	marshaledAlertMethods := marshalAnomalyConfigAlertMethods(noDataAlertMethods)
 
+	alertAfter := noDataAnomalyConfig["alert_after"].(string)
+	if alertAfter == "" {
+		alertAfter = "15m"
+	}
+
 	return &v1alphaSLO.AnomalyConfig{
 		NoData: &v1alphaSLO.AnomalyConfigNoData{
 			AlertMethods: marshaledAlertMethods,
+			AlertAfter:   &alertAfter,
 		},
 	}
 }
@@ -121,6 +127,7 @@ func unmarshalAnomalyConfig(d *schema.ResourceData, spec v1alphaSLO.Spec) error 
 		"no_data": schema.NewSet(oneElementSet, []interface{}{
 			map[string]interface{}{
 				"alert_method": resNoDataMethods,
+				"alert_after":  noData.AlertAfter,
 			},
 		}),
 	}
