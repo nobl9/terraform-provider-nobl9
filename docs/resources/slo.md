@@ -131,6 +131,8 @@ resource "nobl9_slo" "slo_2" {
 
   anomaly_config {
     no_data {
+      alert_after = "30m"
+
       alert_method {
         name = "foo-method-method"
         project = "default"
@@ -2190,7 +2192,7 @@ Required:
 
 Required:
 
-- `no_data` (Block Set, Min: 1, Max: 1) Alert Policies attached to SLO (see [below for nested schema](#nestedblock--anomaly_config--no_data))
+- `no_data` (Block Set, Min: 1, Max: 1) No data alerts configuration (see [below for nested schema](#nestedblock--anomaly_config--no_data))
 
 <a id="nestedblock--anomaly_config--no_data"></a>
 ### Nested Schema for `anomaly_config.no_data`
