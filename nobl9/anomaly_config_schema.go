@@ -46,6 +46,12 @@ func schemaAnomalyConfig() *schema.Schema {
 								MaxItems: 5,
 								MinItems: 1,
 							},
+							"alert_after": {
+								Type:     schema.TypeString,
+								Optional: true,
+								//nolint:lll
+								Description: "Specifies the duration to wait after receiving no data before triggering an alert. The value must be a valid Go duration string, such as \"1h\" for one hour. If not specified, the system defaults to \"15m\" (15 minutes).",
+							},
 						},
 					},
 				},

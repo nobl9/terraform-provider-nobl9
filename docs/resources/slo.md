@@ -2199,6 +2199,10 @@ Required:
 
 - `alert_method` (Block List, Min: 1, Max: 5) Alert methods attached to Anomaly Config (see [below for nested schema](#nestedblock--anomaly_config--no_data--alert_method))
 
+Optional:
+
+- `alert_after` (String) Specifies the duration to wait after receiving no data before triggering an alert. The value must be a valid Go duration string, such as "1h" for one hour. If not specified, the system defaults to "15m" (15 minutes).
+
 <a id="nestedblock--anomaly_config--no_data--alert_method"></a>
 ### Nested Schema for `anomaly_config.no_data.alert_method`
 
