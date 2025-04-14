@@ -17,10 +17,19 @@ func schemaAnomalyConfig() *schema.Schema {
 				"no_data": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "Alert Policies attached to SLO",
+					Description: "No data alerts configuration",
 					MaxItems:    1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
+							"alert_after": {
+								Type:     schema.TypeString,
+								Optional: true,
+								//nolint:lll
+								Description: "Specifies the duration to wait after receiving no data before triggering an alert. " +
+									"The value must be a valid Go duration string, such as \"1h\" for one hour. " +
+									"If not specified, the system defaults to \"15m\" (15 minutes).",
+								Default: "15m",
+							},
 							"alert_method": {
 								Type:        schema.TypeList,
 								Required:    true,
@@ -45,12 +54,6 @@ func schemaAnomalyConfig() *schema.Schema {
 								},
 								MaxItems: 5,
 								MinItems: 1,
-							},
-							"alert_after": {
-								Type:     schema.TypeString,
-								Optional: true,
-								//nolint:lll
-								Description: "Specifies the duration to wait after receiving no data before triggering an alert. The value must be a valid Go duration string, such as \"1h\" for one hour. If not specified, the system defaults to \"15m\" (15 minutes).",
 							},
 						},
 					},
