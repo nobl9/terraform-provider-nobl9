@@ -78,8 +78,8 @@ func marshalAnomalyConfig(anomalyConfigRaw interface{}) *v1alphaSLO.AnomalyConfi
 	noDataAlertMethods := noDataAnomalyConfig["alert_method"].([]interface{})
 	marshaledAlertMethods := marshalAnomalyConfigAlertMethods(noDataAlertMethods)
 
-	alertAfter := noDataAnomalyConfig["alert_after"].(string)
-	if alertAfter == "" {
+	alertAfter, ok := noDataAnomalyConfig["alert_after"].(string)
+	if !ok || alertAfter == "" {
 		alertAfter = "15m"
 	}
 
