@@ -13,13 +13,16 @@ func TestMarshalAnomalyConfig(t *testing.T) {
 	testCases := []struct {
 		name                 string
 		alertMethods         []interface{}
+		alertAfter           *string
 		expectedLength       int
+		expectedAlertAfter   string
 		expectedAlertMethods []struct{ name, project string }
 	}{
 		{
-			name:           "Empty alert method list",
-			alertMethods:   []interface{}{},
-			expectedLength: 0,
+			name:               "Empty alert method list",
+			alertMethods:       []interface{}{},
+			expectedLength:     0,
+			expectedAlertAfter: "",
 		},
 		{
 			name: "Single alert method",
@@ -36,6 +39,7 @@ func TestMarshalAnomalyConfig(t *testing.T) {
 					project: "and-infinite",
 				},
 			},
+			expectedAlertAfter: "",
 		},
 		{
 			name: "Multiple alert methods",
@@ -60,6 +64,7 @@ func TestMarshalAnomalyConfig(t *testing.T) {
 					project: "infinite",
 				},
 			},
+			expectedAlertAfter: "",
 		},
 		{
 			name: "Multiple alert methods in the same project",
@@ -116,6 +121,61 @@ func TestMarshalAnomalyConfig(t *testing.T) {
 					project: "ghost",
 				},
 			},
+			expectedAlertAfter: "",
+		},
+		{
+			name: "Custom alert after time",
+			alertMethods: []interface{}{
+				map[string]interface{}{
+					"name":    "the-net-is-vast",
+					"project": "and-infinite",
+				},
+			},
+			alertAfter:     ptr("30m"),
+			expectedLength: 1,
+			expectedAlertMethods: []struct{ name, project string }{
+				{
+					name:    "the-net-is-vast",
+					project: "and-infinite",
+				},
+			},
+			expectedAlertAfter: "30m",
+		},
+		{
+			name: "Empty alert after time",
+			alertMethods: []interface{}{
+				map[string]interface{}{
+					"name":    "the-net-is-vast",
+					"project": "and-infinite",
+				},
+			},
+			alertAfter:     ptr(""),
+			expectedLength: 1,
+			expectedAlertMethods: []struct{ name, project string }{
+				{
+					name:    "the-net-is-vast",
+					project: "and-infinite",
+				},
+			},
+			expectedAlertAfter: "",
+		},
+		{
+			name: "Nil alert after time",
+			alertMethods: []interface{}{
+				map[string]interface{}{
+					"name":    "the-net-is-vast",
+					"project": "and-infinite",
+				},
+			},
+			alertAfter:     nil,
+			expectedLength: 1,
+			expectedAlertMethods: []struct{ name, project string }{
+				{
+					name:    "the-net-is-vast",
+					project: "and-infinite",
+				},
+			},
+			expectedAlertAfter: "",
 		},
 	}
 
@@ -123,12 +183,18 @@ func TestMarshalAnomalyConfig(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
+			noData := map[string]interface{}{
+				"alert_method": tc.alertMethods,
+			}
+
+			if tc.alertAfter != nil {
+				noData["alert_after"] = *tc.alertAfter
+			}
+
 			anomalyConfig := schema.NewSet(oneElementSet, []interface{}{
 				map[string]interface{}{
 					"no_data": schema.NewSet(oneElementSet, []interface{}{
-						map[string]interface{}{
-							"alert_method": tc.alertMethods,
-						},
+						noData,
 					}),
 				},
 			})
@@ -137,6 +203,7 @@ func TestMarshalAnomalyConfig(t *testing.T) {
 			assert.NotNil(t, result)
 			assert.NotNil(t, result.NoData)
 			assert.Equal(t, tc.expectedLength, len(result.NoData.AlertMethods))
+			assert.Equal(t, tc.expectedAlertAfter, *result.NoData.AlertAfter)
 
 			for i, expected := range tc.expectedAlertMethods {
 				assert.Equal(t, expected.name, result.NoData.AlertMethods[i].Name)
@@ -210,3 +277,5 @@ func TestMarshalAnomalyConfigAlertMethods(t *testing.T) {
 		})
 	}
 }
+
+func ptr[T any](v T) *T { return &v }

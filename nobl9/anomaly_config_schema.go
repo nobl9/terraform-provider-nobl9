@@ -17,10 +17,19 @@ func schemaAnomalyConfig() *schema.Schema {
 				"no_data": {
 					Type:        schema.TypeSet,
 					Required:    true,
-					Description: "Alert Policies attached to SLO",
+					Description: "No data alerts configuration",
 					MaxItems:    1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
+							"alert_after": {
+								Type:     schema.TypeString,
+								Optional: true,
+								//nolint:lll
+								Description: "Specifies the duration to wait after receiving no data before triggering an alert. " +
+									"The value must be a valid Go duration string, such as \"1h\" for one hour. " +
+									"If not specified, the system defaults to \"15m\" (15 minutes).",
+								Default: "15m",
+							},
 							"alert_method": {
 								Type:        schema.TypeList,
 								Required:    true,
@@ -69,9 +78,12 @@ func marshalAnomalyConfig(anomalyConfigRaw interface{}) *v1alphaSLO.AnomalyConfi
 	noDataAlertMethods := noDataAnomalyConfig["alert_method"].([]interface{})
 	marshaledAlertMethods := marshalAnomalyConfigAlertMethods(noDataAlertMethods)
 
+	alertAfter, _ := noDataAnomalyConfig["alert_after"].(string)
+
 	return &v1alphaSLO.AnomalyConfig{
 		NoData: &v1alphaSLO.AnomalyConfigNoData{
 			AlertMethods: marshaledAlertMethods,
+			AlertAfter:   &alertAfter,
 		},
 	}
 }
@@ -121,6 +133,7 @@ func unmarshalAnomalyConfig(d *schema.ResourceData, spec v1alphaSLO.Spec) error 
 		"no_data": schema.NewSet(oneElementSet, []interface{}{
 			map[string]interface{}{
 				"alert_method": resNoDataMethods,
+				"alert_after":  noData.AlertAfter,
 			},
 		}),
 	}
