@@ -38,10 +38,16 @@ func (d *ProjectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 		Description:         description,
 		MarkdownDescription: description,
 		Attributes: map[string]schema.Attribute{
-			"name":         metadataNameAttr(),
-			"display_name": metadataDisplayNameAttr(),
-			"description":  specDescriptionAttr(),
-			"annotations":  metadataAnnotationsAttr(),
+			"name": metadataNameAttr(),
+			"display_name": schema.StringAttribute{
+				Computed:    true,
+				Description: metadataDisplayNameAttr().Description,
+			},
+			"description": schema.StringAttribute{
+				Computed:    true,
+				Description: specDescriptionAttr().Description,
+			},
+			"annotations": metadataAnnotationsAttr(),
 		},
 		Blocks: map[string]schema.Block{
 			"label": metadataLabelsBlock(),
@@ -51,7 +57,7 @@ func (d *ProjectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 
 // Read refreshes the Terraform state with the latest data.
 func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var config ProjectDataSourceModel
+	var config ProjectResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return

@@ -56,7 +56,6 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"annotations": metadataAnnotationsAttr(),
 			"status": schema.ObjectAttribute{
 				Computed:       true,
-				Optional:       true,
 				Description:    "Status of created service.",
 				AttributeTypes: serviceStatusTypes,
 				PlanModifiers: []planmodifier.Object{
