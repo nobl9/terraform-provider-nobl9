@@ -111,6 +111,8 @@ resource "nobl9_slo" "slo_2" {
 
   anomaly_config {
     no_data {
+      alert_after = "30m"
+
       alert_method {
         name = "foo-method-method"
         project = "default"
