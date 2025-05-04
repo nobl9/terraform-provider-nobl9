@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAccServiceResource(t *testing.T) {
+func TestAccProjectDataSource(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
@@ -68,20 +68,6 @@ func TestAccServiceResource(t *testing.T) {
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionCreate),
 					},
 				},
-			},
-			// Delete.
-			{
-				Config: newServiceResource(t, serviceResource),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					assertResourceWasDeleted(t, ctx, manifestService),
-				),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectNonEmptyPlan(),
-						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionDestroy),
-					},
-				},
-				Destroy: true,
 			},
 			// ImportState - invalid id.
 			{
@@ -180,62 +166,4 @@ func TestAccServiceResource(t *testing.T) {
 			// Delete automatically occurs in TestCase, no need to clean up.
 		},
 	})
-}
-
-func TestRenderServiceResourceTemplate(t *testing.T) {
-	t.Parallel()
-
-	actual := newServiceResource(t, serviceResourceTemplateModel{
-		ResourceName:         "this",
-		ServiceResourceModel: getExampleServiceResource(),
-	})
-
-	expected := `resource "nobl9_service" "this" {
-  name = "service"
-  display_name = "Service"
-  project = "default"
-  annotations = {
-    key = "value",
-  }
-  label {
-    key = "team"
-    values = [
-      "green",
-    ]
-  }
-  label {
-    key = "env"
-    values = [
-      "prod",
-      "dev",
-    ]
-  }
-  description = "Example service"
-}
-`
-
-	assert.Equal(t, expected, actual)
-}
-
-type serviceResourceTemplateModel struct {
-	ResourceName string
-	ServiceResourceModel
-}
-
-func newServiceResource(t *testing.T, model serviceResourceTemplateModel) string {
-	return executeTemplate(t, "service_resource.hcl.tmpl", model)
-}
-
-func getExampleServiceResource() ServiceResourceModel {
-	return ServiceResourceModel{
-		Name:        "service",
-		DisplayName: types.StringValue("Service"),
-		Project:     "default",
-		Description: types.StringValue("Example service"),
-		Annotations: map[string]string{"key": "value"},
-		Labels: Labels{
-			{Key: "team", Values: []string{"green"}},
-			{Key: "env", Values: []string{"prod", "dev"}},
-		},
-	}
 }
