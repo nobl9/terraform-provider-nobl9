@@ -7,7 +7,7 @@ NAMESPACE = nobl9
 NAME = nobl9
 BIN_DIR = ./bin
 BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
-VERSION = 0.39.0
+VERSION = 0.40.0
 LDFLAGS += -X main.Version=$(VERSION)
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 
