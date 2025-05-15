@@ -615,12 +615,10 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 			},
 		},
 		"send_as_plain_text": {
-			Type:        schema.TypeList,
+			Type:        schema.TypeBool,
 			Optional:    true,
 			Description: "Send email as plain text.",
-			Elem: &schema.Schema{
-				Type: schema.TypeBool,
-			},
+			Default:     false,
 		},
 	}
 }
