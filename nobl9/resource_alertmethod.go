@@ -447,6 +447,14 @@ func (i alertMethodServiceNow) GetDescription() string {
 }
 
 func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
+	sendResolutionSchema := map[string]*schema.Schema{
+		"message": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "A message that will be attached to your 'all clear' notification.",
+		},
+	}
+
 	return map[string]*schema.Schema{
 		"username": {
 			Type:        schema.TypeString,
@@ -465,6 +473,14 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "ServiceNow InstanceName. For details see [Nobl9 documentation](https://docs.nobl9.com/alerting/alert-methods/servicenow#servicenow-credentials).",
 		},
+		"send_resolution": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Sends a notification after the cooldown period is over.",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem:        &schema.Resource{Schema: sendResolutionSchema},
+		},
 	}
 }
 
@@ -472,9 +488,10 @@ func (i alertMethodServiceNow) MarshalSpec(r resourceInterface) v1alphaAlertMeth
 	return v1alphaAlertMethod.Spec{
 		Description: r.Get("description").(string),
 		ServiceNow: &v1alphaAlertMethod.ServiceNowAlertMethod{
-			Username:     r.Get("username").(string),
-			Password:     r.Get("password").(string),
-			InstanceName: r.Get("instance_name").(string),
+			Username:       r.Get("username").(string),
+			Password:       r.Get("password").(string),
+			InstanceName:   r.Get("instance_name").(string),
+			SendResolution: marshalSendResolution(r.Get("send_resolution")),
 		},
 	}
 }
