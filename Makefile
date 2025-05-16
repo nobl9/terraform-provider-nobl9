@@ -7,18 +7,18 @@ NAMESPACE = nobl9
 NAME = nobl9
 BIN_DIR = ./bin
 BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
-VERSION = 0.37.2
+VERSION = 0.39.0
 LDFLAGS += -X main.Version=$(VERSION)
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 
 # renovate datasource=github-releases depName=securego/gosec
-GOSEC_VERSION := v2.22.3
+GOSEC_VERSION := v2.22.4
 # renovate datasource=github-releases depName=golangci/golangci-lint
 GOLANGCI_LINT_VERSION := v1.64.8
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
 GOVULNCHECK_VERSION := v1.1.4
 # renovate datasource=go depName=golang.org/x/tools/cmd/goimports
-GOIMPORTS_VERSION := v0.32.0
+GOIMPORTS_VERSION := v0.33.0
 # renovate datasource=github-releases depName=segmentio/golines
 GOLINES_VERSION := v0.12.2
 
