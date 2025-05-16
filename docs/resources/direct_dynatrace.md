@@ -13,11 +13,11 @@ For more information, refer to [Dynatrace Direct | Nobl9 Documentation](https://
 
 ```terraform
 resource "nobl9_direct_dynatrace" "test-dynatrace" {
-  name            = "test-dynatrace"
-  project         = "terraform"
-  description     = "desc"
-  url             = "https://web.net"
-  dynatrace_token = "secret"
+  name                   = "test-dynatrace"
+  project                = "terraform"
+  description            = "desc"
+  url                    = "https://web.net"
+  dynatrace_token        = "secret"
   log_collection_enabled = true
   historical_data_retrieval {
     default_duration {

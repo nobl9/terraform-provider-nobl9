@@ -7,7 +7,7 @@ NAMESPACE = nobl9
 NAME = nobl9
 BIN_DIR = ./bin
 BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
-VERSION = 0.39.0
+VERSION = 0.40.0
 LDFLAGS += -X main.Version=$(VERSION)
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 
@@ -141,7 +141,7 @@ generate/code:
 
 .PHONY: format format/go format/cspell
 ## Format files.
-format: format/go format/cspell
+format: format/go format/cspell format/terraform
 
 ## Format Go files.
 format/go:
@@ -157,6 +157,11 @@ format/cspell:
 	echo "Formatting cspell.yaml configuration (words list)..."
 	$(call _ensure_installed,yarn,yaml)
 	yarn --silent format-cspell-config
+
+## Format terraform files.
+format/terraform:
+	echo "Formatting terraform files..."
+	terraform fmt -recursive
 
 .PHONY: install install/yarn install/golangci-lint install/gosec install/govulncheck install/goimports
 ## Install all dev dependencies.

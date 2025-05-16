@@ -23,7 +23,7 @@ resource "nobl9_direct_azure_monitor" "test-azure-monitor" {
   log_collection_enabled = true
   release_channel        = "beta"
   historical_data_retrieval {
-    default_duration  {
+    default_duration {
       unit  = "Day"
       value = 0
     }

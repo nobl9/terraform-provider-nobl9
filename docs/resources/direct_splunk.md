@@ -14,11 +14,11 @@ For more information, refer to [Splunk Direct | Nobl9 Documentation](https://doc
 
 ```terraform
 resource "nobl9_direct_splunk" "test-splunk" {
-  name         = "test-splunk"
-  project      = "terraform"
-  description  = "desc"
-  url          = "https://web.net"
-  access_token = "secret"
+  name                   = "test-splunk"
+  project                = "terraform"
+  description            = "desc"
+  url                    = "https://web.net"
+  access_token           = "secret"
   log_collection_enabled = true
   historical_data_retrieval {
     default_duration {

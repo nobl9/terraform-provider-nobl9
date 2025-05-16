@@ -134,12 +134,12 @@ resource "nobl9_slo" "slo_2" {
       alert_after = "30m"
 
       alert_method {
-        name = "foo-method-method"
+        name    = "foo-method-method"
         project = "default"
       }
 
       alert_method {
-        name = "bar-alert-method"
+        name    = "bar-alert-method"
         project = "default"
       }
     }

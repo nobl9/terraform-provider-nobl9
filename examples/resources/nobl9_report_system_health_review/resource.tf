@@ -36,7 +36,7 @@ resource "nobl9_report_system_health_review" "this" {
   column {
     display_name = "Column 1"
     label {
-      key = "key1"
+      key    = "key1"
       values = ["value1"]
     }
   }
@@ -44,7 +44,7 @@ resource "nobl9_report_system_health_review" "this" {
   column {
     display_name = "Column 2"
     label {
-      key = "key2"
+      key    = "key2"
       values = ["value2"]
     }
   }
