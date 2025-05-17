@@ -51,8 +51,8 @@ func specDescriptionAttr() schema.StringAttribute {
 	}
 }
 
-func metadataAnnotationsAttr() *schema.MapAttribute {
-	return &schema.MapAttribute{
+func metadataAnnotationsAttr() schema.MapAttribute {
+	return schema.MapAttribute{
 		ElementType:         types.StringType,
 		Optional:            true,
 		MarkdownDescription: "[Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.", //nolint:lll

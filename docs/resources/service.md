@@ -54,6 +54,9 @@ resource "nobl9_service" "this" {
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
+
+### Read-Only
+
 - `status` (Object) Status of created service. (see [below for nested schema](#nestedatt--status))
 
 <a id="nestedblock--label"></a>
@@ -68,7 +71,7 @@ Required:
 <a id="nestedatt--status"></a>
 ### Nested Schema for `status`
 
-Optional:
+Read-Only:
 
 - `slo_count` (Number)
 
