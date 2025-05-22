@@ -28,7 +28,7 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 		{"test-jira", "jira", testJiraConfig},
 		{"test-teams", "msteams", testTeamsConfig},
 		{"test-email", "email", testEmailConfig},
-		{"test-email-plain-text", "email-plain-text", testEmailAsPlainTextConfig},
+		{"test-email-plain-text", "email", testEmailAsPlainTextConfig},
 	}
 
 	for _, tc := range cases {
