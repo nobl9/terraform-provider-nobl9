@@ -30,6 +30,8 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 		{"test-jira", "jira", testJiraConfig},
 		{"test-teams", "msteams", testTeamsConfig},
 		{"test-email", "email", testEmailConfig},
+		{"test-email-plain", "email-plain", testEmailConfig},
+		{"test-email-plain-text", "email-plain-text", testEmailAsPlainTextConfig},
 	}
 
 	for _, tc := range cases {
@@ -247,6 +249,20 @@ resource "nobl9_alert_method_email" "%s" {
   to		  = [ "testUser@nobl9.com" ]
   cc		  = [ "testUser@nobl9.com" ]
   bcc		  = [ "testUser@nobl9.com" ]
+}
+`, name, name, testProject)
+}
+
+func testEmailAsPlainTextConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_email" "%s" {
+  name        = "%s"
+  project     = "%s"
+  description = "teams"
+  to		  = [ "testUser@nobl9.com" ]
+  cc		  = [ "testUser@nobl9.com" ]
+  bcc		  = [ "testUser@nobl9.com" ]
+  send_as_plain_text = true
 }
 `, name, name, testProject)
 }
