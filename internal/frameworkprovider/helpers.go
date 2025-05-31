@@ -1,8 +1,10 @@
 package frameworkprovider
 
 import (
+	"fmt"
 	"slices"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -49,4 +51,14 @@ func sortListBasedOnReferenceList[S ~[]E, E any](target, reference S, equalsFunc
 	// Add removed elements to the end of the list.
 	sorted = append(sorted, extraElements...)
 	return sorted
+}
+
+func addInvalidSDKClientTypeDiag(diags *diag.Diagnostics, data any) {
+	diags.AddError(
+		"Unexpected Configure Type",
+		fmt.Sprintf(
+			"Expected *sdkClient, got: %T. Please report this issue to the provider developers.",
+			data,
+		),
+	)
 }
