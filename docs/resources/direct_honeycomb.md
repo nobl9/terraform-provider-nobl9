@@ -14,24 +14,24 @@ For more information, refer to [Honeycomb Direct | Nobl9 Documentation](https://
 
 ```terraform
 resource "nobl9_direct_honeycomb" "test-honeycomb" {
-  name = "test-honeycomb"
-  project = "terraform"
-  description = "desc"
-  api_key = "secret"
+  name                   = "test-honeycomb"
+  project                = "terraform"
+  description            = "desc"
+  api_key                = "secret"
   log_collection_enabled = true
-  release_channel = "beta"
+  release_channel        = "beta"
   historical_data_retrieval {
-    default_duration  {
-      unit = "Day"
+    default_duration {
+      unit  = "Day"
       value = 7
     }
     max_duration {
-      unit = "Day"
+      unit  = "Day"
       value = 7
     }
   }
   query_delay {
-    unit = "Minute"
+    unit  = "Minute"
     value = 6
   }
 }

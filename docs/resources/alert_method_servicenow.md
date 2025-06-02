@@ -19,13 +19,13 @@ Here's an example of ServiceNow Terraform resource configuration:
 
 ```terraform
 resource "nobl9_alert_method_servicenow" "this" {
-  name         = "my-servicenow-alert"
-  display_name = "My ServiceNow Alert"
-  project      = "Test Project"
-  description    = "ServiceNow alert"
-  username       = "nobl9User"
-  password       = "secret"
-  instance_name  = "my_snow_instance_name"
+  name          = "my-servicenow-alert"
+  display_name  = "My ServiceNow Alert"
+  project       = "Test Project"
+  description   = "ServiceNow alert"
+  username      = "nobl9User"
+  password      = "secret"
+  instance_name = "my_snow_instance_name"
 }
 ```
 
@@ -44,10 +44,18 @@ resource "nobl9_alert_method_servicenow" "this" {
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `password` (String, Sensitive) ServiceNow password.
+- `send_resolution` (Block Set, Max: 1) Sends a notification after the cooldown period is over. (see [below for nested schema](#nestedblock--send_resolution))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+<a id="nestedblock--send_resolution"></a>
+### Nested Schema for `send_resolution`
+
+Optional:
+
+- `message` (String) A message that will be attached to your 'all clear' notification.
 
 ## Useful Links
 

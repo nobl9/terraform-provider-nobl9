@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"reflect"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -790,16 +791,22 @@ func unmarshalSLO(d *schema.ResourceData, slo v1alphaSLO.SLO) diag.Diagnostics {
 	diags = appendError(diags, err)
 
 	// Remove this warning once SLO objective unique identifier grace period ends.
-	diags = append(diags, diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "SLO objective unique identifier warning",
-		Detail: "Nobl9 is introducing an SLO objective unique identifier to support the same value for different " +
-			"SLIs in the same SLO. As such, Nobl9 is adding a name identifier to each SLO objective. " +
-			"Objective names can be set now, and they'll be required once grace period ends. " +
-			"For more detailed information, refer to: https://docs.nobl9.com/features/slo-objective-unique-identifier",
-	})
+	if hasObjectiveWithNoName(spec.Objectives) {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "SLO objective unique identifier warning",
+			Detail: "Nobl9 is introducing an SLO objective unique identifier to support the same value for different " +
+				"SLIs in the same SLO. As such, Nobl9 is adding a name identifier to each SLO objective. " +
+				"Objective names can be set now, and they'll be required once grace period ends. " +
+				"For more detailed information, refer to: https://docs.nobl9.com/features/slo-objective-unique-identifier",
+		})
+	}
 
 	return diags
+}
+
+func hasObjectiveWithNoName(objectives []v1alphaSLO.Objective) bool {
+	return slices.ContainsFunc(objectives, func(o v1alphaSLO.Objective) bool { return o.Name == "" })
 }
 
 func unmarshalAttachments(d *schema.ResourceData, spec v1alphaSLO.Spec) error {

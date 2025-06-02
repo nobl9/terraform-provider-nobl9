@@ -447,6 +447,14 @@ func (i alertMethodServiceNow) GetDescription() string {
 }
 
 func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
+	sendResolutionSchema := map[string]*schema.Schema{
+		"message": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "A message that will be attached to your 'all clear' notification.",
+		},
+	}
+
 	return map[string]*schema.Schema{
 		"username": {
 			Type:        schema.TypeString,
@@ -465,6 +473,14 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "ServiceNow InstanceName. For details see [Nobl9 documentation](https://docs.nobl9.com/alerting/alert-methods/servicenow#servicenow-credentials).",
 		},
+		"send_resolution": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Sends a notification after the cooldown period is over.",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem:        &schema.Resource{Schema: sendResolutionSchema},
+		},
 	}
 }
 
@@ -472,9 +488,10 @@ func (i alertMethodServiceNow) MarshalSpec(r resourceInterface) v1alphaAlertMeth
 	return v1alphaAlertMethod.Spec{
 		Description: r.Get("description").(string),
 		ServiceNow: &v1alphaAlertMethod.ServiceNowAlertMethod{
-			Username:     r.Get("username").(string),
-			Password:     r.Get("password").(string),
-			InstanceName: r.Get("instance_name").(string),
+			Username:       r.Get("username").(string),
+			Password:       r.Get("password").(string),
+			InstanceName:   r.Get("instance_name").(string),
+			SendResolution: marshalSendResolution(r.Get("send_resolution")),
 		},
 	}
 }
@@ -614,16 +631,24 @@ func (i alertMethodEmail) GetSchema() map[string]*schema.Schema {
 				Type: schema.TypeString,
 			},
 		},
+		"send_as_plain_text": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Send email as plain text.",
+			Default:     false,
+		},
 	}
 }
 
 func (i alertMethodEmail) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Spec {
+	sendAsPlainText, _ := r.Get("send_as_plain_text").(bool)
 	return v1alphaAlertMethod.Spec{
 		Description: r.Get("description").(string),
 		Email: &v1alphaAlertMethod.EmailAlertMethod{
-			To:  toStringSlice(r.Get("to").([]interface{})),
-			Cc:  toStringSlice(r.Get("cc").([]interface{})),
-			Bcc: toStringSlice(r.Get("bcc").([]interface{})),
+			To:              toStringSlice(r.Get("to").([]interface{})),
+			Cc:              toStringSlice(r.Get("cc").([]interface{})),
+			Bcc:             toStringSlice(r.Get("bcc").([]interface{})),
+			SendAsPlainText: &sendAsPlainText,
 		},
 	}
 }
@@ -637,6 +662,8 @@ func (i alertMethodEmail) UnmarshalSpec(d *schema.ResourceData, spec v1alphaAler
 	err = d.Set("cc", config.Cc)
 	diags = appendError(diags, err)
 	err = d.Set("bcc", config.Bcc)
+	diags = appendError(diags, err)
+	err = d.Set("send_as_plain_text", config.SendAsPlainText)
 	diags = appendError(diags, err)
 
 	return diags

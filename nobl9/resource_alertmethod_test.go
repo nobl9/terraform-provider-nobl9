@@ -20,14 +20,17 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 		{"test-webhook-headers", "webhook", testWebhookHeadersConfig},
 		{"test-pagerduty", "pagerduty", testPagerDutyConfig},
 		{"test-pagerduty-send-resolution", "pagerduty", testPagerDutyWithSendResolutionConfig},
-		{"test-pagerduty-send-resolution-message", "pagerduty", testPagerDutyWithSendResolutionWithMessageConfig},
+		{"test-pagerduty-send-resolution-message", "pagerduty", testPagerDutyWithSendResolutionWithMessageEmptyConfig},
 		{"test-slack", "slack", testSlackConfig},
 		{"test-discord", "discord", testDiscordConfig},
 		{"test-opsgenie", "opsgenie", testOpsgenieConfig},
 		{"test-servicenow", "servicenow", testServiceNowConfig},
+		{"test-servicenow-send-resolution", "servicenow", testServiceNowWithSendResolutionConfig},
+		{"test-servicenow-send-resolution-message", "servicenow", testServiceNowWithSendResolutionMessageEmptyConfig},
 		{"test-jira", "jira", testJiraConfig},
 		{"test-teams", "msteams", testTeamsConfig},
 		{"test-email", "email", testEmailConfig},
+		{"test-email-plain-text", "email", testEmailAsPlainTextConfig},
 	}
 
 	for _, tc := range cases {
@@ -117,7 +120,7 @@ resource "nobl9_alert_method_pagerduty" "%s" {
 `, name, name, testProject)
 }
 
-func testPagerDutyWithSendResolutionWithMessageConfig(name string) string {
+func testPagerDutyWithSendResolutionWithMessageEmptyConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_alert_method_pagerduty" "%s" {
   name            = "%s"
@@ -178,6 +181,39 @@ resource "nobl9_alert_method_servicenow" "%s" {
 `, name, name, testProject)
 }
 
+func testServiceNowWithSendResolutionConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_servicenow" "%s" {
+  name           = "%s"
+  project        = "%s"
+  description    = "servicenow"
+  username       = "nobleUser"
+  password       = "very secret"
+  instance_name  = "name"
+
+  send_resolution {
+    message = "Alert is now resolved"
+  }
+}
+`, name, name, testProject)
+}
+
+func testServiceNowWithSendResolutionMessageEmptyConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_servicenow" "%s" {
+  name           = "%s"
+  project        = "%s"
+  description    = "servicenow"
+  username       = "nobleUser"
+  password       = "very secret"
+  instance_name  = "name"
+
+  send_resolution {
+  }
+}
+`, name, name, testProject)
+}
+
 func testJiraConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_alert_method_jira" "%s" {
@@ -208,10 +244,24 @@ func testEmailConfig(name string) string {
 resource "nobl9_alert_method_email" "%s" {
   name        = "%s"
   project     = "%s"
-  description = "teams"
+  description = "email"
   to		  = [ "testUser@nobl9.com" ]
   cc		  = [ "testUser@nobl9.com" ]
   bcc		  = [ "testUser@nobl9.com" ]
+}
+`, name, name, testProject)
+}
+
+func testEmailAsPlainTextConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_email" "%s" {
+  name        = "%s"
+  project     = "%s"
+  description = "email"
+  to		  = [ "testUser@nobl9.com" ]
+  cc		  = [ "testUser@nobl9.com" ]
+  bcc		  = [ "testUser@nobl9.com" ]
+  send_as_plain_text = true
 }
 `, name, name, testProject)
 }
