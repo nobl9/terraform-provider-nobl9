@@ -39,25 +39,13 @@ func (d *ProjectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 		MarkdownDescription: description,
 		Attributes: map[string]schema.Attribute{
 			"name": metadataNameAttr(),
-			"display_name": schema.StringAttribute{
-				Computed:    true,
-				Description: metadataDisplayNameAttr().Description,
-			},
-			"description": schema.StringAttribute{
-				Computed:    true,
-				Description: specDescriptionAttr().Description,
-			},
-			"annotations": metadataAnnotationsAttr(),
-		},
-		Blocks: map[string]schema.Block{
-			"label": metadataLabelsBlock(),
 		},
 	}
 }
 
 // Read refreshes the Terraform state with the latest data.
 func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var config ProjectResourceModel
+	var config ProjectDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return

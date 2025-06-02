@@ -18,21 +18,3 @@ description: |-
 ### Required
 
 - `name` (String) Unique name of the resource, must conform to the [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names) naming convention.
-
-### Optional
-
-- `annotations` (Map of String) [Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.
-- `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
-
-### Read-Only
-
-- `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
-- `display_name` (String) User-friendly display name of the resource.
-
-<a id="nestedblock--label"></a>
-### Nested Schema for `label`
-
-Required:
-
-- `key` (String) A key for the label, unique within the associated resource.
-- `values` (Set of String) A set of values for a single key.
