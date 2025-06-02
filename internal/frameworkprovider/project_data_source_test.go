@@ -52,18 +52,19 @@ func TestAccProjectDataSource(t *testing.T) {
 		"ServiceName":    serviceName,
 	})
 
-	t.Cleanup(func() {
-		deleteNobl9Objects(t, ctx, manifestProject)
-	})
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create Service resource with Project Data Source.
 			{
-				PreConfig: func() { applyNobl9Objects(t, ctx, manifestProject) },
-				Config:    serviceResourceConfig,
+				PreConfig: func() {
+					applyNobl9Objects(t, ctx, manifestProject)
+					t.Cleanup(func() {
+						deleteNobl9Objects(t, ctx, manifestProject)
+					})
+				},
+				Config: serviceResourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assertResourceWasApplied(t, ctx, manifestService),
 				),
