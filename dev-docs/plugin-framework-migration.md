@@ -20,7 +20,7 @@ that supports additional capabilities.
 
 The cherry on top of these sought after capabilities is that the framework
 is much more elegant and idiomatic, shipping with type safety features, making
-it much more easier and pleasant to develop in.
+it much easier and pleasant to develop in.
 
 ## Migration
 
@@ -34,7 +34,7 @@ The process of migration is well documented, you can read more about it
 
 Currently each of the code bases is separated as follows:
 
-- SDK leaves where it used to, in [nobl9](../nobl9/) directory.
+- SDK lives where it used to, in [nobl9](../nobl9/) directory.
 - Framework code is located at [internal/frameworkprovider](../internal/frameworkprovider/).
 
 Both the SDK and framework have separate provider definitions!
@@ -64,4 +64,4 @@ We recommend you take a look at [this PR](https://github.com/nobl9/terraform-pro
 You will see that the tests look slightly different, that is intentional.
 The acceptance tests defined in the SDK code often leave a lot to be desired.
 We want to use this rewrite as an excuse to improve them and make them
-more readable and better and better reflect user journeys.
+more readable and better reflect user journeys.
