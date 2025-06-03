@@ -19,13 +19,6 @@ func TestAccProjectDataSource(t *testing.T) {
 	unixNow := time.Now().UnixNano()
 
 	projectName := fmt.Sprintf("project-%d", unixNow)
-	projectResource := projectResourceTemplateModel{
-		ResourceName:         "test",
-		ProjectResourceModel: getExampleProjectResource(),
-	}
-	projectResource.ProjectResourceModel.Labels = appendTestLabels(projectResource.ProjectResourceModel.Labels)
-	projectResource.ProjectResourceModel.Name = projectName
-
 	manifestProject := v1alphaProject.New(
 		v1alphaProject.Metadata{
 			Name: projectName,
