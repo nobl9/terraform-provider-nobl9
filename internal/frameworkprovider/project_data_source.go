@@ -13,7 +13,7 @@ var (
 	_ datasource.DataSourceWithConfigure = &ProjectDataSource{}
 )
 
-func NewCoffeesDataSource() datasource.DataSource {
+func NewProjectDataSource() datasource.DataSource {
 	return &ProjectDataSource{}
 }
 
