@@ -2,7 +2,6 @@ package frameworkprovider
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -129,13 +128,7 @@ func (s *ProjectResource) Configure(
 	}
 	client, ok := req.ProviderData.(*sdkClient)
 	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf(
-				"Expected *sdkClient, got: %T. Please report this issue to the provider developers.",
-				req.ProviderData,
-			),
-		)
+		addInvalidSDKClientTypeDiag(&resp.Diagnostics, req.ProviderData)
 		return
 	}
 	s.client = client

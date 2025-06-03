@@ -101,6 +101,7 @@ func (p *Provider) Configure(ctx context.Context, req provider.ConfigureRequest,
 		return
 	}
 	resp.ResourceData = client
+	resp.DataSourceData = client
 }
 
 func (p *Provider) Resources(context.Context) []func() resource.Resource {
@@ -111,5 +112,7 @@ func (p *Provider) Resources(context.Context) []func() resource.Resource {
 }
 
 func (p *Provider) DataSources(context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		NewProjectDataSource,
+	}
 }

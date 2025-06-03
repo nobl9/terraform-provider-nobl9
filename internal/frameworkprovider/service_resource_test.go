@@ -29,8 +29,8 @@ func TestAccServiceResource(t *testing.T) {
 		ResourceName:         "test",
 		ServiceResourceModel: getExampleServiceResource(),
 	}
-	serviceResource.ServiceResourceModel.Labels = appendTestLabels(serviceResource.ServiceResourceModel.Labels)
-	serviceResource.ServiceResourceModel.Name = serviceName
+	serviceResource.Labels = appendTestLabels(serviceResource.Labels)
+	serviceResource.Name = serviceName
 
 	manifestService := v1alphaService.New(
 		v1alphaService.Metadata{
@@ -111,7 +111,7 @@ func TestAccServiceResource(t *testing.T) {
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
-					m.ServiceResourceModel.DisplayName = types.StringValue("New Service Display Name")
+					m.DisplayName = types.StringValue("New Service Display Name")
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -134,7 +134,7 @@ func TestAccServiceResource(t *testing.T) {
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
-					m.ServiceResourceModel.Name = serviceNameRecreatedByNameChange
+					m.Name = serviceNameRecreatedByNameChange
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -156,8 +156,8 @@ func TestAccServiceResource(t *testing.T) {
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
-					m.ServiceResourceModel.Name = serviceNameRecreatedByNameChange
-					m.ServiceResourceModel.Project = "default-recreated"
+					m.Name = serviceNameRecreatedByNameChange
+					m.Project = "default-recreated"
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(

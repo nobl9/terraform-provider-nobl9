@@ -140,6 +140,14 @@ func applyNobl9Objects(t *testing.T, ctx context.Context, objects ...manifest.Ob
 	assert.NoError(t, err)
 }
 
+// deleteNobl9Objects is a helper function that deletes the provided objects from the Nobl9 platform.
+func deleteNobl9Objects(t *testing.T, ctx context.Context, objects ...manifest.Object) {
+	t.Helper()
+
+	err := testSDKClient.client.Objects().V1().Delete(ctx, objects)
+	assert.NoError(t, err)
+}
+
 func getObjectsFromTheNobl9API(t *testing.T, ctx context.Context, object manifest.Object) ([]manifest.Object, error) {
 	t.Helper()
 
