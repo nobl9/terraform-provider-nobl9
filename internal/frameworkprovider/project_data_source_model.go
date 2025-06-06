@@ -11,6 +11,6 @@ type ProjectDataSourceModel struct {
 
 func newProjectDataSourceModelFromManifest(project v1alphaProject.Project) *ProjectDataSourceModel {
 	return &ProjectDataSourceModel{
-		Name: project.Metadata.Name,
+		Name: project.GetName(),
 	}
 }
