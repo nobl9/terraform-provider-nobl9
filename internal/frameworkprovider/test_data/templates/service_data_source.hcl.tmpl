@@ -1,0 +1,9 @@
+data "nobl9_service" "this" {
+  name = "{{ .ServiceName }}"
+  project = "{{ .Project1Name }}"
+}
+
+resource "nobl9_service" "this" {
+  name = data.nobl9_service.this.name
+  project = "{{ .Project2Name }}"
+}

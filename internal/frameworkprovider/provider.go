@@ -114,5 +114,6 @@ func (p *Provider) Resources(context.Context) []func() resource.Resource {
 func (p *Provider) DataSources(context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewProjectDataSource,
+		NewServiceDataSource,
 	}
 }
