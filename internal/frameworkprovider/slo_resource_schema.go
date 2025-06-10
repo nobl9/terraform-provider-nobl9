@@ -48,12 +48,12 @@ func sloResourceSchema() schema.Schema {
 					"starting from the specified date. Needs to be RFC3339 format.",
 				Validators: []validator.String{dateTimeValidator{}},
 			},
-			"composite": sloResourceCompositeV1Attribute(),
 		},
 		Blocks: map[string]schema.Block{
 			"label":          metadataLabelsBlock(),
 			"indicator":      sloResourceIndicatorBlock(),
 			"objective":      sloResourceObjectiveBlock(),
+			"composite":      sloResourceCompositeV1Block(),
 			"time_window":    sloResourceTimeWindowBlock(),
 			"attachment":     sloResourceAttachmentBlock(),
 			"anomaly_config": anomalyConfigBlock(),
@@ -842,22 +842,22 @@ func sloResourceCompositeV2ObjectiveBlock() schema.SingleNestedBlock {
 	}
 }
 
-func sloResourceCompositeV1Attribute() schema.SetNestedAttribute {
-	return schema.SetNestedAttribute{
-		Optional:           true,
+func sloResourceCompositeV1Block() schema.SetNestedBlock {
+	return schema.SetNestedBlock{
 		Description:        "(\"composite\" is deprecated, use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo)",
 		DeprecationMessage: "\"composite\" is deprecated, use \"objective.composite\" instead.",
-		NestedObject: schema.NestedAttributeObject{
+		NestedObject: schema.NestedBlockObject{
 			Attributes: map[string]schema.Attribute{
 				"target": schema.Float64Attribute{
 					Required:    true,
 					Description: "The numeric target for your objective.",
 				},
-				"burn_rate_condition": schema.SetNestedAttribute{
-					Optional:           true,
+			},
+			Blocks: map[string]schema.Block{
+				"burn_rate_condition": schema.SetNestedBlock{
 					Description:        "(\"burn_rate_condition\" is part of deprecated composites 1.0, use [composites 2.0](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) Condition when the Composite SLO's error budget is burning.",
 					DeprecationMessage: "\"burn_rate_condition\" is part of deprecated composites 1.0, use composites 2.0 (https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead",
-					NestedObject: schema.NestedAttributeObject{
+					NestedObject: schema.NestedBlockObject{
 						Attributes: map[string]schema.Attribute{
 							"op": schema.StringAttribute{
 								Required:    true,
