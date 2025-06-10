@@ -75,6 +75,7 @@ func sloResourceIndicatorBlock() schema.SingleNestedBlock {
 			},
 			"kind": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Default:     stringdefault.StaticString("Agent"),
 				Description: "Kind of the metric source. One of {Agent, Direct}.",
 			},
@@ -269,10 +270,11 @@ func anomalyConfigBlock() schema.SingleNestedBlock {
 				Attributes: map[string]schema.Attribute{
 					"alert_after": schema.StringAttribute{
 						Optional: true,
+						Computed: true,
+						Default:  stringdefault.StaticString("15m"),
 						Description: "Specifies the duration to wait after receiving no data before triggering an alert. " +
 							"The value must be a valid Go duration string, such as \"1h\" for one hour. " +
 							"If not specified, the system defaults to \"15m\" (15 minutes).",
-						Default: stringdefault.StaticString("15m"),
 					},
 				},
 			},

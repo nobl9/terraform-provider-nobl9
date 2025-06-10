@@ -23,7 +23,7 @@ type SLOResourceModel struct {
 	TimeWindow                 *TimeWindowModel    `tfsdk:"time_window"`
 	Attachments                []AttachmentModel   `tfsdk:"attachment"`
 	AnomalyConfig              *AnomalyConfigModel `tfsdk:"anomaly_config"`
-	Composite                  []V1CompositeModel  `tfsdk:"composite"`
+	Composite                  []CompositeV1Model  `tfsdk:"composite"`
 	RetrieveHistoricalDataFrom types.String        `tfsdk:"retrieve_historical_data_from"`
 }
 
@@ -153,25 +153,17 @@ type AnomalyConfigAlertMethodModel struct {
 	Project types.String `tfsdk:"project"`
 }
 
-// ThresholdModel represents the trigger_threshold or clear_threshold block in an anomaly_config.
-type ThresholdModel struct {
-	Count      types.Int64   `tfsdk:"count"`
-	Percentage types.Float64 `tfsdk:"percentage"`
+// CompositeV1Model represents the deprecated composite block in the SLO resource.
+type CompositeV1Model struct {
+	Target            types.Float64                       `tfsdk:"target"`
+	BurnRateCondition []CompositeV1BurnRateConditionModel `tfsdk:"burn_rate_condition"`
 }
 
-// V1CompositeModel represents the deprecated composite block in the SLO resource.
-type V1CompositeModel struct {
-	Target            types.Float64                      `tfsdk:"target"`
-	BurnRateCondition []DeprecatedBurnRateConditionModel `tfsdk:"burn_rate_condition"`
-}
-
-// DeprecatedBurnRateConditionModel represents the deprecated burn_rate_condition block in the composite block.
-type DeprecatedBurnRateConditionModel struct {
+// CompositeV1BurnRateConditionModel represents the deprecated burn_rate_condition block in the composite block.
+type CompositeV1BurnRateConditionModel struct {
 	Op    types.String  `tfsdk:"op"`
 	Value types.Float64 `tfsdk:"value"`
 }
-
-// Individual metric type models
 
 type AmazonPrometheusModel struct {
 	PromQL types.String `tfsdk:"promql"`
@@ -455,7 +447,7 @@ func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {
 			AlertPolicies:   s.AlertPolicies,
 		},
 	)
-	if !s.Tier.IsNull() && !s.Tier.IsUnknown() {
+	if !isNullOrUnknown(s.Tier) {
 		tier := s.Tier.ValueString()
 		slo.Spec.Tier = &tier
 	}
@@ -510,7 +502,7 @@ func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {
 		attachments := make([]v1alphaSLO.Attachment, len(s.Attachments))
 		for i, a := range s.Attachments {
 			var displayName *string
-			if !a.DisplayName.IsNull() && !a.DisplayName.IsUnknown() {
+			if !isNullOrUnknown(a.DisplayName) {
 				dn := a.DisplayName.ValueString()
 				displayName = &dn
 			}
@@ -531,7 +523,7 @@ func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {
 			}
 		}
 		var alertAfter *string
-		if !ac.AlertAfter.IsNull() && !ac.AlertAfter.IsUnknown() {
+		if !isNullOrUnknown(ac.AlertAfter) {
 			aa := ac.AlertAfter.ValueString()
 			alertAfter = &aa
 		}
@@ -606,17 +598,17 @@ func compositeObjectiveToModel(src *v1alphaSLO.CompositeSpec) *CompositeObjectiv
 	return model
 }
 
-func compositeV1ToModel(src *v1alphaSLO.Composite) []V1CompositeModel {
+func compositeV1ToModel(src *v1alphaSLO.Composite) []CompositeV1Model {
 	if src == nil {
 		return nil
 	}
-	result := []V1CompositeModel{}
+	result := []CompositeV1Model{}
 	if src.BudgetTarget != nil {
-		model := V1CompositeModel{
+		model := CompositeV1Model{
 			Target: types.Float64Value(*src.BudgetTarget),
 		}
 		if src.BurnRateCondition != nil {
-			model.BurnRateCondition = []DeprecatedBurnRateConditionModel{
+			model.BurnRateCondition = []CompositeV1BurnRateConditionModel{
 				{
 					Op:    types.StringValue(src.BurnRateCondition.Operator),
 					Value: types.Float64Value(src.BurnRateCondition.Value),
@@ -634,7 +626,7 @@ func (c *CountMetricsModel) ToManifest() *v1alphaSLO.CountMetricsSpec {
 		return nil
 	}
 	spec := &v1alphaSLO.CountMetricsSpec{}
-	if !c.Incremental.IsNull() && !c.Incremental.IsUnknown() {
+	if !isNullOrUnknown(c.Incremental) {
 		incremental := c.Incremental.ValueBool()
 		spec.Incremental = &incremental
 	}
@@ -1174,7 +1166,7 @@ func modelToCloudWatch(model *CloudWatchModel) *v1alphaSLO.CloudWatchMetric {
 		SQL:        stringPointer(model.SQL),
 		JSON:       stringPointer(model.JSON),
 	}
-	if !model.AccountID.IsNull() && !model.AccountID.IsUnknown() {
+	if !isNullOrUnknown(model.AccountID) {
 		accountID := model.AccountID.ValueString()
 		spec.AccountID = &accountID
 	}
@@ -1311,7 +1303,7 @@ func modelToLightstep(model *LightstepModel) *v1alphaSLO.LightstepMetric {
 		StreamID:   stringPointer(model.StreamID),
 		UQL:        stringPointer(model.UQL),
 	}
-	if !model.Percentile.IsNull() && !model.Percentile.IsUnknown() {
+	if !isNullOrUnknown(model.Percentile) {
 		percentile := model.Percentile.ValueFloat64()
 		spec.Percentile = &percentile
 	}
@@ -1326,23 +1318,23 @@ func modelToLogicMonitor(model *LogicMonitorModel) *v1alphaSLO.LogicMonitorMetri
 		QueryType: model.QueryType.ValueString(),
 		Line:      model.Line.ValueString(),
 	}
-	if !model.DeviceDataSourceInstanceID.IsNull() && !model.DeviceDataSourceInstanceID.IsUnknown() {
+	if !isNullOrUnknown(model.DeviceDataSourceInstanceID) {
 		id := int(model.DeviceDataSourceInstanceID.ValueInt64())
 		spec.DeviceDataSourceInstanceID = id
 	}
-	if !model.GraphID.IsNull() && !model.GraphID.IsUnknown() {
+	if !isNullOrUnknown(model.GraphID) {
 		id := int(model.GraphID.ValueInt64())
 		spec.GraphID = id
 	}
-	if !model.WebsiteID.IsNull() && !model.WebsiteID.IsUnknown() {
+	if !isNullOrUnknown(model.WebsiteID) {
 		id := model.WebsiteID.ValueString()
 		spec.WebsiteID = id
 	}
-	if !model.CheckpointID.IsNull() && !model.CheckpointID.IsUnknown() {
+	if !isNullOrUnknown(model.CheckpointID) {
 		id := model.CheckpointID.ValueString()
 		spec.CheckpointID = id
 	}
-	if !model.GraphName.IsNull() && !model.GraphName.IsUnknown() {
+	if !isNullOrUnknown(model.GraphName) {
 		name := model.GraphName.ValueString()
 		spec.GraphName = name
 	}
@@ -1434,11 +1426,11 @@ func modelToThousandEyes(model *ThousandEyesModel) *v1alphaSLO.ThousandEyesMetri
 		return nil
 	}
 	spec := &v1alphaSLO.ThousandEyesMetric{}
-	if !model.TestID.IsNull() && !model.TestID.IsUnknown() {
+	if !isNullOrUnknown(model.TestID) {
 		id := model.TestID.ValueInt64()
 		spec.TestID = &id
 	}
-	if !model.TestType.IsNull() && !model.TestType.IsUnknown() {
+	if !isNullOrUnknown(model.TestType) {
 		testType := model.TestType.ValueString()
 		spec.TestType = &testType
 	}
