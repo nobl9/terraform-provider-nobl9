@@ -12,6 +12,7 @@ import (
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
+	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
@@ -99,42 +100,38 @@ func (s sdkClient) DeleteObject(ctx context.Context, kind manifest.Kind, name, p
 	return nil
 }
 
-func (s sdkClient) GetService(
-	ctx context.Context,
-	name, project string,
-) (svc v1alphaService.Service, diags diag.Diagnostics) {
-	obj, diags := genericGetObject(ctx, s.client, manifest.KindService, name, project)
-	if diags.HasError() {
-		return svc, diags
-	}
-	svc, ok := obj.(v1alphaService.Service)
-	if !ok {
-		return svc, diag.Diagnostics{
-			diag.NewErrorDiagnostic(
-				fmt.Sprintf("Failed to cast %T to %T", obj, svc),
-				"Please report this issue to the provider developers."),
-		}
-	}
-	return svc, nil
+func (s sdkClient) GetService(ctx context.Context, name, project string) (v1alphaService.Service, diag.Diagnostics) {
+	return typedGetObject[v1alphaService.Service](ctx, s.client, manifest.KindService, name, project)
 }
 
-func (s sdkClient) GetProject(
+func (s sdkClient) GetProject(ctx context.Context, name string) (v1alphaProject.Project, diag.Diagnostics) {
+	return typedGetObject[v1alphaProject.Project](ctx, s.client, manifest.KindProject, name, "")
+}
+
+func (s sdkClient) GetSLO(ctx context.Context, name, project string) (v1alphaSLO.SLO, diag.Diagnostics) {
+	return typedGetObject[v1alphaSLO.SLO](ctx, s.client, manifest.KindSLO, name, project)
+}
+
+func typedGetObject[T manifest.Object](
 	ctx context.Context,
-	name string,
-) (project v1alphaProject.Project, diags diag.Diagnostics) {
-	obj, diags := genericGetObject(ctx, s.client, manifest.KindProject, name, "")
+	client *sdk.Client,
+	kind manifest.Kind,
+	name, project string,
+) (typed T, diags diag.Diagnostics) {
+	obj, diags := genericGetObject(ctx, client, kind, name, project)
 	if diags.HasError() {
-		return project, diags
+		return typed, diags
 	}
-	project, ok := obj.(v1alphaProject.Project)
+	var ok bool
+	typed, ok = obj.(T)
 	if !ok {
-		return project, diag.Diagnostics{
+		return typed, diag.Diagnostics{
 			diag.NewErrorDiagnostic(
-				fmt.Sprintf("Failed to cast %T to %T", obj, project),
+				fmt.Sprintf("Failed to cast %T to %T", obj, typed),
 				"Please report this issue to the provider developers."),
 		}
 	}
-	return project, nil
+	return typed, nil
 }
 
 // genericGetObject should only be called by [sdkClient].
