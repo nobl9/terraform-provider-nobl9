@@ -7,9 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/nobl9/nobl9-go/manifest"
 )
@@ -37,29 +34,7 @@ func (s *SLOResource) Metadata(_ context.Context, req resource.MetadataRequest, 
 
 // Schema implements [resource.Resource.Schema] function.
 func (s *SLOResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	description := "[SLO configuration | Nobl9 documentation](https://docs.nobl9.com/yaml-guide#slo)"
-	resp.Schema = schema.Schema{
-		MarkdownDescription: description,
-		Description:         description,
-		Attributes: map[string]schema.Attribute{
-			"name":         metadataNameAttr(),
-			"display_name": metadataDisplayNameAttr(),
-			"project":      metadataProjectAttr(),
-			"description":  specDescriptionAttr(),
-			"annotations":  metadataAnnotationsAttr(),
-			"status": schema.ObjectAttribute{
-				Computed:       true,
-				Description:    "Status of created SLO.",
-				AttributeTypes: sloStatusTypes,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-			},
-		},
-		Blocks: map[string]schema.Block{
-			"label": metadataLabelsBlock(),
-		},
-	}
+	resp.Schema = sloResourceSchema()
 }
 
 // Create is called when the provider must create a new resource. Config
@@ -67,6 +42,10 @@ func (s *SLOResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 // CreateRequest and new state values set on the CreateResponse.
 func (s *SLOResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	resp.Diagnostics.Append(s.applyResource(ctx, req.Plan, &resp.State)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// TODO: historical data from
 }
 
 // Read is called when the provider must read resource values in order
@@ -157,7 +136,7 @@ func (s *SLOResource) applyResource(ctx context.Context, plan tfsdk.Plan, state 
 		return diagnostics
 	}
 
-	slo := model.ToManifest(ctx)
+	slo := model.ToManifest()
 	diagnostics.Append(s.client.ApplyObject(ctx, slo)...)
 	if diagnostics.HasError() {
 		return diagnostics

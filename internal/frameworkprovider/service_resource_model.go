@@ -55,7 +55,7 @@ func newServiceResourceConfigFromManifest(
 	}, nil
 }
 
-func (s ServiceResourceModel) ToManifest(ctx context.Context) v1alphaService.Service {
+func (s ServiceResourceModel) ToManifest() v1alphaService.Service {
 	return v1alphaService.New(
 		v1alphaService.Metadata{
 			Name:        s.Name,

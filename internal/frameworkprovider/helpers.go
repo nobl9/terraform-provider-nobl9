@@ -17,6 +17,15 @@ func stringValue(v string) types.String {
 	return types.StringValue(v)
 }
 
+// stringValue returns [types.String] from a string pointer.
+// If the pointer is nil, it returns [types.StringNull].
+func stringValueFromPointer(v *string) types.String {
+	if v == nil {
+		return types.StringNull()
+	}
+	return types.StringValue(*v)
+}
+
 // sortListBasedOnReferenceList sorts the provided list based on another list as a reference for sorting order.
 // Each element of the provided list is matched by equalsFunc to its counterpart
 // in the reference list and appended under the same index in the sorted list.
