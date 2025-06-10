@@ -17,13 +17,43 @@ func stringValue(v string) types.String {
 	return types.StringValue(v)
 }
 
-// stringValue returns [types.String] from a string pointer.
+// stringValueFromPointer returns [types.String] from a string pointer.
 // If the pointer is nil, it returns [types.StringNull].
 func stringValueFromPointer(v *string) types.String {
 	if v == nil {
 		return types.StringNull()
 	}
 	return types.StringValue(*v)
+}
+
+// stringPointer returns a string pointer from a types.String.
+// Returns nil if the value is null or unknown.
+func stringPointer(v types.String) *string {
+	if v.IsNull() || v.IsUnknown() {
+		return nil
+	}
+	value := v.ValueString()
+	return &value
+}
+
+// float64Pointer returns a float64 pointer from a types.Float64.
+// Returns nil if the value is null or unknown.
+func float64Pointer(v types.Float64) *float64 {
+	if v.IsNull() || v.IsUnknown() {
+		return nil
+	}
+	value := v.ValueFloat64()
+	return &value
+}
+
+// boolPointer returns a bool pointer from a types.Bool.
+// Returns nil if the value is null or unknown.
+func boolPointer(v types.Bool) *bool {
+	if v.IsNull() || v.IsUnknown() {
+		return nil
+	}
+	value := v.ValueBool()
+	return &value
 }
 
 // sortListBasedOnReferenceList sorts the provided list based on another list as a reference for sorting order.

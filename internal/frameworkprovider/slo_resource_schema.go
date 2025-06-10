@@ -7,8 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -49,14 +47,6 @@ func sloResourceSchema() schema.Schema {
 				Description: "If set, the retrieval of historical data for a newly created SLO will be triggered, " +
 					"starting from the specified date. Needs to be RFC3339 format.",
 				Validators: []validator.String{dateTimeValidator{}},
-			},
-			"status": schema.ObjectAttribute{
-				Computed:       true,
-				Description:    "Status of created SLO.",
-				AttributeTypes: sloStatusTypes,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"composite": sloResourceCompositeV1Attribute(),
 		},
@@ -835,7 +825,9 @@ func sloResourceCompositeV2ObjectiveBlock() schema.SingleNestedBlock {
 										"when_delayed": schema.StringAttribute{
 											Required:    true,
 											Description: "Defines how to treat missing component data on `max_delay` expiry.",
-											Validators:  []validator.String{stringvalidator.OneOf(v1alphaSLO.WhenDelayedNames()...)},
+											Validators: []validator.String{
+												stringvalidator.OneOf(v1alphaSLO.WhenDelayedNames()...),
+											},
 										},
 									},
 								},

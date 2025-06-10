@@ -161,11 +161,7 @@ func (s *SLOResource) readResource(
 	if diagnostics.HasError() {
 		return nil, diagnostics
 	}
-	updatedModel, diags := newSLOResourceConfigFromManifest(ctx, slo)
-	diagnostics.Append(diags...)
-	if diagnostics.HasError() {
-		return nil, diagnostics
-	}
+	updatedModel := newSLOResourceConfigFromManifest(slo)
 	// Sort Labels.
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
 	return updatedModel, diagnostics

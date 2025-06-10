@@ -141,7 +141,7 @@ func (s *ProjectResource) applyResource(ctx context.Context, plan tfsdk.Plan, st
 		return diagnostics
 	}
 
-	project := model.ToManifest(ctx)
+	project := model.ToManifest()
 	diagnostics.Append(s.client.ApplyObject(ctx, project)...)
 	if diagnostics.HasError() {
 		return diagnostics
