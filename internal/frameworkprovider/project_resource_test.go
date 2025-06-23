@@ -3,9 +3,7 @@ package frameworkprovider
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -20,9 +18,8 @@ func TestAccProjectResource(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	unixNow := time.Now().UnixNano()
-	projectName := fmt.Sprintf("project-%d", unixNow)
-	projectNameRecreatedByNameChange := fmt.Sprintf("project-name-recreated-%d", unixNow)
+	projectName := generateName()
+	projectNameRecreatedByNameChange := generateName()
 
 	projectResource := projectResourceTemplateModel{
 		ResourceName:         "test",
@@ -36,11 +33,10 @@ func TestAccProjectResource(t *testing.T) {
 			Name:        projectName,
 			DisplayName: "Project",
 			Annotations: v1alpha.MetadataAnnotations{"key": "value"},
-			Labels: v1alpha.Labels{
-				"team":   []string{"green"},
-				"env":    []string{"dev", "prod"},
-				"origin": []string{"terraform-acc-test"},
-			},
+			Labels: annotateLabels(t, v1alpha.Labels{
+				"team": []string{"green"},
+				"env":  []string{"dev", "prod"},
+			}),
 		},
 		v1alphaProject.Spec{
 			Description: "Example project",

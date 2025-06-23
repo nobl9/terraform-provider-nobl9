@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAccServiceResource(t *testing.T) {
+func TestAccSLOResource(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
@@ -35,10 +35,7 @@ func TestAccServiceResource(t *testing.T) {
 			DisplayName: "Service",
 			Project:     "default",
 			Annotations: v1alpha.MetadataAnnotations{"key": "value"},
-			Labels: annotateLabels(t, v1alpha.Labels{
-				"team": []string{"green"},
-				"env":  []string{"dev", "prod"},
-			}),
+			Labels:      annotateLabels(t, nil),
 		},
 		v1alphaService.Spec{
 			Description: "Example service",
@@ -61,7 +58,7 @@ func TestAccServiceResource(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
-						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionCreate),
 					},
 				},
 			},
@@ -178,17 +175,17 @@ func TestAccServiceResource(t *testing.T) {
 	})
 }
 
-func TestRenderServiceResourceTemplate(t *testing.T) {
+func TestRenderSLOResourceTemplate(t *testing.T) {
 	t.Parallel()
 
-	actual := newServiceResource(t, serviceResourceTemplateModel{
-		ResourceName:         "this",
-		ServiceResourceModel: getExampleServiceResource(),
+	actual := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "this",
+		SLOResourceModel: getExampleSLOResource(),
 	})
 
-	expected := `resource "nobl9_service" "this" {
-  name = "service"
-  display_name = "Service"
+	expected := `resource "nobl9_slo" "this" {
+  name = "slo"
+  display_name = "SLO"
   project = "default"
   annotations = {
     key = "value",
@@ -199,40 +196,99 @@ func TestRenderServiceResourceTemplate(t *testing.T) {
       "green",
     ]
   }
-  label {
-    key = "env"
-    values = [
-      "prod",
-      "dev",
-    ]
+  description = "Example SLO"
+
+  service = "service"
+  budgeting_method = "Occurrences"
+  tier = "1"
+  alert_policies = [
+    "alert-policy",
+  ]
+  
+  indicator {
+    name = "indicator"
+    project = "default"
+    kind = "Agent"
   }
-  description = "Example service"
+  
+  objective {
+    display_name = "obj1"
+    name = "tf-objective-1"
+    op = "lt"
+    target = 0.7
+    value = 1
+    raw_metric {
+      query {
+        appdynamics {
+          application_name = "my_app"
+          metric_path = "End User Experience|App|End User Response Time 95th percentile (ms)"
+        }
+      }
+    }
+  }
+  
+  time_window {
+    count = 10
+    is_rolling = true
+    unit = "Minute"
+  }
 }
 `
 
 	assert.Equal(t, expected, actual)
 }
 
-type serviceResourceTemplateModel struct {
+type sloResourceTemplateModel struct {
 	ResourceName string
-	ServiceResourceModel
+	SLOResourceModel
 }
 
-func newServiceResource(t *testing.T, model serviceResourceTemplateModel) string {
-	getExampleServiceResource()
-	return executeTemplate(t, "service_resource.hcl.tmpl", model)
+func newSLOResource(t *testing.T, model sloResourceTemplateModel) string {
+	return executeTemplate(t, "slo_resource.hcl.tmpl", model)
 }
 
-func getExampleServiceResource() ServiceResourceModel {
-	return ServiceResourceModel{
-		Name:        "service",
-		DisplayName: types.StringValue("Service"),
-		Project:     "default",
-		Description: types.StringValue("Example service"),
-		Annotations: map[string]string{"key": "value"},
+func getExampleSLOResource() SLOResourceModel {
+	return SLOResourceModel{
+		Name:            "slo",
+		DisplayName:     types.StringValue("SLO"),
+		Project:         "default",
+		Description:     types.StringValue("Example SLO"),
+		Service:         types.StringValue("service"),
+		BudgetingMethod: types.StringValue("Occurrences"),
+		Tier:            types.StringValue("1"),
+		AlertPolicies:   []string{"alert-policy"},
+		Annotations:     map[string]string{"key": "value"},
 		Labels: Labels{
 			{Key: "team", Values: []string{"green"}},
-			{Key: "env", Values: []string{"prod", "dev"}},
+		},
+		Indicator: &IndicatorModel{
+			Name:    types.StringValue("indicator"),
+			Project: types.StringValue("default"),
+			Kind:    types.StringValue("Agent"),
+		},
+		Objectives: []ObjectiveModel{
+			{
+				DisplayName: types.StringValue("obj1"),
+				Name:        types.StringValue("tf-objective-1"),
+				Op:          types.StringValue("lt"),
+				Target:      types.Float64Value(0.7),
+				Value:       types.Float64Value(1),
+				RawMetric: &RawMetricModel{
+					Query: []MetricSpecModel{
+						{
+							AppDynamics: &AppDynamicsModel{
+								ApplicationName: types.StringValue("my_app"),
+								MetricPath:      types.StringValue("End User Experience|App|End User Response Time 95th percentile (ms)"),
+							},
+						},
+					},
+				},
+			},
+		},
+		TimeWindow: &TimeWindowModel{
+			Count:     types.Int64Value(10),
+			IsRolling: types.BoolValue(true),
+			Unit:      types.StringValue("Minute"),
 		},
 	}
 }

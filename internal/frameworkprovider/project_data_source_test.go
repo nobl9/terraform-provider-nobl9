@@ -2,9 +2,7 @@ package frameworkprovider
 
 import (
 	"context"
-	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -16,21 +14,17 @@ func TestAccProjectDataSource(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	unixNow := time.Now().UnixNano()
-
-	projectName := fmt.Sprintf("project-%d", unixNow)
 	manifestProject := v1alphaProject.New(
 		v1alphaProject.Metadata{
-			Name: projectName,
+			Name: generateName(),
 		},
 		v1alphaProject.Spec{},
 	)
 
-	serviceName := fmt.Sprintf("service-%d", unixNow)
 	manifestService := v1alphaService.New(
 		v1alphaService.Metadata{
-			Name:    serviceName,
-			Project: projectName,
+			Name:    generateName(),
+			Project: manifestProject.GetName(),
 		},
 		v1alphaService.Spec{},
 	)
@@ -41,8 +35,8 @@ func TestAccProjectDataSource(t *testing.T) {
 	serviceResourceConfig := executeTemplate(t, "project_data_source.hcl.tmpl", map[string]any{
 		"DataSourceName": "test",
 		"ResourceName":   "test",
-		"ProjectName":    projectName,
-		"ServiceName":    serviceName,
+		"ProjectName":    manifestProject.GetName(),
+		"ServiceName":    manifestService.GetName(),
 	})
 
 	resource.Test(t, resource.TestCase{

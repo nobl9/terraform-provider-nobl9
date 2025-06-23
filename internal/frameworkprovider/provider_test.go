@@ -2,11 +2,15 @@ package frameworkprovider
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
@@ -15,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
@@ -23,6 +28,20 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/nobl9/terraform-provider-nobl9/nobl9"
+)
+
+const originLabelValue = "terraform-acc-test"
+
+var (
+	objectsCounter            = atomic.Int64{}
+	testStartTime             = time.Now()
+	uniqueTestIdentifierLabel = struct {
+		Key   string
+		Value string
+	}{
+		Key:   "terraform-acc-test-id",
+		Value: strconv.Itoa(int(testStartTime.UnixNano())),
+	}
 )
 
 // testAccNewMux returns a new provider server which can multiplex
@@ -161,4 +180,24 @@ func getObjectsFromTheNobl9API(t *testing.T, ctx context.Context, object manifes
 		return nil, err
 	}
 	return objects, nil
+}
+
+// generateName generates a unique name for the test object.
+func generateName() string {
+	return fmt.Sprintf("terraform-acc-%d-%d", objectsCounter.Add(1), testStartTime.UnixNano())
+}
+
+// annotateLabels adds origin label to the provided labels,
+// so it's easier to locate the leftovers from these tests.
+// It also adds unique test identifier label to the provided labels
+// so that we can reliably retrieve objects created within a given test.
+func annotateLabels(t *testing.T, labels v1alpha.Labels) v1alpha.Labels {
+	t.Helper()
+	if labels == nil {
+		labels = make(v1alpha.Labels, 3)
+	}
+	labels["origin"] = []string{originLabelValue}
+	labels[uniqueTestIdentifierLabel.Key] = []string{uniqueTestIdentifierLabel.Value}
+	labels["terraform-test-name"] = []string{t.Name()}
+	return labels
 }
