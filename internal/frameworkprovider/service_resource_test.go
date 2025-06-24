@@ -3,6 +3,7 @@ package frameworkprovider
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -24,7 +25,7 @@ func TestAccServiceResource(t *testing.T) {
 
 	serviceResource := serviceResourceTemplateModel{
 		ResourceName:         "test",
-		ServiceResourceModel: getExampleServiceResource(),
+		ServiceResourceModel: getExampleServiceResource(t),
 	}
 	serviceResource.Labels = appendTestLabels(serviceResource.Labels)
 	serviceResource.Name = serviceName
@@ -35,7 +36,7 @@ func TestAccServiceResource(t *testing.T) {
 			DisplayName: "Service",
 			Project:     "default",
 			Annotations: v1alpha.MetadataAnnotations{"key": "value"},
-			Labels: annotateLabels(t, v1alpha.Labels{
+			Labels: annotateV1alphaLabels(t, v1alpha.Labels{
 				"team": []string{"green"},
 				"env":  []string{"dev", "prod"},
 			}),
@@ -183,10 +184,10 @@ func TestRenderServiceResourceTemplate(t *testing.T) {
 
 	actual := newServiceResource(t, serviceResourceTemplateModel{
 		ResourceName:         "this",
-		ServiceResourceModel: getExampleServiceResource(),
+		ServiceResourceModel: getExampleServiceResource(t),
 	})
 
-	expected := `resource "nobl9_service" "this" {
+	expected := fmt.Sprintf(`resource "nobl9_service" "this" {
   name = "service"
   display_name = "Service"
   project = "default"
@@ -206,9 +207,27 @@ func TestRenderServiceResourceTemplate(t *testing.T) {
       "dev",
     ]
   }
+  label {
+    key = "origin"
+    values = [
+      "terraform-acc-test",
+    ]
+  }
+  label {
+    key = "terraform-acc-test-id"
+    values = [
+      "%d",
+    ]
+  }
+  label {
+    key = "terraform-test-name"
+    values = [
+      "%s",
+    ]
+  }
   description = "Example service"
 }
-`
+`, testStartTime.UnixNano(), t.Name())
 
 	assert.Equal(t, expected, actual)
 }
@@ -219,20 +238,19 @@ type serviceResourceTemplateModel struct {
 }
 
 func newServiceResource(t *testing.T, model serviceResourceTemplateModel) string {
-	getExampleServiceResource()
 	return executeTemplate(t, "service_resource.hcl.tmpl", model)
 }
 
-func getExampleServiceResource() ServiceResourceModel {
+func getExampleServiceResource(t *testing.T) ServiceResourceModel {
 	return ServiceResourceModel{
 		Name:        "service",
 		DisplayName: types.StringValue("Service"),
 		Project:     "default",
 		Description: types.StringValue("Example service"),
 		Annotations: map[string]string{"key": "value"},
-		Labels: Labels{
+		Labels: annotateLabels(t, Labels{
 			{Key: "team", Values: []string{"green"}},
 			{Key: "env", Values: []string{"prod", "dev"}},
-		},
+		}),
 	}
 }

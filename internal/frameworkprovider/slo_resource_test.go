@@ -3,6 +3,7 @@ package frameworkprovider
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -24,7 +25,7 @@ func TestAccSLOResource(t *testing.T) {
 
 	serviceResource := serviceResourceTemplateModel{
 		ResourceName:         "test",
-		ServiceResourceModel: getExampleServiceResource(),
+		ServiceResourceModel: getExampleServiceResource(t),
 	}
 	serviceResource.Labels = appendTestLabels(serviceResource.Labels)
 	serviceResource.Name = serviceName
@@ -35,7 +36,7 @@ func TestAccSLOResource(t *testing.T) {
 			DisplayName: "Service",
 			Project:     "default",
 			Annotations: v1alpha.MetadataAnnotations{"key": "value"},
-			Labels:      annotateLabels(t, nil),
+			Labels:      annotateV1alphaLabels(t, nil),
 		},
 		v1alphaService.Spec{
 			Description: "Example service",
@@ -180,10 +181,10 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 
 	actual := newSLOResource(t, sloResourceTemplateModel{
 		ResourceName:     "this",
-		SLOResourceModel: getExampleSLOResource(),
+		SLOResourceModel: getExampleSLOResource(t),
 	})
 
-	expected := `resource "nobl9_slo" "this" {
+	expected := fmt.Sprintf(`resource "nobl9_slo" "this" {
   name = "slo"
   display_name = "SLO"
   project = "default"
@@ -194,6 +195,24 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
     key = "team"
     values = [
       "green",
+    ]
+  }
+  label {
+    key = "origin"
+    values = [
+      "terraform-acc-test",
+    ]
+  }
+  label {
+    key = "terraform-acc-test-id"
+    values = [
+      "%d",
+    ]
+  }
+  label {
+    key = "terraform-test-name"
+    values = [
+      "%s",
     ]
   }
   description = "Example SLO"
@@ -233,7 +252,7 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
     unit = "Minute"
   }
 }
-`
+`, testStartTime.UnixNano(), t.Name())
 
 	assert.Equal(t, expected, actual)
 }
@@ -247,7 +266,7 @@ func newSLOResource(t *testing.T, model sloResourceTemplateModel) string {
 	return executeTemplate(t, "slo_resource.hcl.tmpl", model)
 }
 
-func getExampleSLOResource() SLOResourceModel {
+func getExampleSLOResource(t *testing.T) SLOResourceModel {
 	return SLOResourceModel{
 		Name:            "slo",
 		DisplayName:     types.StringValue("SLO"),
@@ -258,9 +277,9 @@ func getExampleSLOResource() SLOResourceModel {
 		Tier:            types.StringValue("1"),
 		AlertPolicies:   []string{"alert-policy"},
 		Annotations:     map[string]string{"key": "value"},
-		Labels: Labels{
+		Labels: annotateLabels(t, Labels{
 			{Key: "team", Values: []string{"green"}},
-		},
+		}),
 		Indicator: &IndicatorModel{
 			Name:    types.StringValue("indicator"),
 			Project: types.StringValue("default"),

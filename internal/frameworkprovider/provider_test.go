@@ -3,9 +3,11 @@ package frameworkprovider
 import (
 	"context"
 	"fmt"
+	"maps"
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -187,11 +189,11 @@ func generateName() string {
 	return fmt.Sprintf("terraform-acc-%d-%d", objectsCounter.Add(1), testStartTime.UnixNano())
 }
 
-// annotateLabels adds origin label to the provided labels,
+// annotateV1alphaLabels adds origin label to the provided [v1alpha.Labels],
 // so it's easier to locate the leftovers from these tests.
 // It also adds unique test identifier label to the provided labels
 // so that we can reliably retrieve objects created within a given test.
-func annotateLabels(t *testing.T, labels v1alpha.Labels) v1alpha.Labels {
+func annotateV1alphaLabels(t *testing.T, labels v1alpha.Labels) v1alpha.Labels {
 	t.Helper()
 	if labels == nil {
 		labels = make(v1alpha.Labels, 3)
@@ -199,5 +201,29 @@ func annotateLabels(t *testing.T, labels v1alpha.Labels) v1alpha.Labels {
 	labels["origin"] = []string{originLabelValue}
 	labels[uniqueTestIdentifierLabel.Key] = []string{uniqueTestIdentifierLabel.Value}
 	labels["terraform-test-name"] = []string{t.Name()}
+	return labels
+}
+
+// annotateLabels adds origin label to the provided [Labels],
+// so it's easier to locate the leftovers from these tests.
+// It also adds unique test identifier label to the provided labels
+// so that we can reliably retrieve objects created within a given test.
+func annotateLabels(t *testing.T, labels Labels) Labels {
+	t.Helper()
+	if labels == nil {
+		labels = make(Labels, 0, 3)
+	}
+	v1alphaLabels := annotateV1alphaLabels(t, nil)
+	for _, k := range slices.Sorted(maps.Keys(v1alphaLabels)) {
+		i := slices.IndexFunc(labels, func(l LabelBlockModel) bool { return l.Key == k })
+		if i >= 0 {
+			labels[i].Values = v1alphaLabels[k]
+		} else {
+			labels = append(labels, LabelBlockModel{
+				Key:    k,
+				Values: v1alphaLabels[k],
+			})
+		}
+	}
 	return labels
 }

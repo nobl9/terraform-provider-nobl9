@@ -17,7 +17,7 @@ func TestAccServiceDataSource(t *testing.T) {
 	manifestProject1 := v1alphaProject.New(
 		v1alphaProject.Metadata{
 			Name:   generateName(),
-			Labels: annotateLabels(t, nil),
+			Labels: annotateV1alphaLabels(t, nil),
 		},
 		v1alphaProject.Spec{},
 	)
@@ -25,7 +25,7 @@ func TestAccServiceDataSource(t *testing.T) {
 	manifestProject2 := v1alphaProject.New(
 		v1alphaProject.Metadata{
 			Name:   generateName(),
-			Labels: annotateLabels(t, nil),
+			Labels: annotateV1alphaLabels(t, nil),
 		},
 		v1alphaProject.Spec{},
 	)
@@ -34,7 +34,7 @@ func TestAccServiceDataSource(t *testing.T) {
 		v1alphaService.Metadata{
 			Name:    generateName(),
 			Project: manifestProject1.GetName(),
-			Labels:  annotateLabels(t, nil),
+			Labels:  annotateV1alphaLabels(t, nil),
 		},
 		v1alphaService.Spec{},
 	)

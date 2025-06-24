@@ -3,6 +3,7 @@ package frameworkprovider
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -23,7 +24,7 @@ func TestAccProjectResource(t *testing.T) {
 
 	projectResource := projectResourceTemplateModel{
 		ResourceName:         "test",
-		ProjectResourceModel: getExampleProjectResource(),
+		ProjectResourceModel: getExampleProjectResource(t),
 	}
 	projectResource.ProjectResourceModel.Labels = appendTestLabels(projectResource.ProjectResourceModel.Labels)
 	projectResource.ProjectResourceModel.Name = projectName
@@ -33,7 +34,7 @@ func TestAccProjectResource(t *testing.T) {
 			Name:        projectName,
 			DisplayName: "Project",
 			Annotations: v1alpha.MetadataAnnotations{"key": "value"},
-			Labels: annotateLabels(t, v1alpha.Labels{
+			Labels: annotateV1alphaLabels(t, v1alpha.Labels{
 				"team": []string{"green"},
 				"env":  []string{"dev", "prod"},
 			}),
@@ -145,10 +146,10 @@ func TestRenderProjectResourceTemplate(t *testing.T) {
 
 	actual := newProjectResource(t, projectResourceTemplateModel{
 		ResourceName:         "this",
-		ProjectResourceModel: getExampleProjectResource(),
+		ProjectResourceModel: getExampleProjectResource(t),
 	})
 
-	expected := `resource "nobl9_project" "this" {
+	expected := fmt.Sprintf(`resource "nobl9_project" "this" {
   name = "project"
   display_name = "Project"
   annotations = {
@@ -167,9 +168,27 @@ func TestRenderProjectResourceTemplate(t *testing.T) {
       "dev",
     ]
   }
+  label {
+    key = "origin"
+    values = [
+      "terraform-acc-test",
+    ]
+  }
+  label {
+    key = "terraform-acc-test-id"
+    values = [
+      "%d",
+    ]
+  }
+  label {
+    key = "terraform-test-name"
+    values = [
+      "%s",
+    ]
+  }
   description = "Example project"
 }
-`
+`, testStartTime.UnixNano(), t.Name())
 
 	assert.Equal(t, expected, actual)
 }
@@ -183,15 +202,15 @@ func newProjectResource(t *testing.T, model projectResourceTemplateModel) string
 	return executeTemplate(t, "project_resource.hcl.tmpl", model)
 }
 
-func getExampleProjectResource() ProjectResourceModel {
+func getExampleProjectResource(t *testing.T) ProjectResourceModel {
 	return ProjectResourceModel{
 		Name:        "project",
 		DisplayName: types.StringValue("Project"),
 		Description: types.StringValue("Example project"),
 		Annotations: map[string]string{"key": "value"},
-		Labels: Labels{
+		Labels: annotateLabels(t, Labels{
 			{Key: "team", Values: []string{"green"}},
 			{Key: "env", Values: []string{"prod", "dev"}},
-		},
+		}),
 	}
 }
