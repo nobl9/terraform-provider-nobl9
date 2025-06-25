@@ -34,14 +34,14 @@ func init() {
 
 // testAccNewMux returns a new provider server which can multiplex
 // between the SDK and framework provider implementations.
-func testAccNewMux(ctx context.Context, version string) (tfprotov5.ProviderServer, error) {
+func testAccNewMux(ctx context.Context) (tfprotov5.ProviderServer, error) {
 	mux, err := tf5muxserver.NewMuxServer(
 		ctx,
 		func() tfprotov5.ProviderServer {
-			provider := Provider(version)
+			provider := Provider()
 			return schema.NewGRPCProviderServer(provider)
 		},
-		providerserver.NewProtocol5(frameworkprovider.New(version)),
+		providerserver.NewProtocol5(frameworkprovider.New()),
 	)
 	if err != nil {
 		return nil, err
@@ -55,12 +55,12 @@ func testAccNewMux(ctx context.Context, version string) (tfprotov5.ProviderServe
 // reattach.
 var testAccProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
 	"nobl9": func() (tfprotov5.ProviderServer, error) {
-		return testAccNewMux(context.Background(), "test")
+		return testAccNewMux(context.Background())
 	},
 }
 
 func TestProvider(t *testing.T) {
-	if err := Provider("test").InternalValidate(); err != nil {
+	if err := Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
