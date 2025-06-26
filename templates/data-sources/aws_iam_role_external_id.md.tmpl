@@ -1,0 +1,22 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Groupings and Utilities"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+Returns external ID and AWS account ID that can be used to create [cross-account IAM roles in AWS](https://docs.nobl9.com/sources/add-data-source/amazon-cloudwatch/#1).
+
+## Example Usage
+
+{{ tffile (printf "examples/data-sources/%s/data-source.tf" .Name)}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Useful Links
+
+[Amazon CloudWatch authentication | Nobl9 Documentation](https://docs.nobl9.com/sources/add-data-source/amazon-cloudwatch/#authentication)
+
+[Cross Account Resource Access in IAM | AWS documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies-cross-account-resource-access.html)
