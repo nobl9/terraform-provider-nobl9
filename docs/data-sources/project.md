@@ -32,6 +32,6 @@ data "nobl9_project" "this" {
 
 ## Useful Links
 
-[Projects in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/#projects)
+[Projects in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/getting-started/nobl9-resources/projects/)
 
 [Projects YAML Configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#project)
