@@ -26,8 +26,8 @@ data "nobl9_aws_iam_role_external_id" "this" {
 
 ### Read-Only
 
-- `account_id` (String) External ID
-- `external_id` (String) Nobl9 AWS Account ID
+- `account_id` (String) Nobl9 AWS Account ID
+- `external_id` (String) External ID
 - `id` (String) The ID of this resource.
 
 ## Useful Links

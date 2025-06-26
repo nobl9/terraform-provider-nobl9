@@ -21,12 +21,12 @@ func dataSourceAWSIAMRoleAuthExternalID() *schema.Resource {
 			"external_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Nobl9 AWS Account ID",
+				Description: "External ID",
 			},
 			"account_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "External ID",
+				Description: "Nobl9 AWS Account ID",
 			},
 		},
 		ReadContext: dataSourceAWSIAMRoleAuthExternalIDDRead,
