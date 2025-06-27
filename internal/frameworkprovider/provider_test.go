@@ -27,11 +27,11 @@ import (
 
 // testAccNewMux returns a new provider server which can multiplex
 // between the SDK and framework provider implementations.
-func testAccNewMux(ctx context.Context, version string) (tfprotov5.ProviderServer, error) {
+func testAccNewMux(ctx context.Context) (tfprotov5.ProviderServer, error) {
 	mux, err := tf5muxserver.NewMuxServer(
 		ctx,
-		func() tfprotov5.ProviderServer { return schema.NewGRPCProviderServer(nobl9.Provider(version)) },
-		providerserver.NewProtocol5(New(version)),
+		func() tfprotov5.ProviderServer { return schema.NewGRPCProviderServer(nobl9.Provider()) },
+		providerserver.NewProtocol5(New()),
 	)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func testAccNewMux(ctx context.Context, version string) (tfprotov5.ProviderServe
 // reattach.
 var testAccProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
 	"nobl9": func() (tfprotov5.ProviderServer, error) {
-		return testAccNewMux(context.Background(), "test")
+		return testAccNewMux(context.Background())
 	},
 }
 
@@ -74,7 +74,7 @@ func testAccPreCheck(t *testing.T) {
 		if diags.HasError() {
 			t.Fatalf("failed to set required environment variables: %v", diags.Errors())
 		}
-		client, diags := newSDKClient(providerModel, "test")
+		client, diags := newSDKClient(providerModel)
 		if diags.HasError() {
 			t.Fatalf("failed initialize Nobl9 SDK client: %v", diags.Errors())
 		}

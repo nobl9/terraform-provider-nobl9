@@ -8,7 +8,11 @@ NAME = nobl9
 BIN_DIR = ./bin
 BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
 VERSION = 0.42.0
-LDFLAGS += -X main.Version=$(VERSION)
+VERSION_PKG := "$(shell go list -m)/internal/version"
+LDFLAGS += -s -w \
+	-X $(VERSION_PKG).BuildVersion=$(VERSION) \
+	-X $(VERSION_PKG).BuildGitBranch=$(BRANCH) \
+	-X $(VERSION_PKG).BuildGitRevision=$(REVISION)
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 
 # renovate datasource=github-releases depName=securego/gosec

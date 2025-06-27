@@ -33,6 +33,7 @@
     "apdex",
     "bymonthday",
     "dbslo",
+    "devel",
     "dynatrace",
     "endef",
     "gobin",

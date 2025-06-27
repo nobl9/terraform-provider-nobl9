@@ -14,6 +14,8 @@ import (
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+
+	"github.com/nobl9/terraform-provider-nobl9/internal/version"
 )
 
 type sdkClient struct {
@@ -22,7 +24,7 @@ type sdkClient struct {
 
 // newSDKClient creates new [sdk.Client] based on the [ProviderModel].
 // [ProviderModel] should be first validated with [ProviderModel] before being passed to this function.
-func newSDKClient(provider ProviderModel, version string) (*sdkClient, diag.Diagnostics) {
+func newSDKClient(provider ProviderModel) (*sdkClient, diag.Diagnostics) {
 	options := []sdk.ConfigOption{
 		sdk.ConfigOptionWithCredentials(provider.ClientID.ValueString(), provider.ClientSecret.ValueString()),
 		sdk.ConfigOptionEnvPrefix("TERRAFORM_NOBL9_"),
@@ -67,7 +69,7 @@ func newSDKClient(provider ProviderModel, version string) (*sdkClient, diag.Diag
 	if err != nil {
 		return nil, diag.Diagnostics{diag.NewErrorDiagnostic("failed to create Nobl9 SDK client", err.Error())}
 	}
-	client.SetUserAgent(fmt.Sprintf("terraform-%s", version))
+	client.SetUserAgent(version.GetUserAgent())
 	return &sdkClient{client: client}, nil
 }
 
