@@ -148,8 +148,8 @@ func TestRenderProjectResourceTemplate(t *testing.T) {
   label {
     key = "env"
     values = [
-      "prod",
       "dev",
+      "prod",
     ]
   }
   label {
@@ -194,7 +194,7 @@ func getExampleProjectResource(t *testing.T) ProjectResourceModel {
 		Annotations: map[string]string{"key": "value"},
 		Labels: annotateLabels(t, Labels{
 			{Key: "team", Values: []string{"green"}},
-			{Key: "env", Values: []string{"prod", "dev"}},
+			{Key: "env", Values: []string{"dev", "prod"}},
 		}),
 	}
 }

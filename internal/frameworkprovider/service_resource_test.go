@@ -151,7 +151,7 @@ func TestAccServiceResource(t *testing.T) {
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("nobl9_.test", "name", serviceNameRecreatedByNameChange),
+					resource.TestCheckResourceAttr("nobl9_service.test", "name", serviceNameRecreatedByNameChange),
 					resource.TestCheckResourceAttr("nobl9_service.test", "project", recreatedProjectName),
 					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
 						svc := manifestService
@@ -198,8 +198,8 @@ func TestRenderServiceResourceTemplate(t *testing.T) {
   label {
     key = "env"
     values = [
-      "prod",
       "dev",
+      "prod",
     ]
   }
   label {
@@ -245,7 +245,7 @@ func getExampleServiceResource(t *testing.T) ServiceResourceModel {
 		Annotations: map[string]string{"key": "value"},
 		Labels: annotateLabels(t, Labels{
 			{Key: "team", Values: []string{"green"}},
-			{Key: "env", Values: []string{"prod", "dev"}},
+			{Key: "env", Values: []string{"dev", "prod"}},
 		}),
 	}
 }

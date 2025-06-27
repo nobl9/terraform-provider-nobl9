@@ -1,10 +1,10 @@
 resource "nobl9_slo" "{{ .ResourceName }}" {
   {{- template "metadata" . -}}
   {{- if .Service }}
-  service = "{{ valueString .Service }}"
+  service = "{{ .Service }}"
   {{- end }}
   {{- if .BudgetingMethod }}
-  budgeting_method = "{{ valueString .BudgetingMethod }}"
+  budgeting_method = "{{ .BudgetingMethod }}"
   {{- end }}
   {{- if .Tier }}
   tier = "{{ valueString .Tier }}"
@@ -19,14 +19,16 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
   {{- if .Indicator }}
   
   indicator {
-    {{- if .Indicator.Name }}
-    name = "{{ valueString .Indicator.Name }}"
+    {{- with (index .Indicator 0) }}
+    {{- if .Name }}
+    name = "{{ .Name }}"
     {{- end }}
-    {{- if .Indicator.Project }}
-    project = "{{ valueString .Indicator.Project }}"
+    {{- if .Project }}
+    project = "{{ valueString .Project }}"
     {{- end }}
-    {{- if .Indicator.Kind }}
-    kind = "{{ valueString .Indicator.Kind }}"
+    {{- if .Kind }}
+    kind = "{{ valueString .Kind }}"
+    {{- end }}
     {{- end }}
   }
   {{- end }}
@@ -44,7 +46,7 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
     op = "{{ valueString .Op }}"
     {{- end }}
     {{- if .Target }}
-    target = {{ .Target.ValueFloat64 }}
+    target = {{ .Target }}
     {{- end }}
     {{- if not (isNull .TimeSliceTarget) }}
     time_slice_target = {{ .TimeSliceTarget.ValueFloat64 }}
@@ -56,33 +58,34 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
     primary = {{ .Primary.ValueBool }}
     {{- end }}
     {{- if .CountMetrics }}
+    {{- with (index .CountMetrics 0) }}
     count_metrics {
-      {{- if .CountMetrics.Incremental }}
-      incremental = {{ .CountMetrics.Incremental.ValueBool }}
+      {{- if .Incremental }}
+      incremental = {{ .Incremental.ValueBool }}
       {{- end }}
-      {{- if .CountMetrics.Good }}
-      {{- range .CountMetrics.Good }}
+      {{- if .Good }}
+      {{- with (index .Good 0) }}
       good {
         {{- renderMetricSpec . }}
       }
       {{- end }}
       {{- end }}
-      {{- if .CountMetrics.Bad }}
-      {{- range .CountMetrics.Bad }}
+      {{- if .Bad }}
+      {{- with (index .Bad 0) }}
       bad {
         {{- renderMetricSpec . }}
       }
       {{- end }}
       {{- end }}
-      {{- if .CountMetrics.Total }}
-      {{- range .CountMetrics.Total }}
+      {{- if .Total }}
+      {{- with (index .Total 0) }}
       total {
         {{- renderMetricSpec . }}
       }
       {{- end }}
       {{- end }}
-      {{- if .CountMetrics.GoodTotal }}
-      {{- range .CountMetrics.GoodTotal }}
+      {{- if .GoodTotal }}
+      {{- with (index .GoodTotal 0) }}
       good_total {
         {{- renderMetricSpec . }}
       }
@@ -90,41 +93,45 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
       {{- end }}
     }
     {{- end }}
+    {{- end }}
     {{- if .RawMetric }}
+    {{- with (index .RawMetric 0) }}
     raw_metric {
-      {{- range .RawMetric.Query }}
+      {{- range .Query }}
       query {
         {{- renderMetricSpec . }}
       }
       {{- end }}
     }
     {{- end }}
+    {{- end }}
     {{- if .Composite }}
+    {{- with (index .Composite 0) }}
     composite {
-      {{- if .Composite.MaxDelay }}
-      max_delay = "{{ valueString .Composite.MaxDelay }}"
+      {{- if .MaxDelay }}
+      max_delay = "{{ valueString .MaxDelay }}"
       {{- end }}
-      {{- if .Composite.Components }}
-      {{- if .Composite.Components.Objectives }}
-      {{- if .Composite.Components.Objectives.CompositeObjective }}
+      {{- if .Components }}
+      {{- if (index .Components 0).Objectives }}
+      {{- if (index (index .Components 0).Objectives 0).CompositeObjective }}
       components {
         objectives {
-          {{- range .Composite.Components.Objectives.CompositeObjective }}
+          {{- range (index (index .Components 0).Objectives 0).CompositeObjective }}
           composite_objective {
             {{- if .Project }}
-            project = "{{ valueString .Project }}"
+            project = "{{ .Project }}"
             {{- end }}
             {{- if .SLO }}
-            slo = "{{ valueString .SLO }}"
+            slo = "{{ .SLO }}"
             {{- end }}
             {{- if .Objective }}
-            objective = "{{ valueString .Objective }}"
+            objective = "{{ .Objective }}"
             {{- end }}
             {{- if .Weight }}
-            weight = {{ .Weight.ValueFloat64 }}
+            weight = {{ .Weight }}
             {{- end }}
             {{- if .WhenDelayed }}
-            when_delayed = "{{ valueString .WhenDelayed }}"
+            when_delayed = "{{ .WhenDelayed }}"
             {{- end }}
           }
           {{- end }}
@@ -135,37 +142,42 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
       {{- end }}
     }
     {{- end }}
+    {{- end }}
   }
   {{- end }}
   {{- end }}
   {{- if .TimeWindow }}
   
   time_window {
-    {{- if .TimeWindow.Count }}
-    count = {{ .TimeWindow.Count.ValueInt64 }}
+    {{- with (index .TimeWindow 0) }}
+    {{- if .Count }}
+    count = {{ .Count }}
     {{- end }}
-    {{- if .TimeWindow.IsRolling }}
-    is_rolling = {{ .TimeWindow.IsRolling.ValueBool }}
+    {{- if .IsRolling }}
+    is_rolling = {{ .IsRolling.ValueBool }}
     {{- end }}
-    {{- if .TimeWindow.Unit }}
-    unit = "{{ valueString .TimeWindow.Unit }}"
+    {{- if .Unit }}
+    unit = "{{ .Unit }}"
     {{- end }}
-    {{- if .TimeWindow.Period }}
+    {{- if .Period }}
     period = {
-      {{- range $key, $value := .TimeWindow.Period }}
+      {{- range $key, $value := .Period }}
       {{ $key }} = "{{ $value }}",
       {{- end }}
     }
     {{- end }}
-    {{- if .TimeWindow.Calendar }}
+    {{- if .Calendar }}
+    {{- with (index .Calendar 0) }}
     calendar {
-      {{- if .TimeWindow.Calendar.StartTime }}
-      start_time = "{{ valueString .TimeWindow.Calendar.StartTime }}"
+      {{- if .StartTime }}
+      start_time = "{{ .StartTime }}"
       {{- end }}
-      {{- if .TimeWindow.Calendar.TimeZone }}
-      time_zone = "{{ valueString .TimeWindow.Calendar.TimeZone }}"
+      {{- if .TimeZone }}
+      time_zone = "{{ .TimeZone }}"
       {{- end }}
     }
+    {{- end }}
+    {{- end }}
     {{- end }}
   }
   {{- end }}
@@ -185,24 +197,28 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
   {{- if .AnomalyConfig }}
   
   anomaly_config {
-    {{- if .AnomalyConfig.NoData }}
+    {{- with (index .AnomalyConfig 0) }}
+    {{- if .NoData }}
+    {{- with (index .NoData 0) }}
     no_data {
-      {{- if .AnomalyConfig.NoData.AlertAfter }}
-      alert_after = "{{ valueString .AnomalyConfig.NoData.AlertAfter }}"
+      {{- if .AlertAfter }}
+      alert_after = "{{ valueString .AlertAfter }}"
       {{- end }}
-      {{- if .AnomalyConfig.NoData.AlertMethods }}
-      {{- range .AnomalyConfig.NoData.AlertMethods }}
+      {{- if .AlertMethods }}
+      {{- range .AlertMethods }}
       alert_method {
         {{- if .Name }}
-        name = "{{ valueString .Name }}"
+        name = "{{ .Name }}"
         {{- end }}
         {{- if .Project }}
-        project = "{{ valueString .Project }}"
+        project = "{{ .Project }}"
         {{- end }}
       }
       {{- end }}
       {{- end }}
     }
+    {{- end }}
+    {{- end }}
     {{- end }}
   }
   {{- end }}

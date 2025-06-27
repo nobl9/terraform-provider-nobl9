@@ -284,11 +284,11 @@ func getExampleSLOResource(t *testing.T) SLOResourceModel {
 		Labels: annotateLabels(t, Labels{
 			{Key: "team", Values: []string{"green"}},
 		}),
-		Indicator: &IndicatorModel{
+		Indicator: []IndicatorModel{{
 			Name:    "indicator",
 			Project: types.StringValue("default"),
 			Kind:    types.StringValue("Agent"),
-		},
+		}},
 		Objectives: []ObjectiveModel{
 			{
 				DisplayName: types.StringValue("obj1"),
@@ -296,23 +296,23 @@ func getExampleSLOResource(t *testing.T) SLOResourceModel {
 				Op:          types.StringValue("lt"),
 				Target:      0.7,
 				Value:       types.Float64Value(1),
-				RawMetric: &RawMetricModel{
+				RawMetric: []RawMetricModel{{
 					Query: []MetricSpecModel{
 						{
-							AppDynamics: &AppDynamicsModel{
+							AppDynamics: []AppDynamicsModel{{
 								ApplicationName: "my_app",
 								MetricPath:      "End User Experience|App|End User Response Time 95th percentile (ms)",
-							},
+							}},
 						},
 					},
-				},
+				}},
 			},
 		},
-		TimeWindow: &TimeWindowModel{
+		TimeWindow: []TimeWindowModel{{
 			Count:     10,
 			IsRolling: types.BoolValue(true),
 			Unit:      "Minute",
-		},
+		}},
 	}
 }
 

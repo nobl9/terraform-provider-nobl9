@@ -205,24 +205,24 @@ resource "nobl9_slo" "composite_slo" {
 
 - `alert_policies` (Set of String) Alert Policies attached to SLO.
 - `annotations` (Map of String) [Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.
-- `anomaly_config` (Block, Optional) Configuration for anomaly detection. (see [below for nested schema](#nestedblock--anomaly_config))
+- `anomaly_config` (Block List) Configuration for anomaly detection. (see [below for nested schema](#nestedblock--anomaly_config))
 - `attachment` (Block List) URL attachments for the SLO. (see [below for nested schema](#nestedblock--attachment))
 - `composite` (Block Set, Deprecated) ("composite" is deprecated, use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `indicator` (Block, Optional) Configuration for the metric source (Agent/Direct). (see [below for nested schema](#nestedblock--indicator))
+- `indicator` (Block List) Configuration for the metric source (Agent/Direct). (see [below for nested schema](#nestedblock--indicator))
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 - `objective` (Block Set) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
 - `retrieve_historical_data_from` (String) If set, the retrieval of historical data for a newly created SLO will be triggered, starting from the specified date. Needs to be RFC3339 format.
 - `tier` (String) Internal field, do not use.
-- `time_window` (Block, Optional) Time window configuration for the SLO. (see [below for nested schema](#nestedblock--time_window))
+- `time_window` (Block List) Time window configuration for the SLO. (see [below for nested schema](#nestedblock--time_window))
 
 <a id="nestedblock--anomaly_config"></a>
 ### Nested Schema for `anomaly_config`
 
 Optional:
 
-- `no_data` (Block, Optional) No data alerts configuration. (see [below for nested schema](#nestedblock--anomaly_config--no_data))
+- `no_data` (Block List) No data alerts configuration. (see [below for nested schema](#nestedblock--anomaly_config--no_data))
 
 <a id="nestedblock--anomaly_config--no_data"></a>
 ### Nested Schema for `anomaly_config.no_data`
@@ -307,13 +307,13 @@ Required:
 
 Optional:
 
-- `composite` (Block, Optional) An assembly of objectives from different SLOs reflecting their combined performance. (see [below for nested schema](#nestedblock--objective--composite))
-- `count_metrics` (Block, Optional) Compares two time series, calculating the ratio of either good or bad values to the total number of values. Fill either the 'good' or 'bad' series, but not both. (see [below for nested schema](#nestedblock--objective--count_metrics))
+- `composite` (Block List) An assembly of objectives from different SLOs reflecting their combined performance. (see [below for nested schema](#nestedblock--objective--composite))
+- `count_metrics` (Block List) Compares two time series, calculating the ratio of either good or bad values to the total number of values. Fill either the 'good' or 'bad' series, but not both. (see [below for nested schema](#nestedblock--objective--count_metrics))
 - `display_name` (String) Name to be displayed.
 - `name` (String) Objective's name. This field is computed if not provided.
 - `op` (String) For threshold metrics, the logical operator applied to the threshold.
 - `primary` (Boolean) Is objective marked as primary.
-- `raw_metric` (Block, Optional) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
+- `raw_metric` (Block List) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
 - `time_slice_target` (Number) Designated value for slice.
 - `value` (Number) Required for threshold and ratio metrics. Optional for composite SLOs. For threshold metrics, the threshold value. For ratio metrics, this must be a unique value per objective (for legacy reasons). For composite SLOs, it should be omitted. If, for composite SLO, it was set previously to a non-zero value, then it must remain unchanged.
 
@@ -326,14 +326,14 @@ Required:
 
 Optional:
 
-- `components` (Block, Optional) Objectives to be assembled in your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components))
+- `components` (Block List) Objectives to be assembled in your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components))
 
 <a id="nestedblock--objective--composite--components"></a>
 ### Nested Schema for `objective.composite.components`
 
 Optional:
 
-- `objectives` (Block, Optional) An additional nesting for the components of your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components--objectives))
+- `objectives` (Block List) An additional nesting for the components of your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components--objectives))
 
 <a id="nestedblock--objective--composite--components--objectives"></a>
 ### Nested Schema for `objective.composite.components.objectives`
@@ -376,7 +376,6 @@ Optional:
 
 Optional:
 
-- `amazon_prometheus` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--amazon_prometheus))
 - `appdynamics` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--appdynamics))
 - `azure_monitor` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_monitor))
 - `bigquery` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--bigquery))
@@ -401,14 +400,6 @@ Optional:
 - `splunk_observability` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--splunk_observability))
 - `sumologic` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--sumologic))
 - `thousandeyes` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--thousandeyes))
-
-<a id="nestedblock--objective--count_metrics--bad--amazon_prometheus"></a>
-### Nested Schema for `objective.count_metrics.bad.amazon_prometheus`
-
-Required:
-
-- `promql` (String) Query for the metrics
-
 
 <a id="nestedblock--objective--count_metrics--bad--appdynamics"></a>
 ### Nested Schema for `objective.count_metrics.bad.appdynamics`
@@ -747,7 +738,6 @@ Optional:
 
 Optional:
 
-- `amazon_prometheus` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good--amazon_prometheus))
 - `appdynamics` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--good--appdynamics))
 - `azure_monitor` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_monitor))
 - `bigquery` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good--bigquery))
@@ -772,14 +762,6 @@ Optional:
 - `splunk_observability` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--good--splunk_observability))
 - `sumologic` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--good--sumologic))
 - `thousandeyes` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--good--thousandeyes))
-
-<a id="nestedblock--objective--count_metrics--good--amazon_prometheus"></a>
-### Nested Schema for `objective.count_metrics.good.amazon_prometheus`
-
-Required:
-
-- `promql` (String) Query for the metrics
-
 
 <a id="nestedblock--objective--count_metrics--good--appdynamics"></a>
 ### Nested Schema for `objective.count_metrics.good.appdynamics`
@@ -1118,7 +1100,6 @@ Optional:
 
 Optional:
 
-- `amazon_prometheus` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--amazon_prometheus))
 - `appdynamics` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--appdynamics))
 - `azure_monitor` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--azure_monitor))
 - `bigquery` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--bigquery))
@@ -1143,14 +1124,6 @@ Optional:
 - `splunk_observability` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--splunk_observability))
 - `sumologic` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--sumologic))
 - `thousandeyes` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--thousandeyes))
-
-<a id="nestedblock--objective--count_metrics--good_total--amazon_prometheus"></a>
-### Nested Schema for `objective.count_metrics.good_total.amazon_prometheus`
-
-Required:
-
-- `promql` (String) Query for the metrics
-
 
 <a id="nestedblock--objective--count_metrics--good_total--appdynamics"></a>
 ### Nested Schema for `objective.count_metrics.good_total.appdynamics`
@@ -1489,7 +1462,6 @@ Optional:
 
 Optional:
 
-- `amazon_prometheus` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--total--amazon_prometheus))
 - `appdynamics` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--total--appdynamics))
 - `azure_monitor` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_monitor))
 - `bigquery` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--total--bigquery))
@@ -1514,14 +1486,6 @@ Optional:
 - `splunk_observability` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--total--splunk_observability))
 - `sumologic` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--total--sumologic))
 - `thousandeyes` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--total--thousandeyes))
-
-<a id="nestedblock--objective--count_metrics--total--amazon_prometheus"></a>
-### Nested Schema for `objective.count_metrics.total.amazon_prometheus`
-
-Required:
-
-- `promql` (String) Query for the metrics
-
 
 <a id="nestedblock--objective--count_metrics--total--appdynamics"></a>
 ### Nested Schema for `objective.count_metrics.total.appdynamics`
@@ -1868,7 +1832,6 @@ Optional:
 
 Optional:
 
-- `amazon_prometheus` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--raw_metric--query--amazon_prometheus))
 - `appdynamics` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--raw_metric--query--appdynamics))
 - `azure_monitor` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_monitor))
 - `bigquery` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--raw_metric--query--bigquery))
@@ -1893,14 +1856,6 @@ Optional:
 - `splunk_observability` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--raw_metric--query--splunk_observability))
 - `sumologic` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--raw_metric--query--sumologic))
 - `thousandeyes` (Block, Optional) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--raw_metric--query--thousandeyes))
-
-<a id="nestedblock--objective--raw_metric--query--amazon_prometheus"></a>
-### Nested Schema for `objective.raw_metric.query.amazon_prometheus`
-
-Required:
-
-- `promql` (String) Query for the metrics
-
 
 <a id="nestedblock--objective--raw_metric--query--appdynamics"></a>
 ### Nested Schema for `objective.raw_metric.query.appdynamics`
@@ -2246,7 +2201,7 @@ Required:
 
 Optional:
 
-- `calendar` (Block, Optional) Calendar configuration for the time window. (see [below for nested schema](#nestedblock--time_window--calendar))
+- `calendar` (Block List) Calendar configuration for the time window. (see [below for nested schema](#nestedblock--time_window--calendar))
 - `is_rolling` (Boolean) Is the window moving or not.
 
 Read-Only:

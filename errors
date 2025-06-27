@@ -1,0 +1,767 @@
+Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].datadog.query
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].influxdb.query
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].amazon_prometheus.promql
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].instana.metric_type
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].instana.infrastructure.plugin_id
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].instana.infrastructure.metric_retrieval_method
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].instana.infrastructure.metric_id
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].instana.application.metric_id
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].instana.application.aggregation
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].instana.application.api_query
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].instana.application.group_by.tag
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].instana.application.group_by.tag_entity
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].logic_monitor.line
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].logic_monitor.query_type
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].elasticsearch.index
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].elasticsearch.query
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].grafana_loki.logql
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].lightstep.type_of_data
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].redshift.query
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].redshift.region
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].redshift.cluster_id
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].redshift.database_name
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].gcm.project_id
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].pingdom.check_id
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].sumologic.type
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].sumologic.query
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].graphite.metric_path
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].newrelic.nrql
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].azure_monitor.data_type
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].azure_monitor.workspace.resource_group
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].azure_monitor.workspace.workspace_id
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].azure_monitor.workspace.subscription_id
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].splunk.query
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].thousandeyes.test_id
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].bigquery.project_id
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].bigquery.query
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].bigquery.location
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].opentsdb.query
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].dynatrace.metric_selector
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].prometheus.promql
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].splunk_observability.program
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].raw_metric.query[Value({"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>})].cloudwatch.region
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].composite.max_delay
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 11, in resource "nobl9_slo" "test":
+          11: resource "nobl9_slo" "test" {
+        
+        Must set a configuration value for the
+        objective[Value({"composite":<null>,"count_metrics":<null>,"display_name":"obj1","name":"tf-objective-1","op":"lt","primary":<null>,"raw_metric":{"query":[{"amazon_prometheus":<null>,"appdynamics":{"application_name":"my_app","metric_path":"End
+        User Experience|App|End User Response Time 95th percentile
+        (ms)"},"azure_monitor":<null>,"bigquery":<null>,"cloudwatch":<null>,"datadog":<null>,"dynatrace":<null>,"elasticsearch":<null>,"gcm":<null>,"grafana_loki":<null>,"graphite":<null>,"honeycomb":<null>,"influxdb":<null>,"instana":<null>,"lightstep":<null>,"logic_monitor":<null>,"newrelic":<null>,"opentsdb":<null>,"pingdom":<null>,"prometheus":<null>,"redshift":<null>,"splunk":<null>,"splunk_observability":<null>,"sumologic":<null>,"thousandeyes":<null>}]},"target":0.700000,"time_slice_target":<null>,"value":1.000000})].count_metrics.incremental
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 70, in resource "nobl9_slo" "test":
+          70:   time_window {
+        
+        Must set a configuration value for the time_window.calendar.time_zone
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.
+        
+        Error: Missing Configuration for Required Attribute
+        
+          with nobl9_slo.test,
+          on terraform_plugin_test.tf line 70, in resource "nobl9_slo" "test":
+          70:   time_window {
+        
+        Must set a configuration value for the time_window.calendar.start_time
+        attribute as the provider has marked it as required.
+        
+        Refer to the provider documentation or contact the provider developers for
+        additional information about configurable attributes that are required.

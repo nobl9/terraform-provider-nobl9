@@ -81,8 +81,11 @@ func renderMetricSpecTplFunc(metricSpec interface{}) string {
 	for i := 0; i < rv.NumField(); i++ {
 		field := rv.Field(i)
 		structField := rt.Field(i)
-		if field.Kind() == reflect.Ptr && !field.IsNil() {
-			return renderMetricTypeFields(structField.Tag.Get("tfsdk"), field.Interface())
+		// Check if field is a slice with at least one element
+		if field.Kind() == reflect.Slice && field.Len() > 0 {
+			// Get the first element of the slice
+			firstElem := field.Index(0)
+			return renderMetricTypeFields(structField.Tag.Get("tfsdk"), firstElem.Interface())
 		}
 	}
 	return ""
@@ -101,10 +104,26 @@ func renderMetricTypeFields(blockName string, metricModel interface{}) string {
 	for i := 0; i < rv.NumField(); i++ {
 		field := rv.Field(i)
 		structField := rt.Field(i)
+		if field.IsZero() {
+			continue
+		}
 		if method := field.MethodByName("IsNull"); method.IsValid() && method.Call(nil)[0].Bool() {
 			continue
 		}
-		fields = append(fields, fmt.Sprintf(`%s = %v`, structField.Tag.Get("tfsdk"), field.Interface()))
+
+		fieldName := structField.Tag.Get("tfsdk")
+		var fieldValue string
+
+		switch field.Kind() {
+		case reflect.String:
+			fieldValue = fmt.Sprintf(`"%s"`, field.String())
+		case reflect.Int64, reflect.Float64:
+			fieldValue = fmt.Sprintf(`%v`, field.Interface())
+		default:
+			fieldValue = fmt.Sprintf(`%v`, field.Interface())
+		}
+
+		fields = append(fields, fmt.Sprintf(`%s = %s`, fieldName, fieldValue))
 	}
 	if len(fields) == 0 {
 		return ""

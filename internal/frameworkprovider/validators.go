@@ -23,11 +23,15 @@ func (v dateTimeValidator) ValidateString(
 	req validator.StringRequest,
 	resp *validator.StringResponse,
 ) {
-	if _, err := time.Parse(time.RFC3339, req.ConfigValue.ValueString()); err != nil {
+	if isNullOrUnknown(req.ConfigValue) {
+		return
+	}
+	value := req.ConfigValue.ValueString()
+	if _, err := time.Parse(time.RFC3339, value); err != nil {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
 			"Invalid datetime format",
-			fmt.Sprintf("Invalid datetime format: %s", v),
+			fmt.Sprintf("Invalid datetime format: %q", value),
 		)
 	}
 }
