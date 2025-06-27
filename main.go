@@ -35,7 +35,7 @@ func main() {
 
 	muxServer, err := tf6muxserver.NewMuxServer(
 		ctx,
-		newSDKProvider(Version),
+		newSDKProvider(ctx, Version),
 		newFrameworkProvider(Version),
 	)
 	if err != nil {
@@ -58,9 +58,9 @@ func main() {
 	}
 }
 
-func newSDKProvider(version string) func() tfprotov6.ProviderServer {
+func newSDKProvider(ctx context.Context, version string) func() tfprotov6.ProviderServer {
 	return func() tfprotov6.ProviderServer {
-		srv, _ := tf5to6server.UpgradeServer(nil, func() tfprotov5.ProviderServer {
+		srv, _ := tf5to6server.UpgradeServer(ctx, func() tfprotov5.ProviderServer {
 			return schema.NewGRPCProviderServer(nobl9.Provider(version))
 		})
 		return srv
