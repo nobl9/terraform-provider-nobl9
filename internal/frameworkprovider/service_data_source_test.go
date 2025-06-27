@@ -2,12 +2,11 @@ package frameworkprovider
 
 import (
 	"context"
-	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 )
@@ -16,29 +15,27 @@ func TestAccServiceDataSource(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	unixNow := time.Now().UnixNano()
-
-	project1Name := fmt.Sprintf("project-1-%d", unixNow)
 	manifestProject1 := v1alphaProject.New(
 		v1alphaProject.Metadata{
-			Name: project1Name,
+			Name:   generateName(),
+			Labels: annotateV1alphaLabels(t, nil),
 		},
 		v1alphaProject.Spec{},
 	)
 
-	project2Name := fmt.Sprintf("project-2-%d", unixNow)
 	manifestProject2 := v1alphaProject.New(
 		v1alphaProject.Metadata{
-			Name: project2Name,
+			Name:   generateName(),
+			Labels: annotateV1alphaLabels(t, nil),
 		},
 		v1alphaProject.Spec{},
 	)
 
-	serviceName := fmt.Sprintf("service-%d", unixNow)
 	manifestService1 := v1alphaService.New(
 		v1alphaService.Metadata{
-			Name:    serviceName,
-			Project: project1Name,
+			Name:    generateName(),
+			Project: manifestProject1.GetName(),
+			Labels:  annotateV1alphaLabels(t, nil),
 		},
 		v1alphaService.Spec{},
 	)
@@ -47,12 +44,12 @@ func TestAccServiceDataSource(t *testing.T) {
 	}
 
 	manifestService2 := manifestService1
-	manifestService2.Metadata.Project = project2Name
+	manifestService2.Metadata.Project = manifestProject2.GetName()
 
 	serviceResourceConfig := executeTemplate(t, "service_data_source.hcl.tmpl", map[string]any{
-		"Project1Name": project1Name,
-		"Project2Name": project2Name,
-		"ServiceName":  serviceName,
+		"Project1Name": manifestProject1.GetName(),
+		"Project2Name": manifestProject2.GetName(),
+		"ServiceName":  manifestService1.GetName(),
 	})
 
 	resource.Test(t, resource.TestCase{
@@ -62,9 +59,10 @@ func TestAccServiceDataSource(t *testing.T) {
 			// Create Service resource with Service Data Source name in another Project.
 			{
 				PreConfig: func() {
-					applyNobl9Objects(t, ctx, manifestProject1, manifestProject2, manifestService1)
+					objects := []manifest.Object{manifestProject1, manifestProject2, manifestService1}
+					applyNobl9Objects(t, ctx, objects...)
 					t.Cleanup(func() {
-						deleteNobl9Objects(t, ctx, manifestProject1, manifestProject2, manifestService1)
+						deleteNobl9Objects(t, ctx, objects...)
 					})
 				},
 				Config: serviceResourceConfig,

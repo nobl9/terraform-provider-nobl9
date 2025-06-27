@@ -5,13 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,32 +18,13 @@ func TestAccProjectResource(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	unixNow := time.Now().UnixNano()
-	projectName := fmt.Sprintf("project-%d", unixNow)
-	projectNameRecreatedByNameChange := fmt.Sprintf("project-name-recreated-%d", unixNow)
-
+	projectNameRecreatedByNameChange := generateName()
 	projectResource := projectResourceTemplateModel{
 		ResourceName:         "test",
-		ProjectResourceModel: getExampleProjectResource(),
+		ProjectResourceModel: getExampleProjectResource(t),
 	}
-	projectResource.ProjectResourceModel.Labels = appendTestLabels(projectResource.ProjectResourceModel.Labels)
-	projectResource.ProjectResourceModel.Name = projectName
 
-	manifestProject := v1alphaProject.New(
-		v1alphaProject.Metadata{
-			Name:        projectName,
-			DisplayName: "Project",
-			Annotations: v1alpha.MetadataAnnotations{"key": "value"},
-			Labels: v1alpha.Labels{
-				"team":   []string{"green"},
-				"env":    []string{"dev", "prod"},
-				"origin": []string{"terraform-acc-test"},
-			},
-		},
-		v1alphaProject.Spec{
-			Description: "Example project",
-		},
-	)
+	manifestProject := projectResource.ToManifest()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -81,13 +60,13 @@ func TestAccProjectResource(t *testing.T) {
 			// ImportState.
 			{
 				ResourceName:  "nobl9_project.test",
-				ImportStateId: projectName,
+				ImportStateId: projectResource.Name,
 				ImportState:   true,
 				ImportStateCheck: func(states []*terraform.InstanceState) error {
 					if !assert.Len(t, states, 1) {
 						return errors.New("expected exactly one state")
 					}
-					assert.Equal(t, projectName, states[0].Attributes["name"])
+					assert.Equal(t, projectResource.Name, states[0].Attributes["name"])
 					return nil
 				},
 				// In the next step we're also verifying the imported state, so we need to persist it.
@@ -147,12 +126,14 @@ func TestAccProjectResource(t *testing.T) {
 func TestRenderProjectResourceTemplate(t *testing.T) {
 	t.Parallel()
 
+	exampleProject := getExampleProjectResource(t)
+	exampleProject.Name = "project"
 	actual := newProjectResource(t, projectResourceTemplateModel{
 		ResourceName:         "this",
-		ProjectResourceModel: getExampleProjectResource(),
+		ProjectResourceModel: exampleProject,
 	})
 
-	expected := `resource "nobl9_project" "this" {
+	expected := fmt.Sprintf(`resource "nobl9_project" "this" {
   name = "project"
   display_name = "Project"
   annotations = {
@@ -167,13 +148,31 @@ func TestRenderProjectResourceTemplate(t *testing.T) {
   label {
     key = "env"
     values = [
-      "prod",
       "dev",
+      "prod",
+    ]
+  }
+  label {
+    key = "origin"
+    values = [
+      "terraform-acc-test",
+    ]
+  }
+  label {
+    key = "terraform-acc-test-id"
+    values = [
+      "%d",
+    ]
+  }
+  label {
+    key = "terraform-test-name"
+    values = [
+      "%s",
     ]
   }
   description = "Example project"
 }
-`
+`, testStartTime.UnixNano(), t.Name())
 
 	assert.Equal(t, expected, actual)
 }
@@ -187,15 +186,15 @@ func newProjectResource(t *testing.T, model projectResourceTemplateModel) string
 	return executeTemplate(t, "project_resource.hcl.tmpl", model)
 }
 
-func getExampleProjectResource() ProjectResourceModel {
+func getExampleProjectResource(t *testing.T) ProjectResourceModel {
 	return ProjectResourceModel{
-		Name:        "project",
+		Name:        generateName(),
 		DisplayName: types.StringValue("Project"),
 		Description: types.StringValue("Example project"),
 		Annotations: map[string]string{"key": "value"},
-		Labels: Labels{
+		Labels: annotateLabels(t, Labels{
 			{Key: "team", Values: []string{"green"}},
-			{Key: "env", Values: []string{"prod", "dev"}},
-		},
+			{Key: "env", Values: []string{"dev", "prod"}},
+		}),
 	}
 }

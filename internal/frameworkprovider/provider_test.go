@@ -2,11 +2,17 @@ package frameworkprovider
 
 import (
 	"context"
+	"fmt"
+	"maps"
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
+	"strconv"
 	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
@@ -17,6 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
@@ -25,6 +32,20 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/nobl9/terraform-provider-nobl9/nobl9"
+)
+
+const originLabelValue = "terraform-acc-test"
+
+var (
+	objectsCounter            = atomic.Int64{}
+	testStartTime             = time.Now()
+	uniqueTestIdentifierLabel = struct {
+		Key   string
+		Value string
+	}{
+		Key:   "terraform-acc-test-id",
+		Value: strconv.Itoa(int(testStartTime.UnixNano())),
+	}
 )
 
 // testAccNewMux returns a new provider server which can multiplex
@@ -86,14 +107,6 @@ func testAccPreCheck(t *testing.T) {
 			t.Fatalf("failed initialize Nobl9 SDK client: %v", diags.Errors())
 		}
 		testSDKClient.client = client.client
-	})
-}
-
-// appendTestLabels appends a set of labels which help identify the applied objects in Nobl9 platform.
-func appendTestLabels(labels Labels) Labels {
-	return append(labels, LabelBlockModel{
-		Key:    "origin",
-		Values: []string{"terraform-acc-test"},
 	})
 }
 
@@ -168,4 +181,48 @@ func getObjectsFromTheNobl9API(t *testing.T, ctx context.Context, object manifes
 		return nil, err
 	}
 	return objects, nil
+}
+
+// generateName generates a unique name for the test object.
+func generateName() string {
+	return fmt.Sprintf("terraform-acc-%d-%d", objectsCounter.Add(1), testStartTime.UnixNano())
+}
+
+// annotateV1alphaLabels adds origin label to the provided [v1alpha.Labels],
+// so it's easier to locate the leftovers from these tests.
+// It also adds unique test identifier label to the provided labels
+// so that we can reliably retrieve objects created within a given test.
+func annotateV1alphaLabels(t *testing.T, labels v1alpha.Labels) v1alpha.Labels {
+	t.Helper()
+	if labels == nil {
+		labels = make(v1alpha.Labels, 3)
+	}
+	labels["origin"] = []string{originLabelValue}
+	labels[uniqueTestIdentifierLabel.Key] = []string{uniqueTestIdentifierLabel.Value}
+	labels["terraform-test-name"] = []string{t.Name()}
+	return labels
+}
+
+// annotateLabels adds origin label to the provided [Labels],
+// so it's easier to locate the leftovers from these tests.
+// It also adds unique test identifier label to the provided labels
+// so that we can reliably retrieve objects created within a given test.
+func annotateLabels(t *testing.T, labels Labels) Labels {
+	t.Helper()
+	if labels == nil {
+		labels = make(Labels, 0, 3)
+	}
+	v1alphaLabels := annotateV1alphaLabels(t, nil)
+	for _, k := range slices.Sorted(maps.Keys(v1alphaLabels)) {
+		i := slices.IndexFunc(labels, func(l LabelBlockModel) bool { return l.Key == k })
+		if i >= 0 {
+			labels[i].Values = v1alphaLabels[k]
+		} else {
+			labels = append(labels, LabelBlockModel{
+				Key:    k,
+				Values: v1alphaLabels[k],
+			})
+		}
+	}
+	return labels
 }

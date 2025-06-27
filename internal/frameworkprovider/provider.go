@@ -108,6 +108,7 @@ func (p *Provider) Resources(context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewServiceResource,
 		NewProjectResource,
+		NewSLOResource,
 	}
 }
 
