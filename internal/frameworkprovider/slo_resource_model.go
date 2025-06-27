@@ -14,8 +14,8 @@ type SLOResourceModel struct {
 	Description                types.String        `tfsdk:"description"`
 	Annotations                map[string]string   `tfsdk:"annotations"`
 	Labels                     Labels              `tfsdk:"label"`
-	Service                    types.String        `tfsdk:"service"`
-	BudgetingMethod            types.String        `tfsdk:"budgeting_method"`
+	Service                    string              `tfsdk:"service"`
+	BudgetingMethod            string              `tfsdk:"budgeting_method"`
 	Tier                       types.String        `tfsdk:"tier"`
 	AlertPolicies              []string            `tfsdk:"alert_policies"`
 	Indicator                  *IndicatorModel     `tfsdk:"indicator"`
@@ -29,16 +29,16 @@ type SLOResourceModel struct {
 
 // IndicatorModel represents [v1alphaSLO.Indicator].
 type IndicatorModel struct {
-	Name    types.String `tfsdk:"name"`
-	Project types.String `tfsdk:"project"`
-	Kind    types.String `tfsdk:"kind"`
+	Name    string       `tfsdk:"name"`    // Required
+	Project types.String `tfsdk:"project"` // Optional
+	Kind    types.String `tfsdk:"kind"`    // Optional (computed)
 }
 
 // ObjectiveModel represents [v1alphaSLO.Objective].
 type ObjectiveModel struct {
 	DisplayName     types.String             `tfsdk:"display_name"`
 	Op              types.String             `tfsdk:"op"`
-	Target          types.Float64            `tfsdk:"target"`
+	Target          float64                  `tfsdk:"target"`
 	TimeSliceTarget types.Float64            `tfsdk:"time_slice_target"`
 	Value           types.Float64            `tfsdk:"value"`
 	Name            types.String             `tfsdk:"name"`
@@ -110,26 +110,26 @@ type CompositeObjectivesModel struct {
 
 // CompositeObjectiveSpecModel represents an individual composite objective specification.
 type CompositeObjectiveSpecModel struct {
-	Project     types.String  `tfsdk:"project"`
-	SLO         types.String  `tfsdk:"slo"`
-	Objective   types.String  `tfsdk:"objective"`
-	Weight      types.Float64 `tfsdk:"weight"`
-	WhenDelayed types.String  `tfsdk:"when_delayed"`
+	Project     string  `tfsdk:"project"`      // Required
+	SLO         string  `tfsdk:"slo"`          // Required
+	Objective   string  `tfsdk:"objective"`    // Required
+	Weight      float64 `tfsdk:"weight"`       // Required
+	WhenDelayed string  `tfsdk:"when_delayed"` // Required
 }
 
 // TimeWindowModel represents the time_window block in the SLO resource.
 type TimeWindowModel struct {
-	Count     types.Int64       `tfsdk:"count"`
-	IsRolling types.Bool        `tfsdk:"is_rolling"`
-	Unit      types.String      `tfsdk:"unit"`
-	Period    map[string]string `tfsdk:"period"`
-	Calendar  *CalendarModel    `tfsdk:"calendar"`
+	Count     int64             `tfsdk:"count"`      // Required
+	IsRolling types.Bool        `tfsdk:"is_rolling"` // Optional
+	Unit      string            `tfsdk:"unit"`       // Required
+	Period    map[string]string `tfsdk:"period"`     // Computed
+	Calendar  *CalendarModel    `tfsdk:"calendar"`   // Optional
 }
 
 // CalendarModel represents the calendar block in a time_window.
 type CalendarModel struct {
-	StartTime types.String `tfsdk:"start_time"`
-	TimeZone  types.String `tfsdk:"time_zone"`
+	StartTime string `tfsdk:"start_time"` // Required
+	TimeZone  string `tfsdk:"time_zone"`  // Required
 }
 
 // AttachmentModel represents an attachment in the SLO resource.
@@ -149,8 +149,8 @@ type AnomalyConfigNoDataModel struct {
 }
 
 type AnomalyConfigAlertMethodModel struct {
-	Name    types.String `tfsdk:"name"`
-	Project types.String `tfsdk:"project"`
+	Name    string `tfsdk:"name"`    // Required
+	Project string `tfsdk:"project"` // Required
 }
 
 // CompositeV1Model represents the deprecated composite block in the SLO resource.
@@ -166,75 +166,75 @@ type CompositeV1BurnRateConditionModel struct {
 }
 
 type AmazonPrometheusModel struct {
-	PromQL types.String `tfsdk:"promql"`
+	PromQL string `tfsdk:"promql"` // Required
 }
 
 type AppDynamicsModel struct {
-	ApplicationName types.String `tfsdk:"application_name"`
-	MetricPath      types.String `tfsdk:"metric_path"`
+	ApplicationName string `tfsdk:"application_name"` // Required
+	MetricPath      string `tfsdk:"metric_path"`      // Required
 }
 
 type AzureMonitorModel struct {
-	DataType        types.String                 `tfsdk:"data_type"`
-	ResourceID      types.String                 `tfsdk:"resource_id"`
-	MetricNamespace types.String                 `tfsdk:"metric_namespace"`
-	MetricName      types.String                 `tfsdk:"metric_name"`
-	Aggregation     types.String                 `tfsdk:"aggregation"`
-	KQLQuery        types.String                 `tfsdk:"kql_query"`
-	Dimensions      []AzureMonitorDimensionModel `tfsdk:"dimensions"`
-	Workspace       *AzureMonitorWorkspaceModel  `tfsdk:"workspace"`
+	DataType        string                       `tfsdk:"data_type"`        // Required
+	ResourceID      types.String                 `tfsdk:"resource_id"`      // Optional (Required for metrics)
+	MetricNamespace types.String                 `tfsdk:"metric_namespace"` // Optional
+	MetricName      types.String                 `tfsdk:"metric_name"`      // Optional (Required for metrics)
+	Aggregation     types.String                 `tfsdk:"aggregation"`      // Optional (Required for metrics)
+	KQLQuery        types.String                 `tfsdk:"kql_query"`        // Optional (Required for logs)
+	Dimensions      []AzureMonitorDimensionModel `tfsdk:"dimensions"`       // Optional
+	Workspace       *AzureMonitorWorkspaceModel  `tfsdk:"workspace"`        // Optional (Required for logs)
 }
 
 type AzureMonitorDimensionModel struct {
-	Name  types.String `tfsdk:"name"`
-	Value types.String `tfsdk:"value"`
+	Name  string `tfsdk:"name"`  // Required
+	Value string `tfsdk:"value"` // Required
 }
 
 type AzureMonitorWorkspaceModel struct {
-	SubscriptionID types.String `tfsdk:"subscription_id"`
-	ResourceGroup  types.String `tfsdk:"resource_group"`
-	WorkspaceID    types.String `tfsdk:"workspace_id"`
+	SubscriptionID string `tfsdk:"subscription_id"` // Required
+	ResourceGroup  string `tfsdk:"resource_group"`  // Required
+	WorkspaceID    string `tfsdk:"workspace_id"`    // Required
 }
 
 type BigQueryModel struct {
-	Location  types.String `tfsdk:"location"`
-	ProjectID types.String `tfsdk:"project_id"`
-	Query     types.String `tfsdk:"query"`
+	Location  string `tfsdk:"location"`   // Required
+	ProjectID string `tfsdk:"project_id"` // Required
+	Query     string `tfsdk:"query"`      // Required
 }
 
 type CloudWatchModel struct {
-	AccountID  types.String               `tfsdk:"account_id"`
-	Region     types.String               `tfsdk:"region"`
-	Namespace  types.String               `tfsdk:"namespace"`
-	MetricName types.String               `tfsdk:"metric_name"`
-	Stat       types.String               `tfsdk:"stat"`
-	SQL        types.String               `tfsdk:"sql"`
-	JSON       types.String               `tfsdk:"json"`
-	Dimensions []CloudWatchDimensionModel `tfsdk:"dimensions"`
+	AccountID  types.String               `tfsdk:"account_id"`  // Optional
+	Region     string                     `tfsdk:"region"`      // Required
+	Namespace  types.String               `tfsdk:"namespace"`   // Optional
+	MetricName types.String               `tfsdk:"metric_name"` // Optional
+	Stat       types.String               `tfsdk:"stat"`        // Optional
+	SQL        types.String               `tfsdk:"sql"`         // Optional
+	JSON       types.String               `tfsdk:"json"`        // Optional
+	Dimensions []CloudWatchDimensionModel `tfsdk:"dimensions"`  // Optional
 }
 
 type CloudWatchDimensionModel struct {
-	Name  types.String `tfsdk:"name"`
-	Value types.String `tfsdk:"value"`
+	Name  string `tfsdk:"name"`  // Required
+	Value string `tfsdk:"value"` // Required
 }
 
 type DatadogModel struct {
-	Query types.String `tfsdk:"query"`
+	Query string `tfsdk:"query"` // Required
 }
 
 type DynatraceModel struct {
-	MetricSelector types.String `tfsdk:"metric_selector"`
+	MetricSelector string `tfsdk:"metric_selector"` // Required
 }
 
 type ElasticsearchModel struct {
-	Index types.String `tfsdk:"index"`
-	Query types.String `tfsdk:"query"`
+	Index string `tfsdk:"index"` // Required
+	Query string `tfsdk:"query"` // Required
 }
 
 type GCMModel struct {
-	ProjectID types.String `tfsdk:"project_id"`
-	Query     types.String `tfsdk:"query"`
-	PromQL    types.String `tfsdk:"promql"`
+	ProjectID string       `tfsdk:"project_id"` // Required
+	Query     types.String `tfsdk:"query"`      // Optional
+	PromQL    types.String `tfsdk:"promql"`     // Optional
 }
 
 type GrafanaLokiModel struct {
@@ -300,48 +300,48 @@ type LogicMonitorModel struct {
 }
 
 type NewRelicModel struct {
-	NRQL types.String `tfsdk:"nrql"`
+	NRQL string `tfsdk:"nrql"` // Required
 }
 
 type OpenTSDBModel struct {
-	Query types.String `tfsdk:"query"`
+	Query string `tfsdk:"query"` // Required
 }
 
 type PingdomModel struct {
-	CheckID   types.String `tfsdk:"check_id"`
-	CheckType types.String `tfsdk:"check_type"`
-	Status    types.String `tfsdk:"status"`
+	CheckID   string       `tfsdk:"check_id"`   // Required
+	CheckType types.String `tfsdk:"check_type"` // Optional
+	Status    types.String `tfsdk:"status"`     // Optional
 }
 
 type PrometheusModel struct {
-	PromQL types.String `tfsdk:"promql"`
+	PromQL string `tfsdk:"promql"` // Required
 }
 
 type RedshiftModel struct {
-	Region       types.String `tfsdk:"region"`
-	ClusterID    types.String `tfsdk:"cluster_id"`
-	DatabaseName types.String `tfsdk:"database_name"`
-	Query        types.String `tfsdk:"query"`
+	Region       string `tfsdk:"region"`        // Required
+	ClusterID    string `tfsdk:"cluster_id"`    // Required
+	DatabaseName string `tfsdk:"database_name"` // Required
+	Query        string `tfsdk:"query"`         // Required
 }
 
 type SplunkModel struct {
-	Query types.String `tfsdk:"query"`
+	Query string `tfsdk:"query"` // Required
 }
 
 type SplunkObservabilityModel struct {
-	Program types.String `tfsdk:"program"`
+	Program string `tfsdk:"program"` // Required
 }
 
 type SumoLogicModel struct {
-	Type         types.String `tfsdk:"type"`
-	Query        types.String `tfsdk:"query"`
-	Quantization types.String `tfsdk:"quantization"`
-	Rollup       types.String `tfsdk:"rollup"`
+	Type         string       `tfsdk:"type"`         // Required
+	Query        string       `tfsdk:"query"`        // Required
+	Quantization types.String `tfsdk:"quantization"` // Optional
+	Rollup       types.String `tfsdk:"rollup"`       // Optional
 }
 
 type ThousandEyesModel struct {
-	TestID   types.Int64  `tfsdk:"test_id"`
-	TestType types.String `tfsdk:"test_type"`
+	TestID   int64        `tfsdk:"test_id"`   // Required
+	TestType types.String `tfsdk:"test_type"` // Optional
 }
 
 // newSLOResourceConfigFromManifest creates a new [SLOResourceModel] from a [v1alphaSLO.SLO] manifest.
@@ -356,14 +356,14 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 		Description:     stringValue(slo.Spec.Description),
 		Annotations:     slo.Metadata.Annotations,
 		Labels:          newLabelsFromManifest(slo.Metadata.Labels),
-		Service:         stringValue(slo.Spec.Service),
-		BudgetingMethod: stringValue(slo.Spec.BudgetingMethod),
+		Service:         slo.Spec.Service,
+		BudgetingMethod: slo.Spec.BudgetingMethod,
 		Tier:            stringValueFromPointer(slo.Spec.Tier),
 		AlertPolicies:   slo.Spec.AlertPolicies,
 	}
 	if slo.Spec.Indicator != nil {
 		model.Indicator = &IndicatorModel{
-			Name:    types.StringValue(slo.Spec.Indicator.MetricSource.Name),
+			Name:    slo.Spec.Indicator.MetricSource.Name, // Required field, use string directly
 			Project: types.StringValue(slo.Spec.Indicator.MetricSource.Project),
 			Kind:    types.StringValue(slo.Spec.Indicator.MetricSource.Kind.String()),
 		}
@@ -374,7 +374,7 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 			objectives[i] = ObjectiveModel{
 				DisplayName:     types.StringValue(o.DisplayName),
 				Op:              types.StringPointerValue(o.Operator),
-				Target:          types.Float64PointerValue(o.BudgetTarget),
+				Target:          *o.BudgetTarget,
 				TimeSliceTarget: types.Float64PointerValue(o.TimeSliceTarget),
 				Value:           types.Float64PointerValue(o.Value),
 				Name:            types.StringValue(o.Name),
@@ -389,15 +389,15 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 	if len(slo.Spec.TimeWindows) > 0 {
 		tw := slo.Spec.TimeWindows[0]
 		model.TimeWindow = &TimeWindowModel{
-			Count:     types.Int64Value(int64(tw.Count)),
+			Count:     int64(tw.Count), // Required field, use int64 directly
 			IsRolling: types.BoolValue(tw.IsRolling),
-			Unit:      types.StringValue(tw.Unit),
+			Unit:      tw.Unit, // Required field, use string directly
 			Period:    map[string]string{"begin": tw.Period.Begin, "end": tw.Period.End},
 		}
 		if tw.Calendar != nil {
 			model.TimeWindow.Calendar = &CalendarModel{
-				StartTime: types.StringValue(tw.Calendar.StartTime),
-				TimeZone:  types.StringValue(tw.Calendar.TimeZone),
+				StartTime: tw.Calendar.StartTime, // Required field, use string directly
+				TimeZone:  tw.Calendar.TimeZone,  // Required field, use string directly
 			}
 		}
 	}
@@ -416,8 +416,8 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 		methods := make([]AnomalyConfigAlertMethodModel, len(ac.AlertMethods))
 		for i, m := range ac.AlertMethods {
 			methods[i] = AnomalyConfigAlertMethodModel{
-				Name:    types.StringValue(m.Name),
-				Project: types.StringValue(m.Project),
+				Name:    m.Name,    // Required field, use string directly
+				Project: m.Project, // Required field, use string directly
 			}
 		}
 		model.AnomalyConfig = &AnomalyConfigModel{
@@ -442,8 +442,8 @@ func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {
 		},
 		v1alphaSLO.Spec{
 			Description:     s.Description.ValueString(),
-			Service:         s.Service.ValueString(),
-			BudgetingMethod: s.BudgetingMethod.ValueString(),
+			Service:         s.Service,
+			BudgetingMethod: s.BudgetingMethod,
 			AlertPolicies:   s.AlertPolicies,
 		},
 	)
@@ -455,7 +455,7 @@ func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {
 		kind, _ := manifest.ParseKind(s.Indicator.Kind.ValueString())
 		slo.Spec.Indicator = &v1alphaSLO.Indicator{
 			MetricSource: v1alphaSLO.MetricSourceSpec{
-				Name:    s.Indicator.Name.ValueString(),
+				Name:    s.Indicator.Name, // Required field, use string directly
 				Project: s.Indicator.Project.ValueString(),
 				Kind:    kind,
 			},
@@ -471,7 +471,7 @@ func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {
 					Name:        o.Name.ValueString(),
 				},
 				Operator:        stringPointer(o.Op),
-				BudgetTarget:    float64Pointer(o.Target),
+				BudgetTarget:    &o.Target,
 				TimeSliceTarget: float64Pointer(o.TimeSliceTarget),
 				Primary:         boolPointer(o.Primary),
 				CountMetrics:    o.CountMetrics.ToManifest(),
@@ -486,14 +486,14 @@ func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {
 		var calendar *v1alphaSLO.Calendar
 		if tw.Calendar != nil {
 			calendar = &v1alphaSLO.Calendar{
-				StartTime: tw.Calendar.StartTime.ValueString(),
-				TimeZone:  tw.Calendar.TimeZone.ValueString(),
+				StartTime: tw.Calendar.StartTime, // Required field, use string directly
+				TimeZone:  tw.Calendar.TimeZone,  // Required field, use string directly
 			}
 		}
 		slo.Spec.TimeWindows = []v1alphaSLO.TimeWindow{{
-			Count:     int(tw.Count.ValueInt64()),
+			Count:     int(tw.Count), // Required field, use int directly
 			IsRolling: tw.IsRolling.ValueBool(),
-			Unit:      tw.Unit.ValueString(),
+			Unit:      tw.Unit, // Required field, use string directly
 			Period:    &v1alphaSLO.Period{Begin: tw.Period["begin"], End: tw.Period["end"]},
 			Calendar:  calendar,
 		}}
@@ -518,8 +518,8 @@ func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {
 		methods := make([]v1alphaSLO.AnomalyConfigAlertMethod, len(ac.AlertMethods))
 		for i, m := range ac.AlertMethods {
 			methods[i] = v1alphaSLO.AnomalyConfigAlertMethod{
-				Name:    m.Name.ValueString(),
-				Project: m.Project.ValueString(),
+				Name:    m.Name,    // Required field, use string directly
+				Project: m.Project, // Required field, use string directly
 			}
 		}
 		var alertAfter *string
@@ -581,11 +581,11 @@ func compositeObjectiveToModel(src *v1alphaSLO.CompositeSpec) *CompositeObjectiv
 		compositeObjectives := make([]CompositeObjectiveSpecModel, len(src.Components.Objectives))
 		for i, obj := range src.Components.Objectives {
 			compositeObjectives[i] = CompositeObjectiveSpecModel{
-				Project:     types.StringValue(obj.Project),
-				SLO:         types.StringValue(obj.SLO),
-				Objective:   types.StringValue(obj.Objective),
-				Weight:      types.Float64Value(obj.Weight),
-				WhenDelayed: types.StringValue(obj.WhenDelayed.String()),
+				Project:     obj.Project,              // Required field, use string directly
+				SLO:         obj.SLO,                  // Required field, use string directly
+				Objective:   obj.Objective,            // Required field, use string directly
+				Weight:      obj.Weight,               // Required field, use float64 directly
+				WhenDelayed: obj.WhenDelayed.String(), // Required field, use string directly
 			}
 		}
 		model.Components = &CompositeComponentsModel{
@@ -665,12 +665,12 @@ func (c *CompositeObjectiveModel) ToManifest() *v1alphaSLO.CompositeSpec {
 		objectives := c.Components.Objectives.CompositeObjective
 		compositeObjectives := make([]v1alphaSLO.CompositeObjective, len(objectives))
 		for i, obj := range objectives {
-			whenDelayed, _ := v1alphaSLO.ParseWhenDelayed(obj.WhenDelayed.ValueString())
+			whenDelayed, _ := v1alphaSLO.ParseWhenDelayed(obj.WhenDelayed) // Required field, use string directly
 			compositeObjectives[i] = v1alphaSLO.CompositeObjective{
-				Project:     obj.Project.ValueString(),
-				SLO:         obj.SLO.ValueString(),
-				Objective:   obj.Objective.ValueString(),
-				Weight:      obj.Weight.ValueFloat64(),
+				Project:     obj.Project,   // Required field, use string directly
+				SLO:         obj.SLO,       // Required field, use string directly
+				Objective:   obj.Objective, // Required field, use string directly
+				Weight:      obj.Weight,    // Required field, use float64 directly
 				WhenDelayed: whenDelayed,
 			}
 		}
@@ -771,7 +771,7 @@ func amazonPrometheusToModel(src *v1alphaSLO.AmazonPrometheusMetric) *AmazonProm
 		return nil
 	}
 	return &AmazonPrometheusModel{
-		PromQL: types.StringValue(*src.PromQL),
+		PromQL: *src.PromQL, // Required field, directly dereference
 	}
 }
 
@@ -780,8 +780,8 @@ func appDynamicsToModel(src *v1alphaSLO.AppDynamicsMetric) *AppDynamicsModel {
 		return nil
 	}
 	return &AppDynamicsModel{
-		ApplicationName: types.StringValue(*src.ApplicationName),
-		MetricPath:      types.StringValue(*src.MetricPath),
+		ApplicationName: *src.ApplicationName, // Required field, directly dereference
+		MetricPath:      *src.MetricPath,      // Required field, directly dereference
 	}
 }
 
@@ -790,7 +790,7 @@ func azureMonitorToModel(src *v1alphaSLO.AzureMonitorMetric) *AzureMonitorModel 
 		return nil
 	}
 	model := &AzureMonitorModel{
-		DataType:        stringValue(src.DataType),
+		DataType:        src.DataType, // Required field, use directly
 		ResourceID:      stringValue(src.ResourceID),
 		MetricNamespace: stringValue(src.MetricNamespace),
 		MetricName:      stringValue(src.MetricName),
@@ -801,17 +801,17 @@ func azureMonitorToModel(src *v1alphaSLO.AzureMonitorMetric) *AzureMonitorModel 
 		dimensions := make([]AzureMonitorDimensionModel, len(src.Dimensions))
 		for i, d := range src.Dimensions {
 			dimensions[i] = AzureMonitorDimensionModel{
-				Name:  types.StringValue(*d.Name),
-				Value: types.StringValue(*d.Value),
+				Name:  *d.Name,  // Required field, directly dereference
+				Value: *d.Value, // Required field, directly dereference
 			}
 		}
 		model.Dimensions = dimensions
 	}
 	if src.Workspace != nil {
 		model.Workspace = &AzureMonitorWorkspaceModel{
-			SubscriptionID: stringValue(src.Workspace.SubscriptionID),
-			ResourceGroup:  stringValue(src.Workspace.ResourceGroup),
-			WorkspaceID:    stringValue(src.Workspace.WorkspaceID),
+			SubscriptionID: src.Workspace.SubscriptionID, // Required field, use directly
+			ResourceGroup:  src.Workspace.ResourceGroup,  // Required field, use directly
+			WorkspaceID:    src.Workspace.WorkspaceID,    // Required field, use directly
 		}
 	}
 	return model
@@ -822,9 +822,9 @@ func bigQueryToModel(src *v1alphaSLO.BigQueryMetric) *BigQueryModel {
 		return nil
 	}
 	return &BigQueryModel{
-		Location:  stringValue(src.Location),
-		ProjectID: stringValue(src.ProjectID),
-		Query:     stringValue(src.Query),
+		Location:  src.Location,  // Required field, use directly
+		ProjectID: src.ProjectID, // Required field, use directly
+		Query:     src.Query,     // Required field, use directly
 	}
 }
 
@@ -833,7 +833,7 @@ func cloudWatchToModel(src *v1alphaSLO.CloudWatchMetric) *CloudWatchModel {
 		return nil
 	}
 	model := &CloudWatchModel{
-		Region:     types.StringPointerValue(src.Region),
+		Region:     *src.Region, // Required field, directly dereference
 		Namespace:  types.StringPointerValue(src.Namespace),
 		MetricName: types.StringPointerValue(src.MetricName),
 		Stat:       types.StringPointerValue(src.Stat),
@@ -847,8 +847,8 @@ func cloudWatchToModel(src *v1alphaSLO.CloudWatchMetric) *CloudWatchModel {
 		dimensions := make([]CloudWatchDimensionModel, len(src.Dimensions))
 		for i, d := range src.Dimensions {
 			dimensions[i] = CloudWatchDimensionModel{
-				Name:  types.StringPointerValue(d.Name),
-				Value: types.StringPointerValue(d.Value),
+				Name:  *d.Name,  // Required field
+				Value: *d.Value, // Required field
 			}
 		}
 		model.Dimensions = dimensions
@@ -861,7 +861,7 @@ func datadogToModel(src *v1alphaSLO.DatadogMetric) *DatadogModel {
 		return nil
 	}
 	return &DatadogModel{
-		Query: stringValueFromPointer(src.Query),
+		Query: *src.Query, // Required field
 	}
 }
 
@@ -870,7 +870,7 @@ func dynatraceToModel(src *v1alphaSLO.DynatraceMetric) *DynatraceModel {
 		return nil
 	}
 	return &DynatraceModel{
-		MetricSelector: stringValueFromPointer(src.MetricSelector),
+		MetricSelector: *src.MetricSelector, // Required field
 	}
 }
 
@@ -879,8 +879,8 @@ func elasticsearchToModel(src *v1alphaSLO.ElasticsearchMetric) *ElasticsearchMod
 		return nil
 	}
 	return &ElasticsearchModel{
-		Index: stringValueFromPointer(src.Index),
-		Query: stringValueFromPointer(src.Query),
+		Index: *src.Index, // Required field
+		Query: *src.Query, // Required field
 	}
 }
 
@@ -888,11 +888,16 @@ func gcmToModel(src *v1alphaSLO.GCMMetric) *GCMModel {
 	if src == nil {
 		return nil
 	}
-	return &GCMModel{
-		ProjectID: stringValue(src.ProjectID),
-		Query:     stringValue(src.Query),
-		PromQL:    stringValue(src.PromQL),
+	model := &GCMModel{
+		ProjectID: src.ProjectID, // Required field
 	}
+	if len(src.Query) > 0 {
+		model.Query = types.StringValue(src.Query)
+	}
+	if len(src.PromQL) > 0 {
+		model.PromQL = types.StringValue(src.PromQL)
+	}
+	return model
 }
 
 func grafanaLokiToModel(src *v1alphaSLO.GrafanaLokiMetric) *GrafanaLokiModel {
@@ -1002,7 +1007,7 @@ func newRelicToModel(src *v1alphaSLO.NewRelicMetric) *NewRelicModel {
 		return nil
 	}
 	return &NewRelicModel{
-		NRQL: stringValueFromPointer(src.NRQL),
+		NRQL: *src.NRQL, // Required field
 	}
 }
 
@@ -1011,7 +1016,7 @@ func openTSDBToModel(src *v1alphaSLO.OpenTSDBMetric) *OpenTSDBModel {
 		return nil
 	}
 	return &OpenTSDBModel{
-		Query: stringValueFromPointer(src.Query),
+		Query: *src.Query, // Required field
 	}
 }
 
@@ -1020,7 +1025,7 @@ func pingdomToModel(src *v1alphaSLO.PingdomMetric) *PingdomModel {
 		return nil
 	}
 	return &PingdomModel{
-		CheckID:   stringValueFromPointer(src.CheckID),
+		CheckID:   *src.CheckID, // Required field
 		CheckType: stringValueFromPointer(src.CheckType),
 		Status:    stringValueFromPointer(src.Status),
 	}
@@ -1031,7 +1036,7 @@ func prometheusToModel(src *v1alphaSLO.PrometheusMetric) *PrometheusModel {
 		return nil
 	}
 	return &PrometheusModel{
-		PromQL: stringValueFromPointer(src.PromQL),
+		PromQL: *src.PromQL, // Required field
 	}
 }
 
@@ -1040,10 +1045,10 @@ func redshiftToModel(src *v1alphaSLO.RedshiftMetric) *RedshiftModel {
 		return nil
 	}
 	return &RedshiftModel{
-		Region:       stringValueFromPointer(src.Region),
-		ClusterID:    stringValueFromPointer(src.ClusterID),
-		DatabaseName: stringValueFromPointer(src.DatabaseName),
-		Query:        stringValueFromPointer(src.Query),
+		Region:       *src.Region,       // Required field
+		ClusterID:    *src.ClusterID,    // Required field
+		DatabaseName: *src.DatabaseName, // Required field
+		Query:        *src.Query,        // Required field
 	}
 }
 
@@ -1052,7 +1057,7 @@ func splunkToModel(src *v1alphaSLO.SplunkMetric) *SplunkModel {
 		return nil
 	}
 	return &SplunkModel{
-		Query: stringValueFromPointer(src.Query),
+		Query: *src.Query, // Required field
 	}
 }
 
@@ -1061,7 +1066,7 @@ func splunkObservabilityToModel(src *v1alphaSLO.SplunkObservabilityMetric) *Splu
 		return nil
 	}
 	return &SplunkObservabilityModel{
-		Program: stringValueFromPointer(src.Program),
+		Program: *src.Program, // Required field
 	}
 }
 
@@ -1070,8 +1075,8 @@ func sumoLogicToModel(src *v1alphaSLO.SumoLogicMetric) *SumoLogicModel {
 		return nil
 	}
 	return &SumoLogicModel{
-		Type:         stringValueFromPointer(src.Type),
-		Query:        stringValueFromPointer(src.Query),
+		Type:         *src.Type,  // Required field
+		Query:        *src.Query, // Required field
 		Rollup:       stringValueFromPointer(src.Rollup),
 		Quantization: stringValueFromPointer(src.Quantization),
 	}
@@ -1083,7 +1088,7 @@ func thousandEyesToModel(src *v1alphaSLO.ThousandEyesMetric) *ThousandEyesModel 
 	}
 	model := &ThousandEyesModel{}
 	if src.TestID != nil {
-		model.TestID = types.Int64Value(int64(*src.TestID))
+		model.TestID = int64(*src.TestID) // Required field, use plain int64
 	}
 	if src.TestType != nil {
 		model.TestType = types.StringValue(*src.TestType)
@@ -1097,7 +1102,7 @@ func modelToAmazonPrometheus(model *AmazonPrometheusModel) *v1alphaSLO.AmazonPro
 		return nil
 	}
 	return &v1alphaSLO.AmazonPrometheusMetric{
-		PromQL: stringPointer(model.PromQL),
+		PromQL: &model.PromQL, // Required field, use pointer to string
 	}
 }
 
@@ -1106,8 +1111,8 @@ func modelToAppDynamics(model *AppDynamicsModel) *v1alphaSLO.AppDynamicsMetric {
 		return nil
 	}
 	return &v1alphaSLO.AppDynamicsMetric{
-		ApplicationName: stringPointer(model.ApplicationName),
-		MetricPath:      stringPointer(model.MetricPath),
+		ApplicationName: &model.ApplicationName, // Required field, use pointer to string
+		MetricPath:      &model.MetricPath,      // Required field, use pointer to string
 	}
 }
 
@@ -1116,7 +1121,7 @@ func modelToAzureMonitor(model *AzureMonitorModel) *v1alphaSLO.AzureMonitorMetri
 		return nil
 	}
 	spec := &v1alphaSLO.AzureMonitorMetric{
-		DataType:        model.DataType.ValueString(),
+		DataType:        model.DataType, // Required field, use string directly
 		ResourceID:      model.ResourceID.ValueString(),
 		MetricNamespace: model.MetricNamespace.ValueString(),
 		MetricName:      model.MetricName.ValueString(),
@@ -1127,17 +1132,17 @@ func modelToAzureMonitor(model *AzureMonitorModel) *v1alphaSLO.AzureMonitorMetri
 		dimensions := make([]v1alphaSLO.AzureMonitorMetricDimension, len(model.Dimensions))
 		for i, d := range model.Dimensions {
 			dimensions[i] = v1alphaSLO.AzureMonitorMetricDimension{
-				Name:  stringPointer(d.Name),
-				Value: stringPointer(d.Value),
+				Name:  &d.Name,  // Required field, use pointer to string
+				Value: &d.Value, // Required field, use pointer to string
 			}
 		}
 		spec.Dimensions = dimensions
 	}
 	if model.Workspace != nil {
 		spec.Workspace = &v1alphaSLO.AzureMonitorMetricLogAnalyticsWorkspace{
-			SubscriptionID: model.Workspace.SubscriptionID.ValueString(),
-			ResourceGroup:  model.Workspace.ResourceGroup.ValueString(),
-			WorkspaceID:    model.Workspace.WorkspaceID.ValueString(),
+			SubscriptionID: model.Workspace.SubscriptionID, // Required field, use string directly
+			ResourceGroup:  model.Workspace.ResourceGroup,  // Required field, use string directly
+			WorkspaceID:    model.Workspace.WorkspaceID,    // Required field, use string directly
 		}
 	}
 	return spec
@@ -1148,9 +1153,9 @@ func modelToBigQuery(model *BigQueryModel) *v1alphaSLO.BigQueryMetric {
 		return nil
 	}
 	return &v1alphaSLO.BigQueryMetric{
-		Location:  model.Location.ValueString(),
-		ProjectID: model.ProjectID.ValueString(),
-		Query:     model.Query.ValueString(),
+		Location:  model.Location,  // Required field, use string directly
+		ProjectID: model.ProjectID, // Required field, use string directly
+		Query:     model.Query,     // Required field, use string directly
 	}
 }
 
@@ -1159,7 +1164,7 @@ func modelToCloudWatch(model *CloudWatchModel) *v1alphaSLO.CloudWatchMetric {
 		return nil
 	}
 	spec := &v1alphaSLO.CloudWatchMetric{
-		Region:     stringPointer(model.Region),
+		Region:     &model.Region, // Required field, use pointer to string
 		Namespace:  stringPointer(model.Namespace),
 		MetricName: stringPointer(model.MetricName),
 		Stat:       stringPointer(model.Stat),
@@ -1174,8 +1179,8 @@ func modelToCloudWatch(model *CloudWatchModel) *v1alphaSLO.CloudWatchMetric {
 		dimensions := make([]v1alphaSLO.CloudWatchMetricDimension, len(model.Dimensions))
 		for i, d := range model.Dimensions {
 			dimensions[i] = v1alphaSLO.CloudWatchMetricDimension{
-				Name:  stringPointer(d.Name),
-				Value: stringPointer(d.Value),
+				Name:  &d.Name,  // Required field, use pointer to string
+				Value: &d.Value, // Required field, use pointer to string
 			}
 		}
 		spec.Dimensions = dimensions
@@ -1188,7 +1193,7 @@ func modelToDatadog(model *DatadogModel) *v1alphaSLO.DatadogMetric {
 		return nil
 	}
 	return &v1alphaSLO.DatadogMetric{
-		Query: stringPointer(model.Query),
+		Query: &model.Query, // Required field, use pointer to string
 	}
 }
 
@@ -1197,7 +1202,7 @@ func modelToDynatrace(model *DynatraceModel) *v1alphaSLO.DynatraceMetric {
 		return nil
 	}
 	return &v1alphaSLO.DynatraceMetric{
-		MetricSelector: stringPointer(model.MetricSelector),
+		MetricSelector: &model.MetricSelector, // Required field, use pointer to string
 	}
 }
 
@@ -1206,8 +1211,8 @@ func modelToElasticsearch(model *ElasticsearchModel) *v1alphaSLO.ElasticsearchMe
 		return nil
 	}
 	return &v1alphaSLO.ElasticsearchMetric{
-		Index: stringPointer(model.Index),
-		Query: stringPointer(model.Query),
+		Index: &model.Index, // Required field, use pointer to string
+		Query: &model.Query, // Required field, use pointer to string
 	}
 }
 
@@ -1216,7 +1221,7 @@ func modelToGCM(model *GCMModel) *v1alphaSLO.GCMMetric {
 		return nil
 	}
 	return &v1alphaSLO.GCMMetric{
-		ProjectID: model.ProjectID.ValueString(),
+		ProjectID: model.ProjectID, // Required field, use string directly
 		Query:     model.Query.ValueString(),
 		PromQL:    model.PromQL.ValueString(),
 	}
@@ -1346,7 +1351,7 @@ func modelToNewRelic(model *NewRelicModel) *v1alphaSLO.NewRelicMetric {
 		return nil
 	}
 	return &v1alphaSLO.NewRelicMetric{
-		NRQL: stringPointer(model.NRQL),
+		NRQL: &model.NRQL, // Required field, use pointer to string
 	}
 }
 
@@ -1355,7 +1360,7 @@ func modelToOpenTSDB(model *OpenTSDBModel) *v1alphaSLO.OpenTSDBMetric {
 		return nil
 	}
 	return &v1alphaSLO.OpenTSDBMetric{
-		Query: stringPointer(model.Query),
+		Query: &model.Query, // Required field, use pointer to string
 	}
 }
 
@@ -1364,7 +1369,7 @@ func modelToPingdom(model *PingdomModel) *v1alphaSLO.PingdomMetric {
 		return nil
 	}
 	return &v1alphaSLO.PingdomMetric{
-		CheckID:   stringPointer(model.CheckID),
+		CheckID:   &model.CheckID, // Required field, use pointer to string
 		CheckType: stringPointer(model.CheckType),
 		Status:    stringPointer(model.Status),
 	}
@@ -1375,7 +1380,7 @@ func modelToPrometheus(model *PrometheusModel) *v1alphaSLO.PrometheusMetric {
 		return nil
 	}
 	return &v1alphaSLO.PrometheusMetric{
-		PromQL: stringPointer(model.PromQL),
+		PromQL: &model.PromQL, // Required field, use pointer to string
 	}
 }
 
@@ -1384,10 +1389,10 @@ func modelToRedshift(model *RedshiftModel) *v1alphaSLO.RedshiftMetric {
 		return nil
 	}
 	return &v1alphaSLO.RedshiftMetric{
-		Region:       stringPointer(model.Region),
-		ClusterID:    stringPointer(model.ClusterID),
-		DatabaseName: stringPointer(model.DatabaseName),
-		Query:        stringPointer(model.Query),
+		Region:       &model.Region,       // Required field, use pointer to string
+		ClusterID:    &model.ClusterID,    // Required field, use pointer to string
+		DatabaseName: &model.DatabaseName, // Required field, use pointer to string
+		Query:        &model.Query,        // Required field, use pointer to string
 	}
 }
 
@@ -1396,7 +1401,7 @@ func modelToSplunk(model *SplunkModel) *v1alphaSLO.SplunkMetric {
 		return nil
 	}
 	return &v1alphaSLO.SplunkMetric{
-		Query: stringPointer(model.Query),
+		Query: &model.Query, // Required field, use pointer to string
 	}
 }
 
@@ -1405,7 +1410,7 @@ func modelToSplunkObservability(model *SplunkObservabilityModel) *v1alphaSLO.Spl
 		return nil
 	}
 	return &v1alphaSLO.SplunkObservabilityMetric{
-		Program: stringPointer(model.Program),
+		Program: &model.Program, // Required field, use pointer to string
 	}
 }
 
@@ -1414,8 +1419,8 @@ func modelToSumoLogic(model *SumoLogicModel) *v1alphaSLO.SumoLogicMetric {
 		return nil
 	}
 	return &v1alphaSLO.SumoLogicMetric{
-		Type:         stringPointer(model.Type),
-		Query:        stringPointer(model.Query),
+		Type:         &model.Type,  // Required field, use pointer to string
+		Query:        &model.Query, // Required field, use pointer to string
 		Rollup:       stringPointer(model.Rollup),
 		Quantization: stringPointer(model.Quantization),
 	}
@@ -1426,10 +1431,10 @@ func modelToThousandEyes(model *ThousandEyesModel) *v1alphaSLO.ThousandEyesMetri
 		return nil
 	}
 	spec := &v1alphaSLO.ThousandEyesMetric{}
-	if !isNullOrUnknown(model.TestID) {
-		id := model.TestID.ValueInt64()
-		spec.TestID = &id
-	}
+	// TestID is required, use direct assignment
+	id := model.TestID
+	spec.TestID = &id
+
 	if !isNullOrUnknown(model.TestType) {
 		testType := model.TestType.ValueString()
 		spec.TestType = &testType

@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 )
@@ -58,9 +59,10 @@ func TestAccServiceDataSource(t *testing.T) {
 			// Create Service resource with Service Data Source name in another Project.
 			{
 				PreConfig: func() {
-					applyNobl9Objects(t, ctx, manifestProject1, manifestProject2, manifestService1)
+					objects := []manifest.Object{manifestProject1, manifestProject2, manifestService1}
+					applyNobl9Objects(t, ctx, objects...)
 					t.Cleanup(func() {
-						deleteNobl9Objects(t, ctx, manifestProject1, manifestProject2, manifestService1)
+						deleteNobl9Objects(t, ctx, objects...)
 					})
 				},
 				Config: serviceResourceConfig,

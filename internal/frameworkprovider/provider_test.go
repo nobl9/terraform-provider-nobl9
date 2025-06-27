@@ -103,14 +103,6 @@ func testAccPreCheck(t *testing.T) {
 	})
 }
 
-// appendTestLabels appends a set of labels which help identify the applied objects in Nobl9 platform.
-func appendTestLabels(labels Labels) Labels {
-	return append(labels, LabelBlockModel{
-		Key:    "origin",
-		Values: []string{"terraform-acc-test"},
-	})
-}
-
 // assertResourceWasApplied is a test check function that asserts if the resource was applied
 // and that it matches the expected [manifest.Object] shape.
 func assertResourceWasApplied(t *testing.T, ctx context.Context, expected manifest.Object) resource.TestCheckFunc {

@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,34 +20,23 @@ func TestAccServiceResource(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	serviceName := generateName()
-	serviceNameRecreatedByNameChange := generateName()
+	manifestProject := getExampleProjectResource(t).ToManifest()
 
+	auxiliaryObjects := []manifest.Object{manifestProject}
+
+	serviceNameRecreatedByNameChange := generateName()
 	serviceResource := serviceResourceTemplateModel{
 		ResourceName:         "test",
 		ServiceResourceModel: getExampleServiceResource(t),
 	}
-	serviceResource.Labels = appendTestLabels(serviceResource.Labels)
-	serviceResource.Name = serviceName
+	serviceResource.Project = manifestProject.GetName()
 
-	manifestService := v1alphaService.New(
-		v1alphaService.Metadata{
-			Name:        serviceName,
-			DisplayName: "Service",
-			Project:     "default",
-			Annotations: v1alpha.MetadataAnnotations{"key": "value"},
-			Labels: annotateV1alphaLabels(t, v1alpha.Labels{
-				"team": []string{"green"},
-				"env":  []string{"dev", "prod"},
-			}),
-		},
-		v1alphaService.Spec{
-			Description: "Example service",
-		},
-	)
+	manifestService := serviceResource.ToManifest()
 	manifestService.Status = &v1alphaService.Status{
 		SloCount: 0,
 	}
+
+	recreatedProjectName := generateName()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -55,6 +44,10 @@ func TestAccServiceResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read.
 			{
+				PreConfig: func() {
+					applyNobl9Objects(t, ctx, auxiliaryObjects...)
+					t.Cleanup(func() { deleteNobl9Objects(t, ctx, auxiliaryObjects...) })
+				},
 				Config: newServiceResource(t, serviceResource),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assertResourceWasApplied(t, ctx, manifestService),
@@ -83,21 +76,21 @@ func TestAccServiceResource(t *testing.T) {
 			// ImportState - invalid id.
 			{
 				ResourceName:  "nobl9_service.test",
-				ImportStateId: serviceName,
+				ImportStateId: serviceResource.Name,
 				ImportState:   true,
 				ExpectError:   regexp.MustCompile(`Invalid import ID`),
 			},
 			// ImportState.
 			{
 				ResourceName:  "nobl9_service.test",
-				ImportStateId: "default/" + serviceName,
+				ImportStateId: manifestProject.GetName() + "/" + serviceResource.Name,
 				ImportState:   true,
 				ImportStateCheck: func(states []*terraform.InstanceState) error {
 					if !assert.Len(t, states, 1) {
 						return errors.New("expected exactly one state")
 					}
-					assert.Equal(t, serviceName, states[0].Attributes["name"])
-					assert.Equal(t, "default", states[0].Attributes["project"])
+					assert.Equal(t, serviceResource.Name, states[0].Attributes["name"])
+					assert.Equal(t, serviceResource.Project, states[0].Attributes["project"])
 					return nil
 				},
 				// In the next step we're also verifying the imported state, so we need to persist it.
@@ -154,16 +147,16 @@ func TestAccServiceResource(t *testing.T) {
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
 					m.Name = serviceNameRecreatedByNameChange
-					m.Project = "default-recreated"
+					m.Project = recreatedProjectName
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("nobl9_service.test", "name", serviceNameRecreatedByNameChange),
-					resource.TestCheckResourceAttr("nobl9_service.test", "project", "default-recreated"),
+					resource.TestCheckResourceAttr("nobl9_.test", "name", serviceNameRecreatedByNameChange),
+					resource.TestCheckResourceAttr("nobl9_service.test", "project", recreatedProjectName),
 					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
 						svc := manifestService
 						svc.Metadata.Name = serviceNameRecreatedByNameChange
-						svc.Metadata.Project = "default-recreated"
+						svc.Metadata.Project = recreatedProjectName
 						return svc
 					}()),
 				),
@@ -182,9 +175,11 @@ func TestAccServiceResource(t *testing.T) {
 func TestRenderServiceResourceTemplate(t *testing.T) {
 	t.Parallel()
 
+	exampleService := getExampleServiceResource(t)
+	exampleService.Name = "service"
 	actual := newServiceResource(t, serviceResourceTemplateModel{
 		ResourceName:         "this",
-		ServiceResourceModel: getExampleServiceResource(t),
+		ServiceResourceModel: exampleService,
 	})
 
 	expected := fmt.Sprintf(`resource "nobl9_service" "this" {
@@ -243,7 +238,7 @@ func newServiceResource(t *testing.T, model serviceResourceTemplateModel) string
 
 func getExampleServiceResource(t *testing.T) ServiceResourceModel {
 	return ServiceResourceModel{
-		Name:        "service",
+		Name:        generateName(),
 		DisplayName: types.StringValue("Service"),
 		Project:     "default",
 		Description: types.StringValue("Example service"),

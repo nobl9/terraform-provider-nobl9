@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	"github.com/stretchr/testify/assert"
 )
@@ -19,30 +18,13 @@ func TestAccProjectResource(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	projectName := generateName()
 	projectNameRecreatedByNameChange := generateName()
-
 	projectResource := projectResourceTemplateModel{
 		ResourceName:         "test",
 		ProjectResourceModel: getExampleProjectResource(t),
 	}
-	projectResource.ProjectResourceModel.Labels = appendTestLabels(projectResource.ProjectResourceModel.Labels)
-	projectResource.ProjectResourceModel.Name = projectName
 
-	manifestProject := v1alphaProject.New(
-		v1alphaProject.Metadata{
-			Name:        projectName,
-			DisplayName: "Project",
-			Annotations: v1alpha.MetadataAnnotations{"key": "value"},
-			Labels: annotateV1alphaLabels(t, v1alpha.Labels{
-				"team": []string{"green"},
-				"env":  []string{"dev", "prod"},
-			}),
-		},
-		v1alphaProject.Spec{
-			Description: "Example project",
-		},
-	)
+	manifestProject := projectResource.ToManifest()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -78,13 +60,13 @@ func TestAccProjectResource(t *testing.T) {
 			// ImportState.
 			{
 				ResourceName:  "nobl9_project.test",
-				ImportStateId: projectName,
+				ImportStateId: projectResource.Name,
 				ImportState:   true,
 				ImportStateCheck: func(states []*terraform.InstanceState) error {
 					if !assert.Len(t, states, 1) {
 						return errors.New("expected exactly one state")
 					}
-					assert.Equal(t, projectName, states[0].Attributes["name"])
+					assert.Equal(t, projectResource.Name, states[0].Attributes["name"])
 					return nil
 				},
 				// In the next step we're also verifying the imported state, so we need to persist it.
@@ -144,9 +126,11 @@ func TestAccProjectResource(t *testing.T) {
 func TestRenderProjectResourceTemplate(t *testing.T) {
 	t.Parallel()
 
+	exampleProject := getExampleProjectResource(t)
+	exampleProject.Name = "project"
 	actual := newProjectResource(t, projectResourceTemplateModel{
 		ResourceName:         "this",
-		ProjectResourceModel: getExampleProjectResource(t),
+		ProjectResourceModel: exampleProject,
 	})
 
 	expected := fmt.Sprintf(`resource "nobl9_project" "this" {
@@ -204,7 +188,7 @@ func newProjectResource(t *testing.T, model projectResourceTemplateModel) string
 
 func getExampleProjectResource(t *testing.T) ProjectResourceModel {
 	return ProjectResourceModel{
-		Name:        "project",
+		Name:        generateName(),
 		DisplayName: types.StringValue("Project"),
 		Description: types.StringValue("Example project"),
 		Annotations: map[string]string{"key": "value"},
