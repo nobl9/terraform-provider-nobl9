@@ -211,15 +211,13 @@ func generateName() string {
 // so it's easier to locate the leftovers from these tests.
 // It also adds unique test identifier label to the provided labels
 // so that we can reliably retrieve objects created within a given test.
-func annotateV1alphaLabels(t *testing.T, labels v1alpha.Labels) v1alpha.Labels {
+func annotateV1alphaLabels(t *testing.T) v1alpha.Labels {
 	t.Helper()
-	if labels == nil {
-		labels = make(v1alpha.Labels, 3)
+	return v1alpha.Labels{
+		"origin":                      []string{originLabelValue},
+		uniqueTestIdentifierLabel.Key: []string{uniqueTestIdentifierLabel.Value},
+		"terraform-test-name":         []string{t.Name()},
 	}
-	labels["origin"] = []string{originLabelValue}
-	labels[uniqueTestIdentifierLabel.Key] = []string{uniqueTestIdentifierLabel.Value}
-	labels["terraform-test-name"] = []string{t.Name()}
-	return labels
 }
 
 // annotateLabels adds origin label to the provided [Labels],
@@ -231,7 +229,7 @@ func annotateLabels(t *testing.T, labels Labels) Labels {
 	if labels == nil {
 		labels = make(Labels, 0, 3)
 	}
-	v1alphaLabels := annotateV1alphaLabels(t, nil)
+	v1alphaLabels := annotateV1alphaLabels(t)
 	for _, k := range slices.Sorted(maps.Keys(v1alphaLabels)) {
 		i := slices.IndexFunc(labels, func(l LabelBlockModel) bool { return l.Key == k })
 		if i >= 0 {

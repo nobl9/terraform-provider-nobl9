@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nobl9/terraform-provider-nobl9/internal/frameworkprovider"
 	"github.com/nobl9/terraform-provider-nobl9/internal/reflectiontuils"
 )
 
@@ -165,18 +164,6 @@ func TestGetAttributeTypes(t *testing.T) {
 			assert.Equal(t, tt.expected, result)
 		})
 	}
-}
-
-func TestGetAttributeTypes_RealWorldExample(t *testing.T) {
-	// Test with actual PeriodModel from the SLO code
-	result := reflectiontuils.GetAttributeTypes(frameworkprovider.PeriodModel{})
-
-	expected := map[string]attr.Type{
-		"begin": types.StringType,
-		"end":   types.StringType,
-	}
-
-	assert.Equal(t, expected, result)
 }
 
 func TestGetAttributeTypes_WithInitializedValues(t *testing.T) {

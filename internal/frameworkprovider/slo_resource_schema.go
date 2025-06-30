@@ -1,3 +1,4 @@
+// nolint: lll
 package frameworkprovider
 
 import (
@@ -455,7 +456,7 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 						Optional:    true,
 						Description: "AccountID used with cross-account observability feature",
 						Validators: []validator.String{stringvalidator.RegexMatches(
-							regexp.MustCompile(`^[0-9]{12}$`),
+							regexp.MustCompile(`^\d{12}$`),
 							"account_id must be 12-digit identifier",
 						)},
 					},

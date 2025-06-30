@@ -2249,10 +2249,6 @@ Optional:
 - `calendar` (Block List) Calendar configuration for the time window. (see [below for nested schema](#nestedblock--time_window--calendar))
 - `is_rolling` (Boolean) Is the window moving or not.
 
-Read-Only:
-
-- `period` (Map of String) Period between start time and added count.
-
 <a id="nestedblock--time_window--calendar"></a>
 ### Nested Schema for `time_window.calendar`
 

@@ -1,9 +1,6 @@
 package frameworkprovider
 
 import (
-	"context"
-
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
@@ -350,7 +347,7 @@ type ThousandEyesModel struct {
 //
 // [SLOResourceModel.RetrieveHistoricalDataFrom] - this field is not part of the manifest.
 // It's handled separately in the Create operation.
-func newSLOResourceConfigFromManifest(ctx context.Context, slo v1alphaSLO.SLO) (*SLOResourceModel, diag.Diagnostics) {
+func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 	model := &SLOResourceModel{
 		Name:            slo.Metadata.Name,
 		DisplayName:     stringValue(slo.Metadata.DisplayName),
@@ -408,21 +405,6 @@ func newSLOResourceConfigFromManifest(ctx context.Context, slo v1alphaSLO.SLO) (
 				TimeZone:  tw.Calendar.TimeZone,
 			}}
 		}
-		//var period types.Object
-		//if tw.Period != nil {
-		//	periodModel := PeriodModel{
-		//		Begin: types.StringValue(tw.Period.Begin),
-		//		End:   types.StringValue(tw.Period.End),
-		//	}
-		//	v, diags := types.ObjectValueFrom(ctx, reflectiontuils.GetAttributeTypes(periodModel), periodModel)
-		//	if diags.HasError() {
-		//		return nil, diags
-		//	}
-		//	period = v
-		//} else {
-		//	period = types.ObjectNull(reflectiontuils.GetAttributeTypes(PeriodModel{}))
-		//}
-		//twModel.Period = period
 		model.TimeWindow = []TimeWindowModel{twModel}
 	}
 	if len(slo.Spec.Attachments) > 0 {
@@ -452,7 +434,7 @@ func newSLOResourceConfigFromManifest(ctx context.Context, slo v1alphaSLO.SLO) (
 		}}
 	}
 	model.Composite = compositeV1ToModel(slo.Spec.Composite)
-	return model, nil
+	return model
 }
 
 func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {
@@ -1227,7 +1209,7 @@ func thousandEyesToModel(src *v1alphaSLO.ThousandEyesMetric) *ThousandEyesModel 
 	}
 	model := &ThousandEyesModel{}
 	if src.TestID != nil {
-		model.TestID = int64(*src.TestID)
+		model.TestID = *src.TestID
 	}
 	if src.TestType != nil {
 		model.TestType = types.StringValue(*src.TestType)
