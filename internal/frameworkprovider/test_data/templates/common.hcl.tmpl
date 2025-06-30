@@ -1,6 +1,6 @@
 {{ define "metadata" }}
   name = "{{ .Name }}"
-  {{- if .DisplayName }}
+  {{- if not (isNull .DisplayName) }}
   display_name = "{{ valueString .DisplayName }}"
   {{- end }}
   {{- if hasField "Project" . }}
@@ -25,7 +25,7 @@
   }
     {{- end }}
   {{- end }}
-  {{- if .Description }}
+  {{- if not (isNull .Description) }}
   description = "{{ valueString .Description }}"
   {{- end }}
 {{ end }}

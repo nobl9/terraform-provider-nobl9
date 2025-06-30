@@ -25,6 +25,7 @@ import (
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
+	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 	"github.com/pkg/errors"
@@ -126,6 +127,16 @@ func assertResourceWasApplied(t *testing.T, ctx context.Context, expected manife
 		case v1alphaProject.Project:
 			v.Spec.CreatedAt = ""
 			v.Spec.CreatedBy = ""
+			objects[0] = v
+		case v1alphaSLO.SLO:
+			assert.NotEmpty(t, v.Status)
+			assert.NotEmpty(t, v.Spec.CreatedAt)
+			assert.NotEmpty(t, v.Spec.CreatedBy)
+			v.Status = nil
+			v.Spec.CreatedAt = ""
+			v.Spec.CreatedBy = ""
+			assert.NotEmpty(t, v.Spec.TimeWindows[0].Period)
+			v.Spec.TimeWindows[0].Period = nil
 			objects[0] = v
 		}
 		if !assert.Equal(t, expected, objects[0]) {

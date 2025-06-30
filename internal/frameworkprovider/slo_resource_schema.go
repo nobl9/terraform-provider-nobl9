@@ -64,7 +64,10 @@ func sloResourceSchema() schema.Schema {
 func sloResourceIndicatorBlock() schema.ListNestedBlock {
 	return schema.ListNestedBlock{
 		Description: "Configuration for the metric source (Agent/Direct).",
-		Validators:  []validator.List{listvalidator.SizeAtMost(1)},
+		Validators: []validator.List{
+			listvalidator.IsRequired(),
+			listvalidator.SizeBetween(1, 1),
+		},
 		NestedObject: schema.NestedBlockObject{
 			Attributes: map[string]schema.Attribute{
 				"name": schema.StringAttribute{
@@ -91,6 +94,10 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 	return schema.SetNestedBlock{
 		Description:         description,
 		MarkdownDescription: description,
+		Validators: []validator.Set{
+			setvalidator.IsRequired(),
+			setvalidator.SizeAtLeast(1),
+		},
 		NestedObject: schema.NestedBlockObject{
 			Attributes: map[string]schema.Attribute{
 				"display_name": schema.StringAttribute{
@@ -141,24 +148,28 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 						Blocks: map[string]schema.Block{
 							"good": schema.SetNestedBlock{
 								Description: "Configuration for good time series metrics.",
+								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
 							},
 							"bad": schema.SetNestedBlock{
 								Description: "Configuration for bad time series metrics.",
+								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
 							},
 							"total": schema.SetNestedBlock{
 								Description: "Configuration for metric source.",
+								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
 							},
 							"good_total": schema.SetNestedBlock{
 								Description: "Configuration for single query series metrics.",
+								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
@@ -173,6 +184,10 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 						Blocks: map[string]schema.Block{
 							"query": schema.SetNestedBlock{
 								Description: "Configuration for metric source.",
+								Validators: []validator.Set{
+									setvalidator.IsRequired(),
+									setvalidator.SizeBetween(1, 1),
+								},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
@@ -191,7 +206,7 @@ func sloResourceTimeWindowBlock() schema.ListNestedBlock {
 		Description: "Time window configuration for the SLO.",
 		Validators: []validator.List{
 			listvalidator.IsRequired(),
-			listvalidator.SizeAtMost(1),
+			listvalidator.SizeBetween(1, 1),
 		},
 		NestedObject: schema.NestedBlockObject{
 			Attributes: map[string]schema.Attribute{
@@ -209,8 +224,18 @@ func sloResourceTimeWindowBlock() schema.ListNestedBlock {
 				},
 				"period": schema.MapAttribute{
 					Computed:    true,
-					ElementType: types.StringType,
 					Description: "Period between start time and added count.",
+					ElementType: types.StringType,
+					//Attributes: map[string]schema.Attribute{
+					//	"start_time": schema.StringAttribute{
+					//		Computed:    true,
+					//		Description: "Start time of the period in RFC3339 format.",
+					//	},
+					//	"end_time": schema.StringAttribute{
+					//		Computed:    true,
+					//		Description: "End time of the period in RFC3339 format.",
+					//	},
+					//},
 				},
 			},
 			Blocks: map[string]schema.Block{
@@ -267,7 +292,7 @@ func anomalyConfigBlock() schema.ListNestedBlock {
 					Description: "No data alerts configuration.",
 					Validators: []validator.List{
 						listvalidator.IsRequired(),
-						listvalidator.SizeAtMost(1),
+						listvalidator.SizeBetween(1, 1),
 					},
 					NestedObject: schema.NestedBlockObject{
 						Blocks: map[string]schema.Block{
@@ -918,7 +943,7 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 					Description: "Objectives to be assembled in your composite SLO.",
 					Validators: []validator.List{
 						listvalidator.IsRequired(),
-						listvalidator.SizeAtMost(1),
+						listvalidator.SizeBetween(1, 1),
 					},
 					NestedObject: schema.NestedBlockObject{
 						Blocks: map[string]schema.Block{
@@ -926,7 +951,7 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 								Description: "An additional nesting for the components of your composite SLO.",
 								Validators: []validator.List{
 									listvalidator.IsRequired(),
-									listvalidator.SizeAtMost(1),
+									listvalidator.SizeBetween(1, 1),
 								},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: map[string]schema.Block{

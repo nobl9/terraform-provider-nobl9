@@ -36,6 +36,8 @@ func TestAccServiceResource(t *testing.T) {
 		SloCount: 0,
 	}
 
+	res := newServiceResource(t, serviceResource)
+	res = res
 	recreatedProjectName := generateName()
 
 	resource.Test(t, resource.TestCase{

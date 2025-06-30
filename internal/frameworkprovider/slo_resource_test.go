@@ -40,6 +40,11 @@ func TestAccSLOResource(t *testing.T) {
 	}
 	sloResource.Project = manifestProject.GetName()
 	sloResource.Service = manifestService.GetName()
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.Metadata.Project),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
 
 	manifestSLO := sloResource.ToManifest()
 
@@ -224,7 +229,6 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 
   service = "service"
   budgeting_method = "Occurrences"
-  tier = "1"
   alert_policies = [
     "alert-policy",
   ]
@@ -279,7 +283,6 @@ func getExampleSLOResource(t *testing.T) SLOResourceModel {
 		Description:     types.StringValue("Example SLO"),
 		Service:         "service",
 		BudgetingMethod: "Occurrences",
-		Tier:            types.StringValue("1"),
 		Annotations:     map[string]string{"key": "value"},
 		Labels: annotateLabels(t, Labels{
 			{Key: "team", Values: []string{"green"}},

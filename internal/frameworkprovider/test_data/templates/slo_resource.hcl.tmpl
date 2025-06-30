@@ -6,7 +6,7 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
   {{- if .BudgetingMethod }}
   budgeting_method = "{{ .BudgetingMethod }}"
   {{- end }}
-  {{- if .Tier }}
+  {{- if not (isNull .Tier) }}
   tier = "{{ valueString .Tier }}"
   {{- end }}
   {{- if .AlertPolicies }}
@@ -23,10 +23,10 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
     {{- if .Name }}
     name = "{{ .Name }}"
     {{- end }}
-    {{- if .Project }}
+    {{- if not (isNull .Project) }}
     project = "{{ valueString .Project }}"
     {{- end }}
-    {{- if .Kind }}
+    {{- if not (isNull .Kind) }}
     kind = "{{ valueString .Kind }}"
     {{- end }}
     {{- end }}
@@ -36,13 +36,13 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
   {{- range .Objectives }}
   
   objective {
-    {{- if .DisplayName }}
+    {{- if not (isNull .DisplayName) }}
     display_name = "{{ valueString .DisplayName }}"
     {{- end }}
-    {{- if .Name }}
+    {{- if not (isNull .Name ) }}
     name = "{{ valueString .Name }}"
     {{- end }}
-    {{- if .Op }}
+    {{- if not (isNull .Op ) }}
     op = "{{ valueString .Op }}"
     {{- end }}
     {{- if .Target }}
@@ -108,7 +108,7 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
     {{- if .Composite }}
     {{- with (index .Composite 0) }}
     composite {
-      {{- if .MaxDelay }}
+      {{- if not (isNull .MaxDelay ) }}
       max_delay = "{{ valueString .MaxDelay }}"
       {{- end }}
       {{- if .Components }}
@@ -159,13 +159,6 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
     {{- if .Unit }}
     unit = "{{ .Unit }}"
     {{- end }}
-    {{- if .Period }}
-    period = {
-      {{- range $key, $value := .Period }}
-      {{ $key }} = "{{ $value }}",
-      {{- end }}
-    }
-    {{- end }}
     {{- if .Calendar }}
     {{- with (index .Calendar 0) }}
     calendar {
@@ -185,10 +178,10 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
   {{- range .Attachments }}
   
   attachment {
-    {{- if .DisplayName }}
+    {{- if not (isNull .DisplayName ) }}
     display_name = "{{ valueString .DisplayName }}"
     {{- end }}
-    {{- if .URL }}
+    {{- if not (isNull .URL ) }}
     url = "{{ valueString .URL }}"
     {{- end }}
   }
@@ -201,7 +194,7 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
     {{- if .NoData }}
     {{- with (index .NoData 0) }}
     no_data {
-      {{- if .AlertAfter }}
+      {{- if not (isNull .AlertAfter ) }}
       alert_after = "{{ valueString .AlertAfter }}"
       {{- end }}
       {{- if .AlertMethods }}
