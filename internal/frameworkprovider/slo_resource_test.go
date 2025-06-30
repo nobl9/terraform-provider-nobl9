@@ -50,6 +50,8 @@ func TestAccSLOResource(t *testing.T) {
 
 	recreatedProjectName := generateName()
 
+	sloConfig := newSLOResource(t, sloResource)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -60,7 +62,7 @@ func TestAccSLOResource(t *testing.T) {
 					applyNobl9Objects(t, ctx, auxiliaryObjects...)
 					t.Cleanup(func() { deleteNobl9Objects(t, ctx, auxiliaryObjects...) })
 				},
-				Config: newSLOResource(t, sloResource),
+				Config: sloConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assertResourceWasApplied(t, ctx, manifestSLO),
 				),
@@ -73,7 +75,7 @@ func TestAccSLOResource(t *testing.T) {
 			},
 			// Delete.
 			{
-				Config: newSLOResource(t, sloResource),
+				Config: sloConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assertResourceWasDeleted(t, ctx, manifestSLO),
 				),
@@ -95,7 +97,8 @@ func TestAccSLOResource(t *testing.T) {
 			// ImportState.
 			{
 				ResourceName:  "nobl9_slo.test",
-				ImportStateId: manifestProject.GetName() + "/" + sloResource.Name,
+				Config:        sloConfig,
+				ImportStateId: sloResource.Project + "/" + sloResource.Name,
 				ImportState:   true,
 				ImportStateCheck: func(states []*terraform.InstanceState) error {
 					if !assert.Len(t, states, 1) {
@@ -107,7 +110,9 @@ func TestAccSLOResource(t *testing.T) {
 				},
 				// In the next step we're also verifying the imported state, so we need to persist it.
 				ImportStatePersist: true,
-				PreConfig:          func() { applyNobl9Objects(t, ctx, manifestSLO) },
+				PreConfig: func() {
+					applyNobl9Objects(t, ctx, manifestSLO)
+				},
 			},
 			// Update and Read, ensure computed field does not pollute the plan.
 			{
@@ -156,18 +161,24 @@ func TestAccSLOResource(t *testing.T) {
 			},
 			// Update project - recreate.
 			{
+				PreConfig: func() {
+					newProjectManifest := manifestProject
+					newProjectManifest.Metadata.Name = recreatedProjectName
+					newServiceManifest := manifestService
+					newServiceManifest.Metadata.Project = recreatedProjectName
+
+					applyNobl9Objects(t, ctx, newProjectManifest, newServiceManifest)
+					t.Cleanup(func() { deleteNobl9Objects(t, ctx, newProjectManifest, newServiceManifest) })
+				},
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
-					m.Name = sloNameRecreatedByNameChange
 					m.Project = recreatedProjectName
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("nobl9_slo.test", "name", sloNameRecreatedByNameChange),
 					resource.TestCheckResourceAttr("nobl9_slo.test", "project", recreatedProjectName),
 					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
 						slo := manifestSLO
-						slo.Metadata.Name = sloNameRecreatedByNameChange
 						slo.Metadata.Project = recreatedProjectName
 						return slo
 					}()),

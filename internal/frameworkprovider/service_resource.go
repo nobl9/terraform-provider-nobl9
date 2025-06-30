@@ -13,6 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/nobl9/nobl9-go/manifest"
+
+	"github.com/nobl9/terraform-provider-nobl9/internal/reflectiontuils"
 )
 
 // Ensure [ServiceResource] fully satisfies framework interfaces.
@@ -57,7 +59,7 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"status": schema.ObjectAttribute{
 				Computed:       true,
 				Description:    "Status of created service.",
-				AttributeTypes: serviceStatusTypes,
+				AttributeTypes: reflectiontuils.GetAttributeTypes(ServiceResourceStatusModel{}),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
@@ -81,7 +83,9 @@ func (s *ServiceResource) Create(ctx context.Context, req resource.CreateRequest
 // ReadRequest and new state values set on the ReadResponse.
 func (s *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var model ServiceResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &model)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("name"), &model.Name)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("project"), &model.Project)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("label"), &model.Labels)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

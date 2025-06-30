@@ -82,7 +82,7 @@ func (s sdkClient) ApplyObject(ctx context.Context, obj manifest.Object) diag.Di
 			),
 		}
 	}
-	tflog.Trace(ctx, fmt.Sprintf("created %s %s", obj.GetVersion(), obj.GetKind()), getManifestObjectTraceAttrs(obj))
+	tflog.Debug(ctx, fmt.Sprintf("created %s %s", obj.GetVersion(), obj.GetKind()), getManifestObjectTraceAttrs(obj))
 	return nil
 }
 
@@ -93,7 +93,7 @@ func (s sdkClient) DeleteObject(ctx context.Context, kind manifest.Kind, name, p
 			diag.NewErrorDiagnostic(fmt.Sprintf("Failed to delete %s %s", manifest.VersionV1alpha, kind), err.Error()),
 		}
 	}
-	tflog.Trace(ctx, fmt.Sprintf("deleted %s %s", manifest.VersionV1alpha, kind), map[string]any{
+	tflog.Debug(ctx, fmt.Sprintf("deleted %s %s", manifest.VersionV1alpha, kind), map[string]any{
 		"name":    name,
 		"project": project,
 	})

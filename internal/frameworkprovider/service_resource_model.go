@@ -3,10 +3,11 @@ package frameworkprovider
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
+
+	"github.com/nobl9/terraform-provider-nobl9/internal/reflectiontuils"
 )
 
 // ServiceResourceModel describes the [ServiceResource] data model.
@@ -20,10 +21,6 @@ type ServiceResourceModel struct {
 	Status      types.Object      `tfsdk:"status"`
 }
 
-var serviceStatusTypes = map[string]attr.Type{
-	"slo_count": types.Int64Type,
-}
-
 type ServiceResourceStatusModel struct {
 	SLOCount types.Int64 `tfsdk:"slo_count"`
 }
@@ -34,15 +31,16 @@ func newServiceResourceConfigFromManifest(
 ) (*ServiceResourceModel, diag.Diagnostics) {
 	var status types.Object
 	if svc.Status != nil {
-		v, diags := types.ObjectValueFrom(ctx, serviceStatusTypes, ServiceResourceStatusModel{
+		statusModel := ServiceResourceStatusModel{
 			SLOCount: types.Int64Value(int64(svc.Status.SloCount)),
-		})
+		}
+		v, diags := types.ObjectValueFrom(ctx, reflectiontuils.GetAttributeTypes(statusModel), statusModel)
 		if diags.HasError() {
 			return nil, diags
 		}
 		status = v
 	} else {
-		status = types.ObjectNull(serviceStatusTypes)
+		status = types.ObjectNull(reflectiontuils.GetAttributeTypes(ServiceResourceStatusModel{}))
 	}
 	return &ServiceResourceModel{
 		Name:        svc.Metadata.Name,

@@ -1,7 +1,9 @@
 package frameworkprovider
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
@@ -123,7 +125,6 @@ type TimeWindowModel struct {
 	Count     int64           `tfsdk:"count"`
 	IsRolling types.Bool      `tfsdk:"is_rolling"`
 	Unit      string          `tfsdk:"unit"`
-	Period    types.Map       `tfsdk:"period"`
 	Calendar  []CalendarModel `tfsdk:"calendar"`
 }
 
@@ -349,7 +350,7 @@ type ThousandEyesModel struct {
 //
 // [SLOResourceModel.RetrieveHistoricalDataFrom] - this field is not part of the manifest.
 // It's handled separately in the Create operation.
-func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
+func newSLOResourceConfigFromManifest(ctx context.Context, slo v1alphaSLO.SLO) (*SLOResourceModel, diag.Diagnostics) {
 	model := &SLOResourceModel{
 		Name:            slo.Metadata.Name,
 		DisplayName:     stringValue(slo.Metadata.DisplayName),
@@ -400,10 +401,6 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 			Count:     int64(tw.Count),
 			IsRolling: types.BoolValue(tw.IsRolling),
 			Unit:      tw.Unit,
-			Period: types.MapValueMust(types.StringType, map[string]attr.Value{
-				"begin": stringValue(tw.Period.Begin),
-				"end":   stringValue(tw.Period.End),
-			}),
 		}
 		if tw.Calendar != nil {
 			twModel.Calendar = []CalendarModel{{
@@ -411,6 +408,21 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 				TimeZone:  tw.Calendar.TimeZone,
 			}}
 		}
+		//var period types.Object
+		//if tw.Period != nil {
+		//	periodModel := PeriodModel{
+		//		Begin: types.StringValue(tw.Period.Begin),
+		//		End:   types.StringValue(tw.Period.End),
+		//	}
+		//	v, diags := types.ObjectValueFrom(ctx, reflectiontuils.GetAttributeTypes(periodModel), periodModel)
+		//	if diags.HasError() {
+		//		return nil, diags
+		//	}
+		//	period = v
+		//} else {
+		//	period = types.ObjectNull(reflectiontuils.GetAttributeTypes(PeriodModel{}))
+		//}
+		//twModel.Period = period
 		model.TimeWindow = []TimeWindowModel{twModel}
 	}
 	if len(slo.Spec.Attachments) > 0 {
@@ -440,7 +452,7 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 		}}
 	}
 	model.Composite = compositeV1ToModel(slo.Spec.Composite)
-	return model
+	return model, nil
 }
 
 func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {

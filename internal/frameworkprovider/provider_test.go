@@ -74,7 +74,15 @@ func testAccNewMux(ctx context.Context, version string) (tfprotov6.ProviderServe
 // reattach.
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
 	"nobl9": func() (tfprotov6.ProviderServer, error) {
-		return testAccNewMux(context.Background(), "test")
+		var (
+			srv  tfprotov6.ProviderServer
+			err  error
+			once sync.Once
+		)
+		once.Do(func() {
+			srv, err = testAccNewMux(context.Background(), "test")
+		})
+		return srv, err
 	},
 }
 

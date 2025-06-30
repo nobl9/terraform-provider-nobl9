@@ -36,8 +36,6 @@ func TestAccServiceResource(t *testing.T) {
 		SloCount: 0,
 	}
 
-	res := newServiceResource(t, serviceResource)
-	res = res
 	recreatedProjectName := generateName()
 
 	resource.Test(t, resource.TestCase{
@@ -85,7 +83,7 @@ func TestAccServiceResource(t *testing.T) {
 			// ImportState.
 			{
 				ResourceName:  "nobl9_service.test",
-				ImportStateId: manifestProject.GetName() + "/" + serviceResource.Name,
+				ImportStateId: serviceResource.Project + "/" + serviceResource.Name,
 				ImportState:   true,
 				ImportStateCheck: func(states []*terraform.InstanceState) error {
 					if !assert.Len(t, states, 1) {
@@ -148,16 +146,13 @@ func TestAccServiceResource(t *testing.T) {
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
-					m.Name = serviceNameRecreatedByNameChange
 					m.Project = recreatedProjectName
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("nobl9_service.test", "name", serviceNameRecreatedByNameChange),
 					resource.TestCheckResourceAttr("nobl9_service.test", "project", recreatedProjectName),
 					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
 						svc := manifestService
-						svc.Metadata.Name = serviceNameRecreatedByNameChange
 						svc.Metadata.Project = recreatedProjectName
 						return svc
 					}()),

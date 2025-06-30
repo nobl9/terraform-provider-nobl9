@@ -53,7 +53,9 @@ func (s *SLOResource) Create(ctx context.Context, req resource.CreateRequest, re
 // ReadRequest and new state values set on the ReadResponse.
 func (s *SLOResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var model SLOResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &model)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("name"), &model.Name)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("project"), &model.Project)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("label"), &model.Labels)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -161,7 +163,11 @@ func (s *SLOResource) readResource(
 	if diagnostics.HasError() {
 		return nil, diagnostics
 	}
-	updatedModel := newSLOResourceConfigFromManifest(slo)
+	updatedModel, diags := newSLOResourceConfigFromManifest(ctx, slo)
+	diagnostics.Append(diags...)
+	if diagnostics.HasError() {
+		return nil, diagnostics
+	}
 	// Sort Labels.
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
 	return updatedModel, diagnostics

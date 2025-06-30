@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -34,6 +35,7 @@ func sloResourceSchema() schema.Schema {
 			},
 			"tier": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Internal field, do not use.",
 			},
 			// TODO: Confirm this can be turned to set.
@@ -216,26 +218,13 @@ func sloResourceTimeWindowBlock() schema.ListNestedBlock {
 				},
 				"is_rolling": schema.BoolAttribute{
 					Optional:    true,
+					Computed:    true,
+					Default:     booldefault.StaticBool(false),
 					Description: "Is the window moving or not.",
 				},
 				"unit": schema.StringAttribute{
 					Required:    true,
 					Description: "Unit of time.",
-				},
-				"period": schema.MapAttribute{
-					Computed:    true,
-					Description: "Period between start time and added count.",
-					ElementType: types.StringType,
-					//Attributes: map[string]schema.Attribute{
-					//	"start_time": schema.StringAttribute{
-					//		Computed:    true,
-					//		Description: "Start time of the period in RFC3339 format.",
-					//	},
-					//	"end_time": schema.StringAttribute{
-					//		Computed:    true,
-					//		Description: "End time of the period in RFC3339 format.",
-					//	},
-					//},
 				},
 			},
 			Blocks: map[string]schema.Block{
