@@ -9,33 +9,36 @@ import (
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
+	"github.com/nobl9/nobl9-go/tests/e2etestutils"
 )
 
 func TestAccServiceDataSource(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
 	manifestProject1 := v1alphaProject.New(
 		v1alphaProject.Metadata{
-			Name:   generateName(),
-			Labels: annotateV1alphaLabels(t),
+			Name:   e2etestutils.GenerateName(),
+			Labels: e2etestutils.AnnotateLabels(t, nil),
 		},
 		v1alphaProject.Spec{},
 	)
 
 	manifestProject2 := v1alphaProject.New(
 		v1alphaProject.Metadata{
-			Name:   generateName(),
-			Labels: annotateV1alphaLabels(t),
+			Name:   e2etestutils.GenerateName(),
+			Labels: e2etestutils.AnnotateLabels(t, nil),
 		},
 		v1alphaProject.Spec{},
 	)
 
 	manifestService1 := v1alphaService.New(
 		v1alphaService.Metadata{
-			Name:    generateName(),
+			Name:    e2etestutils.GenerateName(),
 			Project: manifestProject1.GetName(),
-			Labels:  annotateV1alphaLabels(t),
+			Labels:  e2etestutils.AnnotateLabels(t, nil),
 		},
 		v1alphaService.Spec{},
 	)
@@ -53,16 +56,15 @@ func TestAccServiceDataSource(t *testing.T) {
 	})
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create Service resource with Service Data Source name in another Project.
 			{
 				PreConfig: func() {
 					objects := []manifest.Object{manifestProject1, manifestProject2, manifestService1}
-					applyNobl9Objects(t, ctx, objects...)
+					e2etestutils.V1Apply(t, objects)
 					t.Cleanup(func() {
-						deleteNobl9Objects(t, ctx, objects...)
+						e2etestutils.V1Delete(t, objects)
 					})
 				},
 				Config: serviceResourceConfig,

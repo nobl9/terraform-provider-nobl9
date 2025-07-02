@@ -34,6 +34,7 @@
     "bymonthday",
     "dbslo",
     "dynatrace",
+    "e2etestutils",
     "endef",
     "gobin",
     "gofmt",

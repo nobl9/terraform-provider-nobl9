@@ -20,6 +20,8 @@ require (
 	github.com/teambition/rrule-go v1.8.2
 )
 
+replace github.com/nobl9/nobl9-go => ../nobl9-go
+
 require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect

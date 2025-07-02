@@ -2,17 +2,13 @@ package frameworkprovider
 
 import (
 	"context"
-	"fmt"
 	"maps"
 	"net/http"
 	"net/url"
 	"os"
 	"slices"
-	"strconv"
 	"sync"
-	"sync/atomic"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
@@ -23,30 +19,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/nobl9/nobl9-go/manifest"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	"github.com/nobl9/nobl9-go/tests/e2etestutils"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/nobl9/terraform-provider-nobl9/nobl9"
-)
-
-const originLabelValue = "terraform-acc-test"
-
-var (
-	objectsCounter            = atomic.Int64{}
-	testStartTime             = time.Now()
-	uniqueTestIdentifierLabel = struct {
-		Key   string
-		Value string
-	}{
-		Key:   "terraform-acc-test-id",
-		Value: strconv.Itoa(int(testStartTime.UnixNano())),
-	}
 )
 
 // testAccNewMux returns a new provider server which can multiplex
@@ -91,10 +73,11 @@ var testSDKClient = struct {
 	once   sync.Once
 }{}
 
-// testAccPreCheck is a helper function that is called before running acceptance tests.
+// testAccSetup is a helper function that is called before running acceptance tests.
 // It is used to setup [sdk.Client] which is used to interact with the Nobl9 API.
-func testAccPreCheck(t *testing.T) {
+func testAccSetup(t *testing.T) {
 	t.Helper()
+	checkIfAcceptanceTestIsSet(t)
 
 	// Initialize the SDK client.
 	testSDKClient.once.Do(func() {
@@ -171,22 +154,6 @@ func assertResourceWasDeleted(t *testing.T, ctx context.Context, expected manife
 	}
 }
 
-// applyNobl9Objects is a helper function that applies the provided objects to the Nobl9 platform.
-func applyNobl9Objects(t *testing.T, ctx context.Context, objects ...manifest.Object) {
-	t.Helper()
-
-	err := testSDKClient.client.Objects().V1().Apply(ctx, objects)
-	assert.NoError(t, err)
-}
-
-// deleteNobl9Objects is a helper function that deletes the provided objects from the Nobl9 platform.
-func deleteNobl9Objects(t *testing.T, ctx context.Context, objects ...manifest.Object) {
-	t.Helper()
-
-	err := testSDKClient.client.Objects().V1().Delete(ctx, objects)
-	assert.NoError(t, err)
-}
-
 func getObjectsFromTheNobl9API(t *testing.T, ctx context.Context, object manifest.Object) ([]manifest.Object, error) {
 	t.Helper()
 
@@ -202,24 +169,6 @@ func getObjectsFromTheNobl9API(t *testing.T, ctx context.Context, object manifes
 	return objects, nil
 }
 
-// generateName generates a unique name for the test object.
-func generateName() string {
-	return fmt.Sprintf("terraform-acc-%d-%d", objectsCounter.Add(1), testStartTime.UnixNano())
-}
-
-// annotateV1alphaLabels adds origin label to the provided [v1alpha.Labels],
-// so it's easier to locate the leftovers from these tests.
-// It also adds unique test identifier label to the provided labels
-// so that we can reliably retrieve objects created within a given test.
-func annotateV1alphaLabels(t *testing.T) v1alpha.Labels {
-	t.Helper()
-	return v1alpha.Labels{
-		"origin":                      []string{originLabelValue},
-		uniqueTestIdentifierLabel.Key: []string{uniqueTestIdentifierLabel.Value},
-		"terraform-test-name":         []string{t.Name()},
-	}
-}
-
 // annotateLabels adds origin label to the provided [Labels],
 // so it's easier to locate the leftovers from these tests.
 // It also adds unique test identifier label to the provided labels
@@ -229,7 +178,7 @@ func annotateLabels(t *testing.T, labels Labels) Labels {
 	if labels == nil {
 		labels = make(Labels, 0, 3)
 	}
-	v1alphaLabels := annotateV1alphaLabels(t)
+	v1alphaLabels := e2etestutils.AnnotateLabels(t, nil)
 	for _, k := range slices.Sorted(maps.Keys(v1alphaLabels)) {
 		i := slices.IndexFunc(labels, func(l LabelBlockModel) bool { return l.Key == k })
 		if i >= 0 {
@@ -242,4 +191,11 @@ func annotateLabels(t *testing.T, labels Labels) Labels {
 		}
 	}
 	return labels
+}
+
+// checkIfAcceptanceTestIsSet checks if the acceptance test environment variable is set.
+func checkIfAcceptanceTestIsSet(t *testing.T) {
+	if _, ok := os.LookupEnv(resource.EnvTfAcc); !ok {
+		t.Skipf("Acceptance tests skipped unless env '%s' set", resource.EnvTfAcc)
+	}
 }

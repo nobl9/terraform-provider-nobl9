@@ -6,24 +6,28 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
+	"github.com/nobl9/nobl9-go/tests/e2etestutils"
 )
 
 func TestAccProjectDataSource(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
 	manifestProject := v1alphaProject.New(
 		v1alphaProject.Metadata{
-			Name: generateName(),
+			Name: e2etestutils.GenerateName(),
 		},
 		v1alphaProject.Spec{},
 	)
 
 	manifestService := v1alphaService.New(
 		v1alphaService.Metadata{
-			Name:    generateName(),
+			Name:    e2etestutils.GenerateName(),
 			Project: manifestProject.GetName(),
 		},
 		v1alphaService.Spec{},
@@ -40,15 +44,14 @@ func TestAccProjectDataSource(t *testing.T) {
 	})
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create Service resource with Project Data Source.
 			{
 				PreConfig: func() {
-					applyNobl9Objects(t, ctx, manifestProject)
+					e2etestutils.V1Apply(t, []manifest.Object{manifestProject})
 					t.Cleanup(func() {
-						deleteNobl9Objects(t, ctx, manifestProject)
+						e2etestutils.V1Delete(t, []manifest.Object{manifestProject})
 					})
 				},
 				Config: serviceResourceConfig,

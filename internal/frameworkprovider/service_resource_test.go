@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
+	"github.com/nobl9/nobl9-go/tests/e2etestutils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +25,7 @@ func TestAccServiceResource(t *testing.T) {
 
 	auxiliaryObjects := []manifest.Object{manifestProject}
 
-	serviceNameRecreatedByNameChange := generateName()
+	serviceNameRecreatedByNameChange := e2etestutils.GenerateName()
 	serviceResource := serviceResourceTemplateModel{
 		ResourceName:         "test",
 		ServiceResourceModel: getExampleServiceResource(t),
@@ -36,17 +37,17 @@ func TestAccServiceResource(t *testing.T) {
 		SloCount: 0,
 	}
 
-	recreatedProjectName := generateName()
+	recreatedProjectName := e2etestutils.GenerateName()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { testAccSetup(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read.
 			{
 				PreConfig: func() {
-					applyNobl9Objects(t, ctx, auxiliaryObjects...)
-					t.Cleanup(func() { deleteNobl9Objects(t, ctx, auxiliaryObjects...) })
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
 				},
 				Config: newServiceResource(t, serviceResource),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -95,7 +96,7 @@ func TestAccServiceResource(t *testing.T) {
 				},
 				// In the next step we're also verifying the imported state, so we need to persist it.
 				ImportStatePersist: true,
-				PreConfig:          func() { applyNobl9Objects(t, ctx, manifestService) },
+				PreConfig:          func() { e2etestutils.V1Apply(t, []manifest.Object{manifestService}) },
 			},
 			// Update and Read, ensure computed field does not pollute the plan.
 			{
@@ -208,7 +209,7 @@ func TestRenderServiceResourceTemplate(t *testing.T) {
   label {
     key = "terraform-acc-test-id"
     values = [
-      "%d",
+      "%s",
     ]
   }
   label {
@@ -219,7 +220,7 @@ func TestRenderServiceResourceTemplate(t *testing.T) {
   }
   description = "Example service"
 }
-`, testStartTime.UnixNano(), t.Name())
+`, exampleService.Labels[3].Values[0], t.Name())
 
 	assert.Equal(t, expected, actual)
 }
@@ -235,7 +236,7 @@ func newServiceResource(t *testing.T, model serviceResourceTemplateModel) string
 
 func getExampleServiceResource(t *testing.T) ServiceResourceModel {
 	return ServiceResourceModel{
-		Name:        generateName(),
+		Name:        e2etestutils.GenerateName(),
 		DisplayName: types.StringValue("Service"),
 		Project:     "default",
 		Description: types.StringValue("Example service"),

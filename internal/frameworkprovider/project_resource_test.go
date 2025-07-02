@@ -10,15 +10,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
+	"github.com/nobl9/nobl9-go/tests/e2etestutils"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAccProjectResource(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	projectNameRecreatedByNameChange := generateName()
+	projectNameRecreatedByNameChange := e2etestutils.GenerateName()
 	projectResource := projectResourceTemplateModel{
 		ResourceName:         "test",
 		ProjectResourceModel: getExampleProjectResource(t),
@@ -27,7 +31,6 @@ func TestAccProjectResource(t *testing.T) {
 	manifestProject := projectResource.ToManifest()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read.
@@ -71,7 +74,7 @@ func TestAccProjectResource(t *testing.T) {
 				},
 				// In the next step we're also verifying the imported state, so we need to persist it.
 				ImportStatePersist: true,
-				PreConfig:          func() { applyNobl9Objects(t, ctx, manifestProject) },
+				PreConfig:          func() { e2etestutils.V1Apply(t, []manifest.Object{manifestProject}) },
 			},
 			// Update and Read, ensure computed field does not pollute the plan.
 			{
@@ -161,7 +164,7 @@ func TestRenderProjectResourceTemplate(t *testing.T) {
   label {
     key = "terraform-acc-test-id"
     values = [
-      "%d",
+      "%s",
     ]
   }
   label {
@@ -172,7 +175,7 @@ func TestRenderProjectResourceTemplate(t *testing.T) {
   }
   description = "Example project"
 }
-`, testStartTime.UnixNano(), t.Name())
+`, exampleProject.Labels[3].Values[0], t.Name())
 
 	assert.Equal(t, expected, actual)
 }
@@ -188,7 +191,7 @@ func newProjectResource(t *testing.T, model projectResourceTemplateModel) string
 
 func getExampleProjectResource(t *testing.T) ProjectResourceModel {
 	return ProjectResourceModel{
-		Name:        generateName(),
+		Name:        e2etestutils.GenerateName(),
 		DisplayName: types.StringValue("Project"),
 		Description: types.StringValue("Example project"),
 		Annotations: map[string]string{"key": "value"},

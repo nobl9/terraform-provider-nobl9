@@ -17,7 +17,7 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
   ]
   {{- end }}
   {{- if .Indicator }}
-  
+
   indicator {
     {{- with (index .Indicator 0) }}
     {{- if .Name }}
@@ -34,7 +34,7 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
   {{- end }}
   {{- if .Objectives }}
   {{- range .Objectives }}
-  
+
   objective {
     {{- if not (isNull .DisplayName) }}
     display_name = "{{ valueString .DisplayName }}"
@@ -147,7 +147,7 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
   {{- end }}
   {{- end }}
   {{- if .TimeWindow }}
-  
+
   time_window {
     {{- with (index .TimeWindow 0) }}
     {{- if .Count }}
@@ -176,7 +176,7 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
   {{- end }}
   {{- if .Attachments }}
   {{- range .Attachments }}
-  
+
   attachment {
     {{- if not (isNull .DisplayName ) }}
     display_name = "{{ valueString .DisplayName }}"
@@ -188,7 +188,7 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
   {{- end }}
   {{- end }}
   {{- if .AnomalyConfig }}
-  
+
   anomaly_config {
     {{- with (index .AnomalyConfig 0) }}
     {{- if .NoData }}

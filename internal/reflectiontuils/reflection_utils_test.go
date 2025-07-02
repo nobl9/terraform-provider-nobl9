@@ -44,7 +44,7 @@ type TestModelWithNonTypeFields struct {
 
 type TestModelWithUnexportedFields struct {
 	ExportedField   types.String `tfsdk:"exported_field"`
-	unexportedField types.String `tfsdk:"unexported_field"`
+	unexportedField types.String `tfsdk:"unexported_field"` // nolint: unused
 }
 
 type TestModelEmpty struct{}
