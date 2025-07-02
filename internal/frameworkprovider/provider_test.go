@@ -31,6 +31,16 @@ import (
 	"github.com/nobl9/terraform-provider-nobl9/nobl9"
 )
 
+func TestMain(m *testing.M) {
+	e2etestutils.SetToolName("Terraform")
+
+	code := m.Run()
+	if _, ok := os.LookupEnv(resource.EnvTfAcc); ok {
+		e2etestutils.Cleanup()
+	}
+	os.Exit(code)
+}
+
 // testAccNewMux returns a new provider server which can multiplex
 // between the SDK and framework provider implementations.
 func testAccNewMux(ctx context.Context, version string) (tfprotov6.ProviderServer, error) {
@@ -99,6 +109,8 @@ func testAccSetup(t *testing.T) {
 			t.Fatalf("failed initialize Nobl9 SDK client: %v", diags.Errors())
 		}
 		testSDKClient.client = client.client
+
+		e2etestutils.SetClient(client.client)
 	})
 }
 

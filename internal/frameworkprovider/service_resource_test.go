@@ -3,7 +3,6 @@ package frameworkprovider
 import (
 	"context"
 	"errors"
-	"fmt"
 	"regexp"
 	"testing"
 
@@ -173,14 +172,19 @@ func TestAccServiceResource(t *testing.T) {
 func TestRenderServiceResourceTemplate(t *testing.T) {
 	t.Parallel()
 
-	exampleService := getExampleServiceResource(t)
-	exampleService.Name = "service"
+	exampleResource := getExampleServiceResource(t)
+	exampleResource.Name = "service"
+	exampleResource.Labels = Labels{
+		{Key: "team", Values: []string{"green", "orange"}},
+		{Key: "env", Values: []string{"prod"}},
+		{Key: "empty", Values: []string{""}},
+	}
 	actual := newServiceResource(t, serviceResourceTemplateModel{
 		ResourceName:         "this",
-		ServiceResourceModel: exampleService,
+		ServiceResourceModel: exampleResource,
 	})
 
-	expected := fmt.Sprintf(`resource "nobl9_service" "this" {
+	expected := `resource "nobl9_service" "this" {
   name = "service"
   display_name = "Service"
   project = "default"
@@ -191,36 +195,24 @@ func TestRenderServiceResourceTemplate(t *testing.T) {
     key = "team"
     values = [
       "green",
+      "orange",
     ]
   }
   label {
     key = "env"
     values = [
-      "dev",
       "prod",
     ]
   }
   label {
-    key = "origin"
+    key = "empty"
     values = [
-      "terraform-acc-test",
-    ]
-  }
-  label {
-    key = "terraform-acc-test-id"
-    values = [
-      "%s",
-    ]
-  }
-  label {
-    key = "terraform-test-name"
-    values = [
-      "%s",
+      "",
     ]
   }
   description = "Example service"
 }
-`, exampleService.Labels[3].Values[0], t.Name())
+`
 
 	assert.Equal(t, expected, actual)
 }

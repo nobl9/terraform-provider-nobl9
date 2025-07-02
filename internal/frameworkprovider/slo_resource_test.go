@@ -3,7 +3,6 @@ package frameworkprovider
 import (
 	"context"
 	"errors"
-	"fmt"
 	"regexp"
 	"testing"
 
@@ -14,12 +13,9 @@ import (
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaAlertPolicy "github.com/nobl9/nobl9-go/manifest/v1alpha/alertpolicy"
-	v1alphaDirect "github.com/nobl9/nobl9-go/manifest/v1alpha/direct"
-	v1alphaExamples "github.com/nobl9/nobl9-go/manifest/v1alpha/examples"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 	"github.com/nobl9/nobl9-go/tests/e2etestutils"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAccSLOResource(t *testing.T) {
@@ -31,11 +27,11 @@ func TestAccSLOResource(t *testing.T) {
 	manifestProject := getExampleProjectResource(t).ToManifest()
 	manifestService := getExampleServiceResource(t).ToManifest()
 	manifestService.Metadata.Project = manifestProject.GetName()
-	manifestDirect := getDirectExampleObject(t, v1alpha.AppDynamics)
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
 	manifestDirect.Metadata.Name = e2etestutils.GenerateName()
 	manifestDirect.Metadata.Project = manifestProject.GetName()
-
-	auxiliaryObjects := []manifest.Object{manifestProject, manifestService, manifestDirect}
 
 	sloNameRecreatedByNameChange := e2etestutils.GenerateName()
 	sloResource := sloResourceTemplateModel{
@@ -46,7 +42,7 @@ func TestAccSLOResource(t *testing.T) {
 	sloResource.Service = manifestService.GetName()
 	sloResource.Indicator = []IndicatorModel{{
 		Name:    manifestDirect.GetName(),
-		Project: types.StringValue(manifestDirect.Metadata.Project),
+		Project: types.StringValue(manifestDirect.GetProject()),
 		Kind:    types.StringValue(manifestDirect.GetKind().String()),
 	}}
 
@@ -311,12 +307,17 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 
 	exampleResource := getExampleSLOResource(t)
 	exampleResource.AlertPolicies = []string{"alert-policy"}
+	exampleResource.Labels = Labels{
+		{Key: "team", Values: []string{"green", "orange"}},
+		{Key: "env", Values: []string{"prod"}},
+		{Key: "empty", Values: []string{""}},
+	}
 	actual := newSLOResource(t, sloResourceTemplateModel{
 		ResourceName:     "this",
 		SLOResourceModel: exampleResource,
 	})
 
-	expected := fmt.Sprintf(`resource "nobl9_slo" "this" {
+	expected := `resource "nobl9_slo" "this" {
   name = "slo"
   display_name = "SLO"
   project = "default"
@@ -327,24 +328,19 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
     key = "team"
     values = [
       "green",
+      "orange",
     ]
   }
   label {
-    key = "origin"
+    key = "env"
     values = [
-      "terraform-acc-test",
+      "prod",
     ]
   }
   label {
-    key = "terraform-acc-test-id"
+    key = "empty"
     values = [
-      "%s",
-    ]
-  }
-  label {
-    key = "terraform-test-name"
-    values = [
-      "%s",
+      "",
     ]
   }
   description = "Example SLO"
@@ -383,7 +379,7 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
     unit = "Minute"
   }
 }
-`, exampleResource.Labels[3].Values[0], t.Name())
+`
 
 	assert.Equal(t, expected, actual)
 }
@@ -439,19 +435,4 @@ func getExampleSLOResource(t *testing.T) SLOResourceModel {
 			Unit:      "Minute",
 		}},
 	}
-}
-
-func getDirectExampleObject(t *testing.T, directType v1alpha.DataSourceType) v1alphaDirect.Direct {
-	t.Helper()
-	examples := v1alphaExamples.Direct()
-	for _, example := range examples {
-		direct := example.GetObject().(v1alphaDirect.Direct)
-		typ, err := direct.Spec.GetType()
-		require.NoError(t, err)
-		if typ == directType {
-			return direct
-		}
-	}
-	t.Fatalf("could not find direct type %s", directType)
-	return v1alphaDirect.Direct{}
 }

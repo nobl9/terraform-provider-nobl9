@@ -3,7 +3,6 @@ package frameworkprovider
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -129,14 +128,19 @@ func TestAccProjectResource(t *testing.T) {
 func TestRenderProjectResourceTemplate(t *testing.T) {
 	t.Parallel()
 
-	exampleProject := getExampleProjectResource(t)
-	exampleProject.Name = "project"
+	exampleResource := getExampleProjectResource(t)
+	exampleResource.Name = "project"
+	exampleResource.Labels = Labels{
+		{Key: "team", Values: []string{"green", "orange"}},
+		{Key: "env", Values: []string{"prod"}},
+		{Key: "empty", Values: []string{""}},
+	}
 	actual := newProjectResource(t, projectResourceTemplateModel{
 		ResourceName:         "this",
-		ProjectResourceModel: exampleProject,
+		ProjectResourceModel: exampleResource,
 	})
 
-	expected := fmt.Sprintf(`resource "nobl9_project" "this" {
+	expected := `resource "nobl9_project" "this" {
   name = "project"
   display_name = "Project"
   annotations = {
@@ -146,36 +150,24 @@ func TestRenderProjectResourceTemplate(t *testing.T) {
     key = "team"
     values = [
       "green",
+      "orange",
     ]
   }
   label {
     key = "env"
     values = [
-      "dev",
       "prod",
     ]
   }
   label {
-    key = "origin"
+    key = "empty"
     values = [
-      "terraform-acc-test",
-    ]
-  }
-  label {
-    key = "terraform-acc-test-id"
-    values = [
-      "%s",
-    ]
-  }
-  label {
-    key = "terraform-test-name"
-    values = [
-      "%s",
+      "",
     ]
   }
   description = "Example project"
 }
-`, exampleProject.Labels[3].Values[0], t.Name())
+`
 
 	assert.Equal(t, expected, actual)
 }
