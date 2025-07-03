@@ -90,6 +90,8 @@ type MetricSpecModel struct {
 	SplunkObservability []SplunkObservabilityModel `tfsdk:"splunk_observability"`
 	SumoLogic           []SumoLogicModel           `tfsdk:"sumologic"`
 	ThousandEyes        []ThousandEyesModel        `tfsdk:"thousandeyes"`
+	AzurePrometheus     []AzurePrometheusModel     `tfsdk:"azure_prometheus"`
+	Coralogix           []CoralogixModel           `tfsdk:"coralogix"`
 }
 
 // CompositeObjectiveModel represents the composite block in an objective.
@@ -341,6 +343,14 @@ type SumoLogicModel struct {
 type ThousandEyesModel struct {
 	TestID   int64        `tfsdk:"test_id"`
 	TestType types.String `tfsdk:"test_type"`
+}
+
+type AzurePrometheusModel struct {
+	PromQL string `tfsdk:"promql"`
+}
+
+type CoralogixModel struct {
+	PromQL string `tfsdk:"promql"`
 }
 
 // newSLOResourceConfigFromManifest creates a new [SLOResourceModel] from a [v1alphaSLO.SLO] manifest.
@@ -691,7 +701,6 @@ func (c *CompositeObjectiveModel) ToManifest() *v1alphaSLO.CompositeSpec {
 		}
 		spec.Components = v1alphaSLO.Components{Objectives: compositeObjectives}
 	}
-
 	return spec
 }
 
@@ -699,13 +708,11 @@ func (s SLOResourceModel) toV1CompositeModel() *v1alphaSLO.Composite {
 	if len(s.Composite) == 0 {
 		return nil
 	}
-	// Map deprecated composite fields appropriately
 	composite := s.Composite[0]
 	target := composite.Target.ValueFloat64()
 	result := &v1alphaSLO.Composite{
 		BudgetTarget: &target,
 	}
-	// Map burn rate conditions if present
 	if len(composite.BurnRateCondition) > 0 {
 		brc := composite.BurnRateCondition[0]
 		result.BurnRateCondition = &v1alphaSLO.CompositeBurnRateCondition{
@@ -798,6 +805,12 @@ func metricSpecToModel(spec *v1alphaSLO.MetricSpec) MetricSpecModel {
 	if thousandEyes := thousandEyesToModel(spec.ThousandEyes); thousandEyes != nil {
 		model.ThousandEyes = []ThousandEyesModel{*thousandEyes}
 	}
+	if azurePrometheus := azurePrometheusToModel(spec.AzurePrometheus); azurePrometheus != nil {
+		model.AzurePrometheus = []AzurePrometheusModel{*azurePrometheus}
+	}
+	if coralogix := coralogixToModel(spec.Coralogix); coralogix != nil {
+		model.Coralogix = []CoralogixModel{*coralogix}
+	}
 
 	return model
 }
@@ -880,11 +893,16 @@ func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 	if len(m.ThousandEyes) > 0 {
 		spec.ThousandEyes = modelToThousandEyes(&m.ThousandEyes[0])
 	}
+	if len(m.AzurePrometheus) > 0 {
+		spec.AzurePrometheus = modelToAzurePrometheus(&m.AzurePrometheus[0])
+	}
+	if len(m.Coralogix) > 0 {
+		spec.Coralogix = modelToCoralogix(&m.Coralogix[0])
+	}
 
 	return spec
 }
 
-// Helper functions for converting from SDK types to model types
 func amazonPrometheusToModel(src *v1alphaSLO.AmazonPrometheusMetric) *AmazonPrometheusModel {
 	if src == nil {
 		return nil
@@ -1217,7 +1235,24 @@ func thousandEyesToModel(src *v1alphaSLO.ThousandEyesMetric) *ThousandEyesModel 
 	return model
 }
 
-// Helper functions for converting from model types to SDK types
+func azurePrometheusToModel(src *v1alphaSLO.AzurePrometheusMetric) *AzurePrometheusModel {
+	if src == nil {
+		return nil
+	}
+	return &AzurePrometheusModel{
+		PromQL: src.PromQL,
+	}
+}
+
+func coralogixToModel(src *v1alphaSLO.CoralogixMetric) *CoralogixModel {
+	if src == nil {
+		return nil
+	}
+	return &CoralogixModel{
+		PromQL: src.PromQL,
+	}
+}
+
 func modelToAmazonPrometheus(model *AmazonPrometheusModel) *v1alphaSLO.AmazonPrometheusMetric {
 	if model == nil {
 		return nil
@@ -1565,4 +1600,22 @@ func modelToThousandEyes(model *ThousandEyesModel) *v1alphaSLO.ThousandEyesMetri
 		spec.TestType = &testType
 	}
 	return spec
+}
+
+func modelToAzurePrometheus(model *AzurePrometheusModel) *v1alphaSLO.AzurePrometheusMetric {
+	if model == nil {
+		return nil
+	}
+	return &v1alphaSLO.AzurePrometheusMetric{
+		PromQL: model.PromQL,
+	}
+}
+
+func modelToCoralogix(model *CoralogixModel) *v1alphaSLO.CoralogixMetric {
+	if model == nil {
+		return nil
+	}
+	return &v1alphaSLO.CoralogixMetric{
+		PromQL: model.PromQL,
+	}
 }

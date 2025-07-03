@@ -51,7 +51,7 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
     {{- if not (isNull .TimeSliceTarget) }}
     time_slice_target = {{ .TimeSliceTarget.ValueFloat64 }}
     {{- end }}
-    {{- if .Value }}
+    {{- if not (isNull .Value) }}
     value = {{ .Value.ValueFloat64 }}
     {{- end }}
     {{- if not (isNull .Primary) }}

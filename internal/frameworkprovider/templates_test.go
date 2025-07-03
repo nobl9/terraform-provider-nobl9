@@ -41,6 +41,7 @@ func getTemplates(t *testing.T, name string) *template.Template {
 				"hasField":         hasFieldTplFunc,
 				"renderMetricSpec": renderMetricSpecTplFunc,
 				"isNull":           isNullTplFunc,
+				"escapeString":     escapeStringTpcFunc,
 			}).
 			ParseFS(templatesFS, "test_data/templates/*.tmpl")
 		require.NoError(t, err)
@@ -85,19 +86,19 @@ func renderMetricSpecTplFunc(metricSpec interface{}) string {
 		if field.Kind() == reflect.Slice && field.Len() > 0 {
 			// Get the first element of the slice
 			firstElem := field.Index(0)
-			return renderMetricTypeFields(structField.Tag.Get("tfsdk"), firstElem.Interface())
+			return renderMetricTypeFields(structField.Tag.Get("tfsdk"), firstElem.Interface(), 8)
 		}
 	}
 	return ""
 }
 
-func renderMetricTypeFields(blockName string, metricModel interface{}) string {
+func renderMetricTypeFields(blockName string, metricModel interface{}, baseIndent int) string {
 	rv := reflect.ValueOf(metricModel)
 	if rv.Kind() == reflect.Ptr {
 		rv = rv.Elem()
 	}
 	if rv.Kind() != reflect.Struct {
-		return ""
+		return rv.String()
 	}
 	var fields []string
 	rt := rv.Type()
@@ -110,33 +111,41 @@ func renderMetricTypeFields(blockName string, metricModel interface{}) string {
 		if method := field.MethodByName("IsNull"); method.IsValid() && method.Call(nil)[0].Bool() {
 			continue
 		}
-
 		fieldName := structField.Tag.Get("tfsdk")
 		var fieldValue string
-
 		switch field.Kind() {
 		case reflect.String:
-			fieldValue = fmt.Sprintf(`"%s"`, field.String())
-		case reflect.Int64, reflect.Float64:
-			fieldValue = fmt.Sprintf(`%v`, field.Interface())
+			fieldValue = fmt.Sprintf(`"%s"`, escapeStringTpcFunc(field.String()))
+			fields = append(fields, fmt.Sprintf(`%s = %s`, fieldName, fieldValue))
+		case reflect.Slice:
+			if field.Len() == 0 {
+				continue
+			}
+			firstElem := field.Index(0)
+			fieldValue = renderMetricTypeFields(fieldName, firstElem.Interface(), baseIndent+2)
+			fields = append(fields, fieldValue)
 		default:
 			fieldValue = fmt.Sprintf(`%v`, field.Interface())
+			fields = append(fields, fmt.Sprintf(`%s = %s`, fieldName, fieldValue))
 		}
-
-		fields = append(fields, fmt.Sprintf(`%s = %s`, fieldName, fieldValue))
 	}
 	if len(fields) == 0 {
 		return ""
 	}
 	b := strings.Builder{}
 	b.WriteString("\n")
-	b.WriteString(strings.Repeat(" ", 8))
+	b.WriteString(strings.Repeat(" ", baseIndent))
 	b.WriteString(blockName)
 	b.WriteString(" {\n")
 	for _, field := range fields {
-		b.WriteString(strings.Repeat(" ", 10) + field + "\n")
+		if strings.HasPrefix(field, "\n") {
+			field = strings.TrimPrefix(field, "\n")
+			b.WriteString(field + "\n")
+		} else {
+			b.WriteString(strings.Repeat(" ", baseIndent+2) + field + "\n")
+		}
 	}
-	b.WriteString(strings.Repeat(" ", 8))
+	b.WriteString(strings.Repeat(" ", baseIndent))
 	b.WriteString("}")
 	return b.String()
 }
@@ -148,4 +157,12 @@ func isNullTplFunc(given interface{}) bool {
 		return true
 	}
 	return false
+}
+
+func escapeStringTpcFunc(s string) string {
+	if s == "" {
+		return s
+	}
+	s = strings.ReplaceAll(s, "\n", `\n`)
+	return strings.ReplaceAll(s, `"`, `\"`)
 }

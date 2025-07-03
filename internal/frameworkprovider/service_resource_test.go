@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccServiceResource(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
@@ -39,7 +41,6 @@ func TestAccServiceResource(t *testing.T) {
 	recreatedProjectName := e2etestutils.GenerateName()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccSetup(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read.
@@ -184,37 +185,8 @@ func TestRenderServiceResourceTemplate(t *testing.T) {
 		ServiceResourceModel: exampleResource,
 	})
 
-	expected := `resource "nobl9_service" "this" {
-  name = "service"
-  display_name = "Service"
-  project = "default"
-  annotations = {
-    key = "value",
-  }
-  label {
-    key = "team"
-    values = [
-      "green",
-      "orange",
-    ]
-  }
-  label {
-    key = "env"
-    values = [
-      "prod",
-    ]
-  }
-  label {
-    key = "empty"
-    values = [
-      "",
-    ]
-  }
-  description = "Example service"
-}
-`
-
-	assert.Equal(t, expected, actual)
+	assertHCLIsValid(t, actual)
+	assert.Equal(t, readExpectedConfig(t, "service-config.tf"), actual)
 }
 
 type serviceResourceTemplateModel struct {

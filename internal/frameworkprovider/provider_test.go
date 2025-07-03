@@ -2,6 +2,7 @@ package frameworkprovider
 
 import (
 	"context"
+	"fmt"
 	"maps"
 	"net/http"
 	"net/url"
@@ -10,6 +11,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/hashicorp/hcl/v2/hclparse"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -19,6 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 	"github.com/nobl9/nobl9-go/sdk"
@@ -110,7 +113,14 @@ func testAccSetup(t *testing.T) {
 		}
 		testSDKClient.client = client.client
 
-		e2etestutils.SetClient(client.client)
+		e2etestutils.SetClient(testSDKClient.client)
+
+		org, err := testSDKClient.client.GetOrganization(context.Background())
+		require.NoError(t, err)
+		fmt.Printf("Running Terraform acceptance tests\nOrganization: %s\nAuth Server: %s\nClient ID: %s\n\n",
+			org,
+			testSDKClient.client.Config.OktaOrgURL.JoinPath(testSDKClient.client.Config.OktaAuthServer),
+			testSDKClient.client.Config.ClientID)
 	})
 }
 
@@ -205,9 +215,29 @@ func annotateLabels(t *testing.T, labels Labels) Labels {
 	return labels
 }
 
+var commonAnnotations = v1alpha.MetadataAnnotations{"origin": "sdk-e2e-test"}
+
 // checkIfAcceptanceTestIsSet checks if the acceptance test environment variable is set.
 func checkIfAcceptanceTestIsSet(t *testing.T) {
 	if _, ok := os.LookupEnv(resource.EnvTfAcc); !ok {
 		t.Skipf("Acceptance tests skipped unless env '%s' set", resource.EnvTfAcc)
 	}
+}
+
+// assertHCLIsValid is a helper function that checks if the provided HCL configuration is valid.
+func assertHCLIsValid(t *testing.T, config string) {
+	parser := hclparse.NewParser()
+	_, diags := parser.ParseHCL([]byte(config), "test.hcl")
+	if diags != nil && diags.HasErrors() {
+		t.Fatalf("failed to parse test.hcl: %v\nfile contents:\n%s", diags, config)
+	}
+}
+
+func readExpectedConfig(t *testing.T, filename string) string {
+	t.Helper()
+	data, err := os.ReadFile(fmt.Sprintf("test_data/expected/%s", filename))
+	if err != nil {
+		t.Fatalf("failed to read expected config %q: %v", filename, err)
+	}
+	return string(data)
 }

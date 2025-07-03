@@ -68,8 +68,7 @@ func sloResourceIndicatorBlock() schema.ListNestedBlock {
 	return schema.ListNestedBlock{
 		Description: "Configuration for the metric source (Agent/Direct).",
 		Validators: []validator.List{
-			listvalidator.IsRequired(),
-			listvalidator.SizeBetween(1, 1),
+			listvalidator.SizeAtMost(1),
 		},
 		NestedObject: schema.NestedBlockObject{
 			Attributes: map[string]schema.Attribute{
@@ -910,6 +909,30 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 					"test_type": schema.StringAttribute{
 						Optional:    true,
 						Description: "Type of the test",
+					},
+				},
+			},
+		},
+		"azure_prometheus": schema.ListNestedBlock{
+			Description: "[Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus)",
+			Validators:  []validator.List{listvalidator.SizeAtMost(1)},
+			NestedObject: schema.NestedBlockObject{
+				Attributes: map[string]schema.Attribute{
+					"promql": schema.StringAttribute{
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+		"coralogix": schema.ListNestedBlock{
+			Description: "[Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix)",
+			Validators:  []validator.List{listvalidator.SizeAtMost(1)},
+			NestedObject: schema.NestedBlockObject{
+				Attributes: map[string]schema.Attribute{
+					"promql": schema.StringAttribute{
+						Required:    true,
+						Description: "Query for the metrics",
 					},
 				},
 			},

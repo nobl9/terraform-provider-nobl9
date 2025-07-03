@@ -68,7 +68,7 @@ func newSDKClient(provider ProviderModel, version string) (*sdkClient, diag.Diag
 	if err != nil {
 		return nil, diag.Diagnostics{diag.NewErrorDiagnostic("failed to create Nobl9 SDK client", err.Error())}
 	}
-	client.SetUserAgent(fmt.Sprintf("terraform-%s", version))
+	setClientUserAgent(client, version)
 	return &sdkClient{client: client}, nil
 }
 
@@ -176,4 +176,8 @@ func getManifestObjectTraceAttrs(obj manifest.Object) map[string]any {
 		attrs["project"] = projectScoped.GetProject()
 	}
 	return attrs
+}
+
+func setClientUserAgent(client *sdk.Client, version string) {
+	client.SetUserAgent(fmt.Sprintf("terraform-%s", version))
 }
