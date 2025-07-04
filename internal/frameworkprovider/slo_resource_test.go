@@ -332,6 +332,7 @@ func TestAccSLOResource_custom(t *testing.T) {
 
 const slosPerService = 50
 
+// nolint: gocognit
 func TestAccSLOResource_variants(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
@@ -549,13 +550,15 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			exampleResource := getExampleSLOResource(t)
 			actual := newSLOResource(t, sloResourceTemplateModel{
 				ResourceName:     "this",
 				SLOResourceModel: test.resourceModifier(exampleResource),
 			})
 
-			assertHCLIsValid(t, actual)
+			assertHCL(t, actual)
 			assert.Equal(t, readExpectedConfig(t, test.expectedFile), actual)
 		})
 	}
@@ -581,11 +584,10 @@ func TestRenderSLOResourceTemplate_examples(t *testing.T) {
 			require.True(t, strings.HasPrefix(config, `resource "nobl9_slo" "this" {`),
 				`expected config to start with 'resource "nobl9_slo" "this" {'`)
 
-			assertHCLIsValid(t, config)
+			assertHCL(t, config)
 			assert.Equal(t, sloManifest, resourceModel.ToManifest())
 		})
 	}
-
 }
 
 type sloResourceTemplateModel struct {

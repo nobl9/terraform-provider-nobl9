@@ -1,10 +1,15 @@
 package frameworkprovider
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -15,6 +20,7 @@ import (
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
 )
 
 type sdkClient struct {
@@ -112,6 +118,28 @@ func (s sdkClient) GetSLO(ctx context.Context, name, project string) (v1alphaSLO
 	return typedGetObject[v1alphaSLO.SLO](ctx, s.client, manifest.KindSLO, name, project)
 }
 
+func (s sdkClient) Replay(ctx context.Context, payload sdkModels.Replay) error {
+	body := new(bytes.Buffer)
+	if err := json.NewEncoder(body).Encode(payload); err != nil {
+		return err
+	}
+	header := http.Header{sdk.HeaderProject: []string{payload.Project}}
+	req, err := s.client.CreateRequest(ctx, http.MethodPost, "timetravel", header, nil, body)
+	if err != nil {
+		return err
+	}
+	resp, err := s.client.HTTP.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	data, err := io.ReadAll(resp.Body)
+	if resp.StatusCode >= 300 {
+		return errors.New(replayUnavailabilityReasonExplanation(data, resp.StatusCode))
+	}
+	return err
+}
+
 func typedGetObject[T manifest.Object](
 	ctx context.Context,
 	client *sdk.Client,
@@ -180,4 +208,29 @@ func getManifestObjectTraceAttrs(obj manifest.Object) map[string]any {
 
 func setClientUserAgent(client *sdk.Client, version string) {
 	client.SetUserAgent(fmt.Sprintf("terraform-%s", version))
+}
+
+func replayUnavailabilityReasonExplanation(reason []byte, statusCode int) string {
+	strReason := strings.TrimSpace(string(reason))
+	switch strReason {
+	case sdkModels.ReplayIntegrationDoesNotSupportReplay:
+		return "The Data Source does not support Replay yet"
+	case sdkModels.ReplayAgentVersionDoesNotSupportReplay:
+		return "Update your Agent version to the latest to use Replay for this Data Source."
+	case sdkModels.ReplayMaxHistoricalDataRetrievalTooLow:
+		return "Value configured for spec.historicalDataRetrieval.maxDuration.value" +
+			" for the Data Source is lower than the duration you're trying to run Replay for."
+	case sdkModels.ReplayConcurrentReplayRunsLimitExhausted:
+		return "You've exceeded the limit of concurrent Replay runs. Wait until the current Replay(s) are done."
+	case sdkModels.ReplayUnknownAgentVersion:
+		return "Your Agent isn't connected to the Data Source. Deploy the Agent and run Replay once again."
+	case "single_query_not_supported":
+		return "Historical data retrieval for single-query ratio metrics is not supported"
+	case "composite_slo_not_supported":
+		return "Historical data retrieval for Composite SLO is not supported"
+	case "promql_in_gcm_not_supported":
+		return "Historical data retrieval for PromQL metrics is not supported"
+	default:
+		return fmt.Sprintf("bad response (status: %d): %s", statusCode, strReason)
+	}
 }

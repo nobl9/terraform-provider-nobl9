@@ -140,7 +140,7 @@ func TestRenderProjectResourceTemplate(t *testing.T) {
 		ProjectResourceModel: exampleResource,
 	})
 
-	assertHCLIsValid(t, actual)
+	assertHCL(t, actual)
 	assert.Equal(t, readExpectedConfig(t, "project-config.tf"), actual)
 }
 

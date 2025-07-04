@@ -106,5 +106,3 @@ func addInvalidSDKClientTypeDiag(diags *diag.Diagnostics, data any) {
 		),
 	)
 }
-
-func ptr[T any](v T) *T { return &v }

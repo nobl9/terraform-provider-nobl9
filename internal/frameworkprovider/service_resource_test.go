@@ -185,7 +185,7 @@ func TestRenderServiceResourceTemplate(t *testing.T) {
 		ServiceResourceModel: exampleResource,
 	})
 
-	assertHCLIsValid(t, actual)
+	assertHCL(t, actual)
 	assert.Equal(t, readExpectedConfig(t, "service-config.tf"), actual)
 }
 

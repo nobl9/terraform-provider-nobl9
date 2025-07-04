@@ -224,8 +224,8 @@ func checkIfAcceptanceTestIsSet(t *testing.T) {
 	}
 }
 
-// assertHCLIsValid is a helper function that checks if the provided HCL configuration is valid.
-func assertHCLIsValid(t *testing.T, config string) {
+// assertHCL is a helper function that checks if the provided HCL configuration is valid.
+func assertHCL(t *testing.T, config string) {
 	parser := hclparse.NewParser()
 	_, diags := parser.ParseHCL([]byte(config), "test.hcl")
 	if diags != nil && diags.HasErrors() {

@@ -3,12 +3,14 @@ package frameworkprovider
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/nobl9/nobl9-go/manifest"
+	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
 )
 
 // Ensure [SLOResource] fully satisfies framework interfaces.
@@ -41,11 +43,35 @@ func (s *SLOResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 // and planned state values should be read from the
 // CreateRequest and new state values set on the CreateResponse.
 func (s *SLOResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	resp.Diagnostics.Append(s.applyResource(ctx, req.Plan, &resp.State)...)
+	var model SLOResourceModel
+	diagnostics := req.Plan.Get(ctx, &model)
+	if diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(s.applyResource(ctx, model, &resp.State)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// TODO: historical data from
+	// TODO: Once https://github.com/nobl9/nobl9-go/pull/756 is merged,
+	// we can remove this in favor of SDK-defined methods.
+	if !isNullOrUnknown(model.RetrieveHistoricalDataFrom) {
+		replayFromTs, _ := time.Parse(time.RFC3339, model.RetrieveHistoricalDataFrom.ValueString())
+		const startOffsetMinutes = 5
+		windowDuration := time.Since(replayFromTs)
+		payload := sdkModels.Replay{
+			Project: model.Project,
+			Slo:     model.Name,
+			Duration: sdkModels.ReplayDuration{
+				Unit:  sdkModels.DurationUnitMinute,
+				Value: startOffsetMinutes + int(windowDuration.Minutes()),
+			},
+		}
+		if err := s.client.Replay(ctx, payload); err != nil {
+			resp.Diagnostics.AddError("Failed to run historical data retrieval for the SLO.", err.Error())
+			return
+		}
+		resp.Diagnostics.AddWarning("Historical data retrieval for the SLO has been triggered.", "")
+	}
 }
 
 // Read is called when the provider must read resource values in order
@@ -74,7 +100,12 @@ func (s *SLOResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 // state, and prior state values should be read from the
 // UpdateRequest and new state values set on the UpdateResponse.
 func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	resp.Diagnostics.Append(s.applyResource(ctx, req.Plan, &resp.State)...)
+	var model SLOResourceModel
+	diagnostics := req.Plan.Get(ctx, &model)
+	if diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(s.applyResource(ctx, model, &resp.State)...)
 }
 
 // Delete is called when the provider must delete the resource. Config
@@ -131,15 +162,9 @@ func (s *SLOResource) Configure(
 	s.client = client
 }
 
-func (s *SLOResource) applyResource(ctx context.Context, plan tfsdk.Plan, state *tfsdk.State) diag.Diagnostics {
-	var model SLOResourceModel
-	diagnostics := plan.Get(ctx, &model)
-	if diagnostics.HasError() {
-		return diagnostics
-	}
-
+func (s *SLOResource) applyResource(ctx context.Context, model SLOResourceModel, state *tfsdk.State) diag.Diagnostics {
 	slo := model.ToManifest()
-	diagnostics.Append(s.client.ApplyObject(ctx, slo)...)
+	diagnostics := s.client.ApplyObject(ctx, slo)
 	if diagnostics.HasError() {
 		return diagnostics
 	}

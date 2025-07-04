@@ -379,8 +379,10 @@ Optional:
 - `amazon_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--amazon_prometheus))
 - `appdynamics` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--appdynamics))
 - `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_monitor))
+- `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_prometheus))
 - `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--bigquery))
 - `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--cloudwatch))
+- `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--coralogix))
 - `datadog` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--datadog))
 - `dynatrace` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--dynatrace))
 - `elasticsearch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--elasticsearch))
@@ -456,6 +458,14 @@ Required:
 
 
 
+<a id="nestedblock--objective--count_metrics--bad--azure_prometheus"></a>
+### Nested Schema for `objective.count_metrics.bad.azure_prometheus`
+
+Required:
+
+- `promql` (String) Query for the metrics
+
+
 <a id="nestedblock--objective--count_metrics--bad--bigquery"></a>
 ### Nested Schema for `objective.count_metrics.bad.bigquery`
 
@@ -491,6 +501,14 @@ Required:
 - `name` (String) Name
 - `value` (String) Value
 
+
+
+<a id="nestedblock--objective--count_metrics--bad--coralogix"></a>
+### Nested Schema for `objective.count_metrics.bad.coralogix`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--count_metrics--bad--datadog"></a>
@@ -750,8 +768,10 @@ Optional:
 - `amazon_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good--amazon_prometheus))
 - `appdynamics` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--good--appdynamics))
 - `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_monitor))
+- `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_prometheus))
 - `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good--bigquery))
 - `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch))
+- `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--count_metrics--good--coralogix))
 - `datadog` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--good--datadog))
 - `dynatrace` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--good--dynatrace))
 - `elasticsearch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--good--elasticsearch))
@@ -827,6 +847,14 @@ Required:
 
 
 
+<a id="nestedblock--objective--count_metrics--good--azure_prometheus"></a>
+### Nested Schema for `objective.count_metrics.good.azure_prometheus`
+
+Required:
+
+- `promql` (String) Query for the metrics
+
+
 <a id="nestedblock--objective--count_metrics--good--bigquery"></a>
 ### Nested Schema for `objective.count_metrics.good.bigquery`
 
@@ -862,6 +890,14 @@ Required:
 - `name` (String) Name
 - `value` (String) Value
 
+
+
+<a id="nestedblock--objective--count_metrics--good--coralogix"></a>
+### Nested Schema for `objective.count_metrics.good.coralogix`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--count_metrics--good--datadog"></a>
@@ -1121,8 +1157,10 @@ Optional:
 - `amazon_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--amazon_prometheus))
 - `appdynamics` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--appdynamics))
 - `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--azure_monitor))
+- `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--azure_prometheus))
 - `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--bigquery))
 - `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--cloudwatch))
+- `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--coralogix))
 - `datadog` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--datadog))
 - `dynatrace` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--dynatrace))
 - `elasticsearch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--elasticsearch))
@@ -1198,6 +1236,14 @@ Required:
 
 
 
+<a id="nestedblock--objective--count_metrics--good_total--azure_prometheus"></a>
+### Nested Schema for `objective.count_metrics.good_total.azure_prometheus`
+
+Required:
+
+- `promql` (String) Query for the metrics
+
+
 <a id="nestedblock--objective--count_metrics--good_total--bigquery"></a>
 ### Nested Schema for `objective.count_metrics.good_total.bigquery`
 
@@ -1233,6 +1279,14 @@ Required:
 - `name` (String) Name
 - `value` (String) Value
 
+
+
+<a id="nestedblock--objective--count_metrics--good_total--coralogix"></a>
+### Nested Schema for `objective.count_metrics.good_total.coralogix`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--count_metrics--good_total--datadog"></a>
@@ -1492,8 +1546,10 @@ Optional:
 - `amazon_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--total--amazon_prometheus))
 - `appdynamics` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--total--appdynamics))
 - `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_monitor))
+- `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_prometheus))
 - `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--total--bigquery))
 - `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch))
+- `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--count_metrics--total--coralogix))
 - `datadog` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--total--datadog))
 - `dynatrace` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--total--dynatrace))
 - `elasticsearch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--total--elasticsearch))
@@ -1569,6 +1625,14 @@ Required:
 
 
 
+<a id="nestedblock--objective--count_metrics--total--azure_prometheus"></a>
+### Nested Schema for `objective.count_metrics.total.azure_prometheus`
+
+Required:
+
+- `promql` (String) Query for the metrics
+
+
 <a id="nestedblock--objective--count_metrics--total--bigquery"></a>
 ### Nested Schema for `objective.count_metrics.total.bigquery`
 
@@ -1604,6 +1668,14 @@ Required:
 - `name` (String) Name
 - `value` (String) Value
 
+
+
+<a id="nestedblock--objective--count_metrics--total--coralogix"></a>
+### Nested Schema for `objective.count_metrics.total.coralogix`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--count_metrics--total--datadog"></a>
@@ -1871,8 +1943,10 @@ Optional:
 - `amazon_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--raw_metric--query--amazon_prometheus))
 - `appdynamics` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--raw_metric--query--appdynamics))
 - `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_monitor))
+- `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_prometheus))
 - `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--raw_metric--query--bigquery))
 - `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch))
+- `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--raw_metric--query--coralogix))
 - `datadog` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--raw_metric--query--datadog))
 - `dynatrace` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--raw_metric--query--dynatrace))
 - `elasticsearch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--raw_metric--query--elasticsearch))
@@ -1948,6 +2022,14 @@ Required:
 
 
 
+<a id="nestedblock--objective--raw_metric--query--azure_prometheus"></a>
+### Nested Schema for `objective.raw_metric.query.azure_prometheus`
+
+Required:
+
+- `promql` (String) Query for the metrics
+
+
 <a id="nestedblock--objective--raw_metric--query--bigquery"></a>
 ### Nested Schema for `objective.raw_metric.query.bigquery`
 
@@ -1983,6 +2065,14 @@ Required:
 - `name` (String) Name
 - `value` (String) Value
 
+
+
+<a id="nestedblock--objective--raw_metric--query--coralogix"></a>
+### Nested Schema for `objective.raw_metric.query.coralogix`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--raw_metric--query--datadog"></a>
