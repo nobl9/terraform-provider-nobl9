@@ -1,0 +1,31 @@
+{{ define "metadata" }}
+  name = "{{ .Name }}"
+  {{- if not (isNull .DisplayName) }}
+  display_name = "{{ valueString .DisplayName | escapeString }}"
+  {{- end }}
+  {{- if hasField "Project" . }}
+  project = "{{ .Project }}"
+  {{- end }}
+  {{- if .Annotations }}
+  annotations = {
+    {{- range $key, $value := .Annotations }}
+    {{ $key }} = "{{ $value }}",
+    {{- end }}
+  }
+  {{- end }}
+  {{- if .Labels }}
+    {{- range .Labels }}
+  label {
+    key = "{{ .Key }}"
+    values = [
+      {{- range .Values }}
+      "{{ . }}",
+      {{- end }}
+    ]
+  }
+    {{- end }}
+  {{- end }}
+  {{- if not (isNull .Description) }}
+  description = "{{ valueString .Description | escapeString }}"
+  {{- end }}
+{{ end }}

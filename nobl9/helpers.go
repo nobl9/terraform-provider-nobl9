@@ -76,18 +76,6 @@ func toStringSlice(in []interface{}) []string {
 	return ret
 }
 
-func equalSlices(a, b []interface{}) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i, v := range a {
-		if v != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
 func exactlyOneObjectErr[T manifest.Object](objects []T) diag.Diagnostics {
 	return diag.Errorf("Expected exactly one %T but got %d.\n"+
 		"This is most likely an issue in Nobl9 platform.", *new(T), len(objects))
