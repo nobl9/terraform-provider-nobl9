@@ -9,6 +9,8 @@ BIN_DIR = ./bin
 BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
 VERSION = 0.42.0
 VERSION_PKG := "$(shell go list -m)/internal/version"
+BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
+REVISION ?= $(shell git rev-parse --short=8 HEAD)
 LDFLAGS += -s -w \
 	-X $(VERSION_PKG).BuildVersion=$(VERSION) \
 	-X $(VERSION_PKG).BuildGitBranch=$(BRANCH) \
@@ -65,13 +67,12 @@ test: test/unit test/acc
 ## Run Go unit tests.
 test/unit:
 	$(call _print_step,Running Go unit tests)
-	go test -i $(TEST) || exit 1
-	echo $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
+	go test -race -cover ./...
 
 ## Run Terraform acceptance tests.
 test/acc:
 	$(call _print_step,Running Terraform acceptance tests)
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m nobl9/
+	TF_ACC=1 go test $(TEST) -ldflags="$(LDFLAGS)" -v $(TESTARGS) -timeout 120m nobl9/
 
 .PHONY: release-dry-run
 ## Run Goreleaser in dry-run mode.
