@@ -120,6 +120,10 @@ func (s sdkClient) GetSLO(ctx context.Context, name, project string) (v1alphaSLO
 	return typedGetObject[v1alphaSLO.SLO](ctx, s.client, manifest.KindSLO, name, project)
 }
 
+// Replay runs historical data retrieval for the given SLO.
+//
+// TODO: Once https://github.com/nobl9/nobl9-go/pull/756 is merged,
+// we can remove this in favor of SDK-defined methods.
 func (s sdkClient) Replay(ctx context.Context, payload sdkModels.Replay) error {
 	body := new(bytes.Buffer)
 	if err := json.NewEncoder(body).Encode(payload); err != nil {

@@ -264,6 +264,12 @@ func TestAccSLOResource_custom(t *testing.T) {
 				return model
 			},
 		},
+		"no display name": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				model.DisplayName = types.StringNull()
+				return model
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -328,6 +334,64 @@ func TestAccSLOResource_custom(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestAccSLOResource_customScenario(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	sloConfig := `resource "nobl9_slo" "this" {
+  # retrieve_historical_data_from = "2025-07-03T08:00:00Z"
+
+  name = "test-slo-framework"
+  project = "amazon-prometheus"
+  description = "Example SLO from testing Framework migration"
+
+  service = "amazon-prometheus"
+  budgeting_method = "Occurrences"
+
+  indicator {
+    name = "amazon-prometheus"
+    project = "amazon-prometheus"
+    kind = "Agent"
+  }
+
+  objective {
+    name = "tf-objective-1"
+    op = "lt"
+    target = 0.7
+    value = 1.2
+    raw_metric {
+      query {
+        amazon_prometheus {
+          promql = "https://loki.nobl9.dev:3100/grafana/d/nd3S__Knz/pod-restarts?orgId=1&viewPanel=4"
+        }
+      }
+    }
+  }
+
+  time_window {
+    count = 1
+    is_rolling = true
+    unit = "Hour"
+  }
+}`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read.
+			{
+				Config: sloConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.this", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+		},
+	})
 }
 
 const slosPerService = 50

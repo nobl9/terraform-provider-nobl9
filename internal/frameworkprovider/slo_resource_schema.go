@@ -3,13 +3,16 @@ package frameworkprovider
 
 import (
 	"regexp"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
@@ -49,7 +52,14 @@ func sloResourceSchema() schema.Schema {
 				Optional: true,
 				Description: "If set, the retrieval of historical data for a newly created SLO will be triggered, " +
 					"starting from the specified date. Needs to be RFC3339 format.",
-				Validators: []validator.String{dateTimeValidator{}},
+				Validators: []validator.String{newDateTimeValidator(time.RFC3339)},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				// TODO: Consider enabling WriteOnly for this attribute after some time.
+				// The feature has been introduced in Terraform v1.11.0 (March 2025),
+				// so it might not be widely used yet.
+				// WriteOnly: true,
 			},
 		},
 		Blocks: map[string]schema.Block{

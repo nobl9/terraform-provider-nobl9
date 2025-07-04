@@ -2,6 +2,7 @@ package frameworkprovider
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -52,25 +53,9 @@ func (s *SLOResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// TODO: Once https://github.com/nobl9/nobl9-go/pull/756 is merged,
-	// we can remove this in favor of SDK-defined methods.
-	if !isNullOrUnknown(model.RetrieveHistoricalDataFrom) {
-		replayFromTs, _ := time.Parse(time.RFC3339, model.RetrieveHistoricalDataFrom.ValueString())
-		const startOffsetMinutes = 5
-		windowDuration := time.Since(replayFromTs)
-		payload := sdkModels.Replay{
-			Project: model.Project,
-			Slo:     model.Name,
-			Duration: sdkModels.ReplayDuration{
-				Unit:  sdkModels.DurationUnitMinute,
-				Value: startOffsetMinutes + int(windowDuration.Minutes()),
-			},
-		}
-		if err := s.client.Replay(ctx, payload); err != nil {
-			resp.Diagnostics.AddError("Failed to run historical data retrieval for the SLO.", err.Error())
-			return
-		}
-		resp.Diagnostics.AddWarning("Historical data retrieval for the SLO has been triggered.", "")
+	resp.Diagnostics.Append(s.runReplay(ctx, model))
+	if resp.Diagnostics.HasError() {
+		return
 	}
 }
 
@@ -174,6 +159,9 @@ func (s *SLOResource) applyResource(ctx context.Context, model SLOResourceModel,
 	if diagnostics.HasError() {
 		return diagnostics
 	}
+	// The attribute `retrieve_historical_data_from` is not part of the SLO manifest,
+	// so we need to set it manually after reading the SLO manifest.
+	appliedModel.RetrieveHistoricalDataFrom = model.RetrieveHistoricalDataFrom
 	// Save data into Terraform state
 	diagnostics.Append(state.Set(ctx, appliedModel)...)
 	return diagnostics
@@ -191,5 +179,37 @@ func (s *SLOResource) readResource(
 	updatedModel := newSLOResourceConfigFromManifest(slo)
 	// Sort Labels.
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
+	// The attribute `retrieve_historical_data_from` is not part of the SLO manifest,
+	// so we need to set it manually after reading the SLO manifest.
+	updatedModel.RetrieveHistoricalDataFrom = model.RetrieveHistoricalDataFrom
 	return updatedModel, diagnostics
+}
+
+func (s *SLOResource) runReplay(ctx context.Context, model SLOResourceModel) diag.Diagnostic {
+	attributePath := path.Root("retrieve_historical_data_from")
+	if isNullOrUnknown(model.RetrieveHistoricalDataFrom) {
+		return nil
+	}
+	replayFromTs, _ := time.Parse(time.RFC3339, model.RetrieveHistoricalDataFrom.ValueString())
+	const startOffsetMinutes = 5
+	windowDuration := time.Since(replayFromTs)
+	payload := sdkModels.Replay{
+		Project: model.Project,
+		Slo:     model.Name,
+		Duration: sdkModels.ReplayDuration{
+			Unit:  sdkModels.DurationUnitMinute,
+			Value: startOffsetMinutes + int(windowDuration.Minutes()),
+		},
+	}
+	if err := s.client.Replay(ctx, payload); err != nil {
+		return diag.NewAttributeErrorDiagnostic(
+			attributePath,
+			"Failed to run historical data retrieval for the SLO.", err.Error())
+	}
+	return diag.NewAttributeWarningDiagnostic(
+		attributePath,
+		"Historical data retrieval for the SLO has been triggered.",
+		fmt.Sprintf(
+			"Data will be retrieved starting from %s.",
+			model.RetrieveHistoricalDataFrom.ValueString()))
 }

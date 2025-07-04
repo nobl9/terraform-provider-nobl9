@@ -8,7 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-type dateTimeValidator struct{}
+func newDateTimeValidator(layout string) dateTimeValidator {
+	return dateTimeValidator{layout: layout}
+}
+
+type dateTimeValidator struct {
+	layout string
+}
 
 func (v dateTimeValidator) Description(ctx context.Context) string {
 	return v.MarkdownDescription(ctx)
@@ -27,7 +33,7 @@ func (v dateTimeValidator) ValidateString(
 		return
 	}
 	value := req.ConfigValue.ValueString()
-	if _, err := time.Parse(time.RFC3339, value); err != nil {
+	if _, err := time.Parse(v.layout, value); err != nil {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
 			"Invalid datetime format",

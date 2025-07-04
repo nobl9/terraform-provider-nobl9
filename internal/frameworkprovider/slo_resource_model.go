@@ -367,7 +367,7 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 		Labels:          newLabelsFromManifest(slo.Metadata.Labels),
 		Service:         slo.Spec.Service,
 		BudgetingMethod: slo.Spec.BudgetingMethod,
-		Tier:            stringValueFromPointer(slo.Spec.Tier),
+		Tier:            types.StringPointerValue(slo.Spec.Tier),
 		AlertPolicies:   slo.Spec.AlertPolicies,
 	}
 	if slo.Spec.Indicator != nil {
@@ -381,7 +381,7 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 		objectives := make([]ObjectiveModel, len(slo.Spec.Objectives))
 		for i, o := range slo.Spec.Objectives {
 			obj := ObjectiveModel{
-				DisplayName:     types.StringValue(o.DisplayName),
+				DisplayName:     stringValue(o.DisplayName),
 				Op:              types.StringPointerValue(o.Operator),
 				Target:          *o.BudgetTarget,
 				TimeSliceTarget: types.Float64PointerValue(o.TimeSliceTarget),
@@ -484,13 +484,13 @@ func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {
 			obj := v1alphaSLO.Objective{
 				ObjectiveBase: v1alphaSLO.ObjectiveBase{
 					DisplayName: o.DisplayName.ValueString(),
-					Value:       float64Pointer(o.Value),
+					Value:       o.Value.ValueFloat64Pointer(),
 					Name:        o.Name.ValueString(),
 				},
-				Operator:        stringPointer(o.Op),
+				Operator:        o.Op.ValueStringPointer(),
 				BudgetTarget:    &o.Target,
-				TimeSliceTarget: float64Pointer(o.TimeSliceTarget),
-				Primary:         boolPointer(o.Primary),
+				TimeSliceTarget: o.TimeSliceTarget.ValueFloat64Pointer(),
+				Primary:         o.Primary.ValueBoolPointer(),
 			}
 			if len(o.CountMetrics) > 0 {
 				obj.CountMetrics = o.CountMetrics[0].ToManifest()
@@ -976,9 +976,7 @@ func cloudWatchToModel(src *v1alphaSLO.CloudWatchMetric) *CloudWatchModel {
 		Stat:       types.StringPointerValue(src.Stat),
 		SQL:        types.StringPointerValue(src.SQL),
 		JSON:       types.StringPointerValue(src.JSON),
-	}
-	if src.AccountID != nil {
-		model.AccountID = types.StringValue(*src.AccountID)
+		AccountID:  types.StringPointerValue(src.AccountID),
 	}
 	if len(src.Dimensions) > 0 {
 		dimensions := make([]CloudWatchDimensionModel, len(src.Dimensions))
@@ -1027,12 +1025,8 @@ func gcmToModel(src *v1alphaSLO.GCMMetric) *GCMModel {
 	}
 	model := &GCMModel{
 		ProjectID: src.ProjectID,
-	}
-	if len(src.Query) > 0 {
-		model.Query = types.StringValue(src.Query)
-	}
-	if len(src.PromQL) > 0 {
-		model.PromQL = types.StringValue(src.PromQL)
+		Query:     stringValue(src.Query),
+		PromQL:    stringValue(src.PromQL),
 	}
 	return model
 }
@@ -1042,7 +1036,7 @@ func grafanaLokiToModel(src *v1alphaSLO.GrafanaLokiMetric) *GrafanaLokiModel {
 		return nil
 	}
 	return &GrafanaLokiModel{
-		Logql: stringValueFromPointer(src.Logql),
+		Logql: types.StringPointerValue(src.Logql),
 	}
 }
 
@@ -1051,7 +1045,7 @@ func graphiteToModel(src *v1alphaSLO.GraphiteMetric) *GraphiteModel {
 		return nil
 	}
 	return &GraphiteModel{
-		MetricPath: stringValueFromPointer(src.MetricPath),
+		MetricPath: types.StringPointerValue(src.MetricPath),
 	}
 }
 
@@ -1083,8 +1077,8 @@ func instanaToModel(src *v1alphaSLO.InstanaMetric) *InstanaModel {
 	if src.Infrastructure != nil {
 		model.Infrastructure = []InstanaInfrastructureModel{{
 			MetricRetrievalMethod: src.Infrastructure.MetricRetrievalMethod,
-			Query:                 stringValueFromPointer(src.Infrastructure.Query),
-			SnapshotID:            stringValueFromPointer(src.Infrastructure.SnapshotID),
+			Query:                 types.StringPointerValue(src.Infrastructure.Query),
+			SnapshotID:            types.StringPointerValue(src.Infrastructure.SnapshotID),
 			MetricID:              src.Infrastructure.MetricID,
 			PluginID:              src.Infrastructure.PluginID,
 		}}
@@ -1102,7 +1096,7 @@ func instanaToModel(src *v1alphaSLO.InstanaMetric) *InstanaModel {
 			app.GroupBy = []InstanaGroupByModel{{
 				Tag:               src.Application.GroupBy.Tag,
 				TagEntity:         src.Application.GroupBy.TagEntity,
-				TagSecondLevelKey: stringValueFromPointer(src.Application.GroupBy.TagSecondLevelKey),
+				TagSecondLevelKey: types.StringPointerValue(src.Application.GroupBy.TagSecondLevelKey),
 			}}
 		}
 		model.Application = []InstanaApplicationModel{app}
@@ -1116,8 +1110,8 @@ func lightstepToModel(src *v1alphaSLO.LightstepMetric) *LightstepModel {
 	}
 	model := &LightstepModel{
 		TypeOfData: *src.TypeOfData,
-		StreamID:   stringValueFromPointer(src.StreamID),
-		UQL:        stringValueFromPointer(src.UQL),
+		StreamID:   types.StringPointerValue(src.StreamID),
+		UQL:        types.StringPointerValue(src.UQL),
 	}
 	if src.Percentile != nil {
 		model.Percentile = types.Float64Value(*src.Percentile)
@@ -1165,8 +1159,8 @@ func pingdomToModel(src *v1alphaSLO.PingdomMetric) *PingdomModel {
 	}
 	return &PingdomModel{
 		CheckID:   *src.CheckID,
-		CheckType: stringValueFromPointer(src.CheckType),
-		Status:    stringValueFromPointer(src.Status),
+		CheckType: types.StringPointerValue(src.CheckType),
+		Status:    types.StringPointerValue(src.Status),
 	}
 }
 
@@ -1216,8 +1210,8 @@ func sumoLogicToModel(src *v1alphaSLO.SumoLogicMetric) *SumoLogicModel {
 	return &SumoLogicModel{
 		Type:         *src.Type,
 		Query:        *src.Query,
-		Rollup:       stringValueFromPointer(src.Rollup),
-		Quantization: stringValueFromPointer(src.Quantization),
+		Rollup:       types.StringPointerValue(src.Rollup),
+		Quantization: types.StringPointerValue(src.Quantization),
 	}
 }
 
@@ -1225,12 +1219,11 @@ func thousandEyesToModel(src *v1alphaSLO.ThousandEyesMetric) *ThousandEyesModel 
 	if src == nil {
 		return nil
 	}
-	model := &ThousandEyesModel{}
+	model := &ThousandEyesModel{
+		TestType: types.StringPointerValue(src.TestType),
+	}
 	if src.TestID != nil {
 		model.TestID = *src.TestID
-	}
-	if src.TestType != nil {
-		model.TestType = types.StringValue(*src.TestType)
 	}
 	return model
 }
@@ -1322,11 +1315,11 @@ func modelToCloudWatch(model *CloudWatchModel) *v1alphaSLO.CloudWatchMetric {
 	}
 	spec := &v1alphaSLO.CloudWatchMetric{
 		Region:     &model.Region,
-		Namespace:  stringPointer(model.Namespace),
-		MetricName: stringPointer(model.MetricName),
-		Stat:       stringPointer(model.Stat),
-		SQL:        stringPointer(model.SQL),
-		JSON:       stringPointer(model.JSON),
+		Namespace:  model.Namespace.ValueStringPointer(),
+		MetricName: model.MetricName.ValueStringPointer(),
+		Stat:       model.Stat.ValueStringPointer(),
+		SQL:        model.SQL.ValueStringPointer(),
+		JSON:       model.JSON.ValueStringPointer(),
 	}
 	if !isNullOrUnknown(model.AccountID) {
 		accountID := model.AccountID.ValueString()
@@ -1389,7 +1382,7 @@ func modelToGrafanaLoki(model *GrafanaLokiModel) *v1alphaSLO.GrafanaLokiMetric {
 		return nil
 	}
 	return &v1alphaSLO.GrafanaLokiMetric{
-		Logql: stringPointer(model.Logql),
+		Logql: model.Logql.ValueStringPointer(),
 	}
 }
 
@@ -1398,7 +1391,7 @@ func modelToGraphite(model *GraphiteModel) *v1alphaSLO.GraphiteMetric {
 		return nil
 	}
 	return &v1alphaSLO.GraphiteMetric{
-		MetricPath: stringPointer(model.MetricPath),
+		MetricPath: model.MetricPath.ValueStringPointer(),
 	}
 }
 
@@ -1431,8 +1424,8 @@ func modelToInstana(model *InstanaModel) *v1alphaSLO.InstanaMetric {
 		infra := &model.Infrastructure[0]
 		spec.Infrastructure = &v1alphaSLO.InstanaInfrastructureMetricType{
 			MetricRetrievalMethod: infra.MetricRetrievalMethod,
-			Query:                 stringPointer(infra.Query),
-			SnapshotID:            stringPointer(infra.SnapshotID),
+			Query:                 infra.Query.ValueStringPointer(),
+			SnapshotID:            infra.SnapshotID.ValueStringPointer(),
 			MetricID:              infra.MetricID,
 			PluginID:              infra.PluginID,
 		}
@@ -1451,7 +1444,7 @@ func modelToInstana(model *InstanaModel) *v1alphaSLO.InstanaMetric {
 			app.GroupBy = v1alphaSLO.InstanaApplicationMetricGroupBy{
 				Tag:               groupBy.Tag,
 				TagEntity:         groupBy.TagEntity,
-				TagSecondLevelKey: stringPointer(groupBy.TagSecondLevelKey),
+				TagSecondLevelKey: groupBy.TagSecondLevelKey.ValueStringPointer(),
 			}
 		}
 		spec.Application = app
@@ -1465,8 +1458,8 @@ func modelToLightstep(model *LightstepModel) *v1alphaSLO.LightstepMetric {
 	}
 	spec := &v1alphaSLO.LightstepMetric{
 		TypeOfData: &model.TypeOfData,
-		StreamID:   stringPointer(model.StreamID),
-		UQL:        stringPointer(model.UQL),
+		StreamID:   model.StreamID.ValueStringPointer(),
+		UQL:        model.UQL.ValueStringPointer(),
 	}
 	if !isNullOrUnknown(model.Percentile) {
 		percentile := model.Percentile.ValueFloat64()
@@ -1530,8 +1523,8 @@ func modelToPingdom(model *PingdomModel) *v1alphaSLO.PingdomMetric {
 	}
 	return &v1alphaSLO.PingdomMetric{
 		CheckID:   &model.CheckID,
-		CheckType: stringPointer(model.CheckType),
-		Status:    stringPointer(model.Status),
+		CheckType: model.CheckType.ValueStringPointer(),
+		Status:    model.Status.ValueStringPointer(),
 	}
 }
 
@@ -1581,8 +1574,8 @@ func modelToSumoLogic(model *SumoLogicModel) *v1alphaSLO.SumoLogicMetric {
 	return &v1alphaSLO.SumoLogicMetric{
 		Type:         &model.Type,
 		Query:        &model.Query,
-		Rollup:       stringPointer(model.Rollup),
-		Quantization: stringPointer(model.Quantization),
+		Rollup:       model.Rollup.ValueStringPointer(),
+		Quantization: model.Quantization.ValueStringPointer(),
 	}
 }
 
