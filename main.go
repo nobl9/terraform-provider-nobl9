@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -15,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/terraform-provider-nobl9/internal/frameworkprovider"
+	"github.com/nobl9/terraform-provider-nobl9/internal/version"
 	"github.com/nobl9/terraform-provider-nobl9/nobl9"
 )
 
@@ -23,20 +25,25 @@ import (
 //
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs -provider-name=terraform-provider-nobl9
 
-// Version is the version of the provider.
-// It is set at compile-time.
-var Version string
-
 func main() {
 	ctx := context.Background()
-	var debugMode bool
-	flag.BoolVar(&debugMode, "debug", false, "set to true to run the provider with support for debuggers like delve")
+	var (
+		debugMode   bool
+		showVersion bool
+	)
+	flag.BoolVar(&debugMode, "debug", false, "run the provider with support for debuggers like delve")
+	flag.BoolVar(&showVersion, "version", false, "display version of the Provider")
 	flag.Parse()
+
+	if showVersion {
+		fmt.Println(version.GetUserAgent())
+		return
+	}
 
 	muxServer, err := tf6muxserver.NewMuxServer(
 		ctx,
-		newSDKProvider(ctx, Version),
-		newFrameworkProvider(Version),
+		newSDKProvider(ctx),
+		newFrameworkProvider(),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -58,16 +65,16 @@ func main() {
 	}
 }
 
-func newSDKProvider(ctx context.Context, version string) func() tfprotov6.ProviderServer {
+func newSDKProvider(ctx context.Context) func() tfprotov6.ProviderServer {
 	return func() tfprotov6.ProviderServer {
 		srv, _ := tf5to6server.UpgradeServer(ctx, func() tfprotov5.ProviderServer {
-			return schema.NewGRPCProviderServer(nobl9.Provider(version))
+			return schema.NewGRPCProviderServer(nobl9.Provider())
 		})
 		return srv
 	}
 }
 
-func newFrameworkProvider(version string) func() tfprotov6.ProviderServer {
-	provider := frameworkprovider.New(version)
+func newFrameworkProvider() func() tfprotov6.ProviderServer {
+	provider := frameworkprovider.New()
 	return providerserver.NewProtocol6(provider)
 }

@@ -21,6 +21,8 @@ import (
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
+
+	"github.com/nobl9/terraform-provider-nobl9/internal/version"
 )
 
 type sdkClient struct {
@@ -29,7 +31,7 @@ type sdkClient struct {
 
 // newSDKClient creates new [sdk.Client] based on the [ProviderModel].
 // [ProviderModel] should be first validated with [ProviderModel] before being passed to this function.
-func newSDKClient(provider ProviderModel, version string) (*sdkClient, diag.Diagnostics) {
+func newSDKClient(provider ProviderModel) (*sdkClient, diag.Diagnostics) {
 	options := []sdk.ConfigOption{
 		sdk.ConfigOptionWithCredentials(provider.ClientID.ValueString(), provider.ClientSecret.ValueString()),
 		sdk.ConfigOptionEnvPrefix("TERRAFORM_NOBL9_"),
@@ -74,7 +76,7 @@ func newSDKClient(provider ProviderModel, version string) (*sdkClient, diag.Diag
 	if err != nil {
 		return nil, diag.Diagnostics{diag.NewErrorDiagnostic("failed to create Nobl9 SDK client", err.Error())}
 	}
-	setClientUserAgent(client, version)
+	setClientUserAgent(client)
 	return &sdkClient{client: client}, nil
 }
 
@@ -206,8 +208,8 @@ func getManifestObjectTraceAttrs(obj manifest.Object) map[string]any {
 	return attrs
 }
 
-func setClientUserAgent(client *sdk.Client, version string) {
-	client.SetUserAgent(fmt.Sprintf("terraform-%s", version))
+func setClientUserAgent(client *sdk.Client) {
+	client.SetUserAgent(fmt.Sprintf("terraform-%s", version.GetUserAgent()))
 }
 
 func replayUnavailabilityReasonExplanation(reason []byte, statusCode int) string {
