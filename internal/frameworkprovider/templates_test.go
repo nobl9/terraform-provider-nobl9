@@ -41,7 +41,7 @@ func getTemplates(t *testing.T, name string) *template.Template {
 				"hasField":         hasFieldTplFunc,
 				"renderMetricSpec": renderMetricSpecTplFunc,
 				"isNull":           isNullTplFunc,
-				"escapeString":     escapeStringTpcFunc,
+				"escapeString":     escapeStringTplFunc,
 			}).
 			ParseFS(templatesFS, "test_data/templates/*.tmpl")
 		require.NoError(t, err)
@@ -115,7 +115,7 @@ func renderMetricTypeFields(blockName string, metricModel interface{}, baseInden
 		var fieldValue string
 		switch field.Kind() {
 		case reflect.String:
-			fieldValue = fmt.Sprintf(`"%s"`, escapeStringTpcFunc(field.String()))
+			fieldValue = fmt.Sprintf(`"%s"`, escapeStringTplFunc(field.String()))
 			fields = append(fields, fmt.Sprintf(`%s = %s`, fieldName, fieldValue))
 		case reflect.Slice:
 			if field.Len() == 0 {
@@ -159,7 +159,7 @@ func isNullTplFunc(given interface{}) bool {
 	return false
 }
 
-func escapeStringTpcFunc(s string) string {
+func escapeStringTplFunc(s string) string {
 	if s == "" {
 		return s
 	}

@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/nobl9/nobl9-go/manifest"
 
-	"github.com/nobl9/terraform-provider-nobl9/internal/reflectiontuils"
+	"github.com/nobl9/terraform-provider-nobl9/internal/reflectionutils"
 )
 
 // Ensure [ServiceResource] fully satisfies framework interfaces.
@@ -59,7 +59,7 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"status": schema.ObjectAttribute{
 				Computed:       true,
 				Description:    "Status of created service.",
-				AttributeTypes: reflectiontuils.GetAttributeTypes(ServiceResourceStatusModel{}),
+				AttributeTypes: reflectionutils.GetAttributeTypes(ServiceResourceStatusModel{}),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},

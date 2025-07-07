@@ -1,4 +1,4 @@
-package reflectiontuils_test
+package reflectionutils_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nobl9/terraform-provider-nobl9/internal/reflectiontuils"
+	"github.com/nobl9/terraform-provider-nobl9/internal/reflectionutils"
 )
 
 // Test structs for GetAttributeTypes function
@@ -160,7 +160,7 @@ func TestGetAttributeTypes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := reflectiontuils.GetAttributeTypes(tt.input)
+			result := reflectionutils.GetAttributeTypes(tt.input)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -174,7 +174,7 @@ func TestGetAttributeTypes_WithInitializedValues(t *testing.T) {
 		BoolField:   types.BoolValue(true),
 	}
 
-	result := reflectiontuils.GetAttributeTypes(model)
+	result := reflectionutils.GetAttributeTypes(model)
 
 	expected := map[string]attr.Type{
 		"string_field":  types.StringType,
@@ -194,6 +194,6 @@ func TestGetAttributeTypes_WithInitializedValues(t *testing.T) {
 func BenchmarkGetAttributeTypes(b *testing.B) {
 	model := TestModelWithTags{}
 	for b.Loop() {
-		reflectiontuils.GetAttributeTypes(model)
+		reflectionutils.GetAttributeTypes(model)
 	}
 }
