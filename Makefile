@@ -7,7 +7,7 @@ NAMESPACE = nobl9
 NAME = nobl9
 BIN_DIR = ./bin
 BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
-VERSION = 0.42.0
+VERSION = 0.43.0
 VERSION_PKG := "$(shell go list -m)/internal/version"
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 REVISION ?= $(shell git rev-parse --short=8 HEAD)
