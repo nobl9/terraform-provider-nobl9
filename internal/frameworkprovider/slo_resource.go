@@ -45,8 +45,8 @@ func (s *SLOResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 // CreateRequest and new state values set on the CreateResponse.
 func (s *SLOResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var model SLOResourceModel
-	diagnostics := req.Plan.Get(ctx, &model)
-	if diagnostics.HasError() {
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &model)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 	resp.Diagnostics.Append(s.applyResource(ctx, model, &resp.State)...)
@@ -86,8 +86,8 @@ func (s *SLOResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 // UpdateRequest and new state values set on the UpdateResponse.
 func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var model SLOResourceModel
-	diagnostics := req.Plan.Get(ctx, &model)
-	if diagnostics.HasError() {
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &model)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 	resp.Diagnostics.Append(s.applyResource(ctx, model, &resp.State)...)
