@@ -17,7 +17,7 @@ LDFLAGS += -s -w \
 	-X $(VERSION_PKG).BuildGitRevision=$(REVISION)
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 # Number of parallel tests to run.
-PARALLEL_TESTS ?= 20
+PARALLEL_TESTS ?= 5
 
 # renovate datasource=github-releases depName=securego/gosec
 GOSEC_VERSION := v2.22.5
