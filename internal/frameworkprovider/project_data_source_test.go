@@ -36,11 +36,10 @@ func TestAccProjectDataSource(t *testing.T) {
 		SloCount: 0,
 	}
 
+	serviceResource, _ := newServiceResourceConfigFromManifest(ctx, manifestService)
 	serviceResourceConfig := executeTemplate(t, "project_data_source.hcl.tmpl", map[string]any{
-		"DataSourceName": "test",
-		"ResourceName":   "test",
-		"ProjectName":    manifestProject.GetName(),
-		"ServiceName":    manifestService.GetName(),
+		"Project": newProjectResourceConfigFromManifest(manifestProject),
+		"Service": serviceResource,
 	})
 
 	resource.Test(t, resource.TestCase{
@@ -61,7 +60,7 @@ func TestAccProjectDataSource(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
-						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction("nobl9_service.this", plancheck.ResourceActionCreate),
 					},
 				},
 			},

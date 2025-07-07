@@ -49,10 +49,11 @@ func TestAccServiceDataSource(t *testing.T) {
 	manifestService2 := manifestService1
 	manifestService2.Metadata.Project = manifestProject2.GetName()
 
+	service1Resource, _ := newServiceResourceConfigFromManifest(ctx, manifestService1)
+	service2Resource, _ := newServiceResourceConfigFromManifest(ctx, manifestService2)
 	serviceResourceConfig := executeTemplate(t, "service_data_source.hcl.tmpl", map[string]any{
-		"Project1Name": manifestProject1.GetName(),
-		"Project2Name": manifestProject2.GetName(),
-		"ServiceName":  manifestService1.GetName(),
+		"Service1": service1Resource,
+		"Service2": service2Resource,
 	})
 
 	resource.Test(t, resource.TestCase{
