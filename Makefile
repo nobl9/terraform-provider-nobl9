@@ -16,6 +16,8 @@ LDFLAGS += -s -w \
 	-X $(VERSION_PKG).BuildGitBranch=$(BRANCH) \
 	-X $(VERSION_PKG).BuildGitRevision=$(REVISION)
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
+# Number of parallel tests to run.
+PARALLEL_TESTS ?= 20
 
 # renovate datasource=github-releases depName=securego/gosec
 GOSEC_VERSION := v2.22.5
@@ -72,7 +74,7 @@ test/unit:
 ## Run Terraform acceptance tests.
 test/acc:
 	$(call _print_step,Running Terraform acceptance tests)
-	TF_ACC=1 go test $(TEST) -ldflags="$(LDFLAGS)" -v $(TESTARGS) -timeout 60m nobl9/
+	TF_ACC=1 go test $(TEST) -ldflags="$(LDFLAGS)" -v $(TESTARGS) -timeout 60m -parallel "$(PARALLEL_TESTS)" nobl9/
 
 .PHONY: release-dry-run
 ## Run Goreleaser in dry-run mode.
