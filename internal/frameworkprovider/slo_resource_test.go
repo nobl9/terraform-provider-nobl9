@@ -142,7 +142,7 @@ func TestAccSLOResource(t *testing.T) {
 					},
 				},
 			},
-			// Update name - recreate.
+			// Update name and revert display name - recreate.
 			{
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
@@ -159,10 +159,21 @@ func TestAccSLOResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
+						expectChangesInPlan(planDiff{Modified: []string{"name", "display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionReplace),
 					},
 				},
+			},
+			// Update project and another attribute - error.
+			{
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.Project = "new-project"
+					m.DisplayName = stringValue("Changed display!")
+					return m
+				}()),
+				ExpectError: regexp.MustCompile(`When changing the Project name, no other attribute can be modified.`),
 			},
 			// Update project - recreate.
 			{

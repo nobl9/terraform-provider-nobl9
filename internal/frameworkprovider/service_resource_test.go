@@ -121,7 +121,7 @@ func TestAccServiceResource(t *testing.T) {
 					},
 				},
 			},
-			// Update name - recreate.
+			// Update name and revert display name - recreate.
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
@@ -138,6 +138,7 @@ func TestAccServiceResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
+						expectChangesInPlan(planDiff{Modified: []string{"name", "display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
 					},

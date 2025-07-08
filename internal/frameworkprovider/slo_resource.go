@@ -3,6 +3,7 @@ package frameworkprovider
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/nobl9/nobl9-go/manifest"
 	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
 )
@@ -175,7 +177,31 @@ func (s *SLOResource) ModifyPlan(
 		)
 		return
 	}
-	diff = diff
+	if len(diff) < 2 {
+		// No changes or a single change detected, nothing to do.
+		return
+	}
+	// Find if the project name is being changed.
+	if slices.ContainsFunc(diff, func(diff tftypes.ValueDiff) bool {
+		if diff.Path == nil {
+			return false
+		}
+		step := diff.Path.NextStep()
+		if step == nil {
+			return false
+		}
+		attrName, ok := step.(tftypes.AttributeName)
+		return ok &&
+			attrName == "project" &&
+			diff.Value1 != nil &&
+			diff.Value2 != nil &&
+			!diff.Value1.Equal(diff.Value2.Copy())
+	}) {
+		resp.Diagnostics.AddAttributeError(path.Root("project"),
+			"When changing the Project name, no other attribute can be modified.",
+			"Changing the Project name results in a dedicated operation,"+
+				" called Move SLO, which cannot be combined with other changes.")
+	}
 }
 
 func (s *SLOResource) applyResource(ctx context.Context, model SLOResourceModel, state *tfsdk.State) diag.Diagnostics {

@@ -98,7 +98,7 @@ func TestAccProjectResource(t *testing.T) {
 					},
 				},
 			},
-			// Update name - recreate.
+			// Update name and revert display name - recreate.
 			{
 				Config: newProjectResource(t, func() projectResourceTemplateModel {
 					m := projectResource
@@ -115,6 +115,7 @@ func TestAccProjectResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
+						expectChangesInPlan(planDiff{Modified: []string{"name", "display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_project.test", plancheck.ResourceActionReplace),
 					},
