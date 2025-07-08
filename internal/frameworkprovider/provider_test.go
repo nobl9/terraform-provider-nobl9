@@ -1,6 +1,7 @@
 package frameworkprovider
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"maps"
@@ -212,6 +213,7 @@ func annotateLabels(t *testing.T, labels Labels) Labels {
 			})
 		}
 	}
+	slices.SortFunc(labels, func(a, b LabelBlockModel) int { return cmp.Compare(a.Key, b.Key) })
 	return labels
 }
 

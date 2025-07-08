@@ -39,10 +39,8 @@ func sloResourceSchema() schema.Schema {
 			},
 			"tier": schema.StringAttribute{
 				Optional:    true,
-				Computed:    true,
 				Description: "Internal field, do not use.",
 			},
-			// TODO: Confirm this can be turned to set.
 			"alert_policies": schema.SetAttribute{
 				Optional:    true,
 				ElementType: types.StringType,

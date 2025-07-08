@@ -135,7 +135,7 @@ func TestAccSLOResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectNoChangeInPlan{attrName: "status"},
+						expectOnlyOneChangeInPlan{attrName: "display_name"},
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
 					},
