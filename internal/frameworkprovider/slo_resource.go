@@ -19,6 +19,7 @@ var (
 	_ resource.Resource                = &SLOResource{}
 	_ resource.ResourceWithImportState = &SLOResource{}
 	_ resource.ResourceWithConfigure   = &SLOResource{}
+	_ resource.ResourceWithModifyPlan  = &SLOResource{}
 )
 
 func NewSLOResource() resource.Resource {
@@ -90,6 +91,14 @@ func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var sourceProject string
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("project"), &sourceProject)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if model.Project != sourceProject {
+		//s.client.client.Objects().V1().MoveSLO()
+	}
 	resp.Diagnostics.Append(s.applyResource(ctx, model, &resp.State)...)
 }
 
@@ -148,6 +157,25 @@ func (s *SLOResource) Configure(
 		return
 	}
 	s.client = client
+}
+
+func (s *SLOResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	if req.State.Raw.IsNull() {
+		return
+	}
+	diff, err := req.Plan.Raw.Diff(req.State.Raw)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to calculate plan diff",
+			fmt.Sprintf("An error occurred while calculating the plan diff: %s", err.Error()),
+		)
+		return
+	}
+	diff = diff
 }
 
 func (s *SLOResource) applyResource(ctx context.Context, model SLOResourceModel, state *tfsdk.State) diag.Diagnostics {

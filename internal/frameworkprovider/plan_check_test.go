@@ -7,18 +7,22 @@ import (
 	"slices"
 
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/stretchr/testify/assert"
 )
 
-var _ plancheck.PlanCheck = expectOnlyOneChangeInPlan{}
+var _ plancheck.PlanCheck = expectChangesInPlanChecker{}
 
-// expectOnlyOneChangeInPlan is a plan check that asserts there is only one change in the plan
-// and that this change is on the given attribute.
-type expectOnlyOneChangeInPlan struct {
-	attrName string
+// expectChangesInPlan creates a [plancheck.PlanCheck] that compares expected [planDiff] with actual plan.
+func expectChangesInPlan(expected planDiff) expectChangesInPlanChecker {
+	return expectChangesInPlanChecker{expected: expected}
+}
+
+type expectChangesInPlanChecker struct {
+	expected planDiff
 }
 
 // CheckPlan implements the [plancheck.PlanCheck] interface.
-func (e expectOnlyOneChangeInPlan) CheckPlan(
+func (e expectChangesInPlanChecker) CheckPlan(
 	_ context.Context,
 	req plancheck.CheckPlanRequest,
 	resp *plancheck.CheckPlanResponse,
@@ -32,26 +36,26 @@ func (e expectOnlyOneChangeInPlan) CheckPlan(
 	after, _ := change.After.(map[string]any)
 	diff := calculatePlanDiff(before, after)
 
-	if len(diff.Removed) > 0 {
-		resp.Error = fmt.Errorf("expected no removals in the plan, but got removed attrs: %v", diff.Removed)
+	t := &testingRecorder{}
+	assert.ElementsMatch(t, e.expected.Added, diff.Added, "unexpected added attributes in the plan")
+	if t.err != nil {
+		resp.Error = t.err
 		return
 	}
-	if len(diff.Added) > 0 {
-		resp.Error = fmt.Errorf("expected no additions in the plan, but got added attrs: %v", diff.Added)
+	assert.ElementsMatch(t, e.expected.Removed, diff.Removed, "unexpected removed attributes in the plan")
+	if t.err != nil {
+		resp.Error = t.err
 		return
 	}
-	if len(diff.Modified) != 1 {
-		resp.Error = fmt.Errorf("expected exactly one modified attribute, but got %d: %v",
-			len(diff.Modified), diff.Modified)
+	assert.ElementsMatch(t, e.expected.Modified, diff.Modified, "unexpected modified attributes in the plan")
+	if t.err != nil {
+		resp.Error = t.err
 		return
-	}
-	if reflect.DeepEqual(before[e.attrName], after[e.attrName]) {
-		resp.Error = fmt.Errorf("expected '%s' to change, but it did not: before=%v, after=%v",
-			e.attrName, before[e.attrName], after[e.attrName])
 	}
 }
 
-// planDiff represents the difference between before and after keys
+// planDiff represents the difference between 'before' and 'after' plans,
+// listing attribute and block names which changed in root level.
 type planDiff struct {
 	Added    []string
 	Removed  []string
@@ -84,4 +88,11 @@ func calculatePlanDiff(before, after map[string]any) planDiff {
 	slices.Sort(diff.Removed)
 	slices.Sort(diff.Modified)
 	return diff
+}
+
+// testingRecorder is a mock implementation of the [assert.TestingT] that captures errors.
+type testingRecorder struct{ err error }
+
+func (m *testingRecorder) Errorf(format string, args ...interface{}) {
+	m.err = fmt.Errorf(format, args...)
 }

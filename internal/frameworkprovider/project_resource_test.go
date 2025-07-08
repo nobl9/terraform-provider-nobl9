@@ -92,7 +92,7 @@ func TestAccProjectResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectOnlyOneChangeInPlan{attrName: "display_name"},
+						expectChangesInPlan(planDiff{Modified: []string{"display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_project.test", plancheck.ResourceActionUpdate),
 					},

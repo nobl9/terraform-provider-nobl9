@@ -115,7 +115,7 @@ func TestAccServiceResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectOnlyOneChangeInPlan{attrName: "display_name"},
+						expectChangesInPlan(planDiff{Modified: []string{"display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
 					},
@@ -147,6 +147,7 @@ func TestAccServiceResource(t *testing.T) {
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
+					m.Name = serviceNameRecreatedByNameChange
 					m.Project = recreatedProjectName
 					return m
 				}()),
@@ -154,12 +155,14 @@ func TestAccServiceResource(t *testing.T) {
 					resource.TestCheckResourceAttr("nobl9_service.test", "project", recreatedProjectName),
 					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
 						svc := manifestService
+						svc.Metadata.Name = serviceNameRecreatedByNameChange
 						svc.Metadata.Project = recreatedProjectName
 						return svc
 					}()),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
+						expectChangesInPlan(planDiff{Modified: []string{"project"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
 					},

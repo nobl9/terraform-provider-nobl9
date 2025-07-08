@@ -43,6 +43,7 @@ func TestAccSLOResource(t *testing.T) {
 		ResourceName:     "test",
 		SLOResourceModel: getExampleSLOResource(t),
 	}
+	sloResource.Name = e2etestutils.GenerateName()
 	sloResource.Project = manifestProject.GetName()
 	sloResource.Service = manifestService.GetName()
 	sloResource.Indicator = []IndicatorModel{{
@@ -135,7 +136,7 @@ func TestAccSLOResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectOnlyOneChangeInPlan{attrName: "display_name"},
+						expectChangesInPlan(planDiff{Modified: []string{"display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
 					},
@@ -178,6 +179,7 @@ func TestAccSLOResource(t *testing.T) {
 				},
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
+					m.Name = sloNameRecreatedByNameChange
 					m.Project = recreatedProjectName
 					return m
 				}()),
@@ -185,12 +187,14 @@ func TestAccSLOResource(t *testing.T) {
 					resource.TestCheckResourceAttr("nobl9_slo.test", "project", recreatedProjectName),
 					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
 						slo := manifestSLO
+						slo.Metadata.Name = sloNameRecreatedByNameChange
 						slo.Metadata.Project = recreatedProjectName
 						return slo
 					}()),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
+						expectChangesInPlan(planDiff{Modified: []string{"project"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionReplace),
 					},
