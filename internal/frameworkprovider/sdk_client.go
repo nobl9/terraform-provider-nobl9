@@ -146,6 +146,25 @@ func (s sdkClient) Replay(ctx context.Context, payload sdkModels.Replay) error {
 	return err
 }
 
+func (s sdkClient) MoveSLOs(ctx context.Context, sloName, oldProject, newProject string) diag.Diagnostics {
+	err := s.client.Objects().V1().MoveSLOs(ctx, v1Objects.MoveSLOsRequest{
+		SLONames:   []string{sloName},
+		OldProject: oldProject,
+		NewProject: newProject,
+	})
+	if err != nil {
+		return diag.Diagnostics{
+			diag.NewAttributeErrorDiagnostic(
+				path.Root("project"),
+				fmt.Sprintf("Failed to move %s SLO from %s to %s Project", sloName, oldProject, newProject),
+				err.Error(),
+			),
+		}
+	}
+	tflog.Debug(ctx, fmt.Sprintf("moved %s SLO from %s to %s Project", sloName, oldProject, newProject))
+	return nil
+}
+
 func typedGetObject[T manifest.Object](
 	ctx context.Context,
 	client *sdk.Client,

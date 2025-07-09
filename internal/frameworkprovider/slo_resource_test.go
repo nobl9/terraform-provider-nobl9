@@ -38,6 +38,17 @@ func TestAccSLOResource(t *testing.T) {
 
 	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
 
+	manifestAlertPolicy := e2etestutils.GetExampleObject[v1alphaAlertPolicy.AlertPolicy](
+		t,
+		manifest.KindAlertPolicy,
+		nil,
+	)
+	manifestAlertPolicy.Metadata.Name = e2etestutils.GenerateName()
+	manifestAlertPolicy.Metadata.Project = manifestProject.GetName()
+	manifestAlertPolicy.Metadata.Labels = e2etestutils.AnnotateLabels(t, nil)
+	manifestAlertPolicy.Spec.AlertMethods = nil
+	auxiliaryObjects = append(auxiliaryObjects, manifestAlertPolicy)
+
 	sloNameRecreatedByNameChange := e2etestutils.GenerateName()
 	sloResource := sloResourceTemplateModel{
 		ResourceName:     "test",
@@ -54,14 +65,12 @@ func TestAccSLOResource(t *testing.T) {
 
 	manifestSLO := sloResource.ToManifest()
 
-	recreatedProjectName := e2etestutils.GenerateName()
-
 	sloConfig := newSLOResource(t, sloResource)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read.
+			// 1. Create and Read.
 			{
 				PreConfig: func() {
 					e2etestutils.V1Apply(t, auxiliaryObjects)
@@ -78,7 +87,7 @@ func TestAccSLOResource(t *testing.T) {
 					},
 				},
 			},
-			// Delete.
+			// 2. Delete.
 			{
 				Config: sloConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -92,14 +101,14 @@ func TestAccSLOResource(t *testing.T) {
 				},
 				Destroy: true,
 			},
-			// ImportState - invalid id.
+			// 3. ImportState - invalid id.
 			{
 				ResourceName:  "nobl9_slo.test",
 				ImportStateId: sloResource.Name,
 				ImportState:   true,
 				ExpectError:   regexp.MustCompile(`Invalid import ID`),
 			},
-			// ImportState.
+			// 4. ImportState.
 			{
 				ResourceName:  "nobl9_slo.test",
 				Config:        sloConfig,
@@ -119,7 +128,7 @@ func TestAccSLOResource(t *testing.T) {
 					e2etestutils.V1Apply(t, []manifest.Object{manifestSLO})
 				},
 			},
-			// Update and Read, ensure computed field does not pollute the plan.
+			// 5. Update and Read, ensure computed fields do not pollute the plan.
 			{
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
@@ -142,7 +151,7 @@ func TestAccSLOResource(t *testing.T) {
 					},
 				},
 			},
-			// Update name and revert display name - recreate.
+			// 6. Update name and revert display name - recreate.
 			{
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
@@ -165,41 +174,142 @@ func TestAccSLOResource(t *testing.T) {
 					},
 				},
 			},
-			// Update project and another attribute - error.
+			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccSLOResource_moveSLO(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	manifestAlertPolicy := e2etestutils.GetExampleObject[v1alphaAlertPolicy.AlertPolicy](
+		t,
+		manifest.KindAlertPolicy,
+		nil,
+	)
+	manifestAlertPolicy.Metadata.Name = e2etestutils.GenerateName()
+	manifestAlertPolicy.Metadata.Project = manifestProject.GetName()
+	manifestAlertPolicy.Metadata.Labels = e2etestutils.AnnotateLabels(t, nil)
+	manifestAlertPolicy.Spec.AlertMethods = nil
+	auxiliaryObjects = append(auxiliaryObjects, manifestAlertPolicy)
+
+	sloResource := sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource.Name = e2etestutils.GenerateName()
+	sloResource.Project = manifestProject.GetName()
+	sloResource.Service = manifestService.GetName()
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	sloResource.AlertPolicies = []string{manifestAlertPolicy.GetName()}
+
+	manifestSLO := sloResource.ToManifest()
+
+	newProjectName := e2etestutils.GenerateName()
+
+	sloConfig := newSLOResource(t, sloResource)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create and Read.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: sloConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, ctx, manifestSLO),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update project with alert policies - error.
 			{
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
 					m.Project = "new-project"
+					return m
+				}()),
+				ExpectError: regexp.MustCompile(`Cannot move SLO between Projects with attached Alert Policies.`),
+			},
+			// 3. Remove Alert Policy from SLO.
+			{
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.AlertPolicies = nil
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("nobl9_slo.test", "alert_policies"),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO
+						slo.Spec.AlertPolicies = nil
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInPlan(planDiff{Modified: []string{"alert_policies"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// 4. Update project and another attribute - error.
+			{
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.Project = "new-project"
+					m.AlertPolicies = nil
 					m.DisplayName = stringValue("Changed display!")
 					return m
 				}()),
 				ExpectError: regexp.MustCompile(`When changing the Project name, no other attribute can be modified.`),
 			},
-			// Update project - recreate.
+			// 5. Update project - move SLO.
 			{
 				PreConfig: func() {
 					newProjectManifest := manifestProject
-					newProjectManifest.Metadata.Name = recreatedProjectName
+					newProjectManifest.Metadata.Name = newProjectName
 					newServiceManifest := manifestService
-					newServiceManifest.Metadata.Project = recreatedProjectName
+					newServiceManifest.Metadata.Project = newProjectName
 
-					e2etestutils.V1Apply(t, []manifest.Object{newProjectManifest, newServiceManifest})
 					t.Cleanup(func() {
 						e2etestutils.V1Delete(t, []manifest.Object{newProjectManifest, newServiceManifest})
 					})
 				},
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
-					m.Name = sloNameRecreatedByNameChange
-					m.Project = recreatedProjectName
+					m.AlertPolicies = nil
+					m.Project = newProjectName
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("nobl9_slo.test", "project", recreatedProjectName),
+					resource.TestCheckResourceAttr("nobl9_slo.test", "project", newProjectName),
 					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
 						slo := manifestSLO
-						slo.Metadata.Name = sloNameRecreatedByNameChange
-						slo.Metadata.Project = recreatedProjectName
+						slo.Spec.AlertPolicies = nil
+						slo.Metadata.Project = newProjectName
 						return slo
 					}()),
 				),
@@ -207,7 +317,7 @@ func TestAccSLOResource(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						expectChangesInPlan(planDiff{Modified: []string{"project"}}),
 						plancheck.ExpectNonEmptyPlan(),
-						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionReplace),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
 					},
 				},
 			},

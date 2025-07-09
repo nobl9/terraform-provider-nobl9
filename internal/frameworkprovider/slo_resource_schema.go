@@ -27,9 +27,13 @@ func sloResourceSchema() schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"name":         metadataNameAttr(),
 			"display_name": metadataDisplayNameAttr(),
-			"project":      metadataProjectAttr(),
-			"description":  specDescriptionAttr(),
-			"annotations":  metadataAnnotationsAttr(),
+			"project": func() schema.Attribute {
+				attr := metadataProjectAttr()
+				attr.PlanModifiers = nil
+				return attr
+			}(),
+			"description": specDescriptionAttr(),
+			"annotations": metadataAnnotationsAttr(),
 			"service": schema.StringAttribute{
 				Required:    true,
 				Description: "Name of the service.",

@@ -84,8 +84,8 @@ func (s *SLOResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedModel)...)
 }
 
-// Update is called to update the state of the resource. Config, planned
-// state, and prior state values should be read from the
+// Update is called to update the state of the resource.
+// Config, planned state, and prior state values should be read from the
 // UpdateRequest and new state values set on the UpdateResponse.
 func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var model SLOResourceModel
@@ -98,10 +98,22 @@ func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if model.Project != sourceProject {
-		//s.client.client.Objects().V1().MoveSLO()
+	switch {
+	case model.Project != sourceProject:
+		resp.Diagnostics.Append(s.client.MoveSLOs(ctx, model.Name, sourceProject, model.Project)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	default:
+		resp.Diagnostics.Append(s.applyResource(ctx, model, &resp.State)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
-	resp.Diagnostics.Append(s.applyResource(ctx, model, &resp.State)...)
 }
 
 // Delete is called when the provider must delete the resource. Config
@@ -169,7 +181,7 @@ func (s *SLOResource) ModifyPlan(
 	if req.State.Raw.IsNull() {
 		return
 	}
-	diff, err := req.Plan.Raw.Diff(req.State.Raw)
+	diffs, err := req.Plan.Raw.Diff(req.State.Raw)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to calculate plan diff",
@@ -177,30 +189,26 @@ func (s *SLOResource) ModifyPlan(
 		)
 		return
 	}
-	if len(diff) < 2 {
-		// No changes or a single change detected, nothing to do.
-		return
-	}
-	// Find if the project name is being changed.
-	if slices.ContainsFunc(diff, func(diff tftypes.ValueDiff) bool {
-		if diff.Path == nil {
-			return false
-		}
-		step := diff.Path.NextStep()
-		if step == nil {
-			return false
-		}
-		attrName, ok := step.(tftypes.AttributeName)
-		return ok &&
-			attrName == "project" &&
-			diff.Value1 != nil &&
-			diff.Value2 != nil &&
-			!diff.Value1.Equal(diff.Value2.Copy())
-	}) {
+	projectChanged := hasProjectChanged(diffs)
+	// If the project name is being changed along with other attributes, return an error.
+	if len(diffs) > 1 && projectChanged {
 		resp.Diagnostics.AddAttributeError(path.Root("project"),
 			"When changing the Project name, no other attribute can be modified.",
 			"Changing the Project name results in a dedicated operation,"+
 				" called Move SLO, which cannot be combined with other changes.")
+	}
+	var alertPolicies []string
+	alertPoliciesPath := path.Root("alert_policies")
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, alertPoliciesPath, &alertPolicies)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if projectChanged && len(alertPolicies) > 0 {
+		resp.Diagnostics.AddAttributeError(alertPoliciesPath,
+			"Cannot move SLO between Projects with attached Alert Policies.",
+			"You must first remove Alert Policies attached to this SLO before attempting to change it's Project.",
+		)
+		return
 	}
 }
 
@@ -264,4 +272,22 @@ func (s *SLOResource) runReplay(ctx context.Context, model SLOResourceModel) dia
 		fmt.Sprintf(
 			"Data will be retrieved starting from %s.",
 			model.RetrieveHistoricalDataFrom.ValueString()))
+}
+
+func hasProjectChanged(diffs []tftypes.ValueDiff) bool {
+	return slices.ContainsFunc(diffs, func(diff tftypes.ValueDiff) bool {
+		if diff.Path == nil {
+			return false
+		}
+		step := diff.Path.NextStep()
+		if step == nil {
+			return false
+		}
+		attrName, ok := step.(tftypes.AttributeName)
+		return ok &&
+			attrName == "project" &&
+			diff.Value1 != nil &&
+			diff.Value2 != nil &&
+			!diff.Value1.Equal(diff.Value2.Copy())
+	})
 }
