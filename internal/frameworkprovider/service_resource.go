@@ -141,8 +141,11 @@ func (s *ServiceResource) ImportState(
 		)
 		return
 	}
-	resp.State.SetAttribute(ctx, path.Root("project"), parts[0])
-	resp.State.SetAttribute(ctx, path.Root("name"), parts[1])
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), parts[1])...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (s *ServiceResource) Configure(

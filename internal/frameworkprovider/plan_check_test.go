@@ -3,7 +3,6 @@ package frameworkprovider
 import (
 	"context"
 	"fmt"
-	"maps"
 	"reflect"
 	"slices"
 
@@ -66,10 +65,8 @@ func calculatePlanDiff(before, after map[string]any) planDiff {
 		Removed:  []string{},
 		Modified: []string{},
 	}
-	beforeKeys := slices.Sorted(maps.Keys(before))
-	afterKeys := slices.Sorted(maps.Keys(after))
 
-	for _, key := range afterKeys {
+	for key := range after {
 		beforeValue, exists := before[key]
 		switch {
 		case !exists:
@@ -78,10 +75,13 @@ func calculatePlanDiff(before, after map[string]any) planDiff {
 			diff.Modified = append(diff.Modified, key)
 		}
 	}
-	for _, key := range beforeKeys {
+	for key := range before {
 		if _, exists := after[key]; !exists {
 			diff.Removed = append(diff.Removed, key)
 		}
 	}
+	slices.Sort(diff.Added)
+	slices.Sort(diff.Removed)
+	slices.Sort(diff.Modified)
 	return diff
 }

@@ -127,8 +127,11 @@ func (s *SLOResource) ImportState(
 		)
 		return
 	}
-	resp.State.SetAttribute(ctx, path.Root("project"), parts[0])
-	resp.State.SetAttribute(ctx, path.Root("name"), parts[1])
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), parts[1])...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (s *SLOResource) Configure(
@@ -162,7 +165,6 @@ func (s *SLOResource) applyResource(ctx context.Context, model SLOResourceModel,
 	// The attribute `retrieve_historical_data_from` is not part of the SLO manifest,
 	// so we need to set it manually after reading the SLO manifest.
 	appliedModel.RetrieveHistoricalDataFrom = model.RetrieveHistoricalDataFrom
-	// Save data into Terraform state
 	diagnostics.Append(state.Set(ctx, appliedModel)...)
 	return diagnostics
 }
@@ -177,7 +179,6 @@ func (s *SLOResource) readResource(
 		return nil, diagnostics
 	}
 	updatedModel := newSLOResourceConfigFromManifest(slo)
-	// Sort Labels.
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
 	// The attribute `retrieve_historical_data_from` is not part of the SLO manifest,
 	// so we need to set it manually after reading the SLO manifest.

@@ -116,7 +116,10 @@ func (s *ProjectResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	resp.State.SetAttribute(ctx, path.Root("name"), req.ID)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), req.ID)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (s *ProjectResource) Configure(
