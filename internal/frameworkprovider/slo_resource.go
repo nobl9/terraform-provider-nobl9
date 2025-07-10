@@ -199,7 +199,8 @@ func (s *SLOResource) ModifyPlan(
 		resp.Diagnostics.AddAttributeError(path.Root("project"),
 			"When changing the `project`, no other attribute can be modified, except for `service`.",
 			"Changing the Project name results in a dedicated operation,"+
-				" called Move SLO, which cannot be combined with other changes.")
+				" called Move SLO, which cannot be combined with other changes."+
+				"\nDetected changes: "+fmt.Sprint(diffs)) // TODO: Remove this after testing!
 	}
 	var alertPolicies []string
 	alertPoliciesPath := path.Root("alert_policies")
