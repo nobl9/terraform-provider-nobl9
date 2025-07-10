@@ -1613,3 +1613,12 @@ func modelToCoralogix(model *CoralogixModel) *v1alphaSLO.CoralogixMetric {
 		PromQL: model.PromQL,
 	}
 }
+
+func hasCompositeObjectives(objectives []ObjectiveModel) bool {
+	for _, objective := range objectives {
+		if len(objective.Composite) > 0 {
+			return true
+		}
+	}
+	return false
+}

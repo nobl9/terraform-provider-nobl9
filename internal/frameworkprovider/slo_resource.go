@@ -162,9 +162,6 @@ func (s *SLOResource) applyResource(ctx context.Context, model SLOResourceModel,
 	if diagnostics.HasError() {
 		return diagnostics
 	}
-	// The attribute `retrieve_historical_data_from` is not part of the SLO manifest,
-	// so we need to set it manually after reading the SLO manifest.
-	appliedModel.RetrieveHistoricalDataFrom = model.RetrieveHistoricalDataFrom
 	diagnostics.Append(state.Set(ctx, appliedModel)...)
 	return diagnostics
 }
@@ -183,14 +180,6 @@ func (s *SLOResource) readResource(
 	// The attribute `retrieve_historical_data_from` is not part of the SLO manifest,
 	// so we need to set it manually after reading the SLO manifest.
 	updatedModel.RetrieveHistoricalDataFrom = model.RetrieveHistoricalDataFrom
-	// TODO: Account for value.
-	if len(model.Objectives) == len(updatedModel.Objectives) {
-		for i, objective := range model.Objectives {
-			if !isNullOrUnknown(objective.Value) {
-				updatedModel.Objectives[i].Value = objective.Value
-			}
-		}
-	}
 	return updatedModel, diagnostics
 }
 

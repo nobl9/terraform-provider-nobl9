@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -128,11 +129,13 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 				},
 				"value": schema.Float64Attribute{
 					Optional: true,
+					Computed: true,
 					Description: "Required for threshold and ratio metrics. Optional for existing composite SLOs. For threshold" +
 						" metrics, the threshold value. For ratio metrics, this must be a unique value per objective (for" +
 						" legacy reasons). For new composite SLOs, it must be omitted. If, for composite SLO, it was set" +
 						" previously to a non-zero value, then it must remain unchanged.",
 					PlanModifiers: []planmodifier.Float64{
+						float64planmodifier.UseStateForUnknown(),
 						sloObjectiveValuePlanModifier{},
 					},
 				},

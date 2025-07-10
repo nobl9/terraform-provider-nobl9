@@ -31,16 +31,7 @@ func (s sloObjectiveValuePlanModifier) PlanModifyFloat64(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if s.hasCompositeObjectives(objectives) {
+	if hasCompositeObjectives(objectives) {
 		resp.Diagnostics.AddError("objective value cannot be set when defining new composite SLOs", "")
 	}
-}
-
-func (s sloObjectiveValuePlanModifier) hasCompositeObjectives(objectives []ObjectiveModel) bool {
-	for _, objective := range objectives {
-		if len(objective.Composite) > 0 {
-			return true
-		}
-	}
-	return false
 }

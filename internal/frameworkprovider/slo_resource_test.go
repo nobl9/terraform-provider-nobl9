@@ -243,6 +243,7 @@ func TestAccSLOResource_custom(t *testing.T) {
 
 	tests := map[string]struct {
 		sloResourceModelModifier func(t *testing.T, model SLOResourceModel) SLOResourceModel
+		sloManifestModifier      func(t *testing.T, model v1alphaSLO.SLO) v1alphaSLO.SLO
 		expectedError            string
 	}{
 		"with alert policies": {
@@ -291,6 +292,31 @@ func TestAccSLOResource_custom(t *testing.T) {
 				return model
 			},
 		},
+		"ratio metric with no value in objective": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				model.Objectives[0].RawMetric = nil
+				model.Objectives[0].Value = types.Float64{}
+				model.Objectives[0].Op = types.String{}
+				model.Objectives[0].CountMetrics = []CountMetricsModel{{
+					Incremental: types.BoolValue(false),
+					Good: []MetricSpecModel{{
+						Prometheus: []PrometheusModel{{
+							PromQL: "sum(rate(http_request_duration_seconds_count{job=\"api\"}[5m]))",
+						}},
+					}},
+					Total: []MetricSpecModel{{
+						Prometheus: []PrometheusModel{{
+							PromQL: "sum(rate(http_request_duration_seconds_count{job=\"api\"}[5m]))",
+						}},
+					}},
+				}}
+				return model
+			},
+			sloManifestModifier: func(t *testing.T, slo v1alphaSLO.SLO) v1alphaSLO.SLO {
+				slo.Spec.Objectives[0].Value = ptr(0.0)
+				return slo
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -319,6 +345,9 @@ func TestAccSLOResource_custom(t *testing.T) {
 			}
 
 			manifestSLO = sloModel.ToManifest()
+			if test.sloManifestModifier != nil {
+				manifestSLO = test.sloManifestModifier(t, manifestSLO)
+			}
 
 			sloConfig := newSLOResource(t, sloResourceTemplateModel{
 				ResourceName:     "test",
