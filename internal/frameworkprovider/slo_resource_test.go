@@ -201,6 +201,207 @@ func TestAccSLOResource(t *testing.T) {
 	})
 }
 
+func TestAccSLOResource_test(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	sloConfig := `
+resource "nobl9_slo" "this" {
+  name             = "test-composite-tf-newzz"
+  service          = "test-tf"
+  budgeting_method = "Timeslices"
+  project          = "test-tf"
+  attachment {
+    url          = "https://test/"
+    display_name = "!#@#$#%^&%^&*(*(()&^%$%;:900899hhnkxz'dsdklsjkhjssjk😂☝️"
+  }
+  time_window {
+    unit       = "Day"
+    count      = 1
+    is_rolling = true
+  }
+  objective {
+    display_name = "AA"
+    name = "tf-objective-1"
+    target       = 0.99
+    time_slice_target = 0.9
+    # value        = 0.0
+    composite {
+      max_delay = "3m"
+      components {
+        objectives {
+          composite_objective {
+            project      = "test-permissions-18-06"
+            slo          = "test-raw-with-composite"
+            objective    = "a"
+            weight       = 1.0
+            when_delayed = "CountAsGood"
+          }
+          composite_objective {
+            project      = "test-permissions-18-06"
+            slo          = "test-ratio"
+            objective    = "existing-good-and-total"
+            weight       = 1.0
+            when_delayed = "CountAsBad"
+          }
+        }
+      }
+    }
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read.
+			{
+				Config: sloConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.this", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestAccSLOResource_test2(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	sloConfig := `
+resource "nobl9_slo" "this" {
+  name             = "test-composite-tf-new"
+  service          = "test-tf"
+  budgeting_method = "Timeslices"
+  project          = "test-tf"
+  time_window {
+    unit       = "Day"
+    count      = 1
+    is_rolling = true
+  }
+  objective {
+    display_name = "AA"
+    # name = "tf-objective-1"
+    target       = 0.99
+    time_slice_target = 0.9
+    # value        = 1.0
+    composite {
+      max_delay = "1m"
+      components {
+        objectives {
+          composite_objective {
+            project      = "test-permissions-18-06"
+            slo          = "test-raw-with-composite"
+            objective    = "a"
+            weight       = 1.0
+            when_delayed = "CountAsGood"
+          }
+          composite_objective {
+            project      = "test-permissions-18-06"
+            slo          = "test-ratio"
+            objective    = "existing-good-and-total"
+            weight       = 1.0
+            when_delayed = "CountAsBad"
+          }
+          composite_objective {
+            project      = "test-tf"
+            slo          = "test-raw-tf"
+            objective    = "objective-1"
+            weight       = 1.0
+            when_delayed = "Ignore"
+          }
+        }
+      }
+    }
+  }
+}
+`
+
+	updatedConfig := `
+resource "nobl9_slo" "this" {
+  name             = "test-composite-tf-new"
+  service          = "test-tf"
+  budgeting_method = "Timeslices"
+  project          = "test-tf"
+  attachment {
+    url          = "https://test/"
+    display_name = "!#@#$#%^&%^&*(*(()&^%$%;:900897hhnkxz'dsdklsjkhjssjk😂☝️"
+  }
+  time_window {
+    unit       = "Day"
+    count      = 1
+    is_rolling = true
+  }
+  objective {
+    display_name = "AA"
+    # name = "tf-objective-1"
+    target       = 0.99
+    time_slice_target = 0.9
+    # value        = 0
+    composite {
+      max_delay = "1m"
+      components {
+        objectives {
+          composite_objective {
+            project      = "test-permissions-18-06"
+            slo          = "test-raw-with-composite"
+            objective    = "a"
+            weight       = 1.0
+            when_delayed = "CountAsGood"
+          }
+          composite_objective {
+            project      = "test-permissions-18-06"
+            slo          = "test-ratio"
+            objective    = "existing-good-and-total"
+            weight       = 1.0
+            when_delayed = "CountAsBad"
+          }
+          composite_objective {
+            project      = "test-tf"
+            slo          = "test-raw-tf"
+            objective    = "objective-1"
+            weight       = 1.0
+            when_delayed = "Ignore"
+          }
+        }
+      }
+    }
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read.
+			{
+				Config: sloConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.this", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// Update.
+			{
+				Config: updatedConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectOnlyOneChangeInPlan{attrName: "attachment"},
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.this", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestAccSLOResource_custom(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
@@ -243,6 +444,7 @@ func TestAccSLOResource_custom(t *testing.T) {
 
 	tests := map[string]struct {
 		sloResourceModelModifier func(t *testing.T, model SLOResourceModel) SLOResourceModel
+		expectedError            string
 	}{
 		"with alert policies": {
 			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
@@ -270,6 +472,26 @@ func TestAccSLOResource_custom(t *testing.T) {
 				return model
 			},
 		},
+		"empty composite block": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
+					t,
+					manifest.KindSLO,
+					func(example v1alphaExamples.Example) bool {
+						return strings.Contains(example.GetVariant(), "composite")
+					},
+				)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				compositeModel.Objectives[0].Composite = []CompositeObjectiveModel{{
+					MaxDelay:   types.StringValue("15m"),
+					Components: nil,
+				}}
+				model.Objectives = compositeModel.Objectives
+				model.Indicator = nil
+				return model
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -283,22 +505,41 @@ func TestAccSLOResource_custom(t *testing.T) {
 			sloModel = test.sloResourceModelModifier(t, sloModel)
 
 			manifestSLO := sloModel.ToManifest()
-			typ := manifestSLO.Spec.AllMetricSpecs()[0].DataSourceType()
-			var dataSource manifest.Object
-			switch sloModel.Indicator[0].Kind.ValueString() {
-			case manifest.KindDirect.String():
-				dataSource = e2etestutils.ProvisionStaticDirect(t, typ)
-			default:
-				dataSource = e2etestutils.ProvisionStaticAgent(t, typ)
+
+			if !manifestSLO.Spec.HasCompositeObjectives() {
+				typ := manifestSLO.Spec.AllMetricSpecs()[0].DataSourceType()
+				var dataSource manifest.Object
+				switch sloModel.Indicator[0].Kind.ValueString() {
+				case manifest.KindDirect.String():
+					dataSource = e2etestutils.ProvisionStaticDirect(t, typ)
+				default:
+					dataSource = e2etestutils.ProvisionStaticAgent(t, typ)
+				}
+				sloModel.Indicator[0].Name = dataSource.GetName()
+				sloModel.Indicator[0].Project = types.StringValue(dataSource.(manifest.ProjectScopedObject).GetProject())
 			}
-			sloModel.Indicator[0].Name = dataSource.GetName()
-			sloModel.Indicator[0].Project = types.StringValue(dataSource.(manifest.ProjectScopedObject).GetProject())
+
 			manifestSLO = sloModel.ToManifest()
 
 			sloConfig := newSLOResource(t, sloResourceTemplateModel{
 				ResourceName:     "test",
 				SLOResourceModel: sloModel,
 			})
+
+			if test.expectedError != "" {
+				resource.Test(t, resource.TestCase{
+					ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+					Steps: []resource.TestStep{
+						// Create and Read.
+						{
+							Config:      sloConfig,
+							ExpectError: regexp.MustCompile(test.expectedError),
+							PlanOnly:    true,
+						},
+					},
+				})
+				return
+			}
 
 			resource.Test(t, resource.TestCase{
 				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -334,6 +575,42 @@ func TestAccSLOResource_custom(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestAccSLOResource_newCompositeWithObjectiveValueSetToZero(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	slo := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
+		t,
+		manifest.KindSLO,
+		func(example v1alphaExamples.Example) bool {
+			return strings.Contains(example.GetVariant(), "composite")
+		},
+	)
+	for i, objective := range slo.Spec.Objectives {
+		if objective.Composite != nil {
+			slo.Spec.Objectives[i].Value = ptr(0.0)
+			break
+		}
+	}
+
+	sloConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "this",
+		SLOResourceModel: *newSLOResourceConfigFromManifest(slo),
+	})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read.
+			{
+				Config:      sloConfig,
+				ExpectError: regexp.MustCompile("objective value cannot be set when defining new composite SLOs"),
+				PlanOnly:    true,
+			},
+		},
+	})
 }
 
 const slosPerService = 50
@@ -659,3 +936,5 @@ func testNameFromExample(example v1alphaExamples.Example) string {
 	}
 	return name
 }
+
+func ptr[T any](v T) *T { return &v }

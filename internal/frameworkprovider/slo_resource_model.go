@@ -683,7 +683,8 @@ func (c *CompositeObjectiveModel) ToManifest() *v1alphaSLO.CompositeSpec {
 		return nil
 	}
 	spec := &v1alphaSLO.CompositeSpec{
-		MaxDelay: c.MaxDelay.ValueString(),
+		MaxDelay:   c.MaxDelay.ValueString(),
+		Components: v1alphaSLO.Components{Objectives: make([]v1alphaSLO.CompositeObjective, 0)},
 	}
 	if len(c.Components) > 0 && len(c.Components[0].Objectives) > 0 &&
 		len(c.Components[0].Objectives[0].CompositeObjective) > 0 {

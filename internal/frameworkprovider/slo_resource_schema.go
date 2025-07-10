@@ -128,10 +128,13 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 				},
 				"value": schema.Float64Attribute{
 					Optional: true,
-					Description: "Required for threshold and ratio metrics. Optional for composite SLOs. For threshold" +
+					Description: "Required for threshold and ratio metrics. Optional for existing composite SLOs. For threshold" +
 						" metrics, the threshold value. For ratio metrics, this must be a unique value per objective (for" +
-						" legacy reasons). For composite SLOs, it should be omitted. If, for composite SLO, it was set" +
+						" legacy reasons). For new composite SLOs, it must be omitted. If, for composite SLO, it was set" +
 						" previously to a non-zero value, then it must remain unchanged.",
+					PlanModifiers: []planmodifier.Float64{
+						sloObjectiveValuePlanModifier{},
+					},
 				},
 				"name": schema.StringAttribute{
 					Optional:    true,
@@ -963,16 +966,14 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 				"components": schema.ListNestedBlock{
 					Description: "Objectives to be assembled in your composite SLO.",
 					Validators: []validator.List{
-						listvalidator.IsRequired(),
-						listvalidator.SizeBetween(1, 1),
+						listvalidator.SizeAtMost(1),
 					},
 					NestedObject: schema.NestedBlockObject{
 						Blocks: map[string]schema.Block{
 							"objectives": schema.ListNestedBlock{
 								Description: "An additional nesting for the components of your composite SLO.",
 								Validators: []validator.List{
-									listvalidator.IsRequired(),
-									listvalidator.SizeBetween(1, 1),
+									listvalidator.SizeAtMost(1),
 								},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: map[string]schema.Block{
