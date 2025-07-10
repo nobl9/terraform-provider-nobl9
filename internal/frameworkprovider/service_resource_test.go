@@ -115,7 +115,7 @@ func TestAccServiceResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectChangesInPlan(planDiff{Modified: []string{"display_name"}}),
+						expectChangesInResourcePlan(planDiff{Modified: []string{"display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
 					},
@@ -138,7 +138,7 @@ func TestAccServiceResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectChangesInPlan(planDiff{Modified: []string{"name", "display_name"}}),
+						expectChangesInResourcePlan(planDiff{Modified: []string{"name", "display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
 					},
@@ -163,7 +163,7 @@ func TestAccServiceResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectChangesInPlan(planDiff{Modified: []string{"project"}}),
+						expectChangesInResourcePlan(planDiff{Modified: []string{"project"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
 					},

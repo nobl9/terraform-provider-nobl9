@@ -145,7 +145,7 @@ func TestAccSLOResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectChangesInPlan(planDiff{Modified: []string{"display_name"}}),
+						expectChangesInResourcePlan(planDiff{Modified: []string{"display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
 					},
@@ -168,7 +168,7 @@ func TestAccSLOResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectChangesInPlan(planDiff{Modified: []string{"name", "display_name"}}),
+						expectChangesInResourcePlan(planDiff{Modified: []string{"name", "display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionReplace),
 					},
@@ -270,7 +270,7 @@ func TestAccSLOResource_moveSLO(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectChangesInPlan(planDiff{Modified: []string{"alert_policies"}}),
+						expectChangesInResourcePlan(planDiff{Modified: []string{"alert_policies"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
 					},
@@ -317,7 +317,7 @@ func TestAccSLOResource_moveSLO(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectChangesInPlan(planDiff{Modified: []string{"project"}}),
+						expectChangesInResourcePlan(planDiff{Modified: []string{"project"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
 					},
@@ -354,7 +354,218 @@ func TestAccSLOResource_moveSLO(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectChangesInPlan(planDiff{Modified: []string{"project", "service"}}),
+						expectChangesInResourcePlan(planDiff{Modified: []string{"project", "service"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccSLOResource_moveTwoSLOs(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	sloResource1 := sloResourceTemplateModel{
+		ResourceName:     "first",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource1.Name = e2etestutils.GenerateName()
+	sloResource1.Project = manifestProject.GetName()
+	sloResource1.Service = manifestService.GetName()
+	sloResource1.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	sloResource1.AlertPolicies = nil
+	sloResource2 := sloResource1
+	sloResource2.Name = e2etestutils.GenerateName()
+	sloResource2.ResourceName = "second"
+
+	manifestSLO1 := sloResource1.ToManifest()
+	manifestSLO2 := sloResource2.ToManifest()
+
+	newProjectName := e2etestutils.GenerateName()
+
+	sloConfig1 := newSLOResource(t, sloResource1)
+	sloConfig2 := newSLOResource(t, sloResource2)
+
+	combinedConfig := sloConfig1 + "\n" + sloConfig2
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create and Read.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: combinedConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, ctx, manifestSLO1),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.first", plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction("nobl9_slo.second", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update project - move SLOs.
+			{
+				PreConfig: func() {
+					newProjectManifest := manifestProject
+					newProjectManifest.Metadata.Name = newProjectName
+					newServiceManifest := manifestService
+					newServiceManifest.Metadata.Project = newProjectName
+
+					t.Cleanup(func() {
+						e2etestutils.V1Delete(t, []manifest.Object{newProjectManifest, newServiceManifest})
+					})
+				},
+				Config: func() string {
+					m1 := sloResource1
+					m1.Project = newProjectName
+					m2 := sloResource2
+					m2.Project = newProjectName
+					return newSLOResource(t, m1) + "\n" + newSLOResource(t, m2)
+				}(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.first", "project", newProjectName),
+					resource.TestCheckResourceAttr("nobl9_slo.second", "project", newProjectName),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO1
+						slo.Metadata.Project = newProjectName
+						return slo
+					}()),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO2
+						slo.Metadata.Project = newProjectName
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcesPlan(map[string]planDiff{
+							"nobl9_slo.first":  {Modified: []string{"project"}},
+							"nobl9_slo.second": {Modified: []string{"project"}},
+						}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.first", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("nobl9_slo.second", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccSLOResource_moveDeprecatedCompositeV1SLO(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	sloResource := sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource.Name = e2etestutils.GenerateName()
+	sloResource.Project = manifestProject.GetName()
+	sloResource.Service = manifestService.GetName()
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	sloResource.AlertPolicies = nil
+	sloResource.Composite = []CompositeV1Model{{
+		Target: types.Float64Value(0.5),
+		BurnRateCondition: []CompositeV1BurnRateConditionModel{{
+			Op:    types.StringValue("gt"),
+			Value: types.Float64Value(1),
+		}},
+	}}
+
+	manifestSLO := sloResource.ToManifest()
+
+	newProjectName := e2etestutils.GenerateName()
+
+	sloConfig := newSLOResource(t, sloResource)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create and Read.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: sloConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, ctx, manifestSLO),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update project - move SLO.
+			{
+				PreConfig: func() {
+					newProjectManifest := manifestProject
+					newProjectManifest.Metadata.Name = newProjectName
+					newServiceManifest := manifestService
+					newServiceManifest.Metadata.Project = newProjectName
+
+					t.Cleanup(func() {
+						e2etestutils.V1Delete(t, []manifest.Object{newProjectManifest, newServiceManifest})
+					})
+				},
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.AlertPolicies = nil
+					m.Project = newProjectName
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.test", "project", newProjectName),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO
+						slo.Spec.AlertPolicies = nil
+						slo.Metadata.Project = newProjectName
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"project"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
 					},
@@ -863,6 +1074,40 @@ func TestRenderSLOResourceTemplate_examples(t *testing.T) {
 			assert.Equal(t, sloManifest, resourceModel.ToManifest())
 		})
 	}
+}
+
+func TestRenderSLOResourceTemplate_compositeV1Example(t *testing.T) {
+	t.Parallel()
+
+	exampleResource := getExampleSLOResource(t)
+	exampleResource.AlertPolicies = nil
+	exampleResource.Labels = nil
+	exampleResource.Annotations = nil
+	exampleResource.Indicator = nil
+	exampleResource.Objectives = nil
+
+	// Add composite v1 configuration
+	exampleResource.Composite = []CompositeV1Model{{
+		Target: types.Float64Value(0.95),
+		BurnRateCondition: []CompositeV1BurnRateConditionModel{
+			{
+				Op:    types.StringValue("gt"),
+				Value: types.Float64Value(2.0),
+			},
+			{
+				Op:    types.StringValue("lt"),
+				Value: types.Float64Value(1.5),
+			},
+		},
+	}}
+
+	actual := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "this",
+		SLOResourceModel: exampleResource,
+	})
+
+	assertHCL(t, actual)
+	assert.Equal(t, readExpectedConfig(t, "slo-composite-v1-config.tf"), actual)
 }
 
 type sloResourceTemplateModel struct {
