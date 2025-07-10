@@ -100,7 +100,7 @@ func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	}
 	switch {
 	case model.Project != sourceProject:
-		resp.Diagnostics.Append(s.client.MoveSLOs(ctx, model.Name, sourceProject, model.Project)...)
+		resp.Diagnostics.Append(s.client.MoveSLOs(ctx, model.Name, sourceProject, model.Project, model.Service)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -189,11 +189,15 @@ func (s *SLOResource) ModifyPlan(
 		)
 		return
 	}
-	projectChanged := hasProjectChanged(diffs)
-	// If the project name is being changed along with other attributes, return an error.
-	if len(diffs) > 1 && projectChanged {
+	projectChanged := hasRootAttributeChanged("project", diffs)
+	diffsNum := len(diffs)
+	if hasRootAttributeChanged("service", diffs) {
+		diffsNum--
+	}
+	// If the project name is being changed along with other attributes, other than service, return an error.
+	if projectChanged && diffsNum > 1 {
 		resp.Diagnostics.AddAttributeError(path.Root("project"),
-			"When changing the Project name, no other attribute can be modified.",
+			"When changing the `project`, no other attribute can be modified, except for `service`.",
 			"Changing the Project name results in a dedicated operation,"+
 				" called Move SLO, which cannot be combined with other changes.")
 	}
@@ -274,7 +278,7 @@ func (s *SLOResource) runReplay(ctx context.Context, model SLOResourceModel) dia
 			model.RetrieveHistoricalDataFrom.ValueString()))
 }
 
-func hasProjectChanged(diffs []tftypes.ValueDiff) bool {
+func hasRootAttributeChanged(name string, diffs []tftypes.ValueDiff) bool {
 	return slices.ContainsFunc(diffs, func(diff tftypes.ValueDiff) bool {
 		if diff.Path == nil {
 			return false
@@ -285,7 +289,7 @@ func hasProjectChanged(diffs []tftypes.ValueDiff) bool {
 		}
 		attrName, ok := step.(tftypes.AttributeName)
 		return ok &&
-			attrName == "project" &&
+			string(attrName) == name &&
 			diff.Value1 != nil &&
 			diff.Value2 != nil &&
 			!diff.Value1.Equal(diff.Value2.Copy())

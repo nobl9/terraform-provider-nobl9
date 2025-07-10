@@ -220,6 +220,7 @@ func TestAccSLOResource_moveSLO(t *testing.T) {
 	manifestSLO := sloResource.ToManifest()
 
 	newProjectName := e2etestutils.GenerateName()
+	newServiceName := e2etestutils.GenerateName()
 
 	sloConfig := newSLOResource(t, sloResource)
 
@@ -284,7 +285,8 @@ func TestAccSLOResource_moveSLO(t *testing.T) {
 					m.DisplayName = stringValue("Changed display!")
 					return m
 				}()),
-				ExpectError: regexp.MustCompile(`When changing the Project name, no other attribute can be modified.`),
+				ExpectError: regexp.MustCompile(
+					"When changing the `project`, no other attribute can be modified, except for `service`."),
 			},
 			// 5. Update project - move SLO.
 			{
@@ -316,6 +318,43 @@ func TestAccSLOResource_moveSLO(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						expectChangesInPlan(planDiff{Modified: []string{"project"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// 6. Update project and service - move SLO (back to the original Project).
+			{
+				PreConfig: func() {
+					newServiceManifest := manifestService
+					newServiceManifest.Metadata.Project = manifestProject.GetName()
+					newServiceManifest.Metadata.Name = newServiceName
+
+					t.Cleanup(func() {
+						e2etestutils.V1Delete(t, []manifest.Object{newServiceManifest})
+					})
+				},
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.AlertPolicies = nil
+					m.Project = manifestProject.GetName()
+					m.Service = newServiceName
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.test", "project", manifestProject.GetName()),
+					resource.TestCheckResourceAttr("nobl9_slo.test", "service", newServiceName),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO
+						slo.Spec.AlertPolicies = nil
+						slo.Metadata.Project = manifestProject.GetName()
+						slo.Spec.Service = newServiceName
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInPlan(planDiff{Modified: []string{"project", "service"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
 					},

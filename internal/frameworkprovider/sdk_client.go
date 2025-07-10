@@ -146,11 +146,12 @@ func (s sdkClient) Replay(ctx context.Context, payload sdkModels.Replay) error {
 	return err
 }
 
-func (s sdkClient) MoveSLOs(ctx context.Context, sloName, oldProject, newProject string) diag.Diagnostics {
+func (s sdkClient) MoveSLOs(ctx context.Context, sloName, oldProject, newProject, newService string) diag.Diagnostics {
 	err := s.client.Objects().V1().MoveSLOs(ctx, v1Objects.MoveSLOsRequest{
 		SLONames:   []string{sloName},
 		OldProject: oldProject,
 		NewProject: newProject,
+		Service:    newService,
 	})
 	if err != nil {
 		return diag.Diagnostics{
