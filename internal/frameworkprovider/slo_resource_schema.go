@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -19,7 +18,7 @@ import (
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 )
 
-func sloResourceSchema() schema.Schema {
+var sloResourceSchema = func() schema.Schema {
 	description := "[SLO configuration | Nobl9 documentation](https://docs.nobl9.com/yaml-guide#slo)"
 	return schema.Schema{
 		MarkdownDescription: description,
@@ -29,7 +28,9 @@ func sloResourceSchema() schema.Schema {
 			"display_name": metadataDisplayNameAttr(),
 			"project": func() schema.Attribute {
 				attr := metadataProjectAttr()
-				attr.PlanModifiers = nil
+				attr.PlanModifiers = []planmodifier.String{
+					sloProjectPlanModifier{},
+				}
 				return attr
 			}(),
 			"description": specDescriptionAttr(),
@@ -75,7 +76,7 @@ func sloResourceSchema() schema.Schema {
 			"anomaly_config": anomalyConfigBlock(),
 		},
 	}
-}
+}()
 
 func sloResourceIndicatorBlock() schema.ListNestedBlock {
 	return schema.ListNestedBlock{
@@ -139,7 +140,6 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 						" legacy reasons). For new composite SLOs, it must be omitted. If, for composite SLO, it was set" +
 						" previously to a non-zero value, then it must remain unchanged.",
 					PlanModifiers: []planmodifier.Float64{
-						float64planmodifier.UseStateForUnknown(),
 						sloObjectiveValuePlanModifier{},
 					},
 				},

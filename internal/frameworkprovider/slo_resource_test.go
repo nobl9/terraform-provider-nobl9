@@ -576,6 +576,177 @@ func TestAccSLOResource_moveDeprecatedCompositeV1SLO(t *testing.T) {
 	})
 }
 
+func TestAccSLOResource_customScenario(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	sloPreConfig := `
+resource "nobl9_slo" "this" {
+  name             = "test-raw-tf"
+  display_name     = "Test Raw SLO"
+  service          = "test-tf"
+  budgeting_method = "Timeslices"
+  project          = ":project"
+
+  time_window {
+    unit       = "Week"
+    count      = 1
+    is_rolling = false
+    calendar {
+      start_time = "2021-08-01 00:00:00"
+      time_zone   = "UTC"
+    }
+  }
+
+  objective {
+    target       = 0.99
+    display_name = "OK1"
+    value        = -1
+    op           = "gte"
+    time_slice_target = 0.9
+    
+    raw_metric {
+      query {
+        datadog {
+          query = "1"
+        }
+      }
+    }
+  }
+
+  indicator {
+    name    = "datadog-direct-03-07-working"
+    kind    = "Direct"
+    project = "test-move-03-07"
+  }
+}
+`
+
+	sloConfig := `
+# #################
+# # New Composite #
+# #################
+
+resource "nobl9_slo" "test-composite-tf" {
+  name             = "test-composite-tf-new"
+  service          = "test-tf"
+  budgeting_method = "Timeslices"
+  project          = ":project"
+
+  attachment {
+    url          = "https://test/"
+    display_name = "!#@#$#%^&%^&*(*(()&^%$%;:900897hhnkxz'dsdklsjkhjssjk😂☝️"
+  }
+
+  time_window {
+    unit       = "Day"
+    count      = 1
+    is_rolling = true
+  }
+
+  objective {
+    display_name = "AA"
+    name = "tf-objective-1"
+    target       = 0.98
+    time_slice_target = 0.9
+    # value        = 0
+    composite {
+      max_delay = "1m"
+      components {
+        objectives {
+          composite_objective {
+            project      = "test-permissions-18-06"
+            slo          = "test-raw-with-composite"
+            objective    = "a"
+            weight       = 1.0
+            when_delayed = "CountAsGood"
+          }
+          composite_objective {
+            project      = "test-permissions-18-06"
+            slo          = "test-ratio"
+            objective    = "existing-good-and-total"
+            weight       = 1.0
+            when_delayed = "CountAsBad"
+          }
+          composite_objective {
+            project      = "test-tf"
+            slo          = "test-raw-tf"
+            objective    = "objective-1"
+            weight       = 1.0
+            when_delayed = "Ignore"
+          }
+        }
+      }
+    }
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Pre config.
+			{
+				Config: strings.ReplaceAll(sloPreConfig, ":project", "test-tf"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.this", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// Create and Read.
+			{
+				Config: strings.ReplaceAll(sloPreConfig+"\n"+sloConfig, ":project", "test-tf"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test-composite-tf", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// Move SLOs to new project.
+			{
+				Config: strings.ReplaceAll(sloPreConfig+"\n"+sloConfig, ":project", "manual-tf"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.this", "project", "manual-tf"),
+					resource.TestCheckResourceAttr("nobl9_slo.test-composite-tf", "project", "manual-tf"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.this", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("nobl9_slo.test-composite-tf", plancheck.ResourceActionUpdate),
+						expectChangesInResourcesPlan(map[string]planDiff{
+							"nobl9_slo.this":              {Modified: []string{"project"}},
+							"nobl9_slo.test-composite-tf": {Modified: []string{"project"}},
+						}),
+					},
+				},
+			},
+			// Move SLOs back to old project.
+			{
+				Config: strings.ReplaceAll(sloPreConfig+"\n"+sloConfig, ":project", "test-tf"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.this", "project", "test-tf"),
+					resource.TestCheckResourceAttr("nobl9_slo.test-composite-tf", "project", "test-tf"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.this", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("nobl9_slo.test-composite-tf", plancheck.ResourceActionUpdate),
+						expectChangesInResourcesPlan(map[string]planDiff{
+							"nobl9_slo.this":              {Modified: []string{"project"}},
+							"nobl9_slo.test-composite-tf": {Modified: []string{"project"}},
+						}),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestAccSLOResource_custom(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)

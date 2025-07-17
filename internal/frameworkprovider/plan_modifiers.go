@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 )
 
+// sloObjectiveValuePlanModifier should not be used with [float64planmodifier.UseStateForUnknown].
+// The latter will have no effect.
 type sloObjectiveValuePlanModifier struct{}
 
 func (s sloObjectiveValuePlanModifier) Description(ctx context.Context) string {

@@ -3,13 +3,13 @@ package frameworkprovider
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/nobl9/nobl9-go/manifest"
@@ -21,7 +21,6 @@ var (
 	_ resource.Resource                = &SLOResource{}
 	_ resource.ResourceWithImportState = &SLOResource{}
 	_ resource.ResourceWithConfigure   = &SLOResource{}
-	_ resource.ResourceWithModifyPlan  = &SLOResource{}
 )
 
 func NewSLOResource() resource.Resource {
@@ -40,7 +39,7 @@ func (s *SLOResource) Metadata(_ context.Context, req resource.MetadataRequest, 
 
 // Schema implements [resource.Resource.Schema] function.
 func (s *SLOResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = sloResourceSchema()
+	resp.Schema = sloResourceSchema
 }
 
 // Create is called when the provider must create a new resource. Config
@@ -52,7 +51,15 @@ func (s *SLOResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	resp.Diagnostics.Append(s.applyResource(ctx, model, &resp.State)...)
+	appliedModel, diags := s.applyResource(ctx, model)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// The attribute `retrieve_historical_data_from` is not part of the SLO manifest,
+	// so we need to set it manually after reading the SLO manifest.
+	appliedModel.RetrieveHistoricalDataFrom = model.RetrieveHistoricalDataFrom
+	resp.Diagnostics.Append(resp.State.Set(ctx, appliedModel)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -109,7 +116,12 @@ func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, re
 			return
 		}
 	default:
-		resp.Diagnostics.Append(s.applyResource(ctx, model, &resp.State)...)
+		appliedModel, diags := s.applyResource(ctx, model)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		resp.Diagnostics.Append(resp.State.Set(ctx, appliedModel)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -173,64 +185,19 @@ func (s *SLOResource) Configure(
 	s.client = client
 }
 
-func (s *SLOResource) ModifyPlan(
-	ctx context.Context,
-	req resource.ModifyPlanRequest,
-	resp *resource.ModifyPlanResponse,
-) {
-	if req.State.Raw.IsNull() {
-		return
-	}
-	diffs, err := req.Plan.Raw.Diff(req.State.Raw)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to calculate plan diff",
-			fmt.Sprintf("An error occurred while calculating the plan diff: %s", err.Error()),
-		)
-		return
-	}
-	projectChanged := hasRootAttributeChanged("project", diffs)
-	diffsNum := len(diffs)
-	if hasRootAttributeChanged("service", diffs) {
-		diffsNum--
-	}
-	// If the project name is being changed along with other attributes, other than service, return an error.
-	if projectChanged && diffsNum > 1 {
-		resp.Diagnostics.AddAttributeError(path.Root("project"),
-			"When changing the `project`, no other attribute can be modified, except for `service`.",
-			"Changing the Project name results in a dedicated operation,"+
-				" called Move SLO, which cannot be combined with other changes."+
-				"\nDetected changes: "+fmt.Sprint(diffs)) // TODO: Remove this after testing!
-	}
-	var alertPolicies []string
-	alertPoliciesPath := path.Root("alert_policies")
-	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, alertPoliciesPath, &alertPolicies)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	if projectChanged && len(alertPolicies) > 0 {
-		resp.Diagnostics.AddAttributeError(alertPoliciesPath,
-			"Cannot move SLO between Projects with attached Alert Policies.",
-			"You must first remove Alert Policies attached to this SLO before attempting to change it's Project.",
-		)
-		return
-	}
-}
-
-func (s *SLOResource) applyResource(ctx context.Context, model SLOResourceModel, state *tfsdk.State) diag.Diagnostics {
+func (s *SLOResource) applyResource(ctx context.Context, model SLOResourceModel) (*SLOResourceModel, diag.Diagnostics) {
 	slo := model.ToManifest()
 	diagnostics := s.client.ApplyObject(ctx, slo)
 	if diagnostics.HasError() {
-		return diagnostics
+		return nil, diagnostics
 	}
 
 	// Read the SLO after creation to fetch the computed fields.
 	appliedModel, diagnostics := s.readResource(ctx, model)
 	if diagnostics.HasError() {
-		return diagnostics
+		return nil, diagnostics
 	}
-	diagnostics.Append(state.Set(ctx, appliedModel)...)
-	return diagnostics
+	return appliedModel, diagnostics
 }
 
 // readResource reads the current state of the resource from the Nobl9 API.
@@ -244,9 +211,6 @@ func (s *SLOResource) readResource(
 	}
 	updatedModel := newSLOResourceConfigFromManifest(slo)
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
-	// The attribute `retrieve_historical_data_from` is not part of the SLO manifest,
-	// so we need to set it manually after reading the SLO manifest.
-	updatedModel.RetrieveHistoricalDataFrom = model.RetrieveHistoricalDataFrom
 	return updatedModel, diagnostics
 }
 
@@ -279,20 +243,94 @@ func (s *SLOResource) runReplay(ctx context.Context, model SLOResourceModel) dia
 			model.RetrieveHistoricalDataFrom.ValueString()))
 }
 
-func hasRootAttributeChanged(name string, diffs []tftypes.ValueDiff) bool {
-	return slices.ContainsFunc(diffs, func(diff tftypes.ValueDiff) bool {
-		if diff.Path == nil {
-			return false
+type sloProjectPlanModifier struct{}
+
+func (s sloProjectPlanModifier) Description(ctx context.Context) string {
+	return s.MarkdownDescription(ctx)
+}
+
+func (s sloProjectPlanModifier) MarkdownDescription(context.Context) string {
+	return "Modifies the SLO plan when the `project` attribute is changed. " +
+		"This modifier ensures that no other attributes are changed along with the project change, " +
+		"and provides warnings about the implications of moving an SLO between projects."
+}
+
+func (s sloProjectPlanModifier) PlanModifyString(
+	ctx context.Context,
+	req planmodifier.StringRequest,
+	resp *planmodifier.StringResponse,
+) {
+	if isNullOrUnknown(req.StateValue) || req.StateValue == req.PlanValue {
+		return
+	}
+	diffs, diags := calculateResourceDiff(req.State, req.Plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(s.modifyPlanForProjectChange(ctx, req.Plan, diffs)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (s sloProjectPlanModifier) modifyPlanForProjectChange(
+	ctx context.Context,
+	plan tfsdk.Plan,
+	diffs []tftypes.ValueDiff,
+) diag.Diagnostics {
+	if len(diffs) == 0 {
+		return nil
+	}
+
+	diags := make(diag.Diagnostics, 0)
+	diffsNum := len(diffs)
+
+	ignoreAttributes := []string{
+		// It is allowed to change along with `project`,
+		// this way the user can specify the target Service for the moved SLO.
+		"service",
+		// This attribute is not part of the SLO manifest and can be changed freely.
+		// It is only used when [SLOResource.Create] is called to trigger historical data retrieval.
+		"retrieve_historical_data_from",
+	}
+	for _, attr := range ignoreAttributes {
+		if hasRootAttributeChanged(attr, diffs) {
+			diffsNum--
 		}
-		step := diff.Path.NextStep()
-		if step == nil {
-			return false
-		}
-		attrName, ok := step.(tftypes.AttributeName)
-		return ok &&
-			string(attrName) == name &&
-			diff.Value1 != nil &&
-			diff.Value2 != nil &&
-			!diff.Value1.Equal(diff.Value2.Copy())
-	})
+	}
+
+	// If the project name is being changed along with other attributes, other than service, return an error.
+	if diffsNum > 1 {
+		diags.AddAttributeError(path.Root("project"),
+			"When changing the `project`, no other attribute can be modified, except for `service`.",
+			"Changing the Project name results in a dedicated operation,"+
+				" called Move SLO, which cannot be combined with other changes.")
+	}
+
+	var alertPolicies []string
+	alertPoliciesPath := path.Root("alert_policies")
+	diags.Append(plan.GetAttribute(ctx, alertPoliciesPath, &alertPolicies)...)
+	if diags.HasError() {
+		return diags
+	}
+	if len(alertPolicies) > 0 {
+		diags.AddAttributeError(alertPoliciesPath,
+			"Cannot move SLO between Projects with attached Alert Policies.",
+			"You must first remove Alert Policies attached to this SLO before attempting to change it's Project.",
+		)
+		return diags
+	}
+
+	diags.AddAttributeWarning(path.Root("project"),
+		"Changing the Project results in a dedicated operation which has several side effects (see details).",
+		`Moving an SLO between Projects:
+  - Creates a new Project and/or Service if the specified target objects do not yet exist.
+    It is best practice to define these new objects in the Terraform configuration, before moving the SLO.
+  - Updates SLO’s project in the composite SLO definition and Budget Adjustment filters.
+    These definitions, which reference any objectives from the moved SLO need to be updated manually.
+  - Updates its link — the former link won't work anymore.
+  - Removes it from reports filtered by its previous path.
+`)
+	return diags
 }
