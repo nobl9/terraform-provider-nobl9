@@ -1,8 +1,10 @@
 package frameworkprovider
 
 import (
+	"errors"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -104,4 +106,48 @@ func hasRootAttributeChanged(name string, diffs []tftypes.ValueDiff) bool {
 			diff.Value2 != nil &&
 			!diff.Value1.Equal(diff.Value2.Copy())
 	})
+}
+
+// mapValues applies a function to each value in the map
+// and returns a new map with the transformed values.
+func mapValues[K comparable, V, N any](m map[K]V, f func(V) N) map[K]N {
+	if m == nil {
+		return nil
+	}
+	newMap := make(map[K]N, len(m))
+	for k, v := range m {
+		newMap[k] = f(v)
+	}
+	return newMap
+}
+
+// joinMaps merges multiple maps into a single map.
+// If a key exists in multiple maps, the value from the last map will be used.
+func joinMaps[K comparable, V any](maps ...map[K]V) map[K]V {
+	if len(maps) == 0 {
+		return nil
+	}
+	result := make(map[K]V)
+	for _, m := range maps {
+		if m == nil {
+			continue
+		}
+		for k, v := range m {
+			result[k] = v
+		}
+	}
+	return result
+}
+
+func diagsToError(diags diag.Diagnostics) error {
+	if !diags.HasError() {
+		return nil
+	}
+	buf := strings.Builder{}
+	buf.WriteString("\n")
+	for _, d := range diags.Errors() {
+		buf.WriteString(d.Summary() + "; ")
+		buf.WriteString(d.Detail() + "\n")
+	}
+	return errors.New(buf.String())
 }

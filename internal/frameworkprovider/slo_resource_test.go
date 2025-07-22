@@ -1307,25 +1307,23 @@ func getExampleSLOResource(t *testing.T) SLOResourceModel {
 			Project: types.StringValue("default"),
 			Kind:    types.StringValue("Agent"),
 		}},
-		Objectives: []ObjectiveModel{
-			{
-				DisplayName: types.StringValue("obj1"),
-				Name:        types.StringValue("tf-objective-1"),
-				Op:          types.StringValue("lt"),
-				Target:      0.7,
-				Value:       types.Float64Value(1),
-				RawMetric: []RawMetricModel{{
-					Query: []MetricSpecModel{
-						{
-							AppDynamics: []AppDynamicsModel{{
-								ApplicationName: "my_app",
-								MetricPath:      "End User Experience|App|End User Response Time 95th percentile (ms)",
-							}},
-						},
+		Objectives: []ObjectiveObjectValue{{ObjectiveModel: ObjectiveModel{
+			DisplayName: types.StringValue("obj1"),
+			Name:        types.StringValue("tf-objective-1"),
+			Op:          types.StringValue("lt"),
+			Target:      0.7,
+			Value:       types.Float64Value(1),
+			RawMetric: []RawMetricModel{{
+				Query: []MetricSpecModel{
+					{
+						AppDynamics: []AppDynamicsModel{{
+							ApplicationName: "my_app",
+							MetricPath:      "End User Experience|App|End User Response Time 95th percentile (ms)",
+						}},
 					},
-				}},
-			},
-		},
+				},
+			}},
+		}}},
 		TimeWindow: []TimeWindowModel{{
 			Count:     10,
 			IsRolling: types.BoolValue(true),
