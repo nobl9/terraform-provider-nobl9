@@ -44,7 +44,7 @@ jobs:
       - name: Run acceptance tests
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 20
+          timeout_minutes: 60
           max_attempts: 3
           command: make test/acc
         env:

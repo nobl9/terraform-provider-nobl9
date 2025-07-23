@@ -72,7 +72,7 @@ test/unit:
 ## Run Terraform acceptance tests.
 test/acc:
 	$(call _print_step,Running Terraform acceptance tests)
-	TF_ACC=1 go test $(TEST) -ldflags="$(LDFLAGS)" -v $(TESTARGS) -timeout 120m nobl9/
+	TF_ACC=1 go test $(TEST) -ldflags="$(LDFLAGS)" -v $(TESTARGS) -timeout 60m nobl9/
 
 .PHONY: release-dry-run
 ## Run Goreleaser in dry-run mode.

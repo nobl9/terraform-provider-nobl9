@@ -65,3 +65,71 @@ You will see that the tests look slightly different, that is intentional.
 The acceptance tests defined in the SDK code often leave a lot to be desired.
 We want to use this rewrite as an excuse to improve them and make them
 more readable and better reflect user journeys.
+
+## Know caveats
+
+### Blocks vs Attributes
+
+Blocks in Terraform Plugin Framework are not the same as in the SDK.
+Namely, they lack options like `Optional` or `Required`.
+In general, they are no longer recommended and should be avoided, however,
+we can't really replace them with attributes without
+breaking backwards compatibility.
+
+Block looks like this:
+
+```terraform
+block {
+  name = "block_name"
+}
+```
+
+Attributes, on the other hand, look like this:
+
+```terraform
+attribute = {
+  name = "attribute_name"
+}
+```
+
+The only stylistic difference is the `=` sign in the latter.
+
+Functionally, they are the almost the same, but the framework favors attributes.
+
+So how do we migrate required block from the SDK to the framework?
+We need to define each block as a list in the framework model,
+mind you, it will always have exactly one item!
+On top of that we need to define validators to enforce the size and optionally
+mark it as required.
+
+Before:
+
+```go
+"time_window": {
+    Type:        schema.TypeSet,
+    Required:    true,
+    MaxItems:    1,
+    Elem: &schema.Resource{
+        // ...
+    },
+},
+```
+
+After:
+
+```go
+schema.ListNestedBlock{
+    Description: "Time window configuration for the SLO.",
+    Validators: []validator.List{
+        listvalidator.IsRequired(),
+        listvalidator.SizeBetween(1, 1),
+    },
+    NestedObject: schema.NestedBlockObject{
+        // ..
+    },
+},
+```
+
+If we wanted to make it optional,
+we would simply remove the `IsRequired()` validator and
+swap the `SizeBetween(1, 1)` to `SizeAtMost(1)`.

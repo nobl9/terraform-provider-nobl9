@@ -4,9 +4,14 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+func isNullOrUnknown(v attr.Value) bool {
+	return v == nil || v.IsNull() || v.IsUnknown()
+}
 
 // stringValue returns [types.String] from a string.
 // If the string is empty, it returns [types.StringNull].

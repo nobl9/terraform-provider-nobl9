@@ -59,6 +59,73 @@ NOBL9_URL=<ingest_server_url> \
 make test/acc
 ```
 
+## Debugging
+
+If you want to debug a specific configuration,
+you can create a temporary test scenario, like the one below,
+and run it in debug mode.
+You can place breakpoints directly in the provider code
+and go through every step of the process.
+
+```go
+func TestAccSLOResource_customScenario(t *testing.T) {
+   t.Parallel()
+   testAccSetup(t)
+
+   sloConfig := `resource "nobl9_slo" "this" {
+
+  name = "test-slo-framework"
+  project = "amazon-prometheus"
+  description = "Example SLO from testing Framework migration"
+
+  service = "amazon-prometheus"
+  budgeting_method = "Occurrences"
+
+  indicator {
+    name = "amazon-prometheus"
+    project = "amazon-prometheus"
+    kind = "Agent"
+  }
+
+  objective {
+    name = "tf-objective-1"
+    op = "lt"
+    target = 0.7
+    value = 1.2
+    raw_metric {
+      query {
+        amazon_prometheus {
+          promql = "some_metric{job=\"test-job\"}"
+        }
+      }
+    }
+  }
+
+  time_window {
+    count = 1
+    is_rolling = true
+    unit = "Hour"
+  }
+}`
+
+   resource.Test(t, resource.TestCase{
+      ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+      Steps: []resource.TestStep{
+         // Create and Read.
+         {
+            Config: sloConfig,
+            ConfigPlanChecks: resource.ConfigPlanChecks{
+               PreApply: []plancheck.PlanCheck{
+                  plancheck.ExpectNonEmptyPlan(),
+                  plancheck.ExpectResourceAction("nobl9_slo.this", plancheck.ResourceActionCreate),
+               },
+            },
+         },
+      },
+   })
+}
+```
+
 ## Generating documentation
 
 Documentation is generated using the
