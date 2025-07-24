@@ -24,16 +24,25 @@ func (s sloObjectiveValuePlanModifier) PlanModifyFloat64(
 	req planmodifier.Float64Request,
 	resp *planmodifier.Float64Response,
 ) {
-	// If state already has a value or the planned value is null, we do not perform any checks.
-	if !isNullOrUnknown(req.StateValue) || isNullOrUnknown(req.PlanValue) {
-		return
-	}
 	var objectives []ObjectiveModel
 	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("objective"), &objectives)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if hasCompositeObjectives(objectives) {
-		resp.Diagnostics.AddError("objective value cannot be set when defining new composite SLOs", "")
+	nullOrUnknown := isNullOrUnknown(req.PlanValue)
+	compositeObjectives := hasCompositeObjectives(objectives)
+	switch {
+	case !nullOrUnknown && compositeObjectives:
+		resp.Diagnostics.AddAttributeError(
+			req.Path,
+			"objective value cannot be set when defining composite SLOs",
+			"",
+		)
+	case nullOrUnknown && !compositeObjectives:
+		resp.Diagnostics.AddAttributeError(
+			req.Path,
+			"objective value must be set for ratio and threshold objectives",
+			"",
+		)
 	}
 }

@@ -2,15 +2,12 @@
 package frameworkprovider
 
 import (
-	"context"
-	"fmt"
 	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -18,8 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 )
 
@@ -110,166 +105,7 @@ func sloResourceIndicatorBlock() schema.ListNestedBlock {
 	}
 }
 
-// Ensure the implementation satisfies the expected interfaces.
-var _ basetypes.ObjectTypable = sloObjectiveType{}
-
-type sloObjectiveType struct {
-	basetypes.ObjectType
-}
-
-func (t sloObjectiveType) String() string {
-	return fmt.Sprintf("%T", t)
-}
-
-func (t sloObjectiveType) ValueType(ctx context.Context) attr.Value {
-	return ObjectiveObjectValue{
-		ObjectValue: t.ObjectType.ValueType(ctx).(basetypes.ObjectValue),
-	}
-}
-
-func (t sloObjectiveType) Equal(o attr.Type) bool {
-	other, ok := o.(sloObjectiveType)
-	if !ok {
-		return false
-	}
-	return t.ObjectType.Equal(other.ObjectType)
-}
-
-func (t sloObjectiveType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
-	value, err := t.ObjectType.ValueFromTerraform(ctx, in)
-	if err != nil {
-		return nil, err
-	}
-	objectValue := value.(basetypes.ObjectValue)
-	var model ObjectiveModel
-	diags := objectValue.As(ctx, &model, basetypes.ObjectAsOptions{
-		UnhandledNullAsEmpty:    true,
-		UnhandledUnknownAsEmpty: true,
-	})
-	if diags.HasError() {
-		return nil, fmt.Errorf("failed to convert %T to %T: %s", objectValue, model, diagsToError(diags))
-	}
-	return ObjectiveObjectValue{
-		ObjectValue:    objectValue,
-		ObjectiveModel: model,
-	}, nil
-}
-
 func sloResourceObjectiveBlock() schema.SetNestedBlock {
-	objectiveAttributes := map[string]schema.Attribute{
-		"display_name": schema.StringAttribute{
-			Optional:    true,
-			Description: "Name to be displayed.",
-		},
-		"op": schema.StringAttribute{
-			Optional:    true,
-			Description: "For threshold metrics, the logical operator applied to the threshold.",
-		},
-		"target": schema.Float64Attribute{
-			Required:    true,
-			Description: "The numeric target for your objective.",
-		},
-		"time_slice_target": schema.Float64Attribute{
-			Optional:    true,
-			Description: "Designated value for slice.",
-		},
-		"value": schema.Float64Attribute{
-			Optional: true,
-			Computed: true,
-			Description: "Required for threshold and ratio metrics. Optional for existing composite SLOs. For threshold" +
-				" metrics, the threshold value. For ratio metrics, this must be a unique value per objective (for" +
-				" legacy reasons). For new composite SLOs, it must be omitted. If, for composite SLO, it was set" +
-				" previously to a non-zero value, then it must remain unchanged.",
-			PlanModifiers: []planmodifier.Float64{
-				sloObjectiveValuePlanModifier{},
-			},
-		},
-		"name": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "Objective's name. This field is computed if not provided.",
-		},
-		"primary": schema.BoolAttribute{
-			Optional:    true,
-			Description: "Is objective marked as primary.",
-		},
-	}
-	objectiveBlocks := map[string]schema.Block{
-		"count_metrics": schema.ListNestedBlock{
-			Description: "Compares two time series, calculating the ratio of either good or bad values to the" +
-				" total number of values. Fill either the 'good' or 'bad' series, but not both.",
-			Validators: []validator.List{listvalidator.SizeAtMost(1)},
-			NestedObject: schema.NestedBlockObject{
-				Attributes: map[string]schema.Attribute{
-					"incremental": schema.BoolAttribute{
-						Required:    true,
-						Description: "Should the metrics be incrementing or not.",
-					},
-				},
-				Blocks: map[string]schema.Block{
-					"good": schema.SetNestedBlock{
-						Description: "Configuration for good time series metrics.",
-						Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
-						NestedObject: schema.NestedBlockObject{
-							Blocks: sloResourceMetricSpecBlocks(),
-						},
-					},
-					"bad": schema.SetNestedBlock{
-						Description: "Configuration for bad time series metrics.",
-						Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
-						NestedObject: schema.NestedBlockObject{
-							Blocks: sloResourceMetricSpecBlocks(),
-						},
-					},
-					"total": schema.SetNestedBlock{
-						Description: "Configuration for metric source.",
-						Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
-						NestedObject: schema.NestedBlockObject{
-							Blocks: sloResourceMetricSpecBlocks(),
-						},
-					},
-					"good_total": schema.SetNestedBlock{
-						Description: "Configuration for single query series metrics.",
-						Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
-						NestedObject: schema.NestedBlockObject{
-							Blocks: sloResourceMetricSpecBlocks(),
-						},
-					},
-				},
-			},
-		},
-		"raw_metric": schema.ListNestedBlock{
-			Description: "Raw data is used to compare objective values.",
-			Validators:  []validator.List{listvalidator.SizeAtMost(1)},
-			NestedObject: schema.NestedBlockObject{
-				Blocks: map[string]schema.Block{
-					"query": schema.SetNestedBlock{
-						Description: "Configuration for metric source.",
-						Validators: []validator.Set{
-							setvalidator.IsRequired(),
-							setvalidator.SizeBetween(1, 1),
-						},
-						NestedObject: schema.NestedBlockObject{
-							Blocks: sloResourceMetricSpecBlocks(),
-						},
-					},
-				},
-			},
-		},
-		"composite": sloResourceCompositeV2ObjectiveBlock(),
-	}
-	objectiveType := sloObjectiveType{ObjectType: basetypes.ObjectType{
-		AttrTypes: joinMaps(
-			mapValues(
-				objectiveAttributes,
-				func(attr schema.Attribute) attr.Type { return attr.GetType() },
-			),
-			mapValues(
-				objectiveBlocks,
-				func(block schema.Block) attr.Type { return block.Type() },
-			),
-		),
-	}}
 	description := "[Objectives documentation](https://docs.nobl9.com/yaml-guide#objective)"
 	return schema.SetNestedBlock{
 		Description:         description,
@@ -278,13 +114,108 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 			setvalidator.IsRequired(),
 			setvalidator.SizeAtLeast(1),
 		},
-		CustomType: types.SetType{
-			ElemType: objectiveType,
-		},
 		NestedObject: schema.NestedBlockObject{
-			CustomType: objectiveType,
-			Attributes: objectiveAttributes,
-			Blocks:     objectiveBlocks,
+			Attributes: map[string]schema.Attribute{
+				"display_name": schema.StringAttribute{
+					Optional:    true,
+					Description: "Name to be displayed.",
+				},
+				"op": schema.StringAttribute{
+					Optional:    true,
+					Description: "For threshold metrics, the logical operator applied to the threshold.",
+				},
+				"target": schema.Float64Attribute{
+					Required:    true,
+					Description: "The numeric target for your objective.",
+				},
+				"time_slice_target": schema.Float64Attribute{
+					Optional:    true,
+					Description: "Designated value for slice.",
+				},
+				"value": schema.Float64Attribute{
+					Optional: true,
+					Description: "Required for threshold and ratio metrics. Optional for existing composite SLOs. For threshold" +
+						" metrics, the threshold value. For ratio metrics, this must be a unique value per objective (for" +
+						" legacy reasons). For new composite SLOs, it must be omitted. If, for composite SLO, it was set" +
+						" previously to a non-zero value, then it must remain unchanged.",
+					PlanModifiers: []planmodifier.Float64{
+						sloObjectiveValuePlanModifier{},
+					},
+				},
+				"name": schema.StringAttribute{
+					Optional:    true,
+					Computed:    true,
+					Description: "Objective's name. This field is computed if not provided.",
+				},
+				"primary": schema.BoolAttribute{
+					Optional:    true,
+					Description: "Is objective marked as primary.",
+				},
+			},
+			Blocks: map[string]schema.Block{
+				"count_metrics": schema.ListNestedBlock{
+					Description: "Compares two time series, calculating the ratio of either good or bad values to the" +
+						" total number of values. Fill either the 'good' or 'bad' series, but not both.",
+					Validators: []validator.List{listvalidator.SizeAtMost(1)},
+					NestedObject: schema.NestedBlockObject{
+						Attributes: map[string]schema.Attribute{
+							"incremental": schema.BoolAttribute{
+								Required:    true,
+								Description: "Should the metrics be incrementing or not.",
+							},
+						},
+						Blocks: map[string]schema.Block{
+							"good": schema.SetNestedBlock{
+								Description: "Configuration for good time series metrics.",
+								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
+								NestedObject: schema.NestedBlockObject{
+									Blocks: sloResourceMetricSpecBlocks(),
+								},
+							},
+							"bad": schema.SetNestedBlock{
+								Description: "Configuration for bad time series metrics.",
+								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
+								NestedObject: schema.NestedBlockObject{
+									Blocks: sloResourceMetricSpecBlocks(),
+								},
+							},
+							"total": schema.SetNestedBlock{
+								Description: "Configuration for metric source.",
+								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
+								NestedObject: schema.NestedBlockObject{
+									Blocks: sloResourceMetricSpecBlocks(),
+								},
+							},
+							"good_total": schema.SetNestedBlock{
+								Description: "Configuration for single query series metrics.",
+								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
+								NestedObject: schema.NestedBlockObject{
+									Blocks: sloResourceMetricSpecBlocks(),
+								},
+							},
+						},
+					},
+				},
+				"raw_metric": schema.ListNestedBlock{
+					Description: "Raw data is used to compare objective values.",
+					Validators:  []validator.List{listvalidator.SizeAtMost(1)},
+					NestedObject: schema.NestedBlockObject{
+						Blocks: map[string]schema.Block{
+							"query": schema.SetNestedBlock{
+								Description: "Configuration for metric source.",
+								Validators: []validator.Set{
+									setvalidator.IsRequired(),
+									setvalidator.SizeBetween(1, 1),
+								},
+								NestedObject: schema.NestedBlockObject{
+									Blocks: sloResourceMetricSpecBlocks(),
+								},
+							},
+						},
+					},
+				},
+				"composite": sloResourceCompositeV2ObjectiveBlock(),
+			},
 		},
 	}
 }

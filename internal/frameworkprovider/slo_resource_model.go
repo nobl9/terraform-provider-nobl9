@@ -1,35 +1,30 @@
 package frameworkprovider
 
 import (
-	"context"
-
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 )
 
 // SLOResourceModel describes the [SLOResource] data model.
 type SLOResourceModel struct {
-	Name                       string                 `tfsdk:"name"`
-	DisplayName                types.String           `tfsdk:"display_name"`
-	Project                    string                 `tfsdk:"project"`
-	Description                types.String           `tfsdk:"description"`
-	Annotations                map[string]string      `tfsdk:"annotations"`
-	Labels                     Labels                 `tfsdk:"label"`
-	Service                    string                 `tfsdk:"service"`
-	BudgetingMethod            string                 `tfsdk:"budgeting_method"`
-	Tier                       types.String           `tfsdk:"tier"`
-	AlertPolicies              []string               `tfsdk:"alert_policies"`
-	Indicator                  []IndicatorModel       `tfsdk:"indicator"`
-	Objectives                 []ObjectiveObjectValue `tfsdk:"objective"`
-	TimeWindow                 []TimeWindowModel      `tfsdk:"time_window"`
-	Attachments                []AttachmentModel      `tfsdk:"attachment"`
-	AnomalyConfig              []AnomalyConfigModel   `tfsdk:"anomaly_config"`
-	Composite                  []CompositeV1Model     `tfsdk:"composite"`
-	RetrieveHistoricalDataFrom types.String           `tfsdk:"retrieve_historical_data_from"`
+	Name                       string               `tfsdk:"name"`
+	DisplayName                types.String         `tfsdk:"display_name"`
+	Project                    string               `tfsdk:"project"`
+	Description                types.String         `tfsdk:"description"`
+	Annotations                map[string]string    `tfsdk:"annotations"`
+	Labels                     Labels               `tfsdk:"label"`
+	Service                    string               `tfsdk:"service"`
+	BudgetingMethod            string               `tfsdk:"budgeting_method"`
+	Tier                       types.String         `tfsdk:"tier"`
+	AlertPolicies              []string             `tfsdk:"alert_policies"`
+	Indicator                  []IndicatorModel     `tfsdk:"indicator"`
+	Objectives                 []ObjectiveModel     `tfsdk:"objective"`
+	TimeWindow                 []TimeWindowModel    `tfsdk:"time_window"`
+	Attachments                []AttachmentModel    `tfsdk:"attachment"`
+	AnomalyConfig              []AnomalyConfigModel `tfsdk:"anomaly_config"`
+	Composite                  []CompositeV1Model   `tfsdk:"composite"`
+	RetrieveHistoricalDataFrom types.String         `tfsdk:"retrieve_historical_data_from"`
 }
 
 // IndicatorModel represents [v1alphaSLO.Indicator].
@@ -37,23 +32,6 @@ type IndicatorModel struct {
 	Name    string       `tfsdk:"name"`
 	Project types.String `tfsdk:"project"`
 	Kind    types.String `tfsdk:"kind"`
-}
-
-type ObjectiveObjectValue struct {
-	basetypes.ObjectValue
-	ObjectiveModel
-}
-
-func (o ObjectiveObjectValue) Equal(c attr.Value) bool {
-	other, ok := c.(ObjectiveObjectValue)
-	if !ok {
-		return false
-	}
-	return o.Name.Equal(other.Name)
-}
-
-func (o ObjectiveObjectValue) Type(ctx context.Context) attr.Type {
-	return sloObjectiveType{ObjectType: types.ObjectType{AttrTypes: o.AttributeTypes(ctx)}}
 }
 
 // ObjectiveModel represents [v1alphaSLO.Objective].
@@ -400,21 +378,20 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 		}}
 	}
 	if len(slo.Spec.Objectives) > 0 {
-		ctx := context.Background()
-		objectiveType, diags := sloResourceSchema.TypeAtPath(ctx, path.Root("objective"))
-		if diags.HasError() {
-			panic(diagsToError(diags))
-		}
-		objectives := make([]ObjectiveObjectValue, len(slo.Spec.Objectives))
+		objectives := make([]ObjectiveModel, len(slo.Spec.Objectives))
 		for i, o := range slo.Spec.Objectives {
 			obj := ObjectiveModel{
 				DisplayName:     stringValue(o.DisplayName),
 				Op:              types.StringPointerValue(o.Operator),
 				Target:          *o.BudgetTarget,
 				TimeSliceTarget: types.Float64PointerValue(o.TimeSliceTarget),
-				Value:           types.Float64PointerValue(o.Value),
 				Name:            types.StringValue(o.Name),
 				Primary:         types.BoolPointerValue(o.Primary),
+			}
+			if o.Value != nil && (*o.Value != 0 || o.Composite == nil) {
+				obj.Value = types.Float64PointerValue(o.Value)
+			} else {
+				obj.Value = types.Float64Null()
 			}
 			if countMetrics := countMetricsToModel(o.CountMetrics); countMetrics != nil {
 				obj.CountMetrics = []CountMetricsModel{*countMetrics}
@@ -425,18 +402,7 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 			if composite := compositeObjectiveToModel(o.Composite); composite != nil {
 				obj.Composite = []CompositeObjectiveModel{*composite}
 			}
-			objectValue, diags := basetypes.NewObjectValueFrom(
-				ctx,
-				objectiveType.(basetypes.SetType).ElemType.(sloObjectiveType).AttrTypes,
-				obj,
-			)
-			if diags.HasError() {
-				panic(diagsToError(diags))
-			}
-			objectives[i] = ObjectiveObjectValue{
-				ObjectValue:    objectValue,
-				ObjectiveModel: obj,
-			}
+			objectives[i] = obj
 		}
 		model.Objectives = objectives
 	}

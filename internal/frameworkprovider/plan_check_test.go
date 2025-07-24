@@ -63,17 +63,35 @@ func (e expectChangesInPlanChecker) CheckPlan(
 		diff := calculatePlanDiff(before, after)
 
 		t := &testingRecorder{}
-		assert.ElementsMatch(t, expected.Added, diff.Added, "unexpected added attributes in the plan")
+		assert.ElementsMatchf(
+			t,
+			expected.Added,
+			diff.Added,
+			"unexpected added attributes in the %s plan",
+			resource.Address,
+		)
 		if t.err != nil {
 			resp.Error = t.err
 			return
 		}
-		assert.ElementsMatch(t, expected.Removed, diff.Removed, "unexpected removed attributes in the plan")
+		assert.ElementsMatch(
+			t,
+			expected.Removed,
+			diff.Removed,
+			"unexpected removed attributes in the %s plan",
+			resource.Address,
+		)
 		if t.err != nil {
 			resp.Error = t.err
 			return
 		}
-		assert.ElementsMatch(t, expected.Modified, diff.Modified, "unexpected modified attributes in the plan")
+		assert.ElementsMatch(
+			t,
+			expected.Modified,
+			diff.Modified,
+			"unexpected modified attributes in the %s plan",
+			resource.Address,
+		)
 		if t.err != nil {
 			resp.Error = t.err
 			return

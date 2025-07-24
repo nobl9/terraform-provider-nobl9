@@ -88,7 +88,11 @@ func (s *SLOResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedModel)...)
+	diags = resp.State.Set(ctx, &updatedModel)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
 }
 
 // Update is called to update the state of the resource.

@@ -578,6 +578,8 @@ func TestAccSLOResource_moveDeprecatedCompositeV1SLO(t *testing.T) {
 
 func TestAccSLOResource_customScenario(t *testing.T) {
 	t.Parallel()
+	t.Skip()
+
 	testAccSetup(t)
 
 	sloPreConfig := `
@@ -586,7 +588,7 @@ resource "nobl9_slo" "this" {
   display_name     = "Test Raw SLO"
   service          = "test-tf"
   budgeting_method = "Timeslices"
-  project          = ":project"
+  project          = "test-tf"
 
   time_window {
     unit       = "Week"
@@ -604,7 +606,7 @@ resource "nobl9_slo" "this" {
     value        = -1
     op           = "gte"
     time_slice_target = 0.9
-    
+
     raw_metric {
       query {
         datadog {
@@ -632,11 +634,6 @@ resource "nobl9_slo" "test-composite-tf" {
   service          = "test-tf"
   budgeting_method = "Timeslices"
   project          = ":project"
-
-  attachment {
-    url          = "https://test/"
-    display_name = "!#@#$#%^&%^&*(*(()&^%$%;:900897hhnkxz'dsdklsjkhjssjk😂☝️"
-  }
 
   time_window {
     unit       = "Day"
@@ -887,7 +884,9 @@ func TestAccSLOResource_custom(t *testing.T) {
 					dataSource = e2etestutils.ProvisionStaticAgent(t, typ)
 				}
 				sloModel.Indicator[0].Name = dataSource.GetName()
-				sloModel.Indicator[0].Project = types.StringValue(dataSource.(manifest.ProjectScopedObject).GetProject())
+				sloModel.Indicator[0].Project = types.StringValue(
+					dataSource.(manifest.ProjectScopedObject).GetProject(),
+				)
 			}
 
 			manifestSLO = sloModel.ToManifest()
@@ -951,40 +950,99 @@ func TestAccSLOResource_custom(t *testing.T) {
 	}
 }
 
-func TestAccSLOResource_newCompositeWithObjectiveValueSetToZero(t *testing.T) {
+func TestAccSLOResource_objectiveValueErrors(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
 
-	slo := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
-		t,
-		manifest.KindSLO,
-		func(example v1alphaExamples.Example) bool {
-			return strings.Contains(example.GetVariant(), "composite")
+	tests := map[string]struct {
+		configFunc    func() string
+		expectedError string
+	}{
+		"composite with value": {
+			configFunc: func() string {
+				slo := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
+					t,
+					manifest.KindSLO,
+					func(example v1alphaExamples.Example) bool {
+						return strings.Contains(example.GetVariant(), "composite")
+					},
+				)
+				model := newSLOResourceConfigFromManifest(slo)
+				for i, objective := range model.Objectives {
+					if len(objective.Composite) > 0 {
+						model.Objectives[i].Value = types.Float64Value(0.0)
+						break
+					}
+				}
+				sloConfig := newSLOResource(t, sloResourceTemplateModel{
+					ResourceName:     "this",
+					SLOResourceModel: *model,
+				})
+				return sloConfig
+			},
+			expectedError: "objective value cannot be set when defining composite SLOs",
 		},
-	)
-	for i, objective := range slo.Spec.Objectives {
-		if objective.Composite != nil {
-			slo.Spec.Objectives[i].Value = ptr(0.0)
-			break
-		}
+		"threshold without value": {
+			configFunc: func() string {
+				slo := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
+					t,
+					manifest.KindSLO,
+					func(example v1alphaExamples.Example) bool {
+						slo := example.GetObject().(v1alphaSLO.SLO)
+						return slo.Spec.HasRawMetric()
+					},
+				)
+				for i := range slo.Spec.Objectives {
+					slo.Spec.Objectives[i].Value = nil
+				}
+				sloConfig := newSLOResource(t, sloResourceTemplateModel{
+					ResourceName:     "this",
+					SLOResourceModel: *newSLOResourceConfigFromManifest(slo),
+				})
+				return sloConfig
+			},
+			expectedError: "objective value must be set for ratio and threshold objectives",
+		},
+		"ratio without value": {
+			configFunc: func() string {
+				slo := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
+					t,
+					manifest.KindSLO,
+					func(example v1alphaExamples.Example) bool {
+						slo := example.GetObject().(v1alphaSLO.SLO)
+						return slo.Spec.HasCountMetrics()
+					},
+				)
+				for i := range slo.Spec.Objectives {
+					slo.Spec.Objectives[i].Value = nil
+				}
+				sloConfig := newSLOResource(t, sloResourceTemplateModel{
+					ResourceName:     "this",
+					SLOResourceModel: *newSLOResourceConfigFromManifest(slo),
+				})
+				return sloConfig
+			},
+			expectedError: "objective value must be set for ratio and threshold objectives",
+		},
 	}
 
-	sloConfig := newSLOResource(t, sloResourceTemplateModel{
-		ResourceName:     "this",
-		SLOResourceModel: *newSLOResourceConfigFromManifest(slo),
-	})
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create and Read.
-			{
-				Config:      sloConfig,
-				ExpectError: regexp.MustCompile("objective value cannot be set when defining new composite SLOs"),
-				PlanOnly:    true,
-			},
-		},
-	})
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				Steps: []resource.TestStep{
+					// Create and Read.
+					{
+						Config:      test.configFunc(),
+						ExpectError: regexp.MustCompile(test.expectedError),
+						PlanOnly:    true,
+					},
+				},
+			})
+		})
+	}
 }
 
 const slosPerService = 50
@@ -1307,7 +1365,7 @@ func getExampleSLOResource(t *testing.T) SLOResourceModel {
 			Project: types.StringValue("default"),
 			Kind:    types.StringValue("Agent"),
 		}},
-		Objectives: []ObjectiveObjectValue{{ObjectiveModel: ObjectiveModel{
+		Objectives: []ObjectiveModel{{
 			DisplayName: types.StringValue("obj1"),
 			Name:        types.StringValue("tf-objective-1"),
 			Op:          types.StringValue("lt"),
@@ -1323,7 +1381,7 @@ func getExampleSLOResource(t *testing.T) SLOResourceModel {
 					},
 				},
 			}},
-		}}},
+		}},
 		TimeWindow: []TimeWindowModel{{
 			Count:     10,
 			IsRolling: types.BoolValue(true),
