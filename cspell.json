@@ -50,6 +50,7 @@
     "kusto",
     "ldflags",
     "logql",
+    "matchf",
     "msteams",
     "nobl",
     "nriq",

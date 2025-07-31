@@ -385,9 +385,13 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 				Op:              types.StringPointerValue(o.Operator),
 				Target:          *o.BudgetTarget,
 				TimeSliceTarget: types.Float64PointerValue(o.TimeSliceTarget),
-				Value:           types.Float64PointerValue(o.Value),
 				Name:            types.StringValue(o.Name),
 				Primary:         types.BoolPointerValue(o.Primary),
+			}
+			if o.Value != nil && (*o.Value != 0 || o.Composite == nil) {
+				obj.Value = types.Float64PointerValue(o.Value)
+			} else {
+				obj.Value = types.Float64Null()
 			}
 			if countMetrics := countMetricsToModel(o.CountMetrics); countMetrics != nil {
 				obj.CountMetrics = []CountMetricsModel{*countMetrics}

@@ -6,7 +6,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 func isNullOrUnknown(v attr.Value) bool {
@@ -66,4 +68,40 @@ func addInvalidSDKClientTypeDiag(diags *diag.Diagnostics, data any) {
 			data,
 		),
 	)
+}
+
+// calculateResourceDiff calculates the difference between the current state and the Terraform plan.
+func calculateResourceDiff(state tfsdk.State, plan tfsdk.Plan) (diffs []tftypes.ValueDiff, diags diag.Diagnostics) {
+	if state.Raw.IsNull() {
+		return nil, nil
+	}
+	diags = make(diag.Diagnostics, 0)
+	diffs, err := plan.Raw.Diff(state.Raw)
+	if err != nil {
+		diags.AddError(
+			"Failed to calculate plan diff",
+			fmt.Sprintf("An error occurred while calculating the plan diff: %s", err.Error()),
+		)
+		return nil, diags
+	}
+	return diffs, nil
+}
+
+// hasRootAttributeChanged checks if the root attribute with the given name has changed in the provided diffs.
+func hasRootAttributeChanged(name string, diffs []tftypes.ValueDiff) bool {
+	return slices.ContainsFunc(diffs, func(diff tftypes.ValueDiff) bool {
+		if diff.Path == nil {
+			return false
+		}
+		step := diff.Path.NextStep()
+		if step == nil {
+			return false
+		}
+		attrName, ok := step.(tftypes.AttributeName)
+		return ok &&
+			string(attrName) == name &&
+			diff.Value1 != nil &&
+			diff.Value2 != nil &&
+			!diff.Value1.Equal(diff.Value2.Copy())
+	})
 }
