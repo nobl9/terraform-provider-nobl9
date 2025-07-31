@@ -9,7 +9,7 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
   {{- if not (isNull .Tier) }}
   tier = "{{ valueString .Tier }}"
   {{- end }}
-  {{- if .AlertPolicies }}
+  {{- if not (eq .AlertPolicies nil) }}
   alert_policies = [
     {{- range .AlertPolicies }}
     "{{ . }}",
