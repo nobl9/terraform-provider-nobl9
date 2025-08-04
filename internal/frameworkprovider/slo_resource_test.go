@@ -417,6 +417,7 @@ func TestAccSLOResource_moveTwoSLOs(t *testing.T) {
 				Config: combinedConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assertResourceWasApplied(t, ctx, manifestSLO1),
+					assertResourceWasApplied(t, ctx, manifestSLO2),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -468,6 +469,144 @@ func TestAccSLOResource_moveTwoSLOs(t *testing.T) {
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.first", plancheck.ResourceActionUpdate),
 						plancheck.ExpectResourceAction("nobl9_slo.second", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccSLOResource_moveCompositeAndItsComponent(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	componentResource := sloResourceTemplateModel{
+		ResourceName:     "component",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	componentResource.Name = e2etestutils.GenerateName()
+	componentResource.Project = manifestProject.GetName()
+	componentResource.Service = manifestService.GetName()
+	componentResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	componentResource.AlertPolicies = nil
+
+	manifestComposite := getCompositeSLOExample(t)
+	manifestComposite.Metadata.Project = manifestProject.GetName()
+	manifestComposite.Metadata.Name = e2etestutils.GenerateName()
+	manifestComposite.Metadata.Labels = e2etestutils.AnnotateLabels(t, nil)
+	manifestComposite.Spec.Service = manifestService.GetName()
+	manifestComposite.Spec.AlertPolicies = nil
+	manifestComposite.Spec.Objectives = manifestComposite.Spec.Objectives[:1]
+	manifestComposite.Spec.Objectives[0].Composite = &v1alphaSLO.CompositeSpec{
+		MaxDelay: "1h",
+		Components: v1alphaSLO.Components{
+			Objectives: []v1alphaSLO.CompositeObjective{{
+				Project:     componentResource.Project,
+				SLO:         componentResource.Name,
+				Objective:   componentResource.Objectives[0].Name.ValueString(),
+				Weight:      1,
+				WhenDelayed: "CountAsGood",
+			}},
+		},
+	}
+	compositeResource := sloResourceTemplateModel{
+		ResourceName:     "component",
+		SLOResourceModel: *newSLOResourceConfigFromManifest(manifestComposite),
+	}
+	compositeResource.ResourceName = "composite"
+
+	manifestComponent := componentResource.ToManifest()
+
+	newProjectName := e2etestutils.GenerateName()
+
+	componentConfig := newSLOResource(t, componentResource)
+	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].Project = "<PROJECT>"
+	compositeConfig := newSLOResource(t, compositeResource)
+	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].Project = componentResource.Project
+	// Replace the component's project in the composite config with the component's resource name reference.
+	compositeConfig = strings.ReplaceAll(
+		compositeConfig,
+		`"<PROJECT>"`,
+		fmt.Sprintf("nobl9_slo.%s.project", componentResource.ResourceName),
+	)
+
+	combinedConfig := componentConfig + "\n" + compositeConfig
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create and read.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: combinedConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, ctx, manifestComponent),
+					assertResourceWasApplied(t, ctx, manifestComposite),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.component", plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction("nobl9_slo.composite", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update project - move SLOs.
+			{
+				PreConfig: func() {
+					newProjectManifest := manifestProject
+					newProjectManifest.Metadata.Name = newProjectName
+					newServiceManifest := manifestService
+					newServiceManifest.Metadata.Project = newProjectName
+
+					t.Cleanup(func() {
+						e2etestutils.V1Delete(t, []manifest.Object{newProjectManifest, newServiceManifest})
+					})
+				},
+				Config: func() string {
+					return strings.ReplaceAll(combinedConfig, manifestProject.GetName(), newProjectName)
+				}(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.component", "project", newProjectName),
+					resource.TestCheckResourceAttr("nobl9_slo.composite", "project", newProjectName),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestComponent
+						slo.Metadata.Project = newProjectName
+						return slo
+					}()),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := deepCopy(t, manifestComposite)
+						slo.Metadata.Project = newProjectName
+						slo.Spec.Objectives[0].Composite.Components.Objectives[0].Project = newProjectName
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcesPlan(map[string]planDiff{
+							"nobl9_slo.component": {Modified: []string{"project"}},
+							"nobl9_slo.composite": {Modified: []string{"project", "objective"}},
+						}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.component", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("nobl9_slo.composite", plancheck.ResourceActionUpdate),
 					},
 				},
 			},
@@ -746,21 +885,27 @@ func TestAccSLOResource_custom(t *testing.T) {
 				return model
 			},
 		},
-		"empty composite block": {
+		"empty composite components block": {
 			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
-				slo := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
-					t,
-					manifest.KindSLO,
-					func(example v1alphaExamples.Example) bool {
-						return strings.Contains(example.GetVariant(), "composite")
-					},
-				)
+				slo := getCompositeSLOExample(t)
 				compositeModel := newSLOResourceConfigFromManifest(slo)
 				compositeModel.Objectives = compositeModel.Objectives[:1]
 				compositeModel.Objectives[0].Composite = []CompositeObjectiveModel{{
 					MaxDelay:   types.StringValue("15m"),
-					Components: nil,
+					Components: []CompositeComponentsModel{{}},
 				}}
+				model.Objectives = compositeModel.Objectives
+				model.Indicator = nil
+				return model
+			},
+			expectedError: "must have a configuration value as the provider has marked it as required",
+		},
+		"empty composite objectives block": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				compositeModel.Objectives[0].Composite[0].Components[0].Objectives = []CompositeObjectivesModel{{}}
 				model.Objectives = compositeModel.Objectives
 				model.Indicator = nil
 				return model
@@ -769,7 +914,7 @@ func TestAccSLOResource_custom(t *testing.T) {
 		"ratio metric with no value in objective": {
 			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
 				model.Objectives[0].RawMetric = nil
-				model.Objectives[0].Value = types.Float64Value(1)
+				model.Objectives[0].Value = types.Float64Null()
 				model.Objectives[0].Op = types.String{}
 				model.Objectives[0].CountMetrics = []CountMetricsModel{{
 					Incremental: types.BoolValue(false),
@@ -787,9 +932,50 @@ func TestAccSLOResource_custom(t *testing.T) {
 				return model
 			},
 			sloManifestModifier: func(t *testing.T, slo v1alphaSLO.SLO) v1alphaSLO.SLO {
-				slo.Spec.Objectives[0].Value = ptr(1.0)
+				slo.Spec.Objectives[0].Value = nil
 				return slo
 			},
+			expectedError: "objective value must be set for ratio and threshold objectives",
+		},
+		"composite and raw_metric in a single objective should result in an error": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				compositeModel.Objectives[0].RawMetric = []RawMetricModel{{
+					Query: []MetricSpecModel{{
+						Datadog: []DatadogModel{{
+							Query: "abc",
+						}},
+					}},
+				}}
+				model.Objectives = compositeModel.Objectives
+				model.Indicator = nil
+				return model
+			},
+			expectedError: "when defining composite objective, this property is forbidden",
+		},
+		"ratio metric with operator": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				model.Objectives[0].RawMetric = nil
+				model.Objectives[0].Value = types.Float64Value(1)
+				model.Objectives[0].Op = types.StringValue("lte")
+				model.Objectives[0].CountMetrics = []CountMetricsModel{{
+					Incremental: types.BoolValue(false),
+					Good: []MetricSpecModel{{
+						Prometheus: []PrometheusModel{{
+							PromQL: "sum(rate(http_request_duration_seconds_count{job=\"api\"}[5m]))",
+						}},
+					}},
+					Total: []MetricSpecModel{{
+						Prometheus: []PrometheusModel{{
+							PromQL: "sum(rate(http_request_duration_seconds_count{job=\"api\"}[5m]))",
+						}},
+					}},
+				}}
+				return model
+			},
+			expectedError: "must be specified when",
 		},
 	}
 
@@ -891,13 +1077,7 @@ func TestAccSLOResource_objectiveValueErrors(t *testing.T) {
 	}{
 		"composite with value": {
 			configFunc: func() string {
-				slo := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
-					t,
-					manifest.KindSLO,
-					func(example v1alphaExamples.Example) bool {
-						return strings.Contains(example.GetVariant(), "composite")
-					},
-				)
+				slo := getCompositeSLOExample(t)
 				model := newSLOResourceConfigFromManifest(slo)
 				for i, objective := range model.Objectives {
 					if len(objective.Composite) > 0 {
@@ -1330,6 +1510,16 @@ func testNameFromExample(example v1alphaExamples.Example) string {
 		name += " - " + subVariant
 	}
 	return name
+}
+
+func getCompositeSLOExample(t *testing.T) v1alphaSLO.SLO {
+	return e2etestutils.GetExampleObject[v1alphaSLO.SLO](
+		t,
+		manifest.KindSLO,
+		func(example v1alphaExamples.Example) bool {
+			return strings.Contains(example.GetVariant(), "composite")
+		},
+	)
 }
 
 func ptr[T any](v T) *T { return &v }

@@ -105,18 +105,16 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
     }
     {{- end }}
     {{- end }}
-    {{- if .Composite }}
-    {{- with (index .Composite 0) }}
+    {{- range .Composite }}
     composite {
       {{- if not (isNull .MaxDelay ) }}
       max_delay = "{{ valueString .MaxDelay }}"
       {{- end }}
-      {{- if .Components }}
-      {{- if (index .Components 0).Objectives }}
-      {{- if (index (index .Components 0).Objectives 0).CompositeObjective }}
+      {{- range .Components }}
       components {
+        {{- range .Objectives }}
         objectives {
-          {{- range (index (index .Components 0).Objectives 0).CompositeObjective }}
+          {{- range .CompositeObjective }}
           composite_objective {
             {{- if .Project }}
             project = "{{ .Project }}"
@@ -136,15 +134,13 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
           }
           {{- end }}
         }
+        {{- end }}
       }
-      {{- end }}
-      {{- end }}
       {{- end }}
     }
     {{- end }}
     {{- end }}
   }
-  {{- end }}
   {{- end }}
   {{- if .Composite }}
 

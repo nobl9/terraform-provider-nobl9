@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -126,6 +127,11 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 				"op": schema.StringAttribute{
 					Optional:    true,
 					Description: "For threshold metrics, the logical operator applied to the threshold.",
+					Validators: []validator.String{
+						stringvalidator.AlsoRequires(
+							path.MatchRoot("objective").AtAnySetValue().AtName("raw_metric"),
+						),
+					},
 				},
 				"target": schema.Float64Attribute{
 					Required:    true,
@@ -982,6 +988,7 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 							"objectives": schema.ListNestedBlock{
 								Description: "An additional nesting for the components of your composite SLO.",
 								Validators: []validator.List{
+									listvalidator.IsRequired(),
 									listvalidator.SizeAtMost(1),
 								},
 								NestedObject: schema.NestedBlockObject{

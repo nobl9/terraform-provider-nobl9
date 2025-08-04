@@ -109,26 +109,33 @@ func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	switch {
-	case model.Project != sourceProject:
+
+	moveSLO := model.Project != sourceProject
+	if moveSLO {
 		resp.Diagnostics.Append(s.client.MoveSLOs(ctx, model.Name, sourceProject, model.Project, model.Service)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
-		if resp.Diagnostics.HasError() {
-			return
+	}
+	moveSLOUpdateWarningFunc := func() {
+		if moveSLO {
+			resp.Diagnostics.AddWarning("SLO Update Warning",
+				"SLO definition update failed, but the SLO was moved to a new project."+
+					"\nResolve the issues and retry the update operation,"+
+					" bear in mind that the SLO will remain in the new project.")
 		}
-	default:
-		appliedModel, diags := s.applyResource(ctx, model)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		resp.Diagnostics.Append(resp.State.Set(ctx, appliedModel)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	}
+
+	appliedModel, diags := s.applyResource(ctx, model)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		moveSLOUpdateWarningFunc()
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, appliedModel)...)
+	if resp.Diagnostics.HasError() {
+		moveSLOUpdateWarningFunc()
+		return
 	}
 }
 
@@ -286,31 +293,7 @@ func (s sloProjectPlanModifier) modifyPlanForProjectChange(
 	if len(diffs) == 0 {
 		return nil
 	}
-
 	diags := make(diag.Diagnostics, 0)
-	diffsNum := len(diffs)
-
-	ignoreAttributes := []string{
-		// It is allowed to change along with `project`,
-		// this way the user can specify the target Service for the moved SLO.
-		"service",
-		// This attribute is not part of the SLO manifest and can be changed freely.
-		// It is only used when [SLOResource.Create] is called to trigger historical data retrieval.
-		"retrieve_historical_data_from",
-	}
-	for _, attr := range ignoreAttributes {
-		if hasRootAttributeChanged(attr, diffs) {
-			diffsNum--
-		}
-	}
-
-	// If the project name is being changed along with other attributes, other than service, return an error.
-	if diffsNum > 1 {
-		diags.AddAttributeError(path.Root("project"),
-			"When changing the `project`, no other attribute can be modified, except for `service`.",
-			"Changing the Project name results in a dedicated operation,"+
-				" called Move SLO, which cannot be combined with other changes.")
-	}
 
 	var alertPolicies []string
 	alertPoliciesPath := path.Root("alert_policies")
