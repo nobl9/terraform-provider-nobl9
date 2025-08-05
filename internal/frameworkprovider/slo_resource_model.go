@@ -383,11 +383,15 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 			obj := ObjectiveModel{
 				DisplayName:     stringValue(o.DisplayName),
 				Op:              types.StringPointerValue(o.Operator),
-				Target:          *o.BudgetTarget,
+				Target:          valueFromPointer(o.BudgetTarget),
 				TimeSliceTarget: types.Float64PointerValue(o.TimeSliceTarget),
-				Value:           types.Float64PointerValue(o.Value),
 				Name:            types.StringValue(o.Name),
 				Primary:         types.BoolPointerValue(o.Primary),
+			}
+			if o.Value != nil && (*o.Value != 0 || o.Composite == nil) {
+				obj.Value = types.Float64PointerValue(o.Value)
+			} else {
+				obj.Value = types.Float64Null()
 			}
 			if countMetrics := countMetricsToModel(o.CountMetrics); countMetrics != nil {
 				obj.CountMetrics = []CountMetricsModel{*countMetrics}
@@ -601,7 +605,8 @@ func compositeObjectiveToModel(src *v1alphaSLO.CompositeSpec) *CompositeObjectiv
 	model := &CompositeObjectiveModel{
 		MaxDelay: types.StringValue(src.MaxDelay),
 	}
-	if len(src.Components.Objectives) > 0 {
+	switch {
+	case len(src.Components.Objectives) > 0:
 		compositeObjectives := make([]CompositeObjectiveSpecModel, len(src.Components.Objectives))
 		for i, obj := range src.Components.Objectives {
 			compositeObjectives[i] = CompositeObjectiveSpecModel{
@@ -617,6 +622,12 @@ func compositeObjectiveToModel(src *v1alphaSLO.CompositeSpec) *CompositeObjectiv
 				CompositeObjective: compositeObjectives,
 			}},
 		}}
+	case src.Components.Objectives != nil:
+		model.Components = []CompositeComponentsModel{{
+			Objectives: []CompositeObjectivesModel{{}},
+		}}
+	default:
+		model.Components = []CompositeComponentsModel{}
 	}
 
 	return model
