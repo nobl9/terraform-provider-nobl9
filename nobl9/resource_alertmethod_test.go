@@ -265,14 +265,3 @@ resource "nobl9_alert_method_email" "%s" {
 }
 `, name, name, testProject)
 }
-
-func mockAlertMethod(name, project string) string {
-	return fmt.Sprintf(`
-resource "nobl9_alert_method_slack" "%s" {
-  name        = "%s"
-  project     = "%s"
-  description = "slack"
-  url         = "https://hooks.slack.com/services/321/123/secret"
-}
-`, name, name, project)
-}
