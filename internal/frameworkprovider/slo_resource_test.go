@@ -536,7 +536,8 @@ func TestAccSLOResource_moveCompositeAndItsComponent(t *testing.T) {
 	componentConfig := newSLOResource(t, componentResource)
 	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].Project = "<PROJECT>"
 	compositeConfig := newSLOResource(t, compositeResource)
-	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].Project = componentResource.Project
+	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].Project =
+		componentResource.Project
 	// Replace the component's project in the composite config with the component's resource name reference.
 	compositeConfig = strings.ReplaceAll(
 		compositeConfig,
@@ -711,98 +712,6 @@ func TestAccSLOResource_moveDeprecatedCompositeV1SLO(t *testing.T) {
 				},
 			},
 			// Delete automatically occurs in TestCase, no need to clean up.
-		},
-	})
-}
-
-func TestAccSLOResource_customScenario(t *testing.T) {
-	t.Parallel()
-	testAccSetup(t)
-
-	sloConfig := `resource "nobl9_slo" "this" {
-  name             = "test-composite-tf-new"
-  service          = "test-tf"
-  budgeting_method = "Timeslices"
-  project          = "test-tf"
-
-  attachment {
-    url          = "https://test/"
-    display_name = "!#@#$#%^&%^&*(*(()&^%$%;:900897hhnkxz'dsdklsjkhjssjk😂☝️"
-  }
-
-  time_window {
-    unit       = "Day"
-    count      = 1
-    is_rolling = true
-  }
-
-  objective {
-    display_name = "AA"
-    # name = "tf-objective-1"
-    target       = 0.98
-    time_slice_target = 0.9
-    # value        = 0
-    composite {
-      max_delay = "1m"
-      components {
-        objectives {
-          composite_objective {
-            project      = "test-permissions-18-06"
-            slo          = "test-raw-with-composite"
-            objective    = "a"
-            weight       = 1.0
-            when_delayed = "CountAsGood"
-          }
-          composite_objective {
-            project      = "test-permissions-18-06"
-            slo          = "test-ratio"
-            objective    = "existing-good-and-total"
-            weight       = 1.0
-            when_delayed = "CountAsBad"
-          }
-           composite_objective {
-            project      = nobl9_slo.test-ratio-tf.project
-            slo          = "test-ratio-tf"
-            objective    = "tf-objective-1"
-            weight       = 1.0
-            when_delayed = "CountAsGood"
-          }
-          composite_objective {
-            project      = nobl9_slo.test-raw-tf.project
-            slo          = nobl9_slo.test-raw-tf.name
-            objective    = "objective-1"
-            weight       = 1.0
-            when_delayed = "Ignore"
-          }
-        }
-      }
-    }
-  }
-
-  alert_policies = [
-    # "test-tf-alert-1", "test-tf-alert-2"
-  ]
-
-  # indicator {
-  #   name    = "web-prometheus123456"
-  #   kind    = "Agent"
-  #   project = "default"
-  # }
-}`
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create and Read.
-			{
-				Config: sloConfig,
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectNonEmptyPlan(),
-						plancheck.ExpectResourceAction("nobl9_slo.this", plancheck.ResourceActionCreate),
-					},
-				},
-			},
 		},
 	})
 }
@@ -1521,5 +1430,3 @@ func getCompositeSLOExample(t *testing.T) v1alphaSLO.SLO {
 		},
 	)
 }
-
-func ptr[T any](v T) *T { return &v }

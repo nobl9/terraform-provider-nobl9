@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/nobl9/nobl9-go/manifest"
 	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
 )
@@ -274,25 +273,13 @@ func (s sloProjectPlanModifier) PlanModifyString(
 	if isNullOrUnknown(req.StateValue) || req.StateValue == req.PlanValue {
 		return
 	}
-	diffs, diags := calculateResourceDiff(req.State, req.Plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	resp.Diagnostics.Append(s.modifyPlanForProjectChange(ctx, req.Plan, diffs)...)
+	resp.Diagnostics.Append(s.modifyPlanForProjectChange(ctx, req.Plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 }
 
-func (s sloProjectPlanModifier) modifyPlanForProjectChange(
-	ctx context.Context,
-	plan tfsdk.Plan,
-	diffs []tftypes.ValueDiff,
-) diag.Diagnostics {
-	if len(diffs) == 0 {
-		return nil
-	}
+func (s sloProjectPlanModifier) modifyPlanForProjectChange(ctx context.Context, plan tfsdk.Plan) diag.Diagnostics {
 	diags := make(diag.Diagnostics, 0)
 
 	var alertPolicies []string
