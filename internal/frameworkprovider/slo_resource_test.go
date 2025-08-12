@@ -535,14 +535,22 @@ func TestAccSLOResource_moveCompositeAndItsComponent(t *testing.T) {
 
 	componentConfig := newSLOResource(t, componentResource)
 	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].Project = "<PROJECT>"
+	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].SLO = "<SLO>"
 	compositeConfig := newSLOResource(t, compositeResource)
 	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].Project =
 		componentResource.Project
+	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].SLO =
+		componentResource.Name
 	// Replace the component's project in the composite config with the component's resource name reference.
 	compositeConfig = strings.ReplaceAll(
 		compositeConfig,
 		`"<PROJECT>"`,
 		fmt.Sprintf("nobl9_slo.%s.project", componentResource.ResourceName),
+	)
+	compositeConfig = strings.ReplaceAll(
+		compositeConfig,
+		`"<SLO>"`,
+		fmt.Sprintf("nobl9_slo.%s.name", componentResource.ResourceName),
 	)
 
 	combinedConfig := componentConfig + "\n" + compositeConfig
