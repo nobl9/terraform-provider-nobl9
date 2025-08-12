@@ -218,6 +218,28 @@ func (s *SLOResource) readResource(
 	}
 	updatedModel := newSLOResourceConfigFromManifest(slo)
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
+	updatedModel.Objectives = sortListBasedOnReferenceList(
+		updatedModel.Objectives,
+		model.Objectives,
+		func(a, b ObjectiveModel) bool {
+			return a.Name == b.Name
+		},
+	)
+	for i, objective := range updatedModel.Objectives {
+		if len(objective.Composite) == 0 ||
+			len(objective.Composite[0].Components) == 0 ||
+			len(objective.Composite[0].Components[0].Objectives) == 0 {
+			continue
+		}
+		updatedModel.Objectives[i].Composite[0].Components[0].Objectives[0].CompositeObjective =
+			sortListBasedOnReferenceList(
+				updatedModel.Objectives[i].Composite[0].Components[0].Objectives[0].CompositeObjective,
+				model.Objectives[i].Composite[0].Components[0].Objectives[0].CompositeObjective,
+				func(a, b CompositeObjectiveSpecModel) bool {
+					return a.SLO == b.SLO && a.Objective == b.Objective && a.Project == b.Project
+				},
+			)
+	}
 	return updatedModel, diagnostics
 }
 

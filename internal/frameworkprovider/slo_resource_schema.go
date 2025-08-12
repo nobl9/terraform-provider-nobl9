@@ -102,14 +102,14 @@ func sloResourceIndicatorBlock() schema.ListNestedBlock {
 	}
 }
 
-func sloResourceObjectiveBlock() schema.SetNestedBlock {
+func sloResourceObjectiveBlock() schema.ListNestedBlock {
 	description := "[Objectives documentation](https://docs.nobl9.com/yaml-guide#objective)"
-	return schema.SetNestedBlock{
+	return schema.ListNestedBlock{
 		Description:         description,
 		MarkdownDescription: description,
-		Validators: []validator.Set{
-			setvalidator.IsRequired(),
-			setvalidator.SizeAtLeast(1),
+		Validators: []validator.List{
+			listvalidator.IsRequired(),
+			listvalidator.SizeAtLeast(1),
 		},
 		NestedObject: schema.NestedBlockObject{
 			Attributes: map[string]schema.Attribute{
@@ -122,7 +122,7 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 					Description: "For threshold metrics, the logical operator applied to the threshold.",
 					Validators: []validator.String{
 						stringvalidator.AlsoRequires(
-							path.MatchRoot("objective").AtAnySetValue().AtName("raw_metric"),
+							path.MatchRoot("objective").AtAnyListIndex().AtName("raw_metric"),
 						),
 					},
 				},
@@ -167,30 +167,30 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 							},
 						},
 						Blocks: map[string]schema.Block{
-							"good": schema.SetNestedBlock{
+							"good": schema.ListNestedBlock{
 								Description: "Configuration for good time series metrics.",
-								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
+								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
 							},
-							"bad": schema.SetNestedBlock{
+							"bad": schema.ListNestedBlock{
 								Description: "Configuration for bad time series metrics.",
-								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
+								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
 							},
-							"total": schema.SetNestedBlock{
+							"total": schema.ListNestedBlock{
 								Description: "Configuration for metric source.",
-								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
+								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
 							},
-							"good_total": schema.SetNestedBlock{
+							"good_total": schema.ListNestedBlock{
 								Description: "Configuration for single query series metrics.",
-								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
+								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
@@ -203,11 +203,11 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 					Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 					NestedObject: schema.NestedBlockObject{
 						Blocks: map[string]schema.Block{
-							"query": schema.SetNestedBlock{
+							"query": schema.ListNestedBlock{
 								Description: "Configuration for metric source.",
-								Validators: []validator.Set{
-									setvalidator.IsRequired(),
-									setvalidator.SizeBetween(1, 1),
+								Validators: []validator.List{
+									listvalidator.IsRequired(),
+									listvalidator.SizeBetween(1, 1),
 								},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
@@ -1027,8 +1027,8 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 	}
 }
 
-func sloResourceCompositeV1Block() schema.SetNestedBlock {
-	return schema.SetNestedBlock{
+func sloResourceCompositeV1Block() schema.ListNestedBlock {
+	return schema.ListNestedBlock{
 		Description:        "(\"composite\" is deprecated, use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo)",
 		DeprecationMessage: "\"composite\" is deprecated, use \"objective.composite\" instead.",
 		NestedObject: schema.NestedBlockObject{

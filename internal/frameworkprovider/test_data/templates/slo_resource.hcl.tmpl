@@ -32,7 +32,6 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
     {{- end }}
   }
   {{- end }}
-  {{- if .Objectives }}
   {{- range .Objectives }}
 
   objective {
@@ -138,7 +137,6 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
       }
       {{- end }}
     }
-    {{- end }}
     {{- end }}
   }
   {{- end }}

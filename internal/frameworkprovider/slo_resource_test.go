@@ -815,7 +815,7 @@ func TestAccSLOResource_custom(t *testing.T) {
 				model.Indicator = nil
 				return model
 			},
-			expectedError: "must have a configuration value as the provider has marked it as required",
+			expectedError: "Invalid Block",
 		},
 		"empty composite objectives block": {
 			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
@@ -894,6 +894,21 @@ func TestAccSLOResource_custom(t *testing.T) {
 			},
 			expectedError: "must be specified when",
 		},
+		"with two objectives (sorted)": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				model.Objectives[0].Value = types.Float64Value(2)
+				model.Objectives[0].Name = types.StringValue("beta")
+				objective := model.Objectives[0]
+				objective.Value = types.Float64Value(1)
+				objective.Name = types.StringValue("alpha")
+				model.Objectives = append(model.Objectives, objective)
+				return model
+			},
+			sloManifestModifier: func(t *testing.T, slo v1alphaSLO.SLO) v1alphaSLO.SLO {
+				slo.Spec.Objectives[0], slo.Spec.Objectives[1] = slo.Spec.Objectives[1], slo.Spec.Objectives[0]
+				return slo
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -941,7 +956,6 @@ func TestAccSLOResource_custom(t *testing.T) {
 						{
 							Config:      sloConfig,
 							ExpectError: regexp.MustCompile(test.expectedError),
-							PlanOnly:    true,
 						},
 					},
 				})
