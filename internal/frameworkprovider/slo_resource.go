@@ -55,14 +55,11 @@ func (s *SLOResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// The attribute `retrieve_historical_data_from` is not part of the SLO manifest,
-	// so we need to set it manually after reading the SLO manifest.
-	appliedModel.RetrieveHistoricalDataFrom = model.RetrieveHistoricalDataFrom
 	resp.Diagnostics.Append(resp.State.Set(ctx, appliedModel)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	resp.Diagnostics.Append(s.runReplay(ctx, model))
+	resp.Diagnostics.Append(s.runReplay(ctx, req.Config, model)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -224,8 +221,12 @@ func (s *SLOResource) readResource(
 	return updatedModel, diagnostics
 }
 
-func (s *SLOResource) runReplay(ctx context.Context, model SLOResourceModel) diag.Diagnostic {
+func (s *SLOResource) runReplay(ctx context.Context, config tfsdk.Config, model SLOResourceModel) diag.Diagnostics {
 	attributePath := path.Root("retrieve_historical_data_from")
+	diags := config.GetAttribute(ctx, attributePath, &model.RetrieveHistoricalDataFrom)
+	if diags.HasError() {
+		return diags
+	}
 	if isNullOrUnknown(model.RetrieveHistoricalDataFrom) {
 		return nil
 	}
@@ -241,16 +242,18 @@ func (s *SLOResource) runReplay(ctx context.Context, model SLOResourceModel) dia
 		},
 	}
 	if err := s.client.Replay(ctx, payload); err != nil {
-		return diag.NewAttributeErrorDiagnostic(
+		diags.AddAttributeError(
 			attributePath,
 			"Failed to run historical data retrieval for the SLO.", err.Error())
+		return diags
 	}
-	return diag.NewAttributeWarningDiagnostic(
+	diags.AddAttributeWarning(
 		attributePath,
 		"Historical data retrieval for the SLO has been triggered.",
 		fmt.Sprintf(
 			"Data will be retrieved starting from %s.",
 			model.RetrieveHistoricalDataFrom.ValueString()))
+	return diags
 }
 
 type sloProjectPlanModifier struct{}
