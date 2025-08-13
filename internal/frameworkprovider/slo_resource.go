@@ -50,7 +50,7 @@ func (s *SLOResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	appliedModel, diags := s.applyResource(ctx, model)
+	appliedModel, diags := s.applyResource(ctx, &model)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -70,15 +70,13 @@ func (s *SLOResource) Create(ctx context.Context, req resource.CreateRequest, re
 // ReadRequest and new state values set on the ReadResponse.
 func (s *SLOResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var model SLOResourceModel
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("name"), &model.Name)...)
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("project"), &model.Project)...)
-	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("label"), &model.Labels)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &model)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// Read the SLO after update to fetch the computed fields.
-	updatedModel, diags := s.readResource(ctx, model)
+	updatedModel, diags := s.readResource(ctx, &model)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -122,7 +120,7 @@ func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		}
 	}
 
-	appliedModel, diags := s.applyResource(ctx, model)
+	appliedModel, diags := s.applyResource(ctx, &model)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		moveSLOUpdateWarningFunc()
@@ -169,11 +167,12 @@ func (s *SLOResource) ImportState(
 		)
 		return
 	}
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project"), parts[0])...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), parts[1])...)
+	model, diags := s.readResource(ctx, &SLOResourceModel{Name: parts[1], Project: parts[0]})
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
 }
 
 func (s *SLOResource) Configure(
@@ -192,7 +191,10 @@ func (s *SLOResource) Configure(
 	s.client = client
 }
 
-func (s *SLOResource) applyResource(ctx context.Context, model SLOResourceModel) (*SLOResourceModel, diag.Diagnostics) {
+func (s *SLOResource) applyResource(
+	ctx context.Context,
+	model *SLOResourceModel,
+) (*SLOResourceModel, diag.Diagnostics) {
 	slo := model.ToManifest()
 	diagnostics := s.client.ApplyObject(ctx, slo)
 	if diagnostics.HasError() {
@@ -210,13 +212,19 @@ func (s *SLOResource) applyResource(ctx context.Context, model SLOResourceModel)
 // readResource reads the current state of the resource from the Nobl9 API.
 func (s *SLOResource) readResource(
 	ctx context.Context,
-	model SLOResourceModel,
+	model *SLOResourceModel,
 ) (*SLOResourceModel, diag.Diagnostics) {
 	slo, diagnostics := s.client.GetSLO(ctx, model.Name, model.Project)
 	if diagnostics.HasError() {
 		return nil, diagnostics
 	}
 	updatedModel := newSLOResourceConfigFromManifest(slo)
+	s.sortLists(model, updatedModel)
+	return updatedModel, diagnostics
+}
+
+// sortLists sorts lists returned by the API to ensure consistent ordering.
+func (s *SLOResource) sortLists(model, updatedModel *SLOResourceModel) {
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
 	updatedModel.Objectives = sortListBasedOnReferenceList(
 		updatedModel.Objectives,
@@ -242,7 +250,6 @@ func (s *SLOResource) readResource(
 				},
 			)
 	}
-	return updatedModel, diagnostics
 }
 
 func (s *SLOResource) runReplay(ctx context.Context, config tfsdk.Config, model SLOResourceModel) diag.Diagnostics {

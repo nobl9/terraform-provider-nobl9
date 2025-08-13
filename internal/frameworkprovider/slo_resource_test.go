@@ -761,10 +761,25 @@ func TestAccSLOResource_custom(t *testing.T) {
 	manifestAlertMethod.Metadata.Project = manifestProject.GetName()
 	auxiliaryObjects = append(auxiliaryObjects, manifestAlertMethod)
 
+	manifestSLOComponent1 := getExampleSLOResource(t).ToManifest()
+	manifestSLOComponent1.Metadata.Name = e2etestutils.GenerateName()
+	manifestSLOComponent1.Metadata.Project = manifestProject.GetName()
+	manifestSLOComponent1.Spec.Service = manifestService.GetName()
+	appDynamicsDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+	manifestSLOComponent1.Spec.Indicator.MetricSource.Name = appDynamicsDirect.GetName()
+	manifestSLOComponent1.Spec.Indicator.MetricSource.Project = appDynamicsDirect.GetProject()
+	manifestSLOComponent1.Spec.Indicator.MetricSource.Kind = appDynamicsDirect.GetKind()
+
+	manifestSLOComponent2 := manifestSLOComponent1
+	manifestSLOComponent2.Metadata.Name = e2etestutils.GenerateName()
+
+	auxiliaryObjects = append(auxiliaryObjects, manifestSLOComponent1, manifestSLOComponent2)
+
 	e2etestutils.V1Apply(t, auxiliaryObjects)
 	t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
 
 	tests := map[string]struct {
+		preConfig                func(t *testing.T, slo v1alphaSLO.SLO)
 		sloResourceModelModifier func(t *testing.T, model SLOResourceModel) SLOResourceModel
 		sloManifestModifier      func(t *testing.T, model v1alphaSLO.SLO) v1alphaSLO.SLO
 		expectedError            string
@@ -895,6 +910,12 @@ func TestAccSLOResource_custom(t *testing.T) {
 			expectedError: "must be specified when",
 		},
 		"with two objectives (sorted)": {
+			preConfig: func(t *testing.T, slo v1alphaSLO.SLO) {
+				// Apply the SLO with two objectives, but in a different order.
+				// This way the API will return them in the order they were created,
+				// and the provider will have to sort them.
+				e2etestutils.V1Apply(t, []v1alphaSLO.SLO{slo})
+			},
 			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
 				model.Objectives[0].Value = types.Float64Value(2)
 				model.Objectives[0].Name = types.StringValue("beta")
@@ -907,6 +928,39 @@ func TestAccSLOResource_custom(t *testing.T) {
 			sloManifestModifier: func(t *testing.T, slo v1alphaSLO.SLO) v1alphaSLO.SLO {
 				slo.Spec.Objectives[0], slo.Spec.Objectives[1] = slo.Spec.Objectives[1], slo.Spec.Objectives[0]
 				return slo
+			},
+		},
+		"with two composite components (sorted)": {
+			preConfig: func(t *testing.T, slo v1alphaSLO.SLO) {
+				// Apply the SLO with two objectives, but in a different order.
+				// This way the API will return them in the order they were created,
+				// and the provider will have to sort them.
+				e2etestutils.V1Apply(t, []v1alphaSLO.SLO{slo})
+			},
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				model.Objectives = compositeModel.Objectives
+				model.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective =
+					[]CompositeObjectiveSpecModel{
+						{
+							Project:     manifestSLOComponent2.GetProject(),
+							SLO:         manifestSLOComponent2.GetName(),
+							Objective:   manifestSLOComponent2.Spec.Objectives[0].Name,
+							Weight:      2,
+							WhenDelayed: v1alphaSLO.WhenDelayedCountAsGood.String(),
+						},
+						{
+							Project:     manifestSLOComponent1.GetProject(),
+							SLO:         manifestSLOComponent1.GetName(),
+							Objective:   manifestSLOComponent1.Spec.Objectives[0].Name,
+							Weight:      1,
+							WhenDelayed: v1alphaSLO.WhenDelayedCountAsGood.String(),
+						},
+					}
+				model.Indicator = nil
+				return model
 			},
 		},
 	}
@@ -947,6 +1001,11 @@ func TestAccSLOResource_custom(t *testing.T) {
 				ResourceName:     "test",
 				SLOResourceModel: sloModel,
 			})
+
+			if test.preConfig != nil {
+				test.preConfig(t, manifestSLO)
+			}
+			assertResourceWasApplied(t, ctx, manifestSLO)
 
 			if test.expectedError != "" {
 				resource.Test(t, resource.TestCase{
