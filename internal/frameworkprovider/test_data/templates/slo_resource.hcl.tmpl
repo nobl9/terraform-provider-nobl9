@@ -9,7 +9,7 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
   {{- if not (isNull .Tier) }}
   tier = "{{ valueString .Tier }}"
   {{- end }}
-  {{- if .AlertPolicies }}
+  {{- if not (eq .AlertPolicies nil) }}
   alert_policies = [
     {{- range .AlertPolicies }}
     "{{ . }}",
@@ -32,7 +32,6 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
     {{- end }}
   }
   {{- end }}
-  {{- if .Objectives }}
   {{- range .Objectives }}
 
   objective {
@@ -105,18 +104,16 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
     }
     {{- end }}
     {{- end }}
-    {{- if .Composite }}
-    {{- with (index .Composite 0) }}
+    {{- range .Composite }}
     composite {
       {{- if not (isNull .MaxDelay ) }}
       max_delay = "{{ valueString .MaxDelay }}"
       {{- end }}
-      {{- if .Components }}
-      {{- if (index .Components 0).Objectives }}
-      {{- if (index (index .Components 0).Objectives 0).CompositeObjective }}
+      {{- range .Components }}
       components {
+        {{- range .Objectives }}
         objectives {
-          {{- range (index (index .Components 0).Objectives 0).CompositeObjective }}
+          {{- range .CompositeObjective }}
           composite_objective {
             {{- if .Project }}
             project = "{{ .Project }}"
@@ -136,15 +133,34 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
           }
           {{- end }}
         }
+        {{- end }}
       }
       {{- end }}
+    }
+    {{- end }}
+  }
+  {{- end }}
+  {{- if .Composite }}
+
+  composite {
+    {{- with (index .Composite 0) }}
+    {{- if not (isNull .Target) }}
+    target = {{ .Target.ValueFloat64 }}
+    {{- end }}
+    {{- if .BurnRateCondition }}
+    {{- range .BurnRateCondition }}
+    burn_rate_condition {
+      {{- if not (isNull .Op) }}
+      op = "{{ valueString .Op }}"
       {{- end }}
+      {{- if not (isNull .Value) }}
+      value = {{ .Value.ValueFloat64 }}
       {{- end }}
     }
     {{- end }}
     {{- end }}
+    {{- end }}
   }
-  {{- end }}
   {{- end }}
   {{- if .TimeWindow }}
 
