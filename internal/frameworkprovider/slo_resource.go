@@ -225,16 +225,18 @@ func (s *SLOResource) readResource(
 			return a.Name == b.Name
 		},
 	)
-	for i, objective := range updatedModel.Objectives {
-		if len(objective.Composite) == 0 ||
-			len(objective.Composite[0].Components) == 0 ||
-			len(objective.Composite[0].Components[0].Objectives) == 0 {
+	for i := range updatedModel.Objectives {
+		if !updatedModel.Objectives[i].HasCompositeObjectives() {
 			continue
+		}
+		var refCompObj []CompositeObjectiveSpecModel
+		if len(model.Objectives) > i && model.Objectives[i].HasCompositeObjectives() {
+			refCompObj = model.Objectives[i].Composite[0].Components[0].Objectives[0].CompositeObjective
 		}
 		updatedModel.Objectives[i].Composite[0].Components[0].Objectives[0].CompositeObjective =
 			sortListBasedOnReferenceList(
 				updatedModel.Objectives[i].Composite[0].Components[0].Objectives[0].CompositeObjective,
-				model.Objectives[i].Composite[0].Components[0].Objectives[0].CompositeObjective,
+				refCompObj,
 				func(a, b CompositeObjectiveSpecModel) bool {
 					return a.SLO == b.SLO && a.Objective == b.Objective && a.Project == b.Project
 				},

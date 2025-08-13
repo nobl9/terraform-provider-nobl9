@@ -48,6 +48,12 @@ type ObjectiveModel struct {
 	Composite       []CompositeObjectiveModel `tfsdk:"composite"`
 }
 
+func (o ObjectiveModel) HasCompositeObjectives() bool {
+	return len(o.Composite) != 0 &&
+		len(o.Composite[0].Components) != 0 &&
+		len(o.Composite[0].Components[0].Objectives) != 0
+}
+
 // CountMetricsModel represents [v1alphaSLO.CountMetricsSpec].
 type CountMetricsModel struct {
 	Incremental types.Bool        `tfsdk:"incremental"`
