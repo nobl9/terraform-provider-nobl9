@@ -1,6 +1,9 @@
 package frameworkprovider
 
 import (
+	"cmp"
+	"slices"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -36,6 +39,7 @@ func newLabelsFromManifest(sdkLabels v1alpha.Labels) Labels {
 			Values: values,
 		})
 	}
+	slices.SortFunc(labels, func(a, b LabelBlockModel) int { return cmp.Compare(a.Key, b.Key) })
 	return labels
 }
 

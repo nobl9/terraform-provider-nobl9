@@ -67,7 +67,8 @@ func (s *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 // ReadRequest and new state values set on the ReadResponse.
 func (s *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var model ProjectResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &model)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("name"), &model.Name)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("label"), &model.Labels)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -115,7 +116,10 @@ func (s *ProjectResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	resp.State.SetAttribute(ctx, path.Root("name"), req.ID)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), req.ID)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (s *ProjectResource) Configure(
@@ -141,7 +145,7 @@ func (s *ProjectResource) applyResource(ctx context.Context, plan tfsdk.Plan, st
 		return diagnostics
 	}
 
-	project := model.ToManifest(ctx)
+	project := model.ToManifest()
 	diagnostics.Append(s.client.ApplyObject(ctx, project)...)
 	if diagnostics.HasError() {
 		return diagnostics

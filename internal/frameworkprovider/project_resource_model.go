@@ -1,8 +1,6 @@
 package frameworkprovider
 
 import (
-	"context"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 )
@@ -26,7 +24,7 @@ func newProjectResourceConfigFromManifest(project v1alphaProject.Project) *Proje
 	}
 }
 
-func (s ProjectResourceModel) ToManifest(ctx context.Context) v1alphaProject.Project {
+func (s ProjectResourceModel) ToManifest() v1alphaProject.Project {
 	return v1alphaProject.New(
 		v1alphaProject.Metadata{
 			Name:        s.Name,
