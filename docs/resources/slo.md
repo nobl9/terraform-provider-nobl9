@@ -209,12 +209,12 @@ resource "nobl9_slo" "composite_slo" {
 - `annotations` (Map of String) [Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.
 - `anomaly_config` (Block List) Configuration for anomaly detection. (see [below for nested schema](#nestedblock--anomaly_config))
 - `attachment` (Block List) URL attachments for the SLO. (see [below for nested schema](#nestedblock--attachment))
-- `composite` (Block Set, Deprecated) ("composite" is deprecated, use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
+- `composite` (Block List, Deprecated) ("composite" is deprecated, use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `indicator` (Block List) Configuration for the metric source (Agent/Direct). (see [below for nested schema](#nestedblock--indicator))
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
-- `objective` (Block Set) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
+- `objective` (Block List) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
 - `retrieve_historical_data_from` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) If set, the retrieval of historical data for a newly created SLO will be triggered, starting from the specified date. Needs to be RFC3339 format.
 - `tier` (String) Internal field, do not use.
 - `time_window` (Block List) Time window configuration for the SLO. (see [below for nested schema](#nestedblock--time_window))
@@ -368,10 +368,10 @@ Required:
 
 Optional:
 
-- `bad` (Block Set) Configuration for bad time series metrics. (see [below for nested schema](#nestedblock--objective--count_metrics--bad))
-- `good` (Block Set) Configuration for good time series metrics. (see [below for nested schema](#nestedblock--objective--count_metrics--good))
-- `good_total` (Block Set) Configuration for single query series metrics. (see [below for nested schema](#nestedblock--objective--count_metrics--good_total))
-- `total` (Block Set) Configuration for metric source. (see [below for nested schema](#nestedblock--objective--count_metrics--total))
+- `bad` (Block List) Configuration for bad time series metrics. (see [below for nested schema](#nestedblock--objective--count_metrics--bad))
+- `good` (Block List) Configuration for good time series metrics. (see [below for nested schema](#nestedblock--objective--count_metrics--good))
+- `good_total` (Block List) Configuration for single query series metrics. (see [below for nested schema](#nestedblock--objective--count_metrics--good_total))
+- `total` (Block List) Configuration for metric source. (see [below for nested schema](#nestedblock--objective--count_metrics--total))
 
 <a id="nestedblock--objective--count_metrics--bad"></a>
 ### Nested Schema for `objective.count_metrics.bad`
@@ -1935,7 +1935,7 @@ Optional:
 
 Optional:
 
-- `query` (Block Set) Configuration for metric source. (see [below for nested schema](#nestedblock--objective--raw_metric--query))
+- `query` (Block List) Configuration for metric source. (see [below for nested schema](#nestedblock--objective--raw_metric--query))
 
 <a id="nestedblock--objective--raw_metric--query"></a>
 ### Nested Schema for `objective.raw_metric.query`
