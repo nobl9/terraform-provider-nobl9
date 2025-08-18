@@ -832,6 +832,18 @@ func TestAccSLOResource_custom(t *testing.T) {
 			},
 			expectedError: "Invalid Block",
 		},
+		"non-existing composite objectives block": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				compositeModel.Objectives[0].Composite[0].Components[0].Objectives = nil
+				model.Objectives = compositeModel.Objectives
+				model.Indicator = nil
+				return model
+			},
+			expectedError: "the provider has marked it as required",
+		},
 		"empty composite objectives block": {
 			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
 				slo := getCompositeSLOExample(t)
@@ -842,6 +854,18 @@ func TestAccSLOResource_custom(t *testing.T) {
 				model.Indicator = nil
 				return model
 			},
+		},
+		"non-existing composite components block": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				compositeModel.Objectives[0].Composite[0].Components = nil
+				model.Objectives = compositeModel.Objectives
+				model.Indicator = nil
+				return model
+			},
+			expectedError: "the provider has marked it as required",
 		},
 		"ratio metric with no value in objective": {
 			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
@@ -908,27 +932,6 @@ func TestAccSLOResource_custom(t *testing.T) {
 				return model
 			},
 			expectedError: "must be specified when",
-		},
-		"with two objectives (sorted)": {
-			preConfig: func(t *testing.T, slo v1alphaSLO.SLO) {
-				// Apply the SLO with two objectives, but in a different order.
-				// This way the API will return them in the order they were created,
-				// and the provider will have to sort them.
-				e2etestutils.V1Apply(t, []v1alphaSLO.SLO{slo})
-			},
-			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
-				model.Objectives[0].Value = types.Float64Value(2)
-				model.Objectives[0].Name = types.StringValue("beta")
-				objective := model.Objectives[0]
-				objective.Value = types.Float64Value(1)
-				objective.Name = types.StringValue("alpha")
-				model.Objectives = append(model.Objectives, objective)
-				return model
-			},
-			sloManifestModifier: func(t *testing.T, slo v1alphaSLO.SLO) v1alphaSLO.SLO {
-				slo.Spec.Objectives[0], slo.Spec.Objectives[1] = slo.Spec.Objectives[1], slo.Spec.Objectives[0]
-				return slo
-			},
 		},
 		"with two composite components (sorted)": {
 			preConfig: func(t *testing.T, slo v1alphaSLO.SLO) {

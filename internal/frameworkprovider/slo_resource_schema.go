@@ -974,6 +974,7 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 				"components": schema.ListNestedBlock{
 					Description: "Objectives to be assembled in your composite SLO.",
 					Validators: []validator.List{
+						listvalidator.IsRequired(),
 						listvalidator.SizeAtMost(1),
 					},
 					NestedObject: schema.NestedBlockObject{
