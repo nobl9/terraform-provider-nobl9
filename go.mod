@@ -7,13 +7,13 @@ require (
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/hcl/v2 v2.23.0
 	github.com/hashicorp/terraform-plugin-docs v0.22.0
-	github.com/hashicorp/terraform-plugin-framework v1.15.0
+	github.com/hashicorp/terraform-plugin-framework v1.15.1
 	github.com/hashicorp/terraform-plugin-framework-validators v0.18.0
 	github.com/hashicorp/terraform-plugin-go v0.28.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.20.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
-	github.com/hashicorp/terraform-plugin-testing v1.13.2
+	github.com/hashicorp/terraform-plugin-testing v1.13.3
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nobl9/nobl9-go v0.112.0-rc3.0.20250709075254-9cba765504c2
 	github.com/pkg/errors v0.9.1
