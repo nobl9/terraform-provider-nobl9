@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
-
-	"github.com/nobl9/terraform-provider-nobl9/internal/reflectionutils"
 )
 
 // ServiceResourceModel describes the [ServiceResource] data model.
@@ -30,17 +30,22 @@ func newServiceResourceConfigFromManifest(
 	svc v1alphaService.Service,
 ) (*ServiceResourceModel, diag.Diagnostics) {
 	var status types.Object
+	statusType, diags := serviceResourceSchema.TypeAtPath(ctx, path.Root("status"))
+	if diags.HasError() {
+		return nil, diags
+	}
+	statusAttrs := statusType.(basetypes.ObjectType).AttrTypes
 	if svc.Status != nil {
 		statusModel := ServiceResourceStatusModel{
 			SLOCount: types.Int64Value(int64(svc.Status.SloCount)),
 		}
-		v, diags := types.ObjectValueFrom(ctx, reflectionutils.GetAttributeTypes(statusModel), statusModel)
+		v, diags := types.ObjectValueFrom(ctx, statusAttrs, statusModel)
 		if diags.HasError() {
 			return nil, diags
 		}
 		status = v
 	} else {
-		status = types.ObjectNull(reflectionutils.GetAttributeTypes(ServiceResourceStatusModel{}))
+		status = types.ObjectNull(statusAttrs)
 	}
 	return &ServiceResourceModel{
 		Name:        svc.Metadata.Name,

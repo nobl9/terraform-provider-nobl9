@@ -8,18 +8,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 )
 
-func sloResourceSchema() schema.Schema {
+var sloResourceSchema = func() schema.Schema {
 	description := "[SLO configuration | Nobl9 documentation](https://docs.nobl9.com/yaml-guide#slo)"
 	return schema.Schema{
 		MarkdownDescription: description,
@@ -27,9 +26,15 @@ func sloResourceSchema() schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"name":         metadataNameAttr(),
 			"display_name": metadataDisplayNameAttr(),
-			"project":      metadataProjectAttr(),
-			"description":  specDescriptionAttr(),
-			"annotations":  metadataAnnotationsAttr(),
+			"project": func() schema.Attribute {
+				attr := metadataProjectAttr()
+				attr.PlanModifiers = []planmodifier.String{
+					sloProjectPlanModifier{},
+				}
+				return attr
+			}(),
+			"description": specDescriptionAttr(),
+			"annotations": metadataAnnotationsAttr(),
 			"service": schema.StringAttribute{
 				Required:    true,
 				Description: "Name of the service.",
@@ -46,19 +51,16 @@ func sloResourceSchema() schema.Schema {
 				Optional:    true,
 				ElementType: types.StringType,
 				Description: "Alert Policies attached to SLO.",
+				Validators: []validator.Set{
+					setvalidator.SizeAtLeast(1),
+				},
 			},
 			"retrieve_historical_data_from": schema.StringAttribute{
 				Optional: true,
 				Description: "If set, the retrieval of historical data for a newly created SLO will be triggered, " +
 					"starting from the specified date. Needs to be RFC3339 format.",
 				Validators: []validator.String{newDateTimeValidator(time.RFC3339)},
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				// TODO: Consider enabling WriteOnly for this attribute after some time.
-				// The feature has been introduced in Terraform v1.11.0 (March 2025),
-				// so it might not be widely used yet.
-				// WriteOnly: true,
+				WriteOnly:  true,
 			},
 		},
 		Blocks: map[string]schema.Block{
@@ -71,7 +73,7 @@ func sloResourceSchema() schema.Schema {
 			"anomaly_config": anomalyConfigBlock(),
 		},
 	}
-}
+}()
 
 func sloResourceIndicatorBlock() schema.ListNestedBlock {
 	return schema.ListNestedBlock{
@@ -100,14 +102,14 @@ func sloResourceIndicatorBlock() schema.ListNestedBlock {
 	}
 }
 
-func sloResourceObjectiveBlock() schema.SetNestedBlock {
+func sloResourceObjectiveBlock() schema.ListNestedBlock {
 	description := "[Objectives documentation](https://docs.nobl9.com/yaml-guide#objective)"
-	return schema.SetNestedBlock{
+	return schema.ListNestedBlock{
 		Description:         description,
 		MarkdownDescription: description,
-		Validators: []validator.Set{
-			setvalidator.IsRequired(),
-			setvalidator.SizeAtLeast(1),
+		Validators: []validator.List{
+			listvalidator.IsRequired(),
+			listvalidator.SizeAtLeast(1),
 		},
 		NestedObject: schema.NestedBlockObject{
 			Attributes: map[string]schema.Attribute{
@@ -118,6 +120,11 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 				"op": schema.StringAttribute{
 					Optional:    true,
 					Description: "For threshold metrics, the logical operator applied to the threshold.",
+					Validators: []validator.String{
+						stringvalidator.AlsoRequires(
+							path.MatchRoot("objective").AtAnyListIndex().AtName("raw_metric"),
+						),
+					},
 				},
 				"target": schema.Float64Attribute{
 					Required:    true,
@@ -129,13 +136,11 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 				},
 				"value": schema.Float64Attribute{
 					Optional: true,
-					Computed: true,
 					Description: "Required for threshold and ratio metrics. Optional for existing composite SLOs. For threshold" +
 						" metrics, the threshold value. For ratio metrics, this must be a unique value per objective (for" +
 						" legacy reasons). For new composite SLOs, it must be omitted. If, for composite SLO, it was set" +
 						" previously to a non-zero value, then it must remain unchanged.",
 					PlanModifiers: []planmodifier.Float64{
-						float64planmodifier.UseStateForUnknown(),
 						sloObjectiveValuePlanModifier{},
 					},
 				},
@@ -162,30 +167,30 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 							},
 						},
 						Blocks: map[string]schema.Block{
-							"good": schema.SetNestedBlock{
+							"good": schema.ListNestedBlock{
 								Description: "Configuration for good time series metrics.",
-								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
+								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
 							},
-							"bad": schema.SetNestedBlock{
+							"bad": schema.ListNestedBlock{
 								Description: "Configuration for bad time series metrics.",
-								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
+								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
 							},
-							"total": schema.SetNestedBlock{
+							"total": schema.ListNestedBlock{
 								Description: "Configuration for metric source.",
-								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
+								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
 							},
-							"good_total": schema.SetNestedBlock{
+							"good_total": schema.ListNestedBlock{
 								Description: "Configuration for single query series metrics.",
-								Validators:  []validator.Set{setvalidator.SizeAtMost(1)},
+								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
 								},
@@ -198,11 +203,11 @@ func sloResourceObjectiveBlock() schema.SetNestedBlock {
 					Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 					NestedObject: schema.NestedBlockObject{
 						Blocks: map[string]schema.Block{
-							"query": schema.SetNestedBlock{
+							"query": schema.ListNestedBlock{
 								Description: "Configuration for metric source.",
-								Validators: []validator.Set{
-									setvalidator.IsRequired(),
-									setvalidator.SizeBetween(1, 1),
+								Validators: []validator.List{
+									listvalidator.IsRequired(),
+									listvalidator.SizeBetween(1, 1),
 								},
 								NestedObject: schema.NestedBlockObject{
 									Blocks: sloResourceMetricSpecBlocks(),
@@ -969,6 +974,7 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 				"components": schema.ListNestedBlock{
 					Description: "Objectives to be assembled in your composite SLO.",
 					Validators: []validator.List{
+						listvalidator.IsRequired(),
 						listvalidator.SizeAtMost(1),
 					},
 					NestedObject: schema.NestedBlockObject{
@@ -976,6 +982,7 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 							"objectives": schema.ListNestedBlock{
 								Description: "An additional nesting for the components of your composite SLO.",
 								Validators: []validator.List{
+									listvalidator.IsRequired(),
 									listvalidator.SizeAtMost(1),
 								},
 								NestedObject: schema.NestedBlockObject{
@@ -1021,8 +1028,8 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 	}
 }
 
-func sloResourceCompositeV1Block() schema.SetNestedBlock {
-	return schema.SetNestedBlock{
+func sloResourceCompositeV1Block() schema.ListNestedBlock {
+	return schema.ListNestedBlock{
 		Description:        "(\"composite\" is deprecated, use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo)",
 		DeprecationMessage: "\"composite\" is deprecated, use \"objective.composite\" instead.",
 		NestedObject: schema.NestedBlockObject{

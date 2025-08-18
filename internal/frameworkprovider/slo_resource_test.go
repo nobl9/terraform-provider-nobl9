@@ -38,11 +38,23 @@ func TestAccSLOResource(t *testing.T) {
 
 	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
 
+	manifestAlertPolicy := e2etestutils.GetExampleObject[v1alphaAlertPolicy.AlertPolicy](
+		t,
+		manifest.KindAlertPolicy,
+		nil,
+	)
+	manifestAlertPolicy.Metadata.Name = e2etestutils.GenerateName()
+	manifestAlertPolicy.Metadata.Project = manifestProject.GetName()
+	manifestAlertPolicy.Metadata.Labels = e2etestutils.AnnotateLabels(t, nil)
+	manifestAlertPolicy.Spec.AlertMethods = nil
+	auxiliaryObjects = append(auxiliaryObjects, manifestAlertPolicy)
+
 	sloNameRecreatedByNameChange := e2etestutils.GenerateName()
 	sloResource := sloResourceTemplateModel{
 		ResourceName:     "test",
 		SLOResourceModel: getExampleSLOResource(t),
 	}
+	sloResource.Name = e2etestutils.GenerateName()
 	sloResource.Project = manifestProject.GetName()
 	sloResource.Service = manifestService.GetName()
 	sloResource.Indicator = []IndicatorModel{{
@@ -53,14 +65,12 @@ func TestAccSLOResource(t *testing.T) {
 
 	manifestSLO := sloResource.ToManifest()
 
-	recreatedProjectName := e2etestutils.GenerateName()
-
 	sloConfig := newSLOResource(t, sloResource)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read.
+			// 1. Create and Read.
 			{
 				PreConfig: func() {
 					e2etestutils.V1Apply(t, auxiliaryObjects)
@@ -77,7 +87,7 @@ func TestAccSLOResource(t *testing.T) {
 					},
 				},
 			},
-			// Delete.
+			// 2. Delete.
 			{
 				Config: sloConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -91,14 +101,14 @@ func TestAccSLOResource(t *testing.T) {
 				},
 				Destroy: true,
 			},
-			// ImportState - invalid id.
+			// 3. ImportState - invalid id.
 			{
 				ResourceName:  "nobl9_slo.test",
 				ImportStateId: sloResource.Name,
 				ImportState:   true,
 				ExpectError:   regexp.MustCompile(`Invalid import ID`),
 			},
-			// ImportState.
+			// 4. ImportState.
 			{
 				ResourceName:  "nobl9_slo.test",
 				Config:        sloConfig,
@@ -118,7 +128,7 @@ func TestAccSLOResource(t *testing.T) {
 					e2etestutils.V1Apply(t, []manifest.Object{manifestSLO})
 				},
 			},
-			// Update and Read, ensure computed field does not pollute the plan.
+			// 5. Update and Read, ensure computed fields do not pollute the plan.
 			{
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
@@ -135,13 +145,13 @@ func TestAccSLOResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectOnlyOneChangeInPlan{attrName: "display_name"},
+						expectChangesInResourcePlan(planDiff{Modified: []string{"display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
 					},
 				},
 			},
-			// Update name - recreate.
+			// 6. Update name and revert display name - recreate.
 			{
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
@@ -158,41 +168,554 @@ func TestAccSLOResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"name", "display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionReplace),
 					},
 				},
 			},
-			// Update project - recreate.
+			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccSLOResource_moveSLO(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	manifestAlertPolicy := e2etestutils.GetExampleObject[v1alphaAlertPolicy.AlertPolicy](
+		t,
+		manifest.KindAlertPolicy,
+		nil,
+	)
+	manifestAlertPolicy.Metadata.Name = e2etestutils.GenerateName()
+	manifestAlertPolicy.Metadata.Project = manifestProject.GetName()
+	manifestAlertPolicy.Metadata.Labels = e2etestutils.AnnotateLabels(t, nil)
+	manifestAlertPolicy.Spec.AlertMethods = nil
+	auxiliaryObjects = append(auxiliaryObjects, manifestAlertPolicy)
+
+	sloResource := sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource.Name = e2etestutils.GenerateName()
+	sloResource.Project = manifestProject.GetName()
+	sloResource.Service = manifestService.GetName()
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	sloResource.AlertPolicies = []string{manifestAlertPolicy.GetName()}
+
+	manifestSLO := sloResource.ToManifest()
+
+	newProjectName := e2etestutils.GenerateName()
+	newServiceName := e2etestutils.GenerateName()
+
+	sloConfig := newSLOResource(t, sloResource)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create and Read.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: sloConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, ctx, manifestSLO),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update project with alert policies - error.
+			{
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.Project = "new-project"
+					return m
+				}()),
+				ExpectError: regexp.MustCompile(`Cannot move SLO between Projects with attached Alert Policies.`),
+			},
+			// 3. Remove Alert Policy from SLO.
+			{
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.AlertPolicies = nil
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("nobl9_slo.test", "alert_policies"),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO
+						slo.Spec.AlertPolicies = nil
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"alert_policies"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// 4. Update project and another attribute - error.
+			{
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.Project = "new-project"
+					m.AlertPolicies = nil
+					m.DisplayName = stringValue("Changed display!")
+					return m
+				}()),
+				ExpectError: regexp.MustCompile(
+					"When changing the `project`, no other attribute can be modified, except for `service`."),
+			},
+			// 5. Update project - move SLO.
 			{
 				PreConfig: func() {
 					newProjectManifest := manifestProject
-					newProjectManifest.Metadata.Name = recreatedProjectName
+					newProjectManifest.Metadata.Name = newProjectName
 					newServiceManifest := manifestService
-					newServiceManifest.Metadata.Project = recreatedProjectName
+					newServiceManifest.Metadata.Project = newProjectName
 
-					e2etestutils.V1Apply(t, []manifest.Object{newProjectManifest, newServiceManifest})
 					t.Cleanup(func() {
 						e2etestutils.V1Delete(t, []manifest.Object{newProjectManifest, newServiceManifest})
 					})
 				},
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
-					m.Project = recreatedProjectName
+					m.AlertPolicies = nil
+					m.Project = newProjectName
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("nobl9_slo.test", "project", recreatedProjectName),
+					resource.TestCheckResourceAttr("nobl9_slo.test", "project", newProjectName),
 					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
 						slo := manifestSLO
-						slo.Metadata.Project = recreatedProjectName
+						slo.Spec.AlertPolicies = nil
+						slo.Metadata.Project = newProjectName
 						return slo
 					}()),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"project"}}),
 						plancheck.ExpectNonEmptyPlan(),
-						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionReplace),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// 6. Update project and service - move SLO (back to the original Project).
+			{
+				PreConfig: func() {
+					newServiceManifest := manifestService
+					newServiceManifest.Metadata.Project = manifestProject.GetName()
+					newServiceManifest.Metadata.Name = newServiceName
+
+					t.Cleanup(func() {
+						e2etestutils.V1Delete(t, []manifest.Object{newServiceManifest})
+					})
+				},
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.AlertPolicies = nil
+					m.Project = manifestProject.GetName()
+					m.Service = newServiceName
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.test", "project", manifestProject.GetName()),
+					resource.TestCheckResourceAttr("nobl9_slo.test", "service", newServiceName),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO
+						slo.Spec.AlertPolicies = nil
+						slo.Metadata.Project = manifestProject.GetName()
+						slo.Spec.Service = newServiceName
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"project", "service"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccSLOResource_moveTwoSLOs(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	sloResource1 := sloResourceTemplateModel{
+		ResourceName:     "first",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource1.Name = e2etestutils.GenerateName()
+	sloResource1.Project = manifestProject.GetName()
+	sloResource1.Service = manifestService.GetName()
+	sloResource1.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	sloResource1.AlertPolicies = nil
+	sloResource2 := sloResource1
+	sloResource2.Name = e2etestutils.GenerateName()
+	sloResource2.ResourceName = "second"
+
+	manifestSLO1 := sloResource1.ToManifest()
+	manifestSLO2 := sloResource2.ToManifest()
+
+	newProjectName := e2etestutils.GenerateName()
+
+	sloConfig1 := newSLOResource(t, sloResource1)
+	sloConfig2 := newSLOResource(t, sloResource2)
+
+	combinedConfig := sloConfig1 + "\n" + sloConfig2
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create and Read.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: combinedConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, ctx, manifestSLO1),
+					assertResourceWasApplied(t, ctx, manifestSLO2),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.first", plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction("nobl9_slo.second", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update project - move SLOs.
+			{
+				PreConfig: func() {
+					newProjectManifest := manifestProject
+					newProjectManifest.Metadata.Name = newProjectName
+					newServiceManifest := manifestService
+					newServiceManifest.Metadata.Project = newProjectName
+
+					t.Cleanup(func() {
+						e2etestutils.V1Delete(t, []manifest.Object{newProjectManifest, newServiceManifest})
+					})
+				},
+				Config: func() string {
+					m1 := sloResource1
+					m1.Project = newProjectName
+					m2 := sloResource2
+					m2.Project = newProjectName
+					return newSLOResource(t, m1) + "\n" + newSLOResource(t, m2)
+				}(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.first", "project", newProjectName),
+					resource.TestCheckResourceAttr("nobl9_slo.second", "project", newProjectName),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO1
+						slo.Metadata.Project = newProjectName
+						return slo
+					}()),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO2
+						slo.Metadata.Project = newProjectName
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcesPlan(map[string]planDiff{
+							"nobl9_slo.first":  {Modified: []string{"project"}},
+							"nobl9_slo.second": {Modified: []string{"project"}},
+						}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.first", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("nobl9_slo.second", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccSLOResource_moveCompositeAndItsComponent(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	componentResource := sloResourceTemplateModel{
+		ResourceName:     "component",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	componentResource.Name = e2etestutils.GenerateName()
+	componentResource.Project = manifestProject.GetName()
+	componentResource.Service = manifestService.GetName()
+	componentResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	componentResource.AlertPolicies = nil
+
+	manifestComposite := getCompositeSLOExample(t)
+	manifestComposite.Metadata.Project = manifestProject.GetName()
+	manifestComposite.Metadata.Name = e2etestutils.GenerateName()
+	manifestComposite.Metadata.Labels = e2etestutils.AnnotateLabels(t, nil)
+	manifestComposite.Spec.Service = manifestService.GetName()
+	manifestComposite.Spec.AlertPolicies = nil
+	manifestComposite.Spec.Objectives = manifestComposite.Spec.Objectives[:1]
+	manifestComposite.Spec.Objectives[0].Composite = &v1alphaSLO.CompositeSpec{
+		MaxDelay: "1h",
+		Components: v1alphaSLO.Components{
+			Objectives: []v1alphaSLO.CompositeObjective{{
+				Project:     componentResource.Project,
+				SLO:         componentResource.Name,
+				Objective:   componentResource.Objectives[0].Name.ValueString(),
+				Weight:      1,
+				WhenDelayed: "CountAsGood",
+			}},
+		},
+	}
+	compositeResource := sloResourceTemplateModel{
+		ResourceName:     "component",
+		SLOResourceModel: *newSLOResourceConfigFromManifest(manifestComposite),
+	}
+	compositeResource.ResourceName = "composite"
+
+	manifestComponent := componentResource.ToManifest()
+
+	newProjectName := e2etestutils.GenerateName()
+
+	componentConfig := newSLOResource(t, componentResource)
+	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].Project = "<PROJECT>"
+	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].SLO = "<SLO>"
+	compositeConfig := newSLOResource(t, compositeResource)
+	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].Project =
+		componentResource.Project
+	compositeResource.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective[0].SLO =
+		componentResource.Name
+	// Replace the component's project in the composite config with the component's resource name reference.
+	compositeConfig = strings.ReplaceAll(
+		compositeConfig,
+		`"<PROJECT>"`,
+		fmt.Sprintf("nobl9_slo.%s.project", componentResource.ResourceName),
+	)
+	compositeConfig = strings.ReplaceAll(
+		compositeConfig,
+		`"<SLO>"`,
+		fmt.Sprintf("nobl9_slo.%s.name", componentResource.ResourceName),
+	)
+
+	combinedConfig := componentConfig + "\n" + compositeConfig
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create and read.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: combinedConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, ctx, manifestComponent),
+					assertResourceWasApplied(t, ctx, manifestComposite),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.component", plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction("nobl9_slo.composite", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update project - move SLOs.
+			{
+				PreConfig: func() {
+					newProjectManifest := manifestProject
+					newProjectManifest.Metadata.Name = newProjectName
+					newServiceManifest := manifestService
+					newServiceManifest.Metadata.Project = newProjectName
+
+					t.Cleanup(func() {
+						e2etestutils.V1Delete(t, []manifest.Object{newProjectManifest, newServiceManifest})
+					})
+				},
+				Config: func() string {
+					return strings.ReplaceAll(combinedConfig, manifestProject.GetName(), newProjectName)
+				}(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.component", "project", newProjectName),
+					resource.TestCheckResourceAttr("nobl9_slo.composite", "project", newProjectName),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestComponent
+						slo.Metadata.Project = newProjectName
+						return slo
+					}()),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := deepCopy(t, manifestComposite)
+						slo.Metadata.Project = newProjectName
+						slo.Spec.Objectives[0].Composite.Components.Objectives[0].Project = newProjectName
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcesPlan(map[string]planDiff{
+							"nobl9_slo.component": {Modified: []string{"project"}},
+							"nobl9_slo.composite": {Modified: []string{"project", "objective"}},
+						}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.component", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction("nobl9_slo.composite", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccSLOResource_moveDeprecatedCompositeV1SLO(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	sloResource := sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource.Name = e2etestutils.GenerateName()
+	sloResource.Project = manifestProject.GetName()
+	sloResource.Service = manifestService.GetName()
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	sloResource.AlertPolicies = nil
+	sloResource.Composite = []CompositeV1Model{{
+		Target: types.Float64Value(0.5),
+		BurnRateCondition: []CompositeV1BurnRateConditionModel{{
+			Op:    types.StringValue("gt"),
+			Value: types.Float64Value(1),
+		}},
+	}}
+
+	manifestSLO := sloResource.ToManifest()
+
+	newProjectName := e2etestutils.GenerateName()
+
+	sloConfig := newSLOResource(t, sloResource)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create and Read.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: sloConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, ctx, manifestSLO),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update project - move SLO.
+			{
+				PreConfig: func() {
+					newProjectManifest := manifestProject
+					newProjectManifest.Metadata.Name = newProjectName
+					newServiceManifest := manifestService
+					newServiceManifest.Metadata.Project = newProjectName
+
+					t.Cleanup(func() {
+						e2etestutils.V1Delete(t, []manifest.Object{newProjectManifest, newServiceManifest})
+					})
+				},
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.AlertPolicies = nil
+					m.Project = newProjectName
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.test", "project", newProjectName),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO
+						slo.Spec.AlertPolicies = nil
+						slo.Metadata.Project = newProjectName
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"project"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
 					},
 				},
 			},
@@ -238,14 +761,36 @@ func TestAccSLOResource_custom(t *testing.T) {
 	manifestAlertMethod.Metadata.Project = manifestProject.GetName()
 	auxiliaryObjects = append(auxiliaryObjects, manifestAlertMethod)
 
+	manifestSLOComponent1 := getExampleSLOResource(t).ToManifest()
+	manifestSLOComponent1.Metadata.Name = e2etestutils.GenerateName()
+	manifestSLOComponent1.Metadata.Project = manifestProject.GetName()
+	manifestSLOComponent1.Spec.Service = manifestService.GetName()
+	appDynamicsDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+	manifestSLOComponent1.Spec.Indicator.MetricSource.Name = appDynamicsDirect.GetName()
+	manifestSLOComponent1.Spec.Indicator.MetricSource.Project = appDynamicsDirect.GetProject()
+	manifestSLOComponent1.Spec.Indicator.MetricSource.Kind = appDynamicsDirect.GetKind()
+
+	manifestSLOComponent2 := manifestSLOComponent1
+	manifestSLOComponent2.Metadata.Name = e2etestutils.GenerateName()
+
+	auxiliaryObjects = append(auxiliaryObjects, manifestSLOComponent1, manifestSLOComponent2)
+
 	e2etestutils.V1Apply(t, auxiliaryObjects)
 	t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
 
 	tests := map[string]struct {
+		preConfig                func(t *testing.T, slo v1alphaSLO.SLO)
 		sloResourceModelModifier func(t *testing.T, model SLOResourceModel) SLOResourceModel
 		sloManifestModifier      func(t *testing.T, model v1alphaSLO.SLO) v1alphaSLO.SLO
 		expectedError            string
 	}{
+		"with empty alert policies": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				model.AlertPolicies = []string{}
+				return model
+			},
+			expectedError: "Attribute alert_policies set must contain at least 1 elements, got: 0",
+		},
 		"with alert policies": {
 			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
 				model.AlertPolicies = []string{manifestAlertPolicy1.GetName(), manifestAlertPolicy2.GetName()}
@@ -272,30 +817,60 @@ func TestAccSLOResource_custom(t *testing.T) {
 				return model
 			},
 		},
-		"empty composite block": {
+		"empty composite components block": {
 			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
-				slo := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
-					t,
-					manifest.KindSLO,
-					func(example v1alphaExamples.Example) bool {
-						return strings.Contains(example.GetVariant(), "composite")
-					},
-				)
+				slo := getCompositeSLOExample(t)
 				compositeModel := newSLOResourceConfigFromManifest(slo)
 				compositeModel.Objectives = compositeModel.Objectives[:1]
 				compositeModel.Objectives[0].Composite = []CompositeObjectiveModel{{
 					MaxDelay:   types.StringValue("15m"),
-					Components: nil,
+					Components: []CompositeComponentsModel{{}},
 				}}
 				model.Objectives = compositeModel.Objectives
 				model.Indicator = nil
 				return model
 			},
+			expectedError: "Invalid Block",
+		},
+		"non-existing composite objectives block": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				compositeModel.Objectives[0].Composite[0].Components[0].Objectives = nil
+				model.Objectives = compositeModel.Objectives
+				model.Indicator = nil
+				return model
+			},
+			expectedError: "the provider has marked it as required",
+		},
+		"empty composite objectives block": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				compositeModel.Objectives[0].Composite[0].Components[0].Objectives = []CompositeObjectivesModel{{}}
+				model.Objectives = compositeModel.Objectives
+				model.Indicator = nil
+				return model
+			},
+		},
+		"non-existing composite components block": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				compositeModel.Objectives[0].Composite[0].Components = nil
+				model.Objectives = compositeModel.Objectives
+				model.Indicator = nil
+				return model
+			},
+			expectedError: "the provider has marked it as required",
 		},
 		"ratio metric with no value in objective": {
 			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
 				model.Objectives[0].RawMetric = nil
-				model.Objectives[0].Value = types.Float64{}
+				model.Objectives[0].Value = types.Float64Null()
 				model.Objectives[0].Op = types.String{}
 				model.Objectives[0].CountMetrics = []CountMetricsModel{{
 					Incremental: types.BoolValue(false),
@@ -313,8 +888,82 @@ func TestAccSLOResource_custom(t *testing.T) {
 				return model
 			},
 			sloManifestModifier: func(t *testing.T, slo v1alphaSLO.SLO) v1alphaSLO.SLO {
-				slo.Spec.Objectives[0].Value = ptr(0.0)
+				slo.Spec.Objectives[0].Value = nil
 				return slo
+			},
+			expectedError: "objective value must be set for ratio and threshold objectives",
+		},
+		"composite and raw_metric in a single objective should result in an error": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				compositeModel.Objectives[0].RawMetric = []RawMetricModel{{
+					Query: []MetricSpecModel{{
+						Datadog: []DatadogModel{{
+							Query: "abc",
+						}},
+					}},
+				}}
+				model.Objectives = compositeModel.Objectives
+				model.Indicator = nil
+				return model
+			},
+			expectedError: "when defining composite objective, this property is forbidden",
+		},
+		"ratio metric with operator": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				model.Objectives[0].RawMetric = nil
+				model.Objectives[0].Value = types.Float64Value(1)
+				model.Objectives[0].Op = types.StringValue("lte")
+				model.Objectives[0].CountMetrics = []CountMetricsModel{{
+					Incremental: types.BoolValue(false),
+					Good: []MetricSpecModel{{
+						Prometheus: []PrometheusModel{{
+							PromQL: "sum(rate(http_request_duration_seconds_count{job=\"api\"}[5m]))",
+						}},
+					}},
+					Total: []MetricSpecModel{{
+						Prometheus: []PrometheusModel{{
+							PromQL: "sum(rate(http_request_duration_seconds_count{job=\"api\"}[5m]))",
+						}},
+					}},
+				}}
+				return model
+			},
+			expectedError: "must be specified when",
+		},
+		"with two composite components (sorted)": {
+			preConfig: func(t *testing.T, slo v1alphaSLO.SLO) {
+				// Apply the SLO with two objectives, but in a different order.
+				// This way the API will return them in the order they were created,
+				// and the provider will have to sort them.
+				e2etestutils.V1Apply(t, []v1alphaSLO.SLO{slo})
+			},
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				model.Objectives = compositeModel.Objectives
+				model.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective =
+					[]CompositeObjectiveSpecModel{
+						{
+							Project:     manifestSLOComponent2.GetProject(),
+							SLO:         manifestSLOComponent2.GetName(),
+							Objective:   manifestSLOComponent2.Spec.Objectives[0].Name,
+							Weight:      2,
+							WhenDelayed: v1alphaSLO.WhenDelayedCountAsGood.String(),
+						},
+						{
+							Project:     manifestSLOComponent1.GetProject(),
+							SLO:         manifestSLOComponent1.GetName(),
+							Objective:   manifestSLOComponent1.Spec.Objectives[0].Name,
+							Weight:      1,
+							WhenDelayed: v1alphaSLO.WhenDelayedCountAsGood.String(),
+						},
+					}
+				model.Indicator = nil
+				return model
 			},
 		},
 	}
@@ -341,7 +990,9 @@ func TestAccSLOResource_custom(t *testing.T) {
 					dataSource = e2etestutils.ProvisionStaticAgent(t, typ)
 				}
 				sloModel.Indicator[0].Name = dataSource.GetName()
-				sloModel.Indicator[0].Project = types.StringValue(dataSource.(manifest.ProjectScopedObject).GetProject())
+				sloModel.Indicator[0].Project = types.StringValue(
+					dataSource.(manifest.ProjectScopedObject).GetProject(),
+				)
 			}
 
 			manifestSLO = sloModel.ToManifest()
@@ -354,6 +1005,11 @@ func TestAccSLOResource_custom(t *testing.T) {
 				SLOResourceModel: sloModel,
 			})
 
+			if test.preConfig != nil {
+				test.preConfig(t, manifestSLO)
+			}
+			assertResourceWasApplied(t, ctx, manifestSLO)
+
 			if test.expectedError != "" {
 				resource.Test(t, resource.TestCase{
 					ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -362,7 +1018,6 @@ func TestAccSLOResource_custom(t *testing.T) {
 						{
 							Config:      sloConfig,
 							ExpectError: regexp.MustCompile(test.expectedError),
-							PlanOnly:    true,
 						},
 					},
 				})
@@ -405,40 +1060,93 @@ func TestAccSLOResource_custom(t *testing.T) {
 	}
 }
 
-func TestAccSLOResource_newCompositeWithObjectiveValueSetToZero(t *testing.T) {
+func TestAccSLOResource_objectiveValueErrors(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
 
-	slo := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
-		t,
-		manifest.KindSLO,
-		func(example v1alphaExamples.Example) bool {
-			return strings.Contains(example.GetVariant(), "composite")
+	tests := map[string]struct {
+		configFunc    func() string
+		expectedError string
+	}{
+		"composite with value": {
+			configFunc: func() string {
+				slo := getCompositeSLOExample(t)
+				model := newSLOResourceConfigFromManifest(slo)
+				for i, objective := range model.Objectives {
+					if len(objective.Composite) > 0 {
+						model.Objectives[i].Value = types.Float64Value(0.0)
+						break
+					}
+				}
+				sloConfig := newSLOResource(t, sloResourceTemplateModel{
+					ResourceName:     "this",
+					SLOResourceModel: *model,
+				})
+				return sloConfig
+			},
+			expectedError: "objective value cannot be set when defining composite SLOs",
 		},
-	)
-	for i, objective := range slo.Spec.Objectives {
-		if objective.Composite != nil {
-			slo.Spec.Objectives[i].Value = ptr(0.0)
-			break
-		}
+		"threshold without value": {
+			configFunc: func() string {
+				slo := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
+					t,
+					manifest.KindSLO,
+					func(example v1alphaExamples.Example) bool {
+						slo := example.GetObject().(v1alphaSLO.SLO)
+						return slo.Spec.HasRawMetric()
+					},
+				)
+				for i := range slo.Spec.Objectives {
+					slo.Spec.Objectives[i].Value = nil
+				}
+				sloConfig := newSLOResource(t, sloResourceTemplateModel{
+					ResourceName:     "this",
+					SLOResourceModel: *newSLOResourceConfigFromManifest(slo),
+				})
+				return sloConfig
+			},
+			expectedError: "objective value must be set for ratio and threshold objectives",
+		},
+		"ratio without value": {
+			configFunc: func() string {
+				slo := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
+					t,
+					manifest.KindSLO,
+					func(example v1alphaExamples.Example) bool {
+						slo := example.GetObject().(v1alphaSLO.SLO)
+						return slo.Spec.HasCountMetrics()
+					},
+				)
+				for i := range slo.Spec.Objectives {
+					slo.Spec.Objectives[i].Value = nil
+				}
+				sloConfig := newSLOResource(t, sloResourceTemplateModel{
+					ResourceName:     "this",
+					SLOResourceModel: *newSLOResourceConfigFromManifest(slo),
+				})
+				return sloConfig
+			},
+			expectedError: "objective value must be set for ratio and threshold objectives",
+		},
 	}
 
-	sloConfig := newSLOResource(t, sloResourceTemplateModel{
-		ResourceName:     "this",
-		SLOResourceModel: *newSLOResourceConfigFromManifest(slo),
-	})
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create and Read.
-			{
-				Config:      sloConfig,
-				ExpectError: regexp.MustCompile("objective value cannot be set when defining new composite SLOs"),
-				PlanOnly:    true,
-			},
-		},
-	})
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				Steps: []resource.TestStep{
+					// Create and Read.
+					{
+						Config:      test.configFunc(),
+						ExpectError: regexp.MustCompile(test.expectedError),
+						PlanOnly:    true,
+					},
+				},
+			})
+		})
+	}
 }
 
 const slosPerService = 50
@@ -701,6 +1409,40 @@ func TestRenderSLOResourceTemplate_examples(t *testing.T) {
 	}
 }
 
+func TestRenderSLOResourceTemplate_compositeV1Example(t *testing.T) {
+	t.Parallel()
+
+	exampleResource := getExampleSLOResource(t)
+	exampleResource.AlertPolicies = nil
+	exampleResource.Labels = nil
+	exampleResource.Annotations = nil
+	exampleResource.Indicator = nil
+	exampleResource.Objectives = nil
+
+	// Add composite v1 configuration
+	exampleResource.Composite = []CompositeV1Model{{
+		Target: types.Float64Value(0.95),
+		BurnRateCondition: []CompositeV1BurnRateConditionModel{
+			{
+				Op:    types.StringValue("gt"),
+				Value: types.Float64Value(2.0),
+			},
+			{
+				Op:    types.StringValue("lt"),
+				Value: types.Float64Value(1.5),
+			},
+		},
+	}}
+
+	actual := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "this",
+		SLOResourceModel: exampleResource,
+	})
+
+	assertHCL(t, actual)
+	assert.Equal(t, readExpectedConfig(t, "slo-composite-v1-config.tf"), actual)
+}
+
 type sloResourceTemplateModel struct {
 	ResourceName string
 	SLOResourceModel
@@ -727,25 +1469,23 @@ func getExampleSLOResource(t *testing.T) SLOResourceModel {
 			Project: types.StringValue("default"),
 			Kind:    types.StringValue("Agent"),
 		}},
-		Objectives: []ObjectiveModel{
-			{
-				DisplayName: types.StringValue("obj1"),
-				Name:        types.StringValue("tf-objective-1"),
-				Op:          types.StringValue("lt"),
-				Target:      0.7,
-				Value:       types.Float64Value(1),
-				RawMetric: []RawMetricModel{{
-					Query: []MetricSpecModel{
-						{
-							AppDynamics: []AppDynamicsModel{{
-								ApplicationName: "my_app",
-								MetricPath:      "End User Experience|App|End User Response Time 95th percentile (ms)",
-							}},
-						},
+		Objectives: []ObjectiveModel{{
+			DisplayName: types.StringValue("obj1"),
+			Name:        types.StringValue("tf-objective-1"),
+			Op:          types.StringValue("lt"),
+			Target:      0.7,
+			Value:       types.Float64Value(1),
+			RawMetric: []RawMetricModel{{
+				Query: []MetricSpecModel{
+					{
+						AppDynamics: []AppDynamicsModel{{
+							ApplicationName: "my_app",
+							MetricPath:      "End User Experience|App|End User Response Time 95th percentile (ms)",
+						}},
 					},
-				}},
-			},
-		},
+				},
+			}},
+		}},
 		TimeWindow: []TimeWindowModel{{
 			Count:     10,
 			IsRolling: types.BoolValue(true),
@@ -765,4 +1505,12 @@ func testNameFromExample(example v1alphaExamples.Example) string {
 	return name
 }
 
-func ptr[T any](v T) *T { return &v }
+func getCompositeSLOExample(t *testing.T) v1alphaSLO.SLO {
+	return e2etestutils.GetExampleObject[v1alphaSLO.SLO](
+		t,
+		manifest.KindSLO,
+		func(example v1alphaExamples.Example) bool {
+			return strings.Contains(example.GetVariant(), "composite")
+		},
+	)
+}
