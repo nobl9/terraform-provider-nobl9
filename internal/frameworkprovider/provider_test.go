@@ -68,19 +68,21 @@ func testAccNewMux(ctx context.Context) (tfprotov6.ProviderServer, error) {
 // acceptance testing. The factory function will be invoked for every Terraform
 // CLI command executed to create a provider server to which the CLI can
 // reattach.
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"nobl9": func() (tfprotov6.ProviderServer, error) {
-		var (
-			srv  tfprotov6.ProviderServer
-			err  error
-			once sync.Once
-		)
-		once.Do(func() {
-			srv, err = testAccNewMux(context.Background())
-		})
-		return srv, err
-	},
-}
+var (
+	testAccProviderServer struct {
+		srv  tfprotov6.ProviderServer
+		err  error
+		once sync.Once
+	}
+	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+		"nobl9": func() (tfprotov6.ProviderServer, error) {
+			testAccProviderServer.once.Do(func() {
+				testAccProviderServer.srv, testAccProviderServer.err = testAccNewMux(context.Background())
+			})
+			return testAccProviderServer.srv, testAccProviderServer.err
+		},
+	}
+)
 
 var testSDKClient = struct {
 	client *sdk.Client
