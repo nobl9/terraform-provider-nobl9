@@ -376,7 +376,7 @@ Optional:
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
 - `sql` (String) Use this field to provide a query in the [SQL format](https://docs.nobl9.com/sources/create-slo/amazon-cloudwatch/?YAMLs+JSON=countMetric+JSON+bot&YAMLs+SQL=countMetric+BoT+standard+config#slo-using-cloudwatch-sql-query).
-- `stat` (String) A statistic function. Refers to the metric data aggregation used by a [standard SLO configuration](https://docs.nobl9.com/sources/create-slo/amazon-cloudwatch/?YAMLs+JSON=countMetric+JSON+bot&YAMLs+SQL=countMetric+BoT+standard+config&YAMLs+standard=countMetric+standard+config+bot#slo-using-cloudwatch---standard-configuration). See [allowed values](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Statistics-definitions.html). 
+- `stat` (String) A statistic function. Refers to the metric data aggregation used by a [standard SLO configuration](https://docs.nobl9.com/sources/create-slo/amazon-cloudwatch/?YAMLs+JSON=countMetric+JSON+bot&YAMLs+SQL=countMetric+BoT+standard+config&YAMLs+standard=countMetric+standard+config+bot#slo-using-cloudwatch---standard-configuration). See [allowed values](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Statistics-definitions.html).
 
 <a id="nestedblock--objective--count_metrics--bad--cloudwatch--dimensions"></a>
 ### Nested Schema for `objective.count_metrics.bad.cloudwatch.dimensions`
