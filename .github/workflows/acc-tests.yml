@@ -41,6 +41,11 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
+      # If we don't pre-install Terraform, the parallel acceptance tests might fail.
+      # See https://github.com/hashicorp/terraform-plugin-testing/issues/429.
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
       - name: Run acceptance tests
         uses: nick-fields/retry@v3
         with:
