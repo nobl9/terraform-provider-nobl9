@@ -43,7 +43,7 @@ func TestAccServiceResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read.
+			// 1. Create and Read.
 			{
 				PreConfig: func() {
 					e2etestutils.V1Apply(t, auxiliaryObjects)
@@ -60,7 +60,7 @@ func TestAccServiceResource(t *testing.T) {
 					},
 				},
 			},
-			// Delete.
+			// 2. Delete.
 			{
 				Config: newServiceResource(t, serviceResource),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -74,14 +74,14 @@ func TestAccServiceResource(t *testing.T) {
 				},
 				Destroy: true,
 			},
-			// ImportState - invalid id.
+			// 3. ImportState - invalid id.
 			{
 				ResourceName:  "nobl9_service.test",
 				ImportStateId: serviceResource.Name,
 				ImportState:   true,
 				ExpectError:   regexp.MustCompile(`Invalid import ID`),
 			},
-			// ImportState.
+			// 4. ImportState.
 			{
 				ResourceName:  "nobl9_service.test",
 				ImportStateId: serviceResource.Project + "/" + serviceResource.Name,
@@ -98,7 +98,7 @@ func TestAccServiceResource(t *testing.T) {
 				ImportStatePersist: true,
 				PreConfig:          func() { e2etestutils.V1Apply(t, []manifest.Object{manifestService}) },
 			},
-			// Update and Read, ensure computed field does not pollute the plan.
+			// 5. Update and Read, ensure computed field does not pollute the plan.
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
@@ -121,7 +121,7 @@ func TestAccServiceResource(t *testing.T) {
 					},
 				},
 			},
-			// Update name and revert display name - recreate.
+			// 6. Update name and revert display name - recreate.
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
@@ -138,13 +138,16 @@ func TestAccServiceResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectChangesInResourcePlan(planDiff{Modified: []string{"name", "display_name"}}),
+						expectChangesInResourcePlan(planDiff{
+							Modified: []string{"name", "display_name"},
+							Removed:  []string{"status"},
+						}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
 					},
 				},
 			},
-			// Update project - recreate.
+			// 7. Update project - recreate.
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
@@ -163,7 +166,10 @@ func TestAccServiceResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectChangesInResourcePlan(planDiff{Modified: []string{"project"}}),
+						expectChangesInResourcePlan(planDiff{
+							Modified: []string{"project"},
+							Removed:  []string{"status"},
+						}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
 					},

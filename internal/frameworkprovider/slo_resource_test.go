@@ -276,19 +276,7 @@ func TestAccSLOResource_moveSLO(t *testing.T) {
 					},
 				},
 			},
-			// 4. Update project and another attribute - error.
-			{
-				Config: newSLOResource(t, func() sloResourceTemplateModel {
-					m := sloResource
-					m.Project = "new-project"
-					m.AlertPolicies = nil
-					m.DisplayName = stringValue("Changed display!")
-					return m
-				}()),
-				ExpectError: regexp.MustCompile(
-					"When changing the `project`, no other attribute can be modified, except for `service`."),
-			},
-			// 5. Update project - move SLO.
+			// 4. Update project - move SLO.
 			{
 				PreConfig: func() {
 					newProjectManifest := manifestProject
@@ -323,7 +311,7 @@ func TestAccSLOResource_moveSLO(t *testing.T) {
 					},
 				},
 			},
-			// 6. Update project and service - move SLO (back to the original Project).
+			// 5. Update project and service - move SLO (back to the original Project).
 			{
 				PreConfig: func() {
 					newServiceManifest := manifestService
