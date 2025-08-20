@@ -320,7 +320,7 @@ Required:
 - `application_name` (String) Name of the added application
 - `metric_path` (String) Path to the metrics
 
-[AppDynamics bad over total SLO sample](https://docs.nobl9.com/sources/create-slo/appdynamics/?YAMLs=countMetricBad+sample#slos-using-appdynamics---yaml-samples)
+[AppDynamics bad over total SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/appdynamics/?YAMLs=countMetricBad+sample#slos-using-appdynamics---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--bad--azure_monitor"></a>
 ### Nested Schema for `objective.count_metrics.bad.azure_monitor`
@@ -407,7 +407,7 @@ Required:
 
 - `promql` (String) Query for the metrics
 
-[Azure Monitor managed service for Prometheus bad over total ratio SLO sample](https://docs.nobl9.com/sources/create-slo/azure-prometheus/?MySLO=countMetric-bot-AMM#slo-yaml)
+[Azure Monitor managed service for Prometheus bad over total ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/azure-prometheus/?MySLO=countMetric-bot-AMM#slo-yaml)
 
 <a id="nestedblock--objective--count_metrics--good"></a>
 ### Nested Schema for `objective.count_metrics.good`
@@ -445,7 +445,7 @@ Required:
 
 - `promql` (String) Query for the metrics
 
-[Amazon Prometheus ratio SLO sample](https://docs.nobl9.com/sources/create-slo/amazon-prometheus/?YAMLs=countMetric+sample#slo-using-ams-prometheus---yaml-samples)
+[Amazon Prometheus ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/amazon-prometheus/?YAMLs=countMetric+sample#slo-using-ams-prometheus---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--appdynamics"></a>
 ### Nested Schema for `objective.count_metrics.good.appdynamics`
@@ -455,7 +455,7 @@ Required:
 - `application_name` (String) Name of the added application
 - `metric_path` (String) Path to the metrics
 
-[AppDynamics ratio SLO sample](https://docs.nobl9.com/sources/create-slo/appdynamics/?YAMLs=countMetricGood+sample#slos-using-appdynamics---yaml-samples)
+[AppDynamics ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/appdynamics/?YAMLs=countMetricGood+sample#slos-using-appdynamics---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--azure_monitor"></a>
 ### Nested Schema for `objective.count_metrics.good.azure_monitor`
@@ -501,7 +501,7 @@ Required:
 - `project_id` (String) Project ID
 - `query` (String) Query for the metrics
 
-[Google BigQuery ratio SLO sample](https://docs.nobl9.com/sources/create-slo/bigquery/?YAMLs=countMetric+sample#slos-using-biqquery---yaml-samples)
+[Google BigQuery ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/bigquery/?YAMLs=countMetric+sample#slos-using-biqquery---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--cloudwatch"></a>
 ### Nested Schema for `objective.count_metrics.good.cloudwatch`
@@ -537,7 +537,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[Datadog ratio SLO sample](https://docs.nobl9.com/sources/create-slo/datadog/?YAMLs=countMetric+sample#slos-using-datadog---yaml-samples)
+[Datadog ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/datadog/?YAMLs=countMetric+sample#slos-using-datadog---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--dynatrace"></a>
 ### Nested Schema for `objective.count_metrics.good.dynatrace`
@@ -546,7 +546,7 @@ Required:
 
 - `metric_selector` (String) Selector for the metrics
 
-[Dynatrace ratio SLO sample](https://docs.nobl9.com/sources/create-slo/dynatrace/?YAMLs=countMetric+sample#slos-using-dynatrace---yaml-samples)
+[Dynatrace ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/dynatrace/?YAMLs=countMetric+sample#slos-using-dynatrace---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--elasticsearch"></a>
 ### Nested Schema for `objective.count_metrics.good.elasticsearch`
@@ -556,7 +556,7 @@ Required:
 - `index` (String) Index of the required metrics
 - `query` (String) Query for the metrics
 
-[Elasticsearch ratio SLO sample](https://docs.nobl9.com/sources/create-slo/elasticsearch/?YAMLs=countMetric+sample#slos-with-elasticsearch---yaml-samples)
+[Elasticsearch ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/elasticsearch/?YAMLs=countMetric+sample#slos-with-elasticsearch---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--gcm"></a>
 ### Nested Schema for `objective.count_metrics.good.gcm`
@@ -570,7 +570,7 @@ Optional:
 - `promql` (String) Query for the metrics in PromQL format
 - `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
 
-[Google Cloud Monitoring ratio SLO sample](https://docs.nobl9.com/sources/create-slo/google-cloud-monitoring/?Agent+configuration=promqlCount#slos-using-google-cloud-monitoring---yaml-samples)
+[Google Cloud Monitoring ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/google-cloud-monitoring/?Agent+configuration=promqlCount#slos-using-google-cloud-monitoring---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--grafana_loki"></a>
 ### Nested Schema for `objective.count_metrics.good.grafana_loki`
@@ -579,7 +579,7 @@ Required:
 
 - `logql` (String) Query for the logs
 
-[Grafana Loki ratio SLO sample](https://docs.nobl9.com/sources/create-slo/grafana-loki/?YAMLs=countMetric+sample#slos-using-grafana-loki---yaml-samples)
+[Grafana Loki ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/grafana-loki/?YAMLs=countMetric+sample#slos-using-grafana-loki---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--graphite"></a>
 ### Nested Schema for `objective.count_metrics.good.graphite`
@@ -588,7 +588,7 @@ Required:
 
 - `metric_path` (String) Path to the metrics
 
-[Graphite ratio SLO sample](https://docs.nobl9.com/sources/create-slo/graphite/?YAMLs=countMetric+sample#slos-with-graphite---yaml-samples)
+[Graphite ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/graphite/?YAMLs=countMetric+sample#slos-with-graphite---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--influxdb"></a>
 ### Nested Schema for `objective.count_metrics.good.influxdb`
@@ -597,7 +597,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[InfluxDB ratio SLO sample](https://docs.nobl9.com/sources/create-slo/influxdb/?YAMLs=countMetric+sample#slos-using-influxdb---yaml-samples)
+[InfluxDB ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/influxdb/?YAMLs=countMetric+sample#slos-using-influxdb---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--instana"></a>
 ### Nested Schema for `objective.count_metrics.good.instana`
@@ -606,7 +606,7 @@ Required:
 
 - `metric_type` (String) Instana metric type 'application' or 'infrastructure'
 
-[Instana ratio SLO samples](https://docs.nobl9.com/sources/create-slo/instana/#ratio-countmetric)
+[Instana ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/instana/#ratio-countmetric)
 
 Optional:
 
@@ -691,7 +691,7 @@ Required:
 
 - `nrql` (String) Query for the metrics
 
-[New Relic ratio SLO sample](https://docs.nobl9.com/sources/create-slo/new-relic/?YAMLs=countMetric+sample#slos-using-new-relic---yaml-samples)
+[New Relic ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/new-relic/?YAMLs=countMetric+sample#slos-using-new-relic---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--opentsdb"></a>
 ### Nested Schema for `objective.count_metrics.good.opentsdb`
@@ -700,7 +700,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[OpenTSDB ratio SLO sample](https://docs.nobl9.com/sources/create-slo/opentsdb/?YAMLs=countMetric+sample#creating-slos-with-opentsdb---yaml-samples)
+[OpenTSDB ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/opentsdb/?YAMLs=countMetric+sample#creating-slos-with-opentsdb---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--pingdom"></a>
 ### Nested Schema for `objective.count_metrics.good.pingdom`
@@ -721,7 +721,7 @@ Required:
 
 - `promql` (String) Query for the metrics
 
-[Prometheus ratio SLO sample](https://docs.nobl9.com/sources/create-slo/prometheus/?YAMLs=countMetric+sample#slos-using-prometheus---yaml-samples)
+[Prometheus ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/prometheus/?YAMLs=countMetric+sample#slos-using-prometheus---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--redshift"></a>
 ### Nested Schema for `objective.count_metrics.good.redshift`
@@ -733,7 +733,7 @@ Required:
 - `query` (String) Query for the metrics
 - `region` (String) Region of the Redshift instance
 
-[Amazon Redshift ratio SLO sample](https://docs.nobl9.com/sources/create-slo/amazon-redshift/?YAMLs=countMetric+sample#slos-using-amazon-redshift---yaml-samples)
+[Amazon Redshift ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/amazon-redshift/?YAMLs=countMetric+sample#slos-using-amazon-redshift---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--splunk"></a>
 ### Nested Schema for `objective.count_metrics.good.splunk`
@@ -742,7 +742,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[Splunk ratio SLO sample](https://docs.nobl9.com/sources/create-slo/splunk/?YAMLs=countMetric+sample#slos-using-splunk---yaml-samples)
+[Splunk ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/splunk/?YAMLs=countMetric+sample#slos-using-splunk---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--splunk_observability"></a>
 ### Nested Schema for `objective.count_metrics.good.splunk_observability`
@@ -751,7 +751,7 @@ Required:
 
 - `program` (String) Query for the metrics
 
-[Splunk Observability ratio SLO sample](https://docs.nobl9.com/sources/create-slo/splunk-observability/?YAMLs=countMetric+sample#slos-using-splunk-observability---yaml-samples)
+[Splunk Observability ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/splunk-observability/?YAMLs=countMetric+sample#slos-using-splunk-observability---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--good--sumologic"></a>
 ### Nested Schema for `objective.count_metrics.good.sumologic`
@@ -788,7 +788,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[Splunk single-query ratio SLO sample](https://docs.nobl9.com/sources/create-slo/splunk/?YAMLs=countMetric+single+query+sample#slos-using-splunk---yaml-samples)
+[Splunk single-query ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/splunk/?YAMLs=countMetric+single+query+sample#slos-using-splunk---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total"></a>
 ### Nested Schema for `objective.count_metrics.total`
@@ -826,7 +826,7 @@ Required:
 
 - `promql` (String) Query for the metrics
 
-[Amazon Prometheus ratio SLO sample](https://docs.nobl9.com/sources/create-slo/amazon-prometheus/?YAMLs=countMetric+sample#slo-using-ams-prometheus---yaml-samples)
+[Amazon Prometheus ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/amazon-prometheus/?YAMLs=countMetric+sample#slo-using-ams-prometheus---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--appdynamics"></a>
 ### Nested Schema for `objective.count_metrics.total.appdynamics`
@@ -836,7 +836,7 @@ Required:
 - `application_name` (String) Name of the added application
 - `metric_path` (String) Path to the metrics
 
-[AppDynamics ratio SLO sample](https://docs.nobl9.com/sources/create-slo/appdynamics/?YAMLs=countMetricGood+sample#slos-using-appdynamics---yaml-samples)
+[AppDynamics ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/appdynamics/?YAMLs=countMetricGood+sample#slos-using-appdynamics---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--azure_monitor"></a>
 ### Nested Schema for `objective.count_metrics.total.azure_monitor`
@@ -881,7 +881,7 @@ Required:
 - `project_id` (String) Project ID
 - `query` (String) Query for the metrics
 
-[Google BigQuery ratio SLO sample](https://docs.nobl9.com/sources/create-slo/bigquery/?YAMLs=countMetric+sample#slos-using-biqquery---yaml-samples)
+[Google BigQuery ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/bigquery/?YAMLs=countMetric+sample#slos-using-biqquery---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--cloudwatch"></a>
 ### Nested Schema for `objective.count_metrics.total.cloudwatch`
@@ -919,7 +919,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[Datadog ratio SLO sample](https://docs.nobl9.com/sources/create-slo/datadog/?YAMLs=countMetric+sample#slos-using-datadog---yaml-samples)
+[Datadog ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/datadog/?YAMLs=countMetric+sample#slos-using-datadog---yaml-samples)
 
 
 <a id="nestedblock--objective--count_metrics--total--dynatrace"></a>
@@ -929,7 +929,7 @@ Required:
 
 - `metric_selector` (String) Selector for the metrics
 
-[Dynatrace ratio SLO sample](https://docs.nobl9.com/sources/create-slo/dynatrace/?YAMLs=countMetric+sample#slos-using-dynatrace---yaml-samples)
+[Dynatrace ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/dynatrace/?YAMLs=countMetric+sample#slos-using-dynatrace---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--elasticsearch"></a>
 ### Nested Schema for `objective.count_metrics.total.elasticsearch`
@@ -939,7 +939,7 @@ Required:
 - `index` (String) Index of the required metrics
 - `query` (String) Query for the metrics
 
-[Elasticsearch ratio SLO sample](https://docs.nobl9.com/sources/create-slo/elasticsearch/?YAMLs=countMetric+sample#slos-with-elasticsearch---yaml-samples)
+[Elasticsearch ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/elasticsearch/?YAMLs=countMetric+sample#slos-with-elasticsearch---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--gcm"></a>
 ### Nested Schema for `objective.count_metrics.total.gcm`
@@ -953,7 +953,7 @@ Optional:
 - `promql` (String) Query for the metrics in PromQL format
 - `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
 
-[Google Cloud Monitoring ratio SLO sample](https://docs.nobl9.com/sources/create-slo/google-cloud-monitoring/?Agent+configuration=promqlCount#slos-using-google-cloud-monitoring---yaml-samples)
+[Google Cloud Monitoring ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/google-cloud-monitoring/?Agent+configuration=promqlCount#slos-using-google-cloud-monitoring---yaml-samples)
 
 
 <a id="nestedblock--objective--count_metrics--total--grafana_loki"></a>
@@ -963,7 +963,7 @@ Required:
 
 - `logql` (String) Query for the logs
 
-[Grafana Loki ratio SLO sample](https://docs.nobl9.com/sources/create-slo/grafana-loki/?YAMLs=countMetric+sample#slos-using-grafana-loki---yaml-samples)
+[Grafana Loki ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/grafana-loki/?YAMLs=countMetric+sample#slos-using-grafana-loki---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--graphite"></a>
 ### Nested Schema for `objective.count_metrics.total.graphite`
@@ -972,7 +972,7 @@ Required:
 
 - `metric_path` (String) Path to the metrics
 
-[Graphite ratio SLO sample](https://docs.nobl9.com/sources/create-slo/graphite/?YAMLs=countMetric+sample#slos-with-graphite---yaml-samples)
+[Graphite ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/graphite/?YAMLs=countMetric+sample#slos-with-graphite---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--influxdb"></a>
 ### Nested Schema for `objective.count_metrics.total.influxdb`
@@ -981,7 +981,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[InfluxDB ratio SLO sample](https://docs.nobl9.com/sources/create-slo/influxdb/?YAMLs=countMetric+sample#slos-using-influxdb---yaml-samples)
+[InfluxDB ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/influxdb/?YAMLs=countMetric+sample#slos-using-influxdb---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--instana"></a>
 ### Nested Schema for `objective.count_metrics.total.instana`
@@ -990,7 +990,7 @@ Required:
 
 - `metric_type` (String) Instana metric type 'application' or 'infrastructure'
 
-[Instana ratio SLO samples](https://docs.nobl9.com/sources/create-slo/instana/#ratio-countmetric)
+[Instana ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/instana/#ratio-countmetric)
 
 Optional:
 
@@ -1076,7 +1076,7 @@ Required:
 
 - `nrql` (String) Query for the metrics
 
-[New Relic ratio SLO sample](https://docs.nobl9.com/sources/create-slo/new-relic/?YAMLs=countMetric+sample#slos-using-new-relic---yaml-samples)
+[New Relic ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/new-relic/?YAMLs=countMetric+sample#slos-using-new-relic---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--opentsdb"></a>
 ### Nested Schema for `objective.count_metrics.total.opentsdb`
@@ -1085,7 +1085,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[OpenTSDB ratio SLO sample](https://docs.nobl9.com/sources/create-slo/opentsdb/?YAMLs=countMetric+sample#creating-slos-with-opentsdb---yaml-samples)
+[OpenTSDB ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/opentsdb/?YAMLs=countMetric+sample#creating-slos-with-opentsdb---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--pingdom"></a>
 ### Nested Schema for `objective.count_metrics.total.pingdom`
@@ -1107,7 +1107,7 @@ Required:
 
 - `promql` (String) Query for the metrics
 
-[Prometheus ratio SLO sample](https://docs.nobl9.com/sources/create-slo/prometheus/?YAMLs=countMetric+sample#slos-using-prometheus---yaml-samples)
+[Prometheus ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/prometheus/?YAMLs=countMetric+sample#slos-using-prometheus---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--redshift"></a>
 ### Nested Schema for `objective.count_metrics.total.redshift`
@@ -1119,7 +1119,7 @@ Required:
 - `query` (String) Query for the metrics
 - `region` (String) Region of the Redshift instance
 
-[Amazon Redshift ratio SLO sample](https://docs.nobl9.com/sources/create-slo/amazon-redshift/?YAMLs=countMetric+sample#slos-using-amazon-redshift---yaml-samples)
+[Amazon Redshift ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/amazon-redshift/?YAMLs=countMetric+sample#slos-using-amazon-redshift---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--splunk"></a>
 ### Nested Schema for `objective.count_metrics.total.splunk`
@@ -1128,7 +1128,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[Splunk ratio SLO sample](https://docs.nobl9.com/sources/create-slo/splunk/?YAMLs=countMetric+sample#slos-using-splunk---yaml-samples)
+[Splunk ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/splunk/?YAMLs=countMetric+sample#slos-using-splunk---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--splunk_observability"></a>
 ### Nested Schema for `objective.count_metrics.total.splunk_observability`
@@ -1137,7 +1137,7 @@ Required:
 
 - `program` (String) Query for the metrics
 
-[Splunk Observability ratio SLO sample](https://docs.nobl9.com/sources/create-slo/splunk-observability/?YAMLs=countMetric+sample#slos-using-splunk-observability---yaml-samples)
+[Splunk Observability ratio SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/splunk-observability/?YAMLs=countMetric+sample#slos-using-splunk-observability---yaml-samples)
 
 <a id="nestedblock--objective--count_metrics--total--sumologic"></a>
 ### Nested Schema for `objective.count_metrics.total.sumologic`
@@ -1189,7 +1189,7 @@ Required:
 
 - `promql` (String) Query for the metrics
 
-[Amazon Prometheus threshold SLO sample](https://docs.nobl9.com/sources/create-slo/amazon-prometheus/?YAMLs=rawMetric+sample#slo-using-ams-prometheus---yaml-samples)
+[Amazon Prometheus threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/amazon-prometheus/?YAMLs=rawMetric+sample#slo-using-ams-prometheus---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--appdynamics"></a>
 ### Nested Schema for `objective.raw_metric.query.appdynamics`
@@ -1199,7 +1199,7 @@ Required:
 - `application_name` (String) Name of the added application
 - `metric_path` (String) Path to the metrics
 
-[AppDynamics threshold SLO sample](https://docs.nobl9.com/sources/create-slo/appdynamics/?YAMLs=rawMetric+sample#slos-using-appdynamics---yaml-samples)
+[AppDynamics threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/appdynamics/?YAMLs=rawMetric+sample#slos-using-appdynamics---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--azure_monitor"></a>
 ### Nested Schema for `objective.raw_metric.query.azure_monitor`
@@ -1245,7 +1245,7 @@ Required:
 - `project_id` (String) Project ID
 - `query` (String) Query for the metrics
 
-[Google BigQuery threshold SLO sample](https://docs.nobl9.com/sources/create-slo/bigquery/?YAMLs=rawMetric+sample#slos-using-biqquery---yaml-samples)
+[Google BigQuery threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/bigquery/?YAMLs=rawMetric+sample#slos-using-biqquery---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--cloudwatch"></a>
 ### Nested Schema for `objective.raw_metric.query.cloudwatch`
@@ -1281,7 +1281,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[Datadog threshold SLO sample](https://docs.nobl9.com/sources/create-slo/datadog/?YAMLs=rawMetric+sample#slos-using-datadog---yaml-samples)
+[Datadog threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/datadog/?YAMLs=rawMetric+sample#slos-using-datadog---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--dynatrace"></a>
 ### Nested Schema for `objective.raw_metric.query.dynatrace`
@@ -1290,7 +1290,7 @@ Required:
 
 - `metric_selector` (String) Selector for the metrics
 
-[Dynatrace threshold SLO sample](https://docs.nobl9.com/sources/create-slo/dynatrace/?YAMLs=rawMetric+sample#slos-using-dynatrace---yaml-samples)
+[Dynatrace threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/dynatrace/?YAMLs=rawMetric+sample#slos-using-dynatrace---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--elasticsearch"></a>
 ### Nested Schema for `objective.raw_metric.query.elasticsearch`
@@ -1300,7 +1300,7 @@ Required:
 - `index` (String) Index of the required metrics
 - `query` (String) Query for the metrics
 
-[Elasticsearch threshold SLO sample](https://docs.nobl9.com/sources/create-slo/elasticsearch/?YAMLs=rawMetric+sample#slos-with-elasticsearch---yaml-samples)
+[Elasticsearch threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/elasticsearch/?YAMLs=rawMetric+sample#slos-with-elasticsearch---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--gcm"></a>
 ### Nested Schema for `objective.raw_metric.query.gcm`
@@ -1314,7 +1314,7 @@ Optional:
 - `promql` (String) Query for the metrics in PromQL format
 - `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
 
-[Google Cloud Monitoring threshold SLO sample](https://docs.nobl9.com/sources/create-slo/google-cloud-monitoring/?Agent+configuration=promqlRaw#slos-using-google-cloud-monitoring---yaml-samples)
+[Google Cloud Monitoring threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/google-cloud-monitoring/?Agent+configuration=promqlRaw#slos-using-google-cloud-monitoring---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--grafana_loki"></a>
 ### Nested Schema for `objective.raw_metric.query.grafana_loki`
@@ -1323,7 +1323,7 @@ Required:
 
 - `logql` (String) Query for the logs
 
-[Grafana Loki threshold SLO sample](https://docs.nobl9.com/sources/create-slo/grafana-loki/?YAMLs=rawMetric+sample#slos-using-grafana-loki---yaml-samples)
+[Grafana Loki threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/grafana-loki/?YAMLs=rawMetric+sample#slos-using-grafana-loki---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--graphite"></a>
 ### Nested Schema for `objective.raw_metric.query.graphite`
@@ -1332,7 +1332,7 @@ Required:
 
 - `metric_path` (String) Path to the metrics
 
-[Graphite threshold SLO sample](https://docs.nobl9.com/sources/create-slo/graphite/?YAMLs=rawMetric+sample#slos-with-graphite---yaml-samples)
+[Graphite threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/graphite/?YAMLs=rawMetric+sample#slos-with-graphite---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--influxdb"></a>
 ### Nested Schema for `objective.raw_metric.query.influxdb`
@@ -1341,7 +1341,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[InfluxDB threshold SLO sample](https://docs.nobl9.com/sources/create-slo/influxdb/?YAMLs=rawMetric+sample#slos-using-influxdb---yaml-samples)
+[InfluxDB threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/influxdb/?YAMLs=rawMetric+sample#slos-using-influxdb---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--instana"></a>
 ### Nested Schema for `objective.raw_metric.query.instana`
@@ -1355,7 +1355,7 @@ Optional:
 - `application` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--application))
 - `infrastructure` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--infrastructure))
 
-[Instana threshold SLO samples](https://docs.nobl9.com/sources/create-slo/instana/#threshold-rawmetric)
+[Instana threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/instana/#threshold-rawmetric)
 
 <a id="nestedblock--objective--raw_metric--query--instana--application"></a>
 ### Nested Schema for `objective.raw_metric.query.instana.application`
@@ -1434,7 +1434,7 @@ Required:
 
 - `nrql` (String) Query for the metrics
 
-[New Relic threshold SLO sample](https://docs.nobl9.com/sources/create-slo/new-relic/?YAMLs=rawMetric+sample#slos-using-new-relic---yaml-samples)
+[New Relic threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/new-relic/?YAMLs=rawMetric+sample#slos-using-new-relic---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--opentsdb"></a>
 ### Nested Schema for `objective.raw_metric.query.opentsdb`
@@ -1443,7 +1443,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[OpenTSDB threshold SLO sample](https://docs.nobl9.com/sources/create-slo/opentsdb/?YAMLs=rawMetric+sample#creating-slos-with-opentsdb---yaml-samples)
+[OpenTSDB threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/opentsdb/?YAMLs=rawMetric+sample#creating-slos-with-opentsdb---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--pingdom"></a>
 ### Nested Schema for `objective.raw_metric.query.pingdom`
@@ -1457,7 +1457,7 @@ Optional:
 - `check_type` (String) Pingdom check type - `uptime` or `transaction`
 - `status` (String) Optional for the `uptime` checks. Use it to filter the Pingdom check results by status
 
-[Pingdom threshold SLO sample](https://docs.nobl9.com/sources/create-slo/pingdom/?YAMLs=rawMetric+sample+uptime#slos-using-pingdom---yaml-examples)
+[Pingdom threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/pingdom/?YAMLs=rawMetric+sample+uptime#slos-using-pingdom---yaml-examples)
 
 <a id="nestedblock--objective--raw_metric--query--prometheus"></a>
 ### Nested Schema for `objective.raw_metric.query.prometheus`
@@ -1466,7 +1466,7 @@ Required:
 
 - `promql` (String) Query for the metrics
 
-[Prometheus threshold SLO sample](https://docs.nobl9.com/sources/create-slo/prometheus/?YAMLs=rawMetric+sample#slos-using-prometheus---yaml-samples)
+[Prometheus threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/prometheus/?YAMLs=rawMetric+sample#slos-using-prometheus---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--redshift"></a>
 ### Nested Schema for `objective.raw_metric.query.redshift`
@@ -1478,7 +1478,7 @@ Required:
 - `query` (String) Query for the metrics
 - `region` (String) Region of the Redshift instance
 
-[Amazon Redshift threshold SLO sample](https://docs.nobl9.com/sources/create-slo/amazon-redshift/?YAMLs=rawMetric+sample#slos-using-amazon-redshift---yaml-samples)
+[Amazon Redshift threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/amazon-redshift/?YAMLs=rawMetric+sample#slos-using-amazon-redshift---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--splunk"></a>
 ### Nested Schema for `objective.raw_metric.query.splunk`
@@ -1487,7 +1487,7 @@ Required:
 
 - `query` (String) Query for the metrics
 
-[Splunk threshold SLO sample](https://docs.nobl9.com/sources/create-slo/splunk/?YAMLs=rawMetric+sample#slos-using-splunk---yaml-samples)
+[Splunk threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/splunk/?YAMLs=rawMetric+sample#slos-using-splunk---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--splunk_observability"></a>
 ### Nested Schema for `objective.raw_metric.query.splunk_observability`
@@ -1496,7 +1496,7 @@ Required:
 
 - `program` (String) Query for the metrics
 
-[Splunk Observability threshold SLO sample](https://docs.nobl9.com/sources/create-slo/splunk-observability/?YAMLs=rawMetric+sample#slos-using-splunk-observability---yaml-samples)
+[Splunk Observability threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/splunk-observability/?YAMLs=rawMetric+sample#slos-using-splunk-observability---yaml-samples)
 
 <a id="nestedblock--objective--raw_metric--query--sumologic"></a>
 ### Nested Schema for `objective.raw_metric.query.sumologic`
@@ -1523,7 +1523,7 @@ Optional:
 
 - `test_type` (String) Type of the test
 
-[ThousandEyes threshold SLO samples](https://docs.nobl9.com/sources/create-slo/thousandeyes/#slo-using-thousandeyes---yaml-samples)
+[ThousandEyes threshold SLO reference with YAML sample](https://docs.nobl9.com/sources/create-slo/thousandeyes/#slo-using-thousandeyes---yaml-samples)
 
 <a id="nestedblock--time_window"></a>
 ### Nested Schema for `time_window`
