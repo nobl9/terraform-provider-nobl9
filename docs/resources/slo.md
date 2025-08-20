@@ -200,7 +200,6 @@ resource "nobl9_slo" "composite_slo" {
 - `budgeting_method` (String) Error budget calculation method. One of:
   - [`Occurrences`](https://docs.nobl9.com/guides/slo-guides/occurrences) compares the count of good events (for example, requests that fall within the defined boundaries) against the count of all events (i.e., all requests, including requests that perform outside the defined boundaries).
   - [`Time slices`](https://docs.nobl9.com/guides/slo-guides/time-slices) measures how many good minutes were achieved (minutes where a system is operating within defined boundaries) during a time window. Every time slice covers a 1-minute evaluation interval. A good minute is one where the time slice allowance is not violated.
-    - [`time_slice_target`](https://docs.nobl9.com/guides/slo-guides/time-slices/#time-slice-allowance) (Integer) required for `time_slices`. Criteria for a "good minute"—the acceptable range for data points within every minute.
 - `name` (String) Unique name of the resource. Must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `objective` (Block Set, Min: 1) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
 - `project` (String) Name of the Nobl9 project for the resource. Must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
@@ -217,7 +216,6 @@ resource "nobl9_slo" "composite_slo" {
 - `anomaly_config` (Block Set, Max: 1) Configuration for anomaly detection. The only currently supported anomaly type is `NoData`. See the [nested schema](#nestedblock--anomaly_config) below for details.
 - `attachment` (Block List, Max: 20) A list of attachments to associate with the SLO. See the [nested schema](#nestedblock--attachment) below.
 - `attachments` (Block List, Max: 20, Deprecated) A list of URL and display name pairs to attach to the SLO. See the [nested schema](#nestedblock--attachments) below.
-- `composite` (Block Set, Max: 1) If set, creates a [composite SLO](https://docs.nobl9.com/composites/). See the [nested schema](nestedblock--objective--composite) below.
 - `description` (String) Optional description of the resource. Can be used to add details about the resource's purpose or ownership (e.g., team/owner).
 - `display_name` (String) User-friendly display name of the resource.
 - `indicator` (Block Set, Max: 1) The indicator for the SLO, which is the metric source used for SLI calculations. See the [nested schema](#nestedblock--indicator) below.
@@ -247,7 +245,7 @@ Optional:
 - `op` (String) For threshold metrics, the logical operator applied to the threshold. One of `lt` (less than), `lte` (less than or equal to), `gt` (greater than), `gte` (greater than or equal to).
 - `primary` (Boolean) Is objective marked as primary.
 - `raw_metric` (Block Set) Utilizes raw data for objective values comparison. Refer to the [nested schema](#nestedblock--objective--raw_metric) for details on configuration.
-- `time_slice_target` (Number) Designated value for slice (required for the [time slices](https://docs.nobl9.com/guides/slo-guides/time-slices) budgeting method).
+- [`time_slice_target`](https://docs.nobl9.com/guides/slo-guides/time-slices/#time-slice-allowance) (Number) required for `budgeting_method = 'Time slices`. Defines criteria for a "good minute"—the acceptable range for data points within every minute.
 - `value` (Number) Required for threshold and ratio metrics:
   - For threshold (raw) metrics, indicates the threshold value
   - For ratio (count) metrics must be a unique value per objective (for legacy reasons).
