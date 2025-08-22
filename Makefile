@@ -26,7 +26,7 @@ GOVULNCHECK_VERSION := v1.1.4
 # renovate datasource=go depName=golang.org/x/tools/cmd/goimports
 GOIMPORTS_VERSION := v0.36.0
 # renovate datasource=github-releases depName=segmentio/golines
-GOLINES_VERSION := v0.12.2
+GOLINES_VERSION := v0.13.0
 
 # Check if the program is present in $PATH and install otherwise.
 # ${1} - oneOf{binary,yarn}
