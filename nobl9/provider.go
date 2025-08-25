@@ -113,7 +113,6 @@ func Provider() *schema.Provider {
 			"nobl9_direct_" + sumologicDirectType:           resourceDirectFactory(sumologicDirectSpec{}),
 			"nobl9_direct_" + thousandeyesDirectType:        resourceDirectFactory(thousandeyesDirectSpec{}),
 			"nobl9_role_binding":                            resourceRoleBinding(),
-			"nobl9_slo":                                     resourceSLO(),
 			"nobl9_budget_adjustment":                       budgetAdjustment(),
 			"nobl9_report_system_health_review":             resourceReportFactory(reportSystemHealthReview{}),
 		},

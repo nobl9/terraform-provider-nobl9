@@ -26,6 +26,10 @@ issues:
     - linters:
         - lll
       source: ".*(Description|Deprecated): .*"
+    # Although composites are deprecated, we still need to support them.
+    - linters:
+        - staticcheck
+      text: "slo.Spec.Composite is deprecated"
   # Value 0 means show all.
   max-issues-per-linter: 0
   max-same-issues: 0

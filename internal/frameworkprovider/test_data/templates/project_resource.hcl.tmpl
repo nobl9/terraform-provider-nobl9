@@ -1,28 +1,3 @@
 resource "nobl9_project" "{{ .ResourceName }}" {
-  name = "{{ .Name }}"
-  {{- if .DisplayName }}
-  display_name = "{{ valueString .DisplayName }}"
-  {{- end }}
-  {{- if .Annotations }}
-  annotations = {
-    {{- range $key, $value := .Annotations }}
-    {{ $key }} = "{{ $value }}",
-    {{- end }}
-  }
-  {{- end }}
-  {{- if .Labels }}
-  {{- range .Labels }}
-  label {
-    key = "{{ .Key }}"
-    values = [
-      {{- range .Values }}
-      "{{ . }}",
-      {{- end }}
-    ]
-  }
-  {{- end }}
-  {{- end }}
-  {{- if .Description }}
-  description = "{{ valueString .Description }}"
-  {{- end }}
+  {{- template "metadata" . -}}
 }

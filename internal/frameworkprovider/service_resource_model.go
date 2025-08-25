@@ -3,9 +3,10 @@ package frameworkprovider
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 )
 
@@ -20,10 +21,6 @@ type ServiceResourceModel struct {
 	Status      types.Object      `tfsdk:"status"`
 }
 
-var serviceStatusTypes = map[string]attr.Type{
-	"slo_count": types.Int64Type,
-}
-
 type ServiceResourceStatusModel struct {
 	SLOCount types.Int64 `tfsdk:"slo_count"`
 }
@@ -33,16 +30,22 @@ func newServiceResourceConfigFromManifest(
 	svc v1alphaService.Service,
 ) (*ServiceResourceModel, diag.Diagnostics) {
 	var status types.Object
+	statusType, diags := serviceResourceSchema.TypeAtPath(ctx, path.Root("status"))
+	if diags.HasError() {
+		return nil, diags
+	}
+	statusAttrs := statusType.(basetypes.ObjectType).AttrTypes
 	if svc.Status != nil {
-		v, diags := types.ObjectValueFrom(ctx, serviceStatusTypes, ServiceResourceStatusModel{
+		statusModel := ServiceResourceStatusModel{
 			SLOCount: types.Int64Value(int64(svc.Status.SloCount)),
-		})
+		}
+		v, diags := types.ObjectValueFrom(ctx, statusAttrs, statusModel)
 		if diags.HasError() {
 			return nil, diags
 		}
 		status = v
 	} else {
-		status = types.ObjectNull(serviceStatusTypes)
+		status = types.ObjectNull(statusAttrs)
 	}
 	return &ServiceResourceModel{
 		Name:        svc.Metadata.Name,
@@ -55,7 +58,7 @@ func newServiceResourceConfigFromManifest(
 	}, nil
 }
 
-func (s ServiceResourceModel) ToManifest(ctx context.Context) v1alphaService.Service {
+func (s ServiceResourceModel) ToManifest() v1alphaService.Service {
 	return v1alphaService.New(
 		v1alphaService.Metadata{
 			Name:        s.Name,

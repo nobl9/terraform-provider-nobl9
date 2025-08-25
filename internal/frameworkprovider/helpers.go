@@ -1,12 +1,19 @@
 package frameworkprovider
 
 import (
+	"encoding/json"
 	"fmt"
 	"slices"
+	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+func isNullOrUnknown(v attr.Value) bool {
+	return v == nil || v.IsNull() || v.IsUnknown()
+}
 
 // stringValue returns [types.String] from a string.
 // If the string is empty, it returns [types.StringNull].
@@ -15,6 +22,15 @@ func stringValue(v string) types.String {
 		return types.StringNull()
 	}
 	return types.StringValue(v)
+}
+
+// valueFromPointer returns the value pointed to by the pointer v.
+// If v is nil, it returns the zero value of type T.
+func valueFromPointer[T any](v *T) (dereference T) {
+	if v == nil {
+		return dereference
+	}
+	return *v
 }
 
 // sortListBasedOnReferenceList sorts the provided list based on another list as a reference for sorting order.
@@ -61,4 +77,15 @@ func addInvalidSDKClientTypeDiag(diags *diag.Diagnostics, data any) {
 			data,
 		),
 	)
+}
+
+func deepCopy[T any](t *testing.T, v T) (cp T) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		t.Fatalf("failed to marshal value: %v", err)
+	}
+	if err = json.Unmarshal(data, &cp); err != nil {
+		t.Fatalf("failed to unmarshal value: %v", err)
+	}
+	return cp
 }
