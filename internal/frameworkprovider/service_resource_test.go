@@ -215,7 +215,7 @@ func getExampleServiceResource(t *testing.T) ServiceResourceModel {
 		Project:     "default",
 		Description: types.StringValue("Example service"),
 		Annotations: map[string]string{"key": "value"},
-		Labels: annotateLabels(t, Labels{
+		Labels: addTestLabels(t, Labels{
 			{Key: "team", Values: []string{"green"}},
 			{Key: "env", Values: []string{"dev", "prod"}},
 		}),

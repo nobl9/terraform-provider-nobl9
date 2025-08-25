@@ -109,15 +109,15 @@ func (s sdkClient) DeleteObject(ctx context.Context, kind manifest.Kind, name, p
 }
 
 func (s sdkClient) GetService(ctx context.Context, name, project string) (v1alphaService.Service, diag.Diagnostics) {
-	return typedGetObject[v1alphaService.Service](ctx, s.client, manifest.KindService, name, project)
+	return genericGetObject[v1alphaService.Service](ctx, s.client, manifest.KindService, name, project)
 }
 
 func (s sdkClient) GetProject(ctx context.Context, name string) (v1alphaProject.Project, diag.Diagnostics) {
-	return typedGetObject[v1alphaProject.Project](ctx, s.client, manifest.KindProject, name, "")
+	return genericGetObject[v1alphaProject.Project](ctx, s.client, manifest.KindProject, name, "")
 }
 
 func (s sdkClient) GetSLO(ctx context.Context, name, project string) (v1alphaSLO.SLO, diag.Diagnostics) {
-	return typedGetObject[v1alphaSLO.SLO](ctx, s.client, manifest.KindSLO, name, project)
+	return genericGetObject[v1alphaSLO.SLO](ctx, s.client, manifest.KindSLO, name, project)
 }
 
 // Replay runs historical data retrieval for the given SLO.
@@ -166,35 +166,13 @@ func (s sdkClient) MoveSLOs(ctx context.Context, sloName, oldProject, newProject
 	return nil
 }
 
-func typedGetObject[T manifest.Object](
+// genericGetObject should only be called by [sdkClient].
+func genericGetObject[T manifest.Object](
 	ctx context.Context,
 	client *sdk.Client,
 	kind manifest.Kind,
 	name, project string,
 ) (typed T, diags diag.Diagnostics) {
-	obj, diags := genericGetObject(ctx, client, kind, name, project)
-	if diags.HasError() {
-		return typed, diags
-	}
-	var ok bool
-	typed, ok = obj.(T)
-	if !ok {
-		return typed, diag.Diagnostics{
-			diag.NewErrorDiagnostic(
-				fmt.Sprintf("Failed to cast %T to %T", obj, typed),
-				"Please report this issue to the provider developers."),
-		}
-	}
-	return typed, nil
-}
-
-// genericGetObject should only be called by [sdkClient].
-func genericGetObject(
-	ctx context.Context,
-	client *sdk.Client,
-	kind manifest.Kind,
-	name, project string,
-) (manifest.Object, diag.Diagnostics) {
 	header := http.Header{}
 	if project != "" {
 		header.Add(sdk.HeaderProject, project)
@@ -206,12 +184,12 @@ func genericGetObject(
 		url.Values{v1Objects.QueryKeyName: []string{name}},
 	)
 	if err != nil {
-		return nil, diag.Diagnostics{
+		return typed, diag.Diagnostics{
 			diag.NewErrorDiagnostic(fmt.Sprintf("Failed to get %s %s", manifest.VersionV1alpha, kind), err.Error()),
 		}
 	}
 	if len(objects) != 1 {
-		return nil, diag.Diagnostics{
+		return typed, diag.Diagnostics{
 			diag.NewErrorDiagnostic(
 				fmt.Sprintf("Failed to get %s %s", manifest.VersionV1alpha, kind),
 				fmt.Sprintf("unexpected number of objects in response, expected 1, got %d", len(objects))),
@@ -219,7 +197,16 @@ func genericGetObject(
 	}
 	obj := objects[0]
 	tflog.Trace(ctx, fmt.Sprintf("fetched %s %s", manifest.VersionV1alpha, kind), getManifestObjectTraceAttrs(obj))
-	return obj, nil
+	var ok bool
+	typed, ok = obj.(T)
+	if !ok {
+		return typed, diag.Diagnostics{
+			diag.NewErrorDiagnostic(
+				fmt.Sprintf("Failed to cast %T to %T", obj, typed),
+				"Please report this issue to the provider developers."),
+		}
+	}
+	return typed, nil
 }
 
 func getManifestObjectTraceAttrs(obj manifest.Object) map[string]any {

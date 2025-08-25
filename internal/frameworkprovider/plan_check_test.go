@@ -129,9 +129,6 @@ func calculatePlanDiff(before, after map[string]any) planDiff {
 			diff.Removed = append(diff.Removed, key)
 		}
 	}
-	slices.Sort(diff.Added)
-	slices.Sort(diff.Removed)
-	slices.Sort(diff.Modified)
 	return diff
 }
 

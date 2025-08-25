@@ -160,7 +160,7 @@ func getExampleProjectResource(t *testing.T) ProjectResourceModel {
 		DisplayName: types.StringValue("Project"),
 		Description: types.StringValue("Example project"),
 		Annotations: map[string]string{"key": "value"},
-		Labels: annotateLabels(t, Labels{
+		Labels: addTestLabels(t, Labels{
 			{Key: "team", Values: []string{"green"}},
 			{Key: "env", Values: []string{"dev", "prod"}},
 		}),

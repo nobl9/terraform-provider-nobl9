@@ -194,16 +194,16 @@ func getObjectsFromTheNobl9API(t *testing.T, ctx context.Context, object manifes
 	return objects, nil
 }
 
-// annotateLabels adds origin label to the provided [Labels],
+// addTestLabels adds origin label to the provided [Labels],
 // so it's easier to locate the leftovers from these tests.
 // It also adds unique test identifier label to the provided labels
 // so that we can reliably retrieve objects created within a given test.
-func annotateLabels(t *testing.T, labels Labels) Labels {
+func addTestLabels(t *testing.T, labels Labels) Labels {
 	t.Helper()
-	if labels == nil {
-		labels = make(Labels, 0, 3)
-	}
 	v1alphaLabels := e2etestutils.AnnotateLabels(t, nil)
+	if labels == nil {
+		labels = make(Labels, 0, len(v1alphaLabels))
+	}
 	for _, k := range slices.Sorted(maps.Keys(v1alphaLabels)) {
 		i := slices.IndexFunc(labels, func(l LabelBlockModel) bool { return l.Key == k })
 		if i >= 0 {

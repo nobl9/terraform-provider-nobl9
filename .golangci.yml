@@ -26,7 +26,7 @@ issues:
     - linters:
         - lll
       source: ".*(Description|Deprecated): .*"
-    # Although composites are deprecated, we still need to supporte them.
+    # Although composites are deprecated, we still need to support them.
     - linters:
         - staticcheck
       text: "slo.Spec.Composite is deprecated"

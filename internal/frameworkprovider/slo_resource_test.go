@@ -1449,7 +1449,7 @@ func getExampleSLOResource(t *testing.T) SLOResourceModel {
 		Service:         "service",
 		BudgetingMethod: "Occurrences",
 		Annotations:     map[string]string{"key": "value"},
-		Labels: annotateLabels(t, Labels{
+		Labels: addTestLabels(t, Labels{
 			{Key: "team", Values: []string{"green"}},
 		}),
 		Indicator: []IndicatorModel{{
