@@ -1,8 +1,7 @@
-data "nobl9_project" "{{ .DataSourceName }}" {
-  name = "{{ .ProjectName }}"
+data "nobl9_project" "this" {
+  name = "{{ .Project.Name }}"
 }
 
-resource "nobl9_service" "{{ .ResourceName }}" {
-  name = "{{ .ServiceName }}"
-  project = data.nobl9_project.{{ .DataSourceName }}.name
+resource "nobl9_service" "this" {
+  {{- template "metadata" .Service -}}
 }

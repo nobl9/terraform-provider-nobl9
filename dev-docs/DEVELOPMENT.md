@@ -59,6 +59,73 @@ NOBL9_URL=<ingest_server_url> \
 make test/acc
 ```
 
+## Debugging
+
+If you want to debug a specific configuration,
+you can create a temporary test scenario, like the one below,
+and run it in debug mode.
+You can place breakpoints directly in the provider code
+and go through every step of the process.
+
+```go
+func TestAccSLOResource_customScenario(t *testing.T) {
+   t.Parallel()
+   testAccSetup(t)
+
+   sloConfig := `resource "nobl9_slo" "this" {
+
+  name = "test-slo-framework"
+  project = "amazon-prometheus"
+  description = "Example SLO from testing Framework migration"
+
+  service = "amazon-prometheus"
+  budgeting_method = "Occurrences"
+
+  indicator {
+    name = "amazon-prometheus"
+    project = "amazon-prometheus"
+    kind = "Agent"
+  }
+
+  objective {
+    name = "tf-objective-1"
+    op = "lt"
+    target = 0.7
+    value = 1.2
+    raw_metric {
+      query {
+        amazon_prometheus {
+          promql = "some_metric{job=\"test-job\"}"
+        }
+      }
+    }
+  }
+
+  time_window {
+    count = 1
+    is_rolling = true
+    unit = "Hour"
+  }
+}`
+
+   resource.Test(t, resource.TestCase{
+      ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+      Steps: []resource.TestStep{
+         // Create and Read.
+         {
+            Config: sloConfig,
+            ConfigPlanChecks: resource.ConfigPlanChecks{
+               PreApply: []plancheck.PlanCheck{
+                  plancheck.ExpectNonEmptyPlan(),
+                  plancheck.ExpectResourceAction("nobl9_slo.this", plancheck.ResourceActionCreate),
+               },
+            },
+         },
+      },
+   })
+}
+```
+
 ## Generating documentation
 
 Documentation is generated using the
@@ -69,17 +136,63 @@ In order to generate or update the docs run the following command:
 make generate
 ```
 
+**How does it work (in short)?**
+
+[Go templates](https://pkg.go.dev/text/template) are used
+to render Markdown template files located under [./templates](../templates/).
+The variables used in templates (e.g. `{{ .Name }}`) are populated by the
+_tfplugindocs_ tool based on predefined and standardized fields which
+the provider exposes.
+
+The rendered Markdown files are stored under [./docs](../docs/) directory.
+This directory is a standardized path, required by Terraform registry and
+it is scraped and rendered on
+[the registry website](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs).
+
+It's worth to highlight one field in particular: `{{ .SchemaMarkdown }}`.
+This field contains the entire resource schema definition, which is already
+rendered as Markdown.
+Each attribute and block in the resource's schema is defined in code and
+what's getting rendered is a combination of its type, name and custom
+description we provide. Only the latter can be changed, for instance,
+SLO's service attribute is defined like this:
+
+```go
+"service": schema.StringAttribute{
+	Required:    true,
+	Description: "Name of the service.",
+},
+```
+
+This renders as:
+
+```md
+- `service` (String) Name of the service.
+```
+
+> [!WARNING]
+> Note, that you can only change the `Description`!
+
+Additionally, we often provide example Terraform configurations
+for each resource.
+The examples are located under [./examples](../examples/) directory
+and you can place them in the templates using the following functions:
+
+```md
+{{ tffile (printf "examples/resources/%s/resource.tf" .Name) }}
+```
+
 ## How to use local provider in Terraform
 
 ### Installing
 
 1. Go to the repo root.
 2. Before the next step, verify if the Makefile variable `OS_ARCH` matches your
-    system (for example *darwin_arm64* for Apple Silicon based Mac's).
+    system (for example _darwin_arm64_ for Apple Silicon based Mac's).
     If not override it.
 3. Run `make install/provider`. Make sure that the plugin was installed:
     `ls ~/.terraform.d/plugins/nobl9.com/nobl9/nobl9/`
-    It will show you the current version of the plugin, ex: *0.19.0*.
+    It will show you the current version of the plugin, ex: _0.19.0_.
 4. Copy the path to the plugin after ~/.terraform.d/plugins/, for example:
     `nobl9.com/nobl9/nobl9/0.19.0/linux_amd64/terraform-provider-nobl9`
     and configure your `.tf` file with it.

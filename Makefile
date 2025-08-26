@@ -71,8 +71,14 @@ test/unit:
 
 ## Run Terraform acceptance tests.
 test/acc:
+	# Why? If we run acceptance tests without the terraform binary already installed,
+	# the testing framework will try to install it for each test and it will lead to
+	# system-level errors "text file busy".
+	# See: https://github.com/hashicorp/terraform-plugin-testing/issues/429.
+	$(call _print_step,Checking for Terraform binary)
+	@which terraform > /dev/null 2>&1 || (echo "Error: terraform binary not found in PATH. Please install Terraform first." && exit 1)
 	$(call _print_step,Running Terraform acceptance tests)
-	TF_ACC=1 go test $(TEST) -ldflags="$(LDFLAGS)" -v $(TESTARGS) -timeout 120m nobl9/
+	TF_ACC=1 go test $(TEST) -ldflags="$(LDFLAGS)" -v $(TESTARGS) -timeout 60m nobl9/
 
 .PHONY: release-dry-run
 ## Run Goreleaser in dry-run mode.

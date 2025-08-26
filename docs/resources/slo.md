@@ -1,14 +1,14 @@
 ---
 page_title: "nobl9_slo Resource - terraform-provider-nobl9"
 description: |-
-  SLO configuration documentation https://docs.nobl9.com/yaml-guide#slo
+  SLO configuration | Nobl9 documentation https://docs.nobl9.com/yaml-guide#slo
 ---
 
 # nobl9_slo (Resource)
 
 An SLO is a target value or range of values for a service that is measured by a service level indicator (SLI). SLOs allows you to define the reliability of your products and services in terms of customer expectations. You can create SLOs for user journeys, internal services, or even infrastructure.
 
-For more information, refer to [SLO configuration documentation](https://docs.nobl9.com/yaml-guide#slo)
+For more information, refer to [SLO configuration | Nobl9 documentation](https://docs.nobl9.com/yaml-guide#slo)
 
 
 ## Composite SLOs 2.0 note
@@ -197,30 +197,108 @@ resource "nobl9_slo" "composite_slo" {
 ### Required
 
 - `budgeting_method` (String) Method which will be use to calculate budget.
-- `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `objective` (Block Set, Min: 1) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
-- `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
+- `name` (String) Unique name of the resource, must conform to the [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names) naming convention.
+- `project` (String) Name of the Nobl9 project the resource sits in, must conform to the [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names) naming convention.
 - `service` (String) Name of the service.
-- `time_window` (Block Set, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--time_window))
 
 ### Optional
 
-- `alert_policies` (List of String) Alert Policies attached to SLO.
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `alert_policies` (Set of String) Alert Policies attached to SLO.
 - `annotations` (Map of String) [Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.
-- `anomaly_config` (Block Set, Max: 1) Configuration for Anomalies. Currently supported Anomaly Type is NoData (see [below for nested schema](#nestedblock--anomaly_config))
-- `attachment` (Block List, Max: 20) (see [below for nested schema](#nestedblock--attachment))
-- `attachments` (Block List, Max: 20, Deprecated) (see [below for nested schema](#nestedblock--attachments))
-- `composite` (Block Set, Max: 1, Deprecated) ("composite" is deprecated, use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
+- `anomaly_config` (Block List) Configuration for anomaly detection. (see [below for nested schema](#nestedblock--anomaly_config))
+- `attachment` (Block List) URL attachments for the SLO. (see [below for nested schema](#nestedblock--attachment))
+- `composite` (Block List, Deprecated) ("composite" is deprecated, use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `indicator` (Block Set, Max: 1) (see [below for nested schema](#nestedblock--indicator))
+- `indicator` (Block List) Configuration for the metric source (Agent/Direct). (see [below for nested schema](#nestedblock--indicator))
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
-- `retrieve_historical_data_from` (String) If set, the retrieval of historical data for a newly created SLO will be triggered, starting from the specified date. Needs to be RFC3339 format.
+- `objective` (Block List) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
+- `retrieve_historical_data_from` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) If set, the retrieval of historical data for a newly created SLO will be triggered, starting from the specified date. Needs to be RFC3339 format.
 - `tier` (String) Internal field, do not use.
+- `time_window` (Block List) Time window configuration for the SLO. (see [below for nested schema](#nestedblock--time_window))
 
-### Read-Only
+<a id="nestedblock--anomaly_config"></a>
+### Nested Schema for `anomaly_config`
 
-- `id` (String) The ID of this resource.
+Optional:
+
+- `no_data` (Block List) No data alerts configuration. (see [below for nested schema](#nestedblock--anomaly_config--no_data))
+
+<a id="nestedblock--anomaly_config--no_data"></a>
+### Nested Schema for `anomaly_config.no_data`
+
+Optional:
+
+- `alert_after` (String) Specifies the duration to wait after receiving no data before triggering an alert. The value must be a valid Go duration string, such as "1h" for one hour. If not specified, the system defaults to "15m" (15 minutes).
+- `alert_method` (Block List) Alert methods attached to Anomaly Config. (see [below for nested schema](#nestedblock--anomaly_config--no_data--alert_method))
+
+<a id="nestedblock--anomaly_config--no_data--alert_method"></a>
+### Nested Schema for `anomaly_config.no_data.alert_method`
+
+Required:
+
+- `name` (String) The name of the previously defined alert method.
+- `project` (String) Project name the Alert Method is in,  must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names). If not defined, Nobl9 returns a default value for this field.
+
+
+
+
+<a id="nestedblock--attachment"></a>
+### Nested Schema for `attachment`
+
+Required:
+
+- `url` (String) URL to the attachment.
+
+Optional:
+
+- `display_name` (String) Name displayed for the attachment. Max. length: 63 characters.
+
+
+<a id="nestedblock--composite"></a>
+### Nested Schema for `composite`
+
+Required:
+
+- `target` (Number) The numeric target for your objective.
+
+Optional:
+
+- `burn_rate_condition` (Block Set, Deprecated) ("burn_rate_condition" is part of deprecated composites 1.0, use [composites 2.0](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) Condition when the Composite SLO's error budget is burning. (see [below for nested schema](#nestedblock--composite--burn_rate_condition))
+
+<a id="nestedblock--composite--burn_rate_condition"></a>
+### Nested Schema for `composite.burn_rate_condition`
+
+Required:
+
+- `op` (String) Type of logical operation.
+- `value` (Number) Burn rate value.
+
+
+
+<a id="nestedblock--indicator"></a>
+### Nested Schema for `indicator`
+
+Required:
+
+- `name` (String) Name of the metric source.
+
+Optional:
+
+- `kind` (String) Kind of the metric source. One of {Agent, Direct}.
+- `project` (String) Name of the metric source project.
+
+
+<a id="nestedblock--label"></a>
+### Nested Schema for `label`
+
+Required:
+
+- `key` (String) A key for the label, unique within the associated resource.
+- `values` (Set of String) A set of values for a single key.
+
 
 <a id="nestedblock--objective"></a>
 ### Nested Schema for `objective`
@@ -231,15 +309,15 @@ Required:
 
 Optional:
 
-- `composite` (Block Set, Max: 1) An assembly of objectives from different SLOs reflecting their combined performance. (see [below for nested schema](#nestedblock--objective--composite))
-- `count_metrics` (Block Set) Compares two time series, calculating the ratio of either good or bad values to the total number of values. Fill either the 'good' or 'bad' series, but not both. (see [below for nested schema](#nestedblock--objective--count_metrics))
+- `composite` (Block List) An assembly of objectives from different SLOs reflecting their combined performance. (see [below for nested schema](#nestedblock--objective--composite))
+- `count_metrics` (Block List) Compares two time series, calculating the ratio of either good or bad values to the total number of values. Fill either the 'good' or 'bad' series, but not both. (see [below for nested schema](#nestedblock--objective--count_metrics))
 - `display_name` (String) Name to be displayed.
 - `name` (String) Objective's name. This field is computed if not provided.
 - `op` (String) For threshold metrics, the logical operator applied to the threshold.
 - `primary` (Boolean) Is objective marked as primary.
-- `raw_metric` (Block Set) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
+- `raw_metric` (Block List) Raw data is used to compare objective values. (see [below for nested schema](#nestedblock--objective--raw_metric))
 - `time_slice_target` (Number) Designated value for slice.
-- `value` (Number) Required for threshold and ratio metrics. Optional for composite SLOs. For threshold metrics, the threshold value. For ratio metrics, this must be a unique value per objective (for legacy reasons). For composite SLOs, it should be omitted. If, for composite SLO, it was set previously to a non-zero value, then it must remain unchanged.
+- `value` (Number) Required for threshold and ratio metrics. Optional for existing composite SLOs. For threshold metrics, the threshold value. For ratio metrics, this must be a unique value per objective (for legacy reasons). For new composite SLOs, it must be omitted. If, for composite SLO, it was set previously to a non-zero value, then it must remain unchanged.
 
 <a id="nestedblock--objective--composite"></a>
 ### Nested Schema for `objective.composite`
@@ -250,14 +328,14 @@ Required:
 
 Optional:
 
-- `components` (Block Set, Max: 1) Objectives to be assembled in your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components))
+- `components` (Block List) Objectives to be assembled in your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components))
 
 <a id="nestedblock--objective--composite--components"></a>
 ### Nested Schema for `objective.composite.components`
 
 Optional:
 
-- `objectives` (Block Set, Max: 1) An additional nesting for the components of your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components--objectives))
+- `objectives` (Block List) An additional nesting for the components of your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components--objectives))
 
 <a id="nestedblock--objective--composite--components--objectives"></a>
 ### Nested Schema for `objective.composite.components.objectives`
@@ -274,7 +352,7 @@ Required:
 - `objective` (String) SLO objective name.
 - `project` (String) Project name.
 - `slo` (String) SLO name.
-- `weight` (Number) Weights determine each component’s contribution to the composite SLO.
+- `weight` (Number) Weights determine each component's contribution to the composite SLO.
 - `when_delayed` (String) Defines how to treat missing component data on `max_delay` expiry.
 
 
@@ -290,41 +368,43 @@ Required:
 
 Optional:
 
-- `bad` (Block Set) Configuration for bad time series metrics. (see [below for nested schema](#nestedblock--objective--count_metrics--bad))
-- `good` (Block Set) Configuration for good time series metrics. (see [below for nested schema](#nestedblock--objective--count_metrics--good))
-- `good_total` (Block Set) Configuration for single query series metrics. (see [below for nested schema](#nestedblock--objective--count_metrics--good_total))
-- `total` (Block Set) Configuration for metric source. (see [below for nested schema](#nestedblock--objective--count_metrics--total))
+- `bad` (Block List) Configuration for bad time series metrics. (see [below for nested schema](#nestedblock--objective--count_metrics--bad))
+- `good` (Block List) Configuration for good time series metrics. (see [below for nested schema](#nestedblock--objective--count_metrics--good))
+- `good_total` (Block List) Configuration for single query series metrics. (see [below for nested schema](#nestedblock--objective--count_metrics--good_total))
+- `total` (Block List) Configuration for metric source. (see [below for nested schema](#nestedblock--objective--count_metrics--total))
 
 <a id="nestedblock--objective--count_metrics--bad"></a>
 ### Nested Schema for `objective.count_metrics.bad`
 
 Optional:
 
-- `amazon_prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--amazon_prometheus))
-- `appdynamics` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--appdynamics))
-- `azure_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_monitor))
-- `bigquery` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--bigquery))
-- `cloudwatch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--cloudwatch))
-- `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--datadog))
-- `dynatrace` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--dynatrace))
-- `elasticsearch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--elasticsearch))
-- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--gcm))
-- `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--grafana_loki))
-- `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--graphite))
-- `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--honeycomb))
-- `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--influxdb))
-- `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--instana))
-- `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--lightstep))
-- `logic_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--logic_monitor))
-- `newrelic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--newrelic))
-- `opentsdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--opentsdb))
-- `pingdom` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--pingdom))
-- `prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--prometheus))
-- `redshift` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--redshift))
-- `splunk` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--splunk))
-- `splunk_observability` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--splunk_observability))
-- `sumologic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--sumologic))
-- `thousandeyes` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--thousandeyes))
+- `amazon_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--amazon_prometheus))
+- `appdynamics` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--appdynamics))
+- `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_monitor))
+- `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_prometheus))
+- `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--bigquery))
+- `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--cloudwatch))
+- `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--coralogix))
+- `datadog` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--datadog))
+- `dynatrace` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--dynatrace))
+- `elasticsearch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--elasticsearch))
+- `gcm` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--gcm))
+- `grafana_loki` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--grafana_loki))
+- `graphite` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--graphite))
+- `honeycomb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--honeycomb))
+- `influxdb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--influxdb))
+- `instana` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--instana))
+- `lightstep` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--lightstep))
+- `logic_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--logic_monitor))
+- `newrelic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--newrelic))
+- `opentsdb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--opentsdb))
+- `pingdom` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--pingdom))
+- `prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--prometheus))
+- `redshift` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--redshift))
+- `splunk` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--splunk))
+- `splunk_observability` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--splunk_observability))
+- `sumologic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--sumologic))
+- `thousandeyes` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--thousandeyes))
 
 <a id="nestedblock--objective--count_metrics--bad--amazon_prometheus"></a>
 ### Nested Schema for `objective.count_metrics.bad.amazon_prometheus`
@@ -358,7 +438,7 @@ Optional:
 - `metric_name` (String) Name of the metric [Required for metrics]
 - `metric_namespace` (String) Namespace of the metric [Optional for metrics]
 - `resource_id` (String) Identifier of the Azure Cloud resource [Required for metrics]
-- `workspace` (Block Set) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_monitor--workspace))
+- `workspace` (Block List) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_monitor--workspace))
 
 <a id="nestedblock--objective--count_metrics--bad--azure_monitor--dimensions"></a>
 ### Nested Schema for `objective.count_metrics.bad.azure_monitor.dimensions`
@@ -378,6 +458,14 @@ Required:
 - `subscription_id` (String) Subscription ID of the workspace
 - `workspace_id` (String) ID of the workspace
 
+
+
+<a id="nestedblock--objective--count_metrics--bad--azure_prometheus"></a>
+### Nested Schema for `objective.count_metrics.bad.azure_prometheus`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--count_metrics--bad--bigquery"></a>
@@ -400,7 +488,7 @@ Required:
 Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
-- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--bad--cloudwatch--dimensions))
+- `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--bad--cloudwatch--dimensions))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -415,6 +503,14 @@ Required:
 - `name` (String) Name
 - `value` (String) Value
 
+
+
+<a id="nestedblock--objective--count_metrics--bad--coralogix"></a>
+### Nested Schema for `objective.count_metrics.bad.coralogix`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--count_metrics--bad--datadog"></a>
@@ -452,7 +548,7 @@ Required:
 Optional:
 
 - `promql` (String) Query for the metrics in PromQL format
-- `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
+- `query` (String) Query for the metrics in MQL format [deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql)
 
 
 <a id="nestedblock--objective--count_metrics--bad--grafana_loki"></a>
@@ -496,8 +592,8 @@ Required:
 
 Optional:
 
-- `application` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--bad--instana--application))
-- `infrastructure` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--bad--instana--infrastructure))
+- `application` (Block List) Application metric type (see [below for nested schema](#nestedblock--objective--count_metrics--bad--instana--application))
+- `infrastructure` (Block List) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--bad--instana--infrastructure))
 
 <a id="nestedblock--objective--count_metrics--bad--instana--application"></a>
 ### Nested Schema for `objective.count_metrics.bad.instana.application`
@@ -506,11 +602,11 @@ Required:
 
 - `aggregation` (String) Depends on the value specified for 'metric_id'- more info in N9 docs
 - `api_query` (String) API query user passes in a JSON format
-- `group_by` (Block Set, Min: 1) Group by method (see [below for nested schema](#nestedblock--objective--count_metrics--bad--instana--application--group_by))
 - `metric_id` (String) Metric ID one of 'calls', 'erroneousCalls', 'errors', 'latency'
 
 Optional:
 
+- `group_by` (Block List) Group by method (see [below for nested schema](#nestedblock--objective--count_metrics--bad--instana--application--group_by))
 - `include_internal` (Boolean) Include internal
 - `include_synthetic` (Boolean) Include synthetic
 
@@ -524,7 +620,7 @@ Required:
 
 Optional:
 
-- `tag_second_level_key` (String)
+- `tag_second_level_key` (String) Second level key for the tag
 
 
 
@@ -671,31 +767,33 @@ Optional:
 
 Optional:
 
-- `amazon_prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good--amazon_prometheus))
-- `appdynamics` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--good--appdynamics))
-- `azure_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_monitor))
-- `bigquery` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good--bigquery))
-- `cloudwatch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch))
-- `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--good--datadog))
-- `dynatrace` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--good--dynatrace))
-- `elasticsearch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--good--elasticsearch))
-- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--good--gcm))
-- `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--good--grafana_loki))
-- `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--good--graphite))
-- `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--honeycomb))
-- `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--influxdb))
-- `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana))
-- `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--good--lightstep))
-- `logic_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good--logic_monitor))
-- `newrelic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--good--newrelic))
-- `opentsdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--opentsdb))
-- `pingdom` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--count_metrics--good--pingdom))
-- `prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good--prometheus))
-- `redshift` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift) (see [below for nested schema](#nestedblock--objective--count_metrics--good--redshift))
-- `splunk` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--good--splunk))
-- `splunk_observability` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--good--splunk_observability))
-- `sumologic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--good--sumologic))
-- `thousandeyes` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--good--thousandeyes))
+- `amazon_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good--amazon_prometheus))
+- `appdynamics` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--good--appdynamics))
+- `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_monitor))
+- `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_prometheus))
+- `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good--bigquery))
+- `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch))
+- `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--count_metrics--good--coralogix))
+- `datadog` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--good--datadog))
+- `dynatrace` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--good--dynatrace))
+- `elasticsearch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--good--elasticsearch))
+- `gcm` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--good--gcm))
+- `grafana_loki` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--good--grafana_loki))
+- `graphite` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--good--graphite))
+- `honeycomb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--honeycomb))
+- `influxdb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--influxdb))
+- `instana` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana))
+- `lightstep` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--good--lightstep))
+- `logic_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good--logic_monitor))
+- `newrelic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--good--newrelic))
+- `opentsdb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good--opentsdb))
+- `pingdom` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--count_metrics--good--pingdom))
+- `prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good--prometheus))
+- `redshift` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift) (see [below for nested schema](#nestedblock--objective--count_metrics--good--redshift))
+- `splunk` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--good--splunk))
+- `splunk_observability` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--good--splunk_observability))
+- `sumologic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--good--sumologic))
+- `thousandeyes` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--good--thousandeyes))
 
 <a id="nestedblock--objective--count_metrics--good--amazon_prometheus"></a>
 ### Nested Schema for `objective.count_metrics.good.amazon_prometheus`
@@ -729,7 +827,7 @@ Optional:
 - `metric_name` (String) Name of the metric [Required for metrics]
 - `metric_namespace` (String) Namespace of the metric [Optional for metrics]
 - `resource_id` (String) Identifier of the Azure Cloud resource [Required for metrics]
-- `workspace` (Block Set) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_monitor--workspace))
+- `workspace` (Block List) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_monitor--workspace))
 
 <a id="nestedblock--objective--count_metrics--good--azure_monitor--dimensions"></a>
 ### Nested Schema for `objective.count_metrics.good.azure_monitor.dimensions`
@@ -749,6 +847,14 @@ Required:
 - `subscription_id` (String) Subscription ID of the workspace
 - `workspace_id` (String) ID of the workspace
 
+
+
+<a id="nestedblock--objective--count_metrics--good--azure_prometheus"></a>
+### Nested Schema for `objective.count_metrics.good.azure_prometheus`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--count_metrics--good--bigquery"></a>
@@ -771,7 +877,7 @@ Required:
 Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
-- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch--dimensions))
+- `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch--dimensions))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -786,6 +892,14 @@ Required:
 - `name` (String) Name
 - `value` (String) Value
 
+
+
+<a id="nestedblock--objective--count_metrics--good--coralogix"></a>
+### Nested Schema for `objective.count_metrics.good.coralogix`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--count_metrics--good--datadog"></a>
@@ -823,7 +937,7 @@ Required:
 Optional:
 
 - `promql` (String) Query for the metrics in PromQL format
-- `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
+- `query` (String) Query for the metrics in MQL format [deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql)
 
 
 <a id="nestedblock--objective--count_metrics--good--grafana_loki"></a>
@@ -867,8 +981,8 @@ Required:
 
 Optional:
 
-- `application` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana--application))
-- `infrastructure` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana--infrastructure))
+- `application` (Block List) Application metric type (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana--application))
+- `infrastructure` (Block List) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana--infrastructure))
 
 <a id="nestedblock--objective--count_metrics--good--instana--application"></a>
 ### Nested Schema for `objective.count_metrics.good.instana.application`
@@ -877,11 +991,11 @@ Required:
 
 - `aggregation` (String) Depends on the value specified for 'metric_id'- more info in N9 docs
 - `api_query` (String) API query user passes in a JSON format
-- `group_by` (Block Set, Min: 1) Group by method (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana--application--group_by))
 - `metric_id` (String) Metric ID one of 'calls', 'erroneousCalls', 'errors', 'latency'
 
 Optional:
 
+- `group_by` (Block List) Group by method (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana--application--group_by))
 - `include_internal` (Boolean) Include internal
 - `include_synthetic` (Boolean) Include synthetic
 
@@ -895,7 +1009,7 @@ Required:
 
 Optional:
 
-- `tag_second_level_key` (String)
+- `tag_second_level_key` (String) Second level key for the tag
 
 
 
@@ -1042,31 +1156,33 @@ Optional:
 
 Optional:
 
-- `amazon_prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--amazon_prometheus))
-- `appdynamics` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--appdynamics))
-- `azure_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--azure_monitor))
-- `bigquery` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--bigquery))
-- `cloudwatch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--cloudwatch))
-- `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--datadog))
-- `dynatrace` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--dynatrace))
-- `elasticsearch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--elasticsearch))
-- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--gcm))
-- `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--grafana_loki))
-- `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--graphite))
-- `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--honeycomb))
-- `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--influxdb))
-- `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--instana))
-- `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--lightstep))
-- `logic_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--logic_monitor))
-- `newrelic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--newrelic))
-- `opentsdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--opentsdb))
-- `pingdom` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--pingdom))
-- `prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--prometheus))
-- `redshift` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--redshift))
-- `splunk` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--splunk))
-- `splunk_observability` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--splunk_observability))
-- `sumologic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--sumologic))
-- `thousandeyes` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--thousandeyes))
+- `amazon_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--amazon_prometheus))
+- `appdynamics` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--appdynamics))
+- `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--azure_monitor))
+- `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--azure_prometheus))
+- `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--bigquery))
+- `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--cloudwatch))
+- `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--coralogix))
+- `datadog` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--datadog))
+- `dynatrace` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--dynatrace))
+- `elasticsearch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--elasticsearch))
+- `gcm` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--gcm))
+- `grafana_loki` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--grafana_loki))
+- `graphite` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--graphite))
+- `honeycomb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--honeycomb))
+- `influxdb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--influxdb))
+- `instana` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--instana))
+- `lightstep` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--lightstep))
+- `logic_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--logic_monitor))
+- `newrelic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--newrelic))
+- `opentsdb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--opentsdb))
+- `pingdom` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--pingdom))
+- `prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--prometheus))
+- `redshift` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--redshift))
+- `splunk` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--splunk))
+- `splunk_observability` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--splunk_observability))
+- `sumologic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--sumologic))
+- `thousandeyes` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--thousandeyes))
 
 <a id="nestedblock--objective--count_metrics--good_total--amazon_prometheus"></a>
 ### Nested Schema for `objective.count_metrics.good_total.amazon_prometheus`
@@ -1100,7 +1216,7 @@ Optional:
 - `metric_name` (String) Name of the metric [Required for metrics]
 - `metric_namespace` (String) Namespace of the metric [Optional for metrics]
 - `resource_id` (String) Identifier of the Azure Cloud resource [Required for metrics]
-- `workspace` (Block Set) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--azure_monitor--workspace))
+- `workspace` (Block List) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--azure_monitor--workspace))
 
 <a id="nestedblock--objective--count_metrics--good_total--azure_monitor--dimensions"></a>
 ### Nested Schema for `objective.count_metrics.good_total.azure_monitor.dimensions`
@@ -1120,6 +1236,14 @@ Required:
 - `subscription_id` (String) Subscription ID of the workspace
 - `workspace_id` (String) ID of the workspace
 
+
+
+<a id="nestedblock--objective--count_metrics--good_total--azure_prometheus"></a>
+### Nested Schema for `objective.count_metrics.good_total.azure_prometheus`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--count_metrics--good_total--bigquery"></a>
@@ -1142,7 +1266,7 @@ Required:
 Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
-- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--cloudwatch--dimensions))
+- `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--cloudwatch--dimensions))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -1157,6 +1281,14 @@ Required:
 - `name` (String) Name
 - `value` (String) Value
 
+
+
+<a id="nestedblock--objective--count_metrics--good_total--coralogix"></a>
+### Nested Schema for `objective.count_metrics.good_total.coralogix`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--count_metrics--good_total--datadog"></a>
@@ -1194,7 +1326,7 @@ Required:
 Optional:
 
 - `promql` (String) Query for the metrics in PromQL format
-- `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
+- `query` (String) Query for the metrics in MQL format [deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql)
 
 
 <a id="nestedblock--objective--count_metrics--good_total--grafana_loki"></a>
@@ -1238,8 +1370,8 @@ Required:
 
 Optional:
 
-- `application` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--instana--application))
-- `infrastructure` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--instana--infrastructure))
+- `application` (Block List) Application metric type (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--instana--application))
+- `infrastructure` (Block List) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--instana--infrastructure))
 
 <a id="nestedblock--objective--count_metrics--good_total--instana--application"></a>
 ### Nested Schema for `objective.count_metrics.good_total.instana.application`
@@ -1248,11 +1380,11 @@ Required:
 
 - `aggregation` (String) Depends on the value specified for 'metric_id'- more info in N9 docs
 - `api_query` (String) API query user passes in a JSON format
-- `group_by` (Block Set, Min: 1) Group by method (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--instana--application--group_by))
 - `metric_id` (String) Metric ID one of 'calls', 'erroneousCalls', 'errors', 'latency'
 
 Optional:
 
+- `group_by` (Block List) Group by method (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--instana--application--group_by))
 - `include_internal` (Boolean) Include internal
 - `include_synthetic` (Boolean) Include synthetic
 
@@ -1266,7 +1398,7 @@ Required:
 
 Optional:
 
-- `tag_second_level_key` (String)
+- `tag_second_level_key` (String) Second level key for the tag
 
 
 
@@ -1413,31 +1545,33 @@ Optional:
 
 Optional:
 
-- `amazon_prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--total--amazon_prometheus))
-- `appdynamics` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--total--appdynamics))
-- `azure_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_monitor))
-- `bigquery` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--total--bigquery))
-- `cloudwatch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch))
-- `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--total--datadog))
-- `dynatrace` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--total--dynatrace))
-- `elasticsearch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--total--elasticsearch))
-- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--total--gcm))
-- `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--total--grafana_loki))
-- `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--total--graphite))
-- `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--honeycomb))
-- `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--influxdb))
-- `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana))
-- `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--total--lightstep))
-- `logic_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--total--logic_monitor))
-- `newrelic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--total--newrelic))
-- `opentsdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--opentsdb))
-- `pingdom` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--count_metrics--total--pingdom))
-- `prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--total--prometheus))
-- `redshift` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift) (see [below for nested schema](#nestedblock--objective--count_metrics--total--redshift))
-- `splunk` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--total--splunk))
-- `splunk_observability` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--total--splunk_observability))
-- `sumologic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--total--sumologic))
-- `thousandeyes` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--total--thousandeyes))
+- `amazon_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--total--amazon_prometheus))
+- `appdynamics` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--count_metrics--total--appdynamics))
+- `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_monitor))
+- `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_prometheus))
+- `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--total--bigquery))
+- `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch))
+- `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--count_metrics--total--coralogix))
+- `datadog` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--count_metrics--total--datadog))
+- `dynatrace` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--count_metrics--total--dynatrace))
+- `elasticsearch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--count_metrics--total--elasticsearch))
+- `gcm` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--count_metrics--total--gcm))
+- `grafana_loki` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--count_metrics--total--grafana_loki))
+- `graphite` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--count_metrics--total--graphite))
+- `honeycomb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--honeycomb))
+- `influxdb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--influxdb))
+- `instana` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana))
+- `lightstep` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--count_metrics--total--lightstep))
+- `logic_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--total--logic_monitor))
+- `newrelic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--count_metrics--total--newrelic))
+- `opentsdb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--count_metrics--total--opentsdb))
+- `pingdom` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--count_metrics--total--pingdom))
+- `prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--total--prometheus))
+- `redshift` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift) (see [below for nested schema](#nestedblock--objective--count_metrics--total--redshift))
+- `splunk` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--total--splunk))
+- `splunk_observability` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--total--splunk_observability))
+- `sumologic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--total--sumologic))
+- `thousandeyes` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--total--thousandeyes))
 
 <a id="nestedblock--objective--count_metrics--total--amazon_prometheus"></a>
 ### Nested Schema for `objective.count_metrics.total.amazon_prometheus`
@@ -1471,7 +1605,7 @@ Optional:
 - `metric_name` (String) Name of the metric [Required for metrics]
 - `metric_namespace` (String) Namespace of the metric [Optional for metrics]
 - `resource_id` (String) Identifier of the Azure Cloud resource [Required for metrics]
-- `workspace` (Block Set) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_monitor--workspace))
+- `workspace` (Block List) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_monitor--workspace))
 
 <a id="nestedblock--objective--count_metrics--total--azure_monitor--dimensions"></a>
 ### Nested Schema for `objective.count_metrics.total.azure_monitor.dimensions`
@@ -1491,6 +1625,14 @@ Required:
 - `subscription_id` (String) Subscription ID of the workspace
 - `workspace_id` (String) ID of the workspace
 
+
+
+<a id="nestedblock--objective--count_metrics--total--azure_prometheus"></a>
+### Nested Schema for `objective.count_metrics.total.azure_prometheus`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--count_metrics--total--bigquery"></a>
@@ -1513,7 +1655,7 @@ Required:
 Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
-- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch--dimensions))
+- `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch--dimensions))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -1528,6 +1670,14 @@ Required:
 - `name` (String) Name
 - `value` (String) Value
 
+
+
+<a id="nestedblock--objective--count_metrics--total--coralogix"></a>
+### Nested Schema for `objective.count_metrics.total.coralogix`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--count_metrics--total--datadog"></a>
@@ -1565,7 +1715,7 @@ Required:
 Optional:
 
 - `promql` (String) Query for the metrics in PromQL format
-- `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
+- `query` (String) Query for the metrics in MQL format [deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql)
 
 
 <a id="nestedblock--objective--count_metrics--total--grafana_loki"></a>
@@ -1609,8 +1759,8 @@ Required:
 
 Optional:
 
-- `application` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana--application))
-- `infrastructure` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana--infrastructure))
+- `application` (Block List) Application metric type (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana--application))
+- `infrastructure` (Block List) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana--infrastructure))
 
 <a id="nestedblock--objective--count_metrics--total--instana--application"></a>
 ### Nested Schema for `objective.count_metrics.total.instana.application`
@@ -1619,11 +1769,11 @@ Required:
 
 - `aggregation` (String) Depends on the value specified for 'metric_id'- more info in N9 docs
 - `api_query` (String) API query user passes in a JSON format
-- `group_by` (Block Set, Min: 1) Group by method (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana--application--group_by))
 - `metric_id` (String) Metric ID one of 'calls', 'erroneousCalls', 'errors', 'latency'
 
 Optional:
 
+- `group_by` (Block List) Group by method (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana--application--group_by))
 - `include_internal` (Boolean) Include internal
 - `include_synthetic` (Boolean) Include synthetic
 
@@ -1637,7 +1787,7 @@ Required:
 
 Optional:
 
-- `tag_second_level_key` (String)
+- `tag_second_level_key` (String) Second level key for the tag
 
 
 
@@ -1783,40 +1933,42 @@ Optional:
 <a id="nestedblock--objective--raw_metric"></a>
 ### Nested Schema for `objective.raw_metric`
 
-Required:
+Optional:
 
-- `query` (Block Set, Min: 1) Configuration for metric source. (see [below for nested schema](#nestedblock--objective--raw_metric--query))
+- `query` (Block List) Configuration for metric source. (see [below for nested schema](#nestedblock--objective--raw_metric--query))
 
 <a id="nestedblock--objective--raw_metric--query"></a>
 ### Nested Schema for `objective.raw_metric.query`
 
 Optional:
 
-- `amazon_prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--raw_metric--query--amazon_prometheus))
-- `appdynamics` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--raw_metric--query--appdynamics))
-- `azure_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_monitor))
-- `bigquery` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--raw_metric--query--bigquery))
-- `cloudwatch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch))
-- `datadog` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--raw_metric--query--datadog))
-- `dynatrace` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--raw_metric--query--dynatrace))
-- `elasticsearch` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--raw_metric--query--elasticsearch))
-- `gcm` (Block Set) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--raw_metric--query--gcm))
-- `grafana_loki` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--raw_metric--query--grafana_loki))
-- `graphite` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--raw_metric--query--graphite))
-- `honeycomb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--raw_metric--query--honeycomb))
-- `influxdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--raw_metric--query--influxdb))
-- `instana` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana))
-- `lightstep` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--raw_metric--query--lightstep))
-- `logic_monitor` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--raw_metric--query--logic_monitor))
-- `newrelic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--raw_metric--query--newrelic))
-- `opentsdb` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--raw_metric--query--opentsdb))
-- `pingdom` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--raw_metric--query--pingdom))
-- `prometheus` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--objective--raw_metric--query--prometheus))
-- `redshift` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift) (see [below for nested schema](#nestedblock--objective--raw_metric--query--redshift))
-- `splunk` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--raw_metric--query--splunk))
-- `splunk_observability` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--raw_metric--query--splunk_observability))
-- `sumologic` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--raw_metric--query--sumologic))
-- `thousandeyes` (Block Set) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--raw_metric--query--thousandeyes))
+- `amazon_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus) (see [below for nested schema](#nestedblock--objective--raw_metric--query--amazon_prometheus))
+- `appdynamics` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#creating-slos-with-appdynamics) (see [below for nested schema](#nestedblock--objective--raw_metric--query--appdynamics))
+- `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_monitor))
+- `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_prometheus))
+- `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--raw_metric--query--bigquery))
+- `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch))
+- `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--raw_metric--query--coralogix))
+- `datadog` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog) (see [below for nested schema](#nestedblock--objective--raw_metric--query--datadog))
+- `dynatrace` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/dynatrace#creating-slos-with-dynatrace) (see [below for nested schema](#nestedblock--objective--raw_metric--query--dynatrace))
+- `elasticsearch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/elasticsearch#creating-slos-with-elasticsearch) (see [below for nested schema](#nestedblock--objective--raw_metric--query--elasticsearch))
+- `gcm` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/google-cloud-monitoring/#creating-slos-with-google-cloud-monitoring) (see [below for nested schema](#nestedblock--objective--raw_metric--query--gcm))
+- `grafana_loki` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/grafana-loki#creating-slos-with-grafana-loki) (see [below for nested schema](#nestedblock--objective--raw_metric--query--grafana_loki))
+- `graphite` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/graphite#creating-slos-with-graphite) (see [below for nested schema](#nestedblock--objective--raw_metric--query--graphite))
+- `honeycomb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/honeycomb#creating-slos-with-honeycomb) (see [below for nested schema](#nestedblock--objective--raw_metric--query--honeycomb))
+- `influxdb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/influxdb#creating-slos-with-influxdb) (see [below for nested schema](#nestedblock--objective--raw_metric--query--influxdb))
+- `instana` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/instana#creating-slos-with-instana) (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana))
+- `lightstep` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/lightstep#creating-slos-with-lightstep) (see [below for nested schema](#nestedblock--objective--raw_metric--query--lightstep))
+- `logic_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/logic-monitor#creating-slos-with-logic-monitor) (see [below for nested schema](#nestedblock--objective--raw_metric--query--logic_monitor))
+- `newrelic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/new-relic#creating-slos-with-new-relic) (see [below for nested schema](#nestedblock--objective--raw_metric--query--newrelic))
+- `opentsdb` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/opentsdb#creating-slos-with-opentsdb) (see [below for nested schema](#nestedblock--objective--raw_metric--query--opentsdb))
+- `pingdom` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/pingdom#creating-slos-with-pingdom) (see [below for nested schema](#nestedblock--objective--raw_metric--query--pingdom))
+- `prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/prometheus#creating-slos-with-prometheus) (see [below for nested schema](#nestedblock--objective--raw_metric--query--prometheus))
+- `redshift` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Redshift/#creating-slos-with-amazon-redshift) (see [below for nested schema](#nestedblock--objective--raw_metric--query--redshift))
+- `splunk` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--raw_metric--query--splunk))
+- `splunk_observability` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--raw_metric--query--splunk_observability))
+- `sumologic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--raw_metric--query--sumologic))
+- `thousandeyes` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--raw_metric--query--thousandeyes))
 
 <a id="nestedblock--objective--raw_metric--query--amazon_prometheus"></a>
 ### Nested Schema for `objective.raw_metric.query.amazon_prometheus`
@@ -1850,7 +2002,7 @@ Optional:
 - `metric_name` (String) Name of the metric [Required for metrics]
 - `metric_namespace` (String) Namespace of the metric [Optional for metrics]
 - `resource_id` (String) Identifier of the Azure Cloud resource [Required for metrics]
-- `workspace` (Block Set) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_monitor--workspace))
+- `workspace` (Block List) Log analytics workspace [Required for logs] (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_monitor--workspace))
 
 <a id="nestedblock--objective--raw_metric--query--azure_monitor--dimensions"></a>
 ### Nested Schema for `objective.raw_metric.query.azure_monitor.dimensions`
@@ -1870,6 +2022,14 @@ Required:
 - `subscription_id` (String) Subscription ID of the workspace
 - `workspace_id` (String) ID of the workspace
 
+
+
+<a id="nestedblock--objective--raw_metric--query--azure_prometheus"></a>
+### Nested Schema for `objective.raw_metric.query.azure_prometheus`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--raw_metric--query--bigquery"></a>
@@ -1892,7 +2052,7 @@ Required:
 Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
-- `dimensions` (Block Set, Max: 10) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch--dimensions))
+- `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch--dimensions))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -1907,6 +2067,14 @@ Required:
 - `name` (String) Name
 - `value` (String) Value
 
+
+
+<a id="nestedblock--objective--raw_metric--query--coralogix"></a>
+### Nested Schema for `objective.raw_metric.query.coralogix`
+
+Required:
+
+- `promql` (String) Query for the metrics
 
 
 <a id="nestedblock--objective--raw_metric--query--datadog"></a>
@@ -1944,7 +2112,7 @@ Required:
 Optional:
 
 - `promql` (String) Query for the metrics in PromQL format
-- `query` (String) Query for the metrics in MQL format ([deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql))
+- `query` (String) Query for the metrics in MQL format [deprecated](https://cloud.google.com/stackdriver/docs/deprecations/mql)
 
 
 <a id="nestedblock--objective--raw_metric--query--grafana_loki"></a>
@@ -1988,8 +2156,8 @@ Required:
 
 Optional:
 
-- `application` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--application))
-- `infrastructure` (Block Set) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--infrastructure))
+- `application` (Block List) Application metric type (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--application))
+- `infrastructure` (Block List) Infrastructure metric type (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--infrastructure))
 
 <a id="nestedblock--objective--raw_metric--query--instana--application"></a>
 ### Nested Schema for `objective.raw_metric.query.instana.application`
@@ -1998,11 +2166,11 @@ Required:
 
 - `aggregation` (String) Depends on the value specified for 'metric_id'- more info in N9 docs
 - `api_query` (String) API query user passes in a JSON format
-- `group_by` (Block Set, Min: 1) Group by method (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--application--group_by))
 - `metric_id` (String) Metric ID one of 'calls', 'erroneousCalls', 'errors', 'latency'
 
 Optional:
 
+- `group_by` (Block List) Group by method (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--application--group_by))
 - `include_internal` (Boolean) Include internal
 - `include_synthetic` (Boolean) Include synthetic
 
@@ -2016,7 +2184,7 @@ Required:
 
 Optional:
 
-- `tag_second_level_key` (String)
+- `tag_second_level_key` (String) Second level key for the tag
 
 
 
@@ -2170,12 +2338,8 @@ Required:
 
 Optional:
 
-- `calendar` (Block Set) Alert Policies attached to SLO. (see [below for nested schema](#nestedblock--time_window--calendar))
+- `calendar` (Block List) Calendar configuration for the time window. (see [below for nested schema](#nestedblock--time_window--calendar))
 - `is_rolling` (Boolean) Is the window moving or not.
-
-Read-Only:
-
-- `period` (Map of String) Period between start time and added count.
 
 <a id="nestedblock--time_window--calendar"></a>
 ### Nested Schema for `time_window.calendar`
@@ -2184,103 +2348,6 @@ Required:
 
 - `start_time` (String) Date of the start.
 - `time_zone` (String) Timezone name in IANA Time Zone Database.
-
-
-
-<a id="nestedblock--anomaly_config"></a>
-### Nested Schema for `anomaly_config`
-
-Required:
-
-- `no_data` (Block Set, Min: 1, Max: 1) No data alerts configuration (see [below for nested schema](#nestedblock--anomaly_config--no_data))
-
-<a id="nestedblock--anomaly_config--no_data"></a>
-### Nested Schema for `anomaly_config.no_data`
-
-Required:
-
-- `alert_method` (Block List, Min: 1, Max: 5) Alert methods attached to Anomaly Config (see [below for nested schema](#nestedblock--anomaly_config--no_data--alert_method))
-
-Optional:
-
-- `alert_after` (String) Specifies the duration to wait after receiving no data before triggering an alert. The value must be a valid Go duration string, such as "1h" for one hour. If not specified, the system defaults to "15m" (15 minutes).
-
-<a id="nestedblock--anomaly_config--no_data--alert_method"></a>
-### Nested Schema for `anomaly_config.no_data.alert_method`
-
-Required:
-
-- `name` (String) The name of the previously defined alert method.
-- `project` (String) Project name the Alert Method is in,  must conform to the naming convention from [DNS RFC1123] (https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names). If not defined, Nobl9 returns a default value for this field.
-
-
-
-
-<a id="nestedblock--attachment"></a>
-### Nested Schema for `attachment`
-
-Required:
-
-- `url` (String) URL to the attachment.
-
-Optional:
-
-- `display_name` (String) Name displayed for the attachment. Max. length: 63 characters.
-
-
-<a id="nestedblock--attachments"></a>
-### Nested Schema for `attachments`
-
-Required:
-
-- `url` (String) URL to the attachment.
-
-Optional:
-
-- `display_name` (String) Name displayed for the attachment. Max. length: 63 characters.
-
-
-<a id="nestedblock--composite"></a>
-### Nested Schema for `composite`
-
-Required:
-
-- `target` (Number) The numeric target for your objective.
-
-Optional:
-
-- `burn_rate_condition` (Block Set, Deprecated) ("burn_rate_condition" is part of deprecated composites 1.0, use [composites 2.0](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) Condition when the Composite SLO’s error budget is burning. (see [below for nested schema](#nestedblock--composite--burn_rate_condition))
-
-<a id="nestedblock--composite--burn_rate_condition"></a>
-### Nested Schema for `composite.burn_rate_condition`
-
-Required:
-
-- `op` (String) Type of logical operation.
-- `value` (Number) Burn rate value.
-
-
-
-<a id="nestedblock--indicator"></a>
-### Nested Schema for `indicator`
-
-Required:
-
-- `name` (String) Name of the metric source (agent).
-
-Optional:
-
-- `kind` (String) Kind of the metric source. One of {Agent, Direct}.
-- `project` (String) Name of the metric source project.
-
-
-<a id="nestedblock--label"></a>
-### Nested Schema for `label`
-
-Required:
-
-- `key` (String) A key for the label, unique within the associated resource.
-- `values` (List of String) A list of unique values for a single key.
 
 ## Nobl9 Official Documentation
 

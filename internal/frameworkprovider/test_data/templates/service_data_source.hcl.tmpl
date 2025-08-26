@@ -1,9 +1,8 @@
 data "nobl9_service" "this" {
-  name = "{{ .ServiceName }}"
-  project = "{{ .Project1Name }}"
+  name = "{{ .Service1.Name }}"
+  project = "{{ .Service1.Project }}"
 }
 
 resource "nobl9_service" "this" {
-  name = data.nobl9_service.this.name
-  project = "{{ .Project2Name }}"
+  {{- template "metadata" .Service2 -}}
 }
