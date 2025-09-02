@@ -17,7 +17,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nobl9/nobl9-go v0.112.0-rc3.0.20250709075254-9cba765504c2
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.11.0
+	github.com/stretchr/testify v1.11.1
 	github.com/teambition/rrule-go v1.8.2
 )
 
