@@ -175,9 +175,12 @@ func (s *ServiceResource) ModifyPlan(
 	req resource.ModifyPlanRequest,
 	resp *resource.ModifyPlanResponse,
 ) {
-	var plan ServiceResourceModel
+	var plan *ServiceResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+	if plan == nil {
 		return
 	}
 	resp.Diagnostics.Append(s.client.DryRunApplyObject(ctx, plan.ToManifest())...)
