@@ -3,6 +3,7 @@ package frameworkprovider
 import (
 	"context"
 	"errors"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -122,6 +123,28 @@ func TestAccProjectResource(t *testing.T) {
 				},
 			},
 			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccProjectResource_planValidation(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	projectResource := projectResourceTemplateModel{
+		ResourceName:         "test",
+		ProjectResourceModel: getExampleProjectResource(t),
+	}
+	projectResource.Name = "not valid"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      newProjectResource(t, projectResource),
+				ExpectError: regexp.MustCompile(`Bad Request: Validation for Project 'not valid' has failed`),
+				PlanOnly:    true,
+			},
 		},
 	})
 }

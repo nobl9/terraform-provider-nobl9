@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/nobl9/nobl9-go/manifest"
 	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
@@ -20,6 +19,7 @@ var (
 	_ resource.Resource                = &SLOResource{}
 	_ resource.ResourceWithImportState = &SLOResource{}
 	_ resource.ResourceWithConfigure   = &SLOResource{}
+	_ resource.ResourceWithModifyPlan  = &SLOResource{}
 )
 
 func NewSLOResource() resource.Resource {
@@ -191,6 +191,23 @@ func (s *SLOResource) Configure(
 	s.client = client
 }
 
+// ModifyPlan implements [resource.ResourceWithModifyPlan.ModifyPlan] function.
+func (s *SLOResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	var plan SLOResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(s.client.DryRunApplyObject(ctx, plan.ToManifest())...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
 func (s *SLOResource) applyResource(
 	ctx context.Context,
 	model *SLOResourceModel,
@@ -284,61 +301,5 @@ func (s *SLOResource) runReplay(ctx context.Context, config tfsdk.Config, model 
 		fmt.Sprintf(
 			"Data will be retrieved starting from %s.",
 			model.RetrieveHistoricalDataFrom.ValueString()))
-	return diags
-}
-
-type sloProjectPlanModifier struct{}
-
-func (s sloProjectPlanModifier) Description(ctx context.Context) string {
-	return s.MarkdownDescription(ctx)
-}
-
-func (s sloProjectPlanModifier) MarkdownDescription(context.Context) string {
-	return "Modifies the SLO plan when the `project` attribute is changed. " +
-		"This modifier ensures that no other attributes are changed along with the project change, " +
-		"and provides warnings about the implications of moving an SLO between projects."
-}
-
-func (s sloProjectPlanModifier) PlanModifyString(
-	ctx context.Context,
-	req planmodifier.StringRequest,
-	resp *planmodifier.StringResponse,
-) {
-	if isNullOrUnknown(req.StateValue) || req.StateValue == req.PlanValue {
-		return
-	}
-	resp.Diagnostics.Append(s.modifyPlanForProjectChange(ctx, req.Plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-}
-
-func (s sloProjectPlanModifier) modifyPlanForProjectChange(ctx context.Context, plan tfsdk.Plan) diag.Diagnostics {
-	diags := make(diag.Diagnostics, 0)
-
-	var alertPolicies []string
-	alertPoliciesPath := path.Root("alert_policies")
-	diags.Append(plan.GetAttribute(ctx, alertPoliciesPath, &alertPolicies)...)
-	if diags.HasError() {
-		return diags
-	}
-	if len(alertPolicies) > 0 {
-		diags.AddAttributeError(alertPoliciesPath,
-			"Cannot move SLO between Projects with attached Alert Policies.",
-			"You must first remove Alert Policies attached to this SLO before attempting to change it's Project.",
-		)
-		return diags
-	}
-
-	diags.AddAttributeWarning(path.Root("project"),
-		"Changing the Project results in a dedicated operation which has several side effects (see details).",
-		`Moving an SLO between Projects:
-  - Creates a new Project and/or Service if the specified target objects do not yet exist.
-    It is best practice to define these new objects in the Terraform configuration, before moving the SLO.
-  - Updates SLO’s project in the composite SLO definition and Budget Adjustment filters.
-    These definitions, which reference any objectives from the moved SLO need to be updated manually.
-  - Updates its link — the former link won't work anymore.
-  - Removes it from reports filtered by its previous path.
-`)
 	return diags
 }

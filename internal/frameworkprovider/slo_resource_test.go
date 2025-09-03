@@ -179,6 +179,60 @@ func TestAccSLOResource(t *testing.T) {
 	})
 }
 
+func TestAccSLOResource_planValidation(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	t.Run("static validation fails", func(t *testing.T) {
+		t.Parallel()
+
+		sloResource := sloResourceTemplateModel{
+			ResourceName:     "test",
+			SLOResourceModel: getExampleSLOResource(t),
+		}
+		sloResource.Name = "not valid"
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				{
+					Config: newSLOResource(t, sloResource),
+					ExpectError: regexp.MustCompile(
+						`Bad Request: Validation for SLO 'not valid' in project 'default' has failed`,
+					),
+					PlanOnly: true,
+				},
+			},
+		})
+	})
+
+	t.Run("dynamic validation fails", func(t *testing.T) {
+		t.Parallel()
+	
+		sloResource := sloResourceTemplateModel{
+			ResourceName:     "test",
+			SLOResourceModel: getExampleSLOResource(t),
+		}
+		sloResource.Name = e2etestutils.GenerateName()
+		sloResource.Indicator[0].Name = e2etestutils.GenerateName()
+		sloResource.Indicator[0].Project = types.StringValue(sloResource.Project)
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				{
+					Config: newSLOResource(t, sloResource),
+					ExpectError: regexp.MustCompile(fmt.Sprintf(
+						`(?m)because object Agent %s referenced in its\nspec does not exist in 'default' project`,
+						sloResource.Indicator[0].Name,
+					)),
+					PlanOnly: true,
+				},
+			},
+		})
+	})
+}
+
 func TestAccSLOResource_moveSLO(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
