@@ -208,7 +208,7 @@ func TestAccSLOResource_planValidation(t *testing.T) {
 
 	t.Run("dynamic validation fails", func(t *testing.T) {
 		t.Parallel()
-	
+
 		sloResource := sloResourceTemplateModel{
 			ResourceName:     "test",
 			SLOResourceModel: getExampleSLOResource(t),
