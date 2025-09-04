@@ -17,6 +17,7 @@ var (
 	_ resource.Resource                = &ProjectResource{}
 	_ resource.ResourceWithImportState = &ProjectResource{}
 	_ resource.ResourceWithConfigure   = &ProjectResource{}
+	_ resource.ResourceWithModifyPlan  = &ProjectResource{}
 )
 
 func NewProjectResource() resource.Resource {
@@ -136,6 +137,26 @@ func (s *ProjectResource) Configure(
 		return
 	}
 	s.client = client
+}
+
+// ModifyPlan implements [resource.ResourceWithModifyPlan.ModifyPlan] function.
+func (s *ProjectResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	var plan *ProjectResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if plan == nil {
+		return
+	}
+	resp.Diagnostics.Append(s.client.DryRunApplyObject(ctx, plan.ToManifest())...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (s *ProjectResource) applyResource(ctx context.Context, plan tfsdk.Plan, state *tfsdk.State) diag.Diagnostics {

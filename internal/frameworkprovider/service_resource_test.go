@@ -180,6 +180,30 @@ func TestAccServiceResource(t *testing.T) {
 	})
 }
 
+func TestAccServiceResource_planValidation(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	serviceResource := serviceResourceTemplateModel{
+		ResourceName:         "test",
+		ServiceResourceModel: getExampleServiceResource(t),
+	}
+	serviceResource.Name = "not valid"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: newServiceResource(t, serviceResource),
+				ExpectError: regexp.MustCompile(
+					`(?m)Bad Request: Validation for Service 'not valid' in project 'default' has\nfailed`,
+				),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestRenderServiceResourceTemplate(t *testing.T) {
 	t.Parallel()
 

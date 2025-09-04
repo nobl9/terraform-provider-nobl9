@@ -20,6 +20,7 @@ import (
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	v2 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v2"
 	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
 
 	"github.com/nobl9/terraform-provider-nobl9/internal/version"
@@ -81,7 +82,7 @@ func newSDKClient(provider ProviderModel) (*sdkClient, diag.Diagnostics) {
 }
 
 func (s sdkClient) ApplyObject(ctx context.Context, obj manifest.Object) diag.Diagnostics {
-	err := s.client.Objects().V1().Apply(ctx, []manifest.Object{obj})
+	err := s.client.Objects().V2().Apply(ctx, v2.ApplyRequest{Objects: []manifest.Object{obj}})
 	if err != nil {
 		return diag.Diagnostics{
 			diag.NewErrorDiagnostic(
@@ -94,8 +95,40 @@ func (s sdkClient) ApplyObject(ctx context.Context, obj manifest.Object) diag.Di
 	return nil
 }
 
+func (s sdkClient) DryRunApplyObject(ctx context.Context, obj manifest.Object) diag.Diagnostics {
+	err := s.client.Objects().V2().Apply(ctx, v2.ApplyRequest{Objects: []manifest.Object{obj}, DryRun: true})
+	if err != nil {
+		var httpErr *sdk.HTTPError
+		if errors.As(err, &httpErr) {
+			if httpErr.StatusCode == http.StatusBadRequest &&
+				len(httpErr.Errors) > 0 &&
+				strings.HasPrefix(httpErr.Errors[0].Title, "Validation for") {
+				return diag.Diagnostics{
+					diag.NewErrorDiagnostic(
+						fmt.Sprintf("Dry-run apply failed for %s %s", obj.GetVersion(), obj.GetKind()),
+						err.Error(),
+					),
+				}
+			}
+		}
+		return diag.Diagnostics{
+			diag.NewWarningDiagnostic(
+				fmt.Sprintf("Dry-run apply failed for %s %s", obj.GetVersion(), obj.GetKind()),
+				err.Error(),
+			),
+		}
+	}
+	tflog.Debug(ctx, fmt.Sprintf("dry-run apply succeeded %s %s",
+		obj.GetVersion(), obj.GetKind()), getManifestObjectTraceAttrs(obj))
+	return nil
+}
+
 func (s sdkClient) DeleteObject(ctx context.Context, kind manifest.Kind, name, project string) diag.Diagnostics {
-	err := s.client.Objects().V1().DeleteByName(ctx, kind, project, name)
+	err := s.client.Objects().V2().DeleteByName(ctx, v2.DeleteByNameRequest{
+		Kind:    kind,
+		Project: project,
+		Names:   []string{name},
+	})
 	if err != nil {
 		return diag.Diagnostics{
 			diag.NewErrorDiagnostic(fmt.Sprintf("Failed to delete %s %s", manifest.VersionV1alpha, kind), err.Error()),
