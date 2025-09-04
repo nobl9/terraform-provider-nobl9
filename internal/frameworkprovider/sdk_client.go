@@ -98,8 +98,21 @@ func (s sdkClient) ApplyObject(ctx context.Context, obj manifest.Object) diag.Di
 func (s sdkClient) DryRunApplyObject(ctx context.Context, obj manifest.Object) diag.Diagnostics {
 	err := s.client.Objects().V2().Apply(ctx, v2.ApplyRequest{Objects: []manifest.Object{obj}, DryRun: true})
 	if err != nil {
+		var httpErr *sdk.HTTPError
+		if errors.As(err, &httpErr) {
+			if httpErr.StatusCode == http.StatusBadRequest &&
+				len(httpErr.Errors) > 0 &&
+				strings.HasPrefix(httpErr.Errors[0].Title, "Validation for") {
+				return diag.Diagnostics{
+					diag.NewErrorDiagnostic(
+						fmt.Sprintf("Dry-run apply failed for %s %s", obj.GetVersion(), obj.GetKind()),
+						err.Error(),
+					),
+				}
+			}
+		}
 		return diag.Diagnostics{
-			diag.NewErrorDiagnostic(
+			diag.NewWarningDiagnostic(
 				fmt.Sprintf("Dry-run apply failed for %s %s", obj.GetVersion(), obj.GetKind()),
 				err.Error(),
 			),
