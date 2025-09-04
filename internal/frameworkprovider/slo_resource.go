@@ -281,9 +281,9 @@ func (s *SLOResource) runReplay(ctx context.Context, config tfsdk.Config, model 
 	if isNullOrUnknown(model.RetrieveHistoricalDataFrom) {
 		return nil
 	}
-	replayFromTs, _ := time.Parse(time.RFC3339, model.RetrieveHistoricalDataFrom.ValueString())
+	replayFromTS, _ := time.Parse(time.RFC3339, model.RetrieveHistoricalDataFrom.ValueString())
 	const startOffsetMinutes = 5
-	windowDuration := time.Since(replayFromTs)
+	windowDuration := time.Since(replayFromTS)
 	payload := sdkModels.Replay{
 		Project: model.Project,
 		Slo:     model.Name,

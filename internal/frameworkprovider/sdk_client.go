@@ -96,7 +96,7 @@ func (s sdkClient) ApplyObject(ctx context.Context, obj manifest.Object) diag.Di
 }
 
 func (s sdkClient) DryRunApplyObject(ctx context.Context, obj manifest.Object) diag.Diagnostics {
-	err := s.client.Objects().V2().Apply(ctx, v2.ApplyRequest{Objects: []manifest.Object{obj}}.WithDryRun(true))
+	err := s.client.Objects().V2().Apply(ctx, v2.ApplyRequest{Objects: []manifest.Object{obj}, DryRun: true})
 	if err != nil {
 		return diag.Diagnostics{
 			diag.NewErrorDiagnostic(
