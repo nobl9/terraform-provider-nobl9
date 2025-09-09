@@ -28,10 +28,11 @@ import (
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 	"github.com/nobl9/nobl9-go/tests/e2etestutils"
-	"github.com/nobl9/terraform-provider-nobl9/nobl9"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/nobl9/terraform-provider-nobl9/nobl9"
 )
 
 func TestMain(m *testing.M) {
