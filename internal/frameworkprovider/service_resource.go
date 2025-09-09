@@ -21,6 +21,7 @@ var (
 	_ resource.Resource                = &ServiceResource{}
 	_ resource.ResourceWithImportState = &ServiceResource{}
 	_ resource.ResourceWithConfigure   = &ServiceResource{}
+	_ resource.ResourceWithModifyPlan  = &ServiceResource{}
 )
 
 func NewServiceResource() resource.Resource {
@@ -166,6 +167,26 @@ func (s *ServiceResource) Configure(
 		return
 	}
 	s.client = client
+}
+
+// ModifyPlan implements [resource.ResourceWithModifyPlan.ModifyPlan] function.
+func (s *ServiceResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	var plan *ServiceResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if plan == nil {
+		return
+	}
+	resp.Diagnostics.Append(s.client.DryRunApplyObject(ctx, plan.ToManifest())...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (s *ServiceResource) applyResource(ctx context.Context, plan tfsdk.Plan, state *tfsdk.State) diag.Diagnostics {

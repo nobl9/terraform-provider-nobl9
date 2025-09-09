@@ -95,16 +95,17 @@ func testAccSetup(t *testing.T) {
 	t.Helper()
 	checkIfAcceptanceTestIsSet(t)
 
+	// Check ENVs everytime to fail all tests using the SDK client
+	for _, key := range []string{
+		"NOBL9_CLIENT_ID",
+		"NOBL9_CLIENT_SECRET",
+	} {
+		_, ok := os.LookupEnv(key)
+		require.True(t, ok, "required environment variable %q is not set", key)
+	}
+
 	// Initialize the SDK client.
 	testSDKClient.once.Do(func() {
-		for _, key := range []string{
-			"NOBL9_CLIENT_ID",
-			"NOBL9_CLIENT_SECRET",
-		} {
-			_, ok := os.LookupEnv(key)
-			require.True(t, ok, "required environment variable %q is not set", key)
-		}
-
 		providerModel := ProviderModel{}
 		diags := providerModel.setDefaultsFromEnv()
 		if diags.HasError() {
