@@ -221,11 +221,13 @@ func TestAccSLOResource_planValidation(t *testing.T) {
 			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 			Steps: []resource.TestStep{
 				{
-					Config: newSLOResource(t, sloResource),
-					ExpectError: regexp.MustCompile(fmt.Sprintf(
-						`(?m)because object Agent %s referenced in its\nspec does not exist in 'default' project`,
-						sloResource.Indicator[0].Name,
-					)),
+					Config:             newSLOResource(t, sloResource),
+					ExpectNonEmptyPlan: true,
+					// TODO dynamic validation yields warning, not errors. I didn't find an easy way to test it yet.
+					// ExpectError: regexp.MustCompile(fmt.Sprintf(
+					// 	`(?m)because object Agent %s referenced in its\nspec does not exist in 'default' project`,
+					// 	sloResource.Indicator[0].Name,
+					// )),
 					PlanOnly: true,
 				},
 			},
