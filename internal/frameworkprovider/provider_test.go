@@ -192,6 +192,17 @@ func getObjectsFromTheNobl9API(t *testing.T, ctx context.Context, object manifes
 	if !assert.NoError(t, err) {
 		return nil, err
 	}
+
+	// This is a hacky workaround. Read more in [SLOResource.updateEmptyAlertPolicies].
+	if object.GetKind() == manifest.KindSLO && len(objects) == 1 {
+		appliedAP := object.(v1alphaSLO.SLO).Spec.AlertPolicies
+		returnedAP := objects[0].(v1alphaSLO.SLO).Spec.AlertPolicies
+		if appliedAP != nil && len(appliedAP) == 0 && len(returnedAP) == 0 {
+			slo := objects[0].(v1alphaSLO.SLO)
+			slo.Spec.AlertPolicies = []string{}
+			objects[0] = slo
+		}
+	}
 	return objects, nil
 }
 

@@ -833,7 +833,6 @@ func TestAccSLOResource_custom(t *testing.T) {
 				model.AlertPolicies = []string{}
 				return model
 			},
-			expectedError: "Attribute alert_policies set must contain at least 1 elements, got: 0",
 		},
 		"with alert policies": {
 			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
@@ -1067,7 +1066,6 @@ func TestAccSLOResource_custom(t *testing.T) {
 				})
 				return
 			}
-
 			resource.Test(t, resource.TestCase{
 				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 				Steps: []resource.TestStep{
