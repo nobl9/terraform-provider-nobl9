@@ -51,7 +51,7 @@ func (s *SLOResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	appliedModel, diags := s.applyResource(ctx, resp.State, &model)
+	appliedModel, diags := s.applyResource(ctx, resp.State, &req.Plan, &model)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -77,7 +77,7 @@ func (s *SLOResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	}
 
 	// Read the SLO after update to fetch the computed fields.
-	updatedModel, diags := s.readResource(ctx, req.State, &model)
+	updatedModel, diags := s.readResource(ctx, req.State, nil, &model)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -121,7 +121,7 @@ func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		}
 	}
 
-	appliedModel, diags := s.applyResource(ctx, req.State, &model)
+	appliedModel, diags := s.applyResource(ctx, req.State, &req.Plan, &model)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		moveSLOUpdateWarningFunc()
@@ -168,7 +168,7 @@ func (s *SLOResource) ImportState(
 		)
 		return
 	}
-	model, diags := s.readResource(ctx, resp.State, &SLOResourceModel{Name: parts[1], Project: parts[0]})
+	model, diags := s.readResource(ctx, resp.State, nil, &SLOResourceModel{Name: parts[1], Project: parts[0]})
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -215,6 +215,7 @@ func (s *SLOResource) ModifyPlan(
 func (s *SLOResource) applyResource(
 	ctx context.Context,
 	req tfsdk.State,
+	plan *tfsdk.Plan,
 	model *SLOResourceModel,
 ) (*SLOResourceModel, diag.Diagnostics) {
 	slo := model.ToManifest()
@@ -224,7 +225,7 @@ func (s *SLOResource) applyResource(
 	}
 
 	// Read the SLO after creation to fetch the computed fields.
-	appliedModel, diagnostics := s.readResource(ctx, req, model)
+	appliedModel, diagnostics := s.readResource(ctx, req, plan, model)
 	if diagnostics.HasError() {
 		return nil, diagnostics
 	}
@@ -235,6 +236,7 @@ func (s *SLOResource) applyResource(
 func (s *SLOResource) readResource(
 	ctx context.Context,
 	state tfsdk.State,
+	plan *tfsdk.Plan,
 	model *SLOResourceModel,
 ) (*SLOResourceModel, diag.Diagnostics) {
 	slo, diagnostics := s.client.GetSLO(ctx, model.Name, model.Project)
@@ -242,7 +244,7 @@ func (s *SLOResource) readResource(
 		return nil, diagnostics
 	}
 	updatedModel := newSLOResourceConfigFromManifest(slo)
-	s.updateEmptyAlertPolicies(ctx, state, model, diagnostics, updatedModel, slo)
+	s.updateEmptyAlertPolicies(ctx, diagnostics, state, plan, updatedModel, slo)
 	s.sortLists(model, updatedModel)
 
 	return updatedModel, diagnostics
@@ -254,32 +256,30 @@ func (s *SLOResource) readResource(
 // if this happens terraform will think that the resource was changed outside of terraform
 func (s *SLOResource) updateEmptyAlertPolicies(
 	ctx context.Context,
-	state tfsdk.State,
-	model *SLOResourceModel,
 	diagnostics diag.Diagnostics,
-	updatedModel *SLOResourceModel,
+	state tfsdk.State,
+	plan *tfsdk.Plan,
+	model *SLOResourceModel,
 	slo v1alphaSLO.SLO,
-) *SLOResourceModel {
-	if !state.Raw.IsNull() {
-		// It's a read - we need to take a look into the saved state
-		// overwrite it only if the SLO we just got from the API does not have alert policies
-		var alertPolicies *[]string
+) {
+	var alertPolicies *[]string
+	if !state.Raw.IsNull() && plan == nil {
+		// It's a Read - we need to take a look into the saved state
 		alertPoliciesPath := path.Root("alert_policies")
 		diagnostics.Append(state.GetAttribute(ctx, alertPoliciesPath, &alertPolicies)...)
-		if diagnostics.HasError() {
-			return updatedModel
-		}
-		if alertPolicies != nil && len(*alertPolicies) == 0 && len(slo.Spec.AlertPolicies) == 0 {
-			updatedModel.AlertPolicies = []string{}
-		}
-	} else { // nolint:gocritic
-		// It's a Create or Import - check the model that we are trying to apply now
-		// overwrite it only if the SLO we just got from the API does not have alert policies
-		if model.AlertPolicies != nil && len(model.AlertPolicies) == 0 && len(slo.Spec.AlertPolicies) == 0 {
-			updatedModel.AlertPolicies = []string{}
-		}
+	} else if plan != nil { // nolint:gocritic
+		// Is' an Update, Create or Import - we need to read the plan
+		alertPoliciesPath := path.Root("alert_policies")
+		diagnostics.Append(plan.GetAttribute(ctx, alertPoliciesPath, &alertPolicies)...)
 	}
-	return nil
+	if diagnostics.HasError() {
+		return
+	}
+
+	alertPoliciesAreEmpty := alertPolicies != nil && len(*alertPolicies) == 0
+	if alertPoliciesAreEmpty && len(slo.Spec.AlertPolicies) == 0 {
+		model.AlertPolicies = []string{}
+	}
 }
 
 // sortLists sorts lists returned by the API to ensure consistent ordering.
