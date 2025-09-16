@@ -235,6 +235,151 @@ func TestAccSLOResource_planValidation(t *testing.T) {
 	})
 }
 
+func TestAccSLOResource_changeAlertPolicies(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	manifestAlertPolicy := e2etestutils.GetExampleObject[v1alphaAlertPolicy.AlertPolicy](
+		t,
+		manifest.KindAlertPolicy,
+		nil,
+	)
+	manifestAlertPolicy.Metadata.Name = e2etestutils.GenerateName()
+	manifestAlertPolicy.Metadata.Project = manifestProject.GetName()
+	manifestAlertPolicy.Metadata.Labels = e2etestutils.AnnotateLabels(t, nil)
+	manifestAlertPolicy.Spec.AlertMethods = nil
+	auxiliaryObjects = append(auxiliaryObjects, manifestAlertPolicy)
+
+	sloResource := sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource.Name = e2etestutils.GenerateName()
+	sloResource.Project = manifestProject.GetName()
+	sloResource.Service = manifestService.GetName()
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+
+	sloResource.AlertPolicies = []string{manifestAlertPolicy.GetName()}
+
+	manifestSLO := sloResource.ToManifest()
+
+	sloConfig := newSLOResource(t, sloResource)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create and Read.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: sloConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, ctx, manifestSLO),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update project with alert policies - error.
+			{
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.Project = "new-project"
+					return m
+				}()),
+				ExpectError: regexp.MustCompile(`Cannot move SLO between Projects with attached Alert Policies.`),
+			},
+			// 3. Set alert policies to empty list
+			{
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.AlertPolicies = []string{}
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.test", "alert_policies.#", "0"),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO
+						slo.Spec.AlertPolicies = []string{}
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"alert_policies"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// 4. Remove Alert Policy from SLO.
+			{
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.AlertPolicies = nil
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.test", "alert_policies.#", "0"),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO
+						slo.Spec.AlertPolicies = nil
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"alert_policies"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// 5. Set alert policies to empty list again
+			{
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.AlertPolicies = []string{}
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.test", "alert_policies.#", "0"),
+					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
+						slo := manifestSLO
+						slo.Spec.AlertPolicies = []string{}
+						return slo
+					}()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"alert_policies"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestAccSLOResource_moveSLO(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
@@ -833,7 +978,6 @@ func TestAccSLOResource_custom(t *testing.T) {
 				model.AlertPolicies = []string{}
 				return model
 			},
-			expectedError: "Attribute alert_policies set must contain at least 1 elements, got: 0",
 		},
 		"with alert policies": {
 			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
@@ -1067,7 +1211,6 @@ func TestAccSLOResource_custom(t *testing.T) {
 				})
 				return
 			}
-
 			resource.Test(t, resource.TestCase{
 				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 				Steps: []resource.TestStep{

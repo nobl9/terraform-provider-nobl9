@@ -51,9 +51,6 @@ var sloResourceSchema = func() schema.Schema {
 				Optional:    true,
 				ElementType: types.StringType,
 				Description: "Alert Policies attached to SLO.",
-				Validators: []validator.Set{
-					setvalidator.SizeAtLeast(1),
-				},
 			},
 			"retrieve_historical_data_from": schema.StringAttribute{
 				Optional: true,

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/nobl9/nobl9-go/manifest"
+	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
 )
 
@@ -50,7 +51,7 @@ func (s *SLOResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	appliedModel, diags := s.applyResource(ctx, &model)
+	appliedModel, diags := s.applyResource(ctx, resp.State, &req.Plan, &model)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -76,7 +77,7 @@ func (s *SLOResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	}
 
 	// Read the SLO after update to fetch the computed fields.
-	updatedModel, diags := s.readResource(ctx, &model)
+	updatedModel, diags := s.readResource(ctx, req.State, nil, &model)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -120,7 +121,7 @@ func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		}
 	}
 
-	appliedModel, diags := s.applyResource(ctx, &model)
+	appliedModel, diags := s.applyResource(ctx, req.State, &req.Plan, &model)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		moveSLOUpdateWarningFunc()
@@ -167,7 +168,7 @@ func (s *SLOResource) ImportState(
 		)
 		return
 	}
-	model, diags := s.readResource(ctx, &SLOResourceModel{Name: parts[1], Project: parts[0]})
+	model, diags := s.readResource(ctx, resp.State, nil, &SLOResourceModel{Name: parts[1], Project: parts[0]})
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -213,6 +214,8 @@ func (s *SLOResource) ModifyPlan(
 
 func (s *SLOResource) applyResource(
 	ctx context.Context,
+	req tfsdk.State,
+	plan *tfsdk.Plan,
 	model *SLOResourceModel,
 ) (*SLOResourceModel, diag.Diagnostics) {
 	slo := model.ToManifest()
@@ -222,7 +225,7 @@ func (s *SLOResource) applyResource(
 	}
 
 	// Read the SLO after creation to fetch the computed fields.
-	appliedModel, diagnostics := s.readResource(ctx, model)
+	appliedModel, diagnostics := s.readResource(ctx, req, plan, model)
 	if diagnostics.HasError() {
 		return nil, diagnostics
 	}
@@ -232,6 +235,8 @@ func (s *SLOResource) applyResource(
 // readResource reads the current state of the resource from the Nobl9 API.
 func (s *SLOResource) readResource(
 	ctx context.Context,
+	state tfsdk.State,
+	plan *tfsdk.Plan,
 	model *SLOResourceModel,
 ) (*SLOResourceModel, diag.Diagnostics) {
 	slo, diagnostics := s.client.GetSLO(ctx, model.Name, model.Project)
@@ -239,8 +244,42 @@ func (s *SLOResource) readResource(
 		return nil, diagnostics
 	}
 	updatedModel := newSLOResourceConfigFromManifest(slo)
+	s.updateEmptyAlertPolicies(ctx, diagnostics, state, plan, updatedModel, slo)
 	s.sortLists(model, updatedModel)
+
 	return updatedModel, diagnostics
+}
+
+// updateEmptyAlertPolicies is a hack to handle the case when:
+// - user set an empty list of alert policies
+// - Nobl9 API does not return an empty list (because of omit empty)
+// if this happens terraform will think that the resource was changed outside of terraform
+func (s *SLOResource) updateEmptyAlertPolicies(
+	ctx context.Context,
+	diagnostics diag.Diagnostics,
+	state tfsdk.State,
+	plan *tfsdk.Plan,
+	model *SLOResourceModel,
+	slo v1alphaSLO.SLO,
+) {
+	var alertPolicies *[]string
+	if !state.Raw.IsNull() && plan == nil {
+		// It's a Read - we need to take a look into the saved state
+		alertPoliciesPath := path.Root("alert_policies")
+		diagnostics.Append(state.GetAttribute(ctx, alertPoliciesPath, &alertPolicies)...)
+	} else if plan != nil { // nolint:gocritic
+		// Is' an Update, Create or Import - we need to read the plan
+		alertPoliciesPath := path.Root("alert_policies")
+		diagnostics.Append(plan.GetAttribute(ctx, alertPoliciesPath, &alertPolicies)...)
+	}
+	if diagnostics.HasError() {
+		return
+	}
+
+	alertPoliciesAreEmpty := alertPolicies != nil && len(*alertPolicies) == 0
+	if alertPoliciesAreEmpty && len(slo.Spec.AlertPolicies) == 0 {
+		model.AlertPolicies = []string{}
+	}
 }
 
 // sortLists sorts lists returned by the API to ensure consistent ordering.
