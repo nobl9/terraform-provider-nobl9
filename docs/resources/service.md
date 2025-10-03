@@ -77,6 +77,6 @@ Read-Only:
 
 ## Useful Links
 
-[Services in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/#services)
+[Services in Nobl9 | Nobl9 Documentation](https://docs.nobl9.com/getting-started/nobl9-resources/services)
 
 [Service YAML Configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide/#service)

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -18,6 +17,7 @@ var (
 	_ resource.Resource                = &ProjectResource{}
 	_ resource.ResourceWithImportState = &ProjectResource{}
 	_ resource.ResourceWithConfigure   = &ProjectResource{}
+	_ resource.ResourceWithModifyPlan  = &ProjectResource{}
 )
 
 func NewProjectResource() resource.Resource {
@@ -115,7 +115,12 @@ func (s *ProjectResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	resp.State.SetAttribute(ctx, path.Root("name"), req.ID)
+	model, diags := s.readResource(ctx, ProjectResourceModel{Name: req.ID})
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
 }
 
 func (s *ProjectResource) Configure(
@@ -134,6 +139,26 @@ func (s *ProjectResource) Configure(
 	s.client = client
 }
 
+// ModifyPlan implements [resource.ResourceWithModifyPlan.ModifyPlan] function.
+func (s *ProjectResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	var plan *ProjectResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if plan == nil {
+		return
+	}
+	resp.Diagnostics.Append(s.client.DryRunApplyObject(ctx, plan.ToManifest())...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
 func (s *ProjectResource) applyResource(ctx context.Context, plan tfsdk.Plan, state *tfsdk.State) diag.Diagnostics {
 	var model ProjectResourceModel
 	diagnostics := plan.Get(ctx, &model)
@@ -141,7 +166,7 @@ func (s *ProjectResource) applyResource(ctx context.Context, plan tfsdk.Plan, st
 		return diagnostics
 	}
 
-	project := model.ToManifest(ctx)
+	project := model.ToManifest()
 	diagnostics.Append(s.client.ApplyObject(ctx, project)...)
 	if diagnostics.HasError() {
 		return diagnostics

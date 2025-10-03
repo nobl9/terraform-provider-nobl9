@@ -2,7 +2,6 @@ package nobl9
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"sync"
 
@@ -10,9 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/nobl9/nobl9-go/sdk"
+
+	"github.com/nobl9/terraform-provider-nobl9/internal/version"
 )
 
-func Provider(version string) *schema.Provider {
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"ingest_url": {
@@ -112,13 +113,12 @@ func Provider(version string) *schema.Provider {
 			"nobl9_direct_" + sumologicDirectType:           resourceDirectFactory(sumologicDirectSpec{}),
 			"nobl9_direct_" + thousandeyesDirectType:        resourceDirectFactory(thousandeyesDirectSpec{}),
 			"nobl9_role_binding":                            resourceRoleBinding(),
-			"nobl9_slo":                                     resourceSLO(),
 			"nobl9_budget_adjustment":                       budgetAdjustment(),
 			"nobl9_report_system_health_review":             resourceReportFactory(reportSystemHealthReview{}),
 		},
 
 		ConfigureContextFunc: func(_ context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
-			return getProviderConfig(data, version), nil
+			return getProviderConfig(data), nil
 		},
 	}
 }
@@ -131,11 +131,10 @@ type ProviderConfig struct {
 	ClientSecret   string
 	OktaOrgURL     string
 	OktaAuthServer string
-	Version        string
 	NoConfigFile   bool
 }
 
-func getProviderConfig(data *schema.ResourceData, version string) ProviderConfig {
+func getProviderConfig(data *schema.ResourceData) ProviderConfig {
 	return ProviderConfig{
 		IngestURL:      data.Get("ingest_url").(string),
 		Organization:   data.Get("organization").(string),
@@ -144,7 +143,6 @@ func getProviderConfig(data *schema.ResourceData, version string) ProviderConfig
 		ClientSecret:   data.Get("client_secret").(string),
 		OktaOrgURL:     data.Get("okta_org_url").(string),
 		OktaAuthServer: data.Get("okta_auth_server").(string),
-		Version:        version,
 		NoConfigFile:   data.Get("no_config_file").(bool),
 	}
 }
@@ -195,7 +193,7 @@ func getClient(providerConfig ProviderConfig) (*sdk.Client, diag.Diagnostics) {
 		if err != nil {
 			panic(err)
 		}
-		sharedClient.SetUserAgent(fmt.Sprintf("terraform-%s", providerConfig.Version))
+		sharedClient.SetUserAgent(version.GetUserAgent())
 	})
 	return sharedClient, diags
 }

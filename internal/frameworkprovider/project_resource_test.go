@@ -3,53 +3,35 @@ package frameworkprovider
 import (
 	"context"
 	"errors"
-	"fmt"
+	"regexp"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/nobl9/nobl9-go/manifest/v1alpha"
+	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
+	"github.com/nobl9/nobl9-go/tests/e2etestutils"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAccProjectResource(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	unixNow := time.Now().UnixNano()
-	projectName := fmt.Sprintf("project-%d", unixNow)
-	projectNameRecreatedByNameChange := fmt.Sprintf("project-name-recreated-%d", unixNow)
-
+	projectNameRecreatedByNameChange := e2etestutils.GenerateName()
 	projectResource := projectResourceTemplateModel{
 		ResourceName:         "test",
-		ProjectResourceModel: getExampleProjectResource(),
+		ProjectResourceModel: getExampleProjectResource(t),
 	}
-	projectResource.ProjectResourceModel.Labels = appendTestLabels(projectResource.ProjectResourceModel.Labels)
-	projectResource.ProjectResourceModel.Name = projectName
 
-	manifestProject := v1alphaProject.New(
-		v1alphaProject.Metadata{
-			Name:        projectName,
-			DisplayName: "Project",
-			Annotations: v1alpha.MetadataAnnotations{"key": "value"},
-			Labels: v1alpha.Labels{
-				"team":   []string{"green"},
-				"env":    []string{"dev", "prod"},
-				"origin": []string{"terraform-acc-test"},
-			},
-		},
-		v1alphaProject.Spec{
-			Description: "Example project",
-		},
-	)
+	manifestProject := projectResource.ToManifest()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read.
 			{
@@ -81,18 +63,18 @@ func TestAccProjectResource(t *testing.T) {
 			// ImportState.
 			{
 				ResourceName:  "nobl9_project.test",
-				ImportStateId: projectName,
+				ImportStateId: projectResource.Name,
 				ImportState:   true,
 				ImportStateCheck: func(states []*terraform.InstanceState) error {
 					if !assert.Len(t, states, 1) {
 						return errors.New("expected exactly one state")
 					}
-					assert.Equal(t, projectName, states[0].Attributes["name"])
+					assert.Equal(t, projectResource.Name, states[0].Attributes["name"])
 					return nil
 				},
 				// In the next step we're also verifying the imported state, so we need to persist it.
 				ImportStatePersist: true,
-				PreConfig:          func() { applyNobl9Objects(t, ctx, manifestProject) },
+				PreConfig:          func() { e2etestutils.V1Apply(t, []manifest.Object{manifestProject}) },
 			},
 			// Update and Read, ensure computed field does not pollute the plan.
 			{
@@ -111,13 +93,13 @@ func TestAccProjectResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectNoChangeInPlan{attrName: "status"},
+						expectChangesInResourcePlan(planDiff{Modified: []string{"display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_project.test", plancheck.ResourceActionUpdate),
 					},
 				},
 			},
-			// Update name - recreate.
+			// Update name and revert display name - recreate.
 			{
 				Config: newProjectResource(t, func() projectResourceTemplateModel {
 					m := projectResource
@@ -134,6 +116,7 @@ func TestAccProjectResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"name", "display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_project.test", plancheck.ResourceActionReplace),
 					},
@@ -144,38 +127,45 @@ func TestAccProjectResource(t *testing.T) {
 	})
 }
 
+func TestAccProjectResource_planValidation(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	projectResource := projectResourceTemplateModel{
+		ResourceName:         "test",
+		ProjectResourceModel: getExampleProjectResource(t),
+	}
+	projectResource.Name = "not valid"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      newProjectResource(t, projectResource),
+				ExpectError: regexp.MustCompile(`Bad Request: Validation for Project 'not valid' has failed`),
+				PlanOnly:    true,
+			},
+		},
+	})
+}
+
 func TestRenderProjectResourceTemplate(t *testing.T) {
 	t.Parallel()
 
+	exampleResource := getExampleProjectResource(t)
+	exampleResource.Name = "project"
+	exampleResource.Labels = Labels{
+		{Key: "team", Values: []string{"green", "orange"}},
+		{Key: "env", Values: []string{"prod"}},
+		{Key: "empty", Values: []string{""}},
+	}
 	actual := newProjectResource(t, projectResourceTemplateModel{
 		ResourceName:         "this",
-		ProjectResourceModel: getExampleProjectResource(),
+		ProjectResourceModel: exampleResource,
 	})
 
-	expected := `resource "nobl9_project" "this" {
-  name = "project"
-  display_name = "Project"
-  annotations = {
-    key = "value",
-  }
-  label {
-    key = "team"
-    values = [
-      "green",
-    ]
-  }
-  label {
-    key = "env"
-    values = [
-      "prod",
-      "dev",
-    ]
-  }
-  description = "Example project"
-}
-`
-
-	assert.Equal(t, expected, actual)
+	assertHCL(t, actual)
+	assert.Equal(t, readExpectedConfig(t, "project-config.tf"), actual)
 }
 
 type projectResourceTemplateModel struct {
@@ -187,15 +177,15 @@ func newProjectResource(t *testing.T, model projectResourceTemplateModel) string
 	return executeTemplate(t, "project_resource.hcl.tmpl", model)
 }
 
-func getExampleProjectResource() ProjectResourceModel {
+func getExampleProjectResource(t *testing.T) ProjectResourceModel {
 	return ProjectResourceModel{
-		Name:        "project",
+		Name:        e2etestutils.GenerateName(),
 		DisplayName: types.StringValue("Project"),
 		Description: types.StringValue("Example project"),
 		Annotations: map[string]string{"key": "value"},
-		Labels: Labels{
+		Labels: addTestLabels(t, Labels{
 			{Key: "team", Values: []string{"green"}},
-			{Key: "env", Values: []string{"prod", "dev"}},
-		},
+			{Key: "env", Values: []string{"dev", "prod"}},
+		}),
 	}
 }

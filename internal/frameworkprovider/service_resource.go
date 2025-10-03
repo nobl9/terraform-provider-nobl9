@@ -4,14 +4,15 @@ import (
 	"context"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/nobl9/nobl9-go/manifest"
 )
 
@@ -20,6 +21,7 @@ var (
 	_ resource.Resource                = &ServiceResource{}
 	_ resource.ResourceWithImportState = &ServiceResource{}
 	_ resource.ResourceWithConfigure   = &ServiceResource{}
+	_ resource.ResourceWithModifyPlan  = &ServiceResource{}
 )
 
 func NewServiceResource() resource.Resource {
@@ -38,8 +40,12 @@ func (s *ServiceResource) Metadata(_ context.Context, req resource.MetadataReque
 
 // Schema implements [resource.Resource.Schema] function.
 func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = serviceResourceSchema
+}
+
+var serviceResourceSchema = func() schema.Schema {
 	description := "[Service configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#service)"
-	resp.Schema = schema.Schema{
+	return schema.Schema{
 		MarkdownDescription: description,
 		Description:         description,
 		Attributes: map[string]schema.Attribute{
@@ -55,9 +61,11 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"description": specDescriptionAttr(),
 			"annotations": metadataAnnotationsAttr(),
 			"status": schema.ObjectAttribute{
-				Computed:       true,
-				Description:    "Status of created service.",
-				AttributeTypes: serviceStatusTypes,
+				Computed:    true,
+				Description: "Status of created service.",
+				AttributeTypes: map[string]attr.Type{
+					"slo_count": types.Int64Type,
+				},
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
@@ -67,7 +75,7 @@ func (s *ServiceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"label": metadataLabelsBlock(),
 		},
 	}
-}
+}()
 
 // Create is called when the provider must create a new resource. Config
 // and planned state values should be read from the
@@ -137,8 +145,12 @@ func (s *ServiceResource) ImportState(
 		)
 		return
 	}
-	resp.State.SetAttribute(ctx, path.Root("project"), parts[0])
-	resp.State.SetAttribute(ctx, path.Root("name"), parts[1])
+	model, diags := s.readResource(ctx, ServiceResourceModel{Name: parts[1], Project: parts[0]})
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
 }
 
 func (s *ServiceResource) Configure(
@@ -157,6 +169,26 @@ func (s *ServiceResource) Configure(
 	s.client = client
 }
 
+// ModifyPlan implements [resource.ResourceWithModifyPlan.ModifyPlan] function.
+func (s *ServiceResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	var plan *ServiceResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if plan == nil {
+		return
+	}
+	resp.Diagnostics.Append(s.client.DryRunApplyObject(ctx, plan.ToManifest())...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
 func (s *ServiceResource) applyResource(ctx context.Context, plan tfsdk.Plan, state *tfsdk.State) diag.Diagnostics {
 	var model ServiceResourceModel
 	diagnostics := plan.Get(ctx, &model)
@@ -164,7 +196,7 @@ func (s *ServiceResource) applyResource(ctx context.Context, plan tfsdk.Plan, st
 		return diagnostics
 	}
 
-	service := model.ToManifest(ctx)
+	service := model.ToManifest()
 	diagnostics.Append(s.client.ApplyObject(ctx, service)...)
 	if diagnostics.HasError() {
 		return diagnostics

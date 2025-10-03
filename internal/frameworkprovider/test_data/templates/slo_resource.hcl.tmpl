@@ -1,0 +1,237 @@
+resource "nobl9_slo" "{{ .ResourceName }}" {
+  {{- template "metadata" . -}}
+  {{- if .Service }}
+  service = "{{ .Service }}"
+  {{- end }}
+  {{- if .BudgetingMethod }}
+  budgeting_method = "{{ .BudgetingMethod }}"
+  {{- end }}
+  {{- if not (isNull .Tier) }}
+  tier = "{{ valueString .Tier }}"
+  {{- end }}
+  {{- if not (eq .AlertPolicies nil) }}
+  alert_policies = [
+    {{- range .AlertPolicies }}
+    "{{ . }}",
+    {{- end }}
+  ]
+  {{- end }}
+  {{- if .Indicator }}
+
+  indicator {
+    {{- with (index .Indicator 0) }}
+    {{- if .Name }}
+    name = "{{ .Name }}"
+    {{- end }}
+    {{- if not (isNull .Project) }}
+    project = "{{ valueString .Project }}"
+    {{- end }}
+    {{- if not (isNull .Kind) }}
+    kind = "{{ valueString .Kind }}"
+    {{- end }}
+    {{- end }}
+  }
+  {{- end }}
+  {{- range .Objectives }}
+
+  objective {
+    {{- if not (isNull .DisplayName) }}
+    display_name = "{{ valueString .DisplayName }}"
+    {{- end }}
+    {{- if not (isNull .Name ) }}
+    name = "{{ valueString .Name }}"
+    {{- end }}
+    {{- if not (isNull .Op ) }}
+    op = "{{ valueString .Op }}"
+    {{- end }}
+    {{- if .Target }}
+    target = {{ .Target }}
+    {{- end }}
+    {{- if not (isNull .TimeSliceTarget) }}
+    time_slice_target = {{ .TimeSliceTarget.ValueFloat64 }}
+    {{- end }}
+    {{- if not (isNull .Value) }}
+    value = {{ .Value.ValueFloat64 }}
+    {{- end }}
+    {{- if not (isNull .Primary) }}
+    primary = {{ .Primary.ValueBool }}
+    {{- end }}
+    {{- if .CountMetrics }}
+    {{- with (index .CountMetrics 0) }}
+    count_metrics {
+      {{- if .Incremental }}
+      incremental = {{ .Incremental.ValueBool }}
+      {{- end }}
+      {{- if .Good }}
+      {{- with (index .Good 0) }}
+      good {
+        {{- renderMetricSpec . }}
+      }
+      {{- end }}
+      {{- end }}
+      {{- if .Bad }}
+      {{- with (index .Bad 0) }}
+      bad {
+        {{- renderMetricSpec . }}
+      }
+      {{- end }}
+      {{- end }}
+      {{- if .Total }}
+      {{- with (index .Total 0) }}
+      total {
+        {{- renderMetricSpec . }}
+      }
+      {{- end }}
+      {{- end }}
+      {{- if .GoodTotal }}
+      {{- with (index .GoodTotal 0) }}
+      good_total {
+        {{- renderMetricSpec . }}
+      }
+      {{- end }}
+      {{- end }}
+    }
+    {{- end }}
+    {{- end }}
+    {{- if .RawMetric }}
+    {{- with (index .RawMetric 0) }}
+    raw_metric {
+      {{- range .Query }}
+      query {
+        {{- renderMetricSpec . }}
+      }
+      {{- end }}
+    }
+    {{- end }}
+    {{- end }}
+    {{- range .Composite }}
+    composite {
+      {{- if not (isNull .MaxDelay ) }}
+      max_delay = "{{ valueString .MaxDelay }}"
+      {{- end }}
+      {{- range .Components }}
+      components {
+        {{- range .Objectives }}
+        objectives {
+          {{- range .CompositeObjective }}
+          composite_objective {
+            {{- if .Project }}
+            project = "{{ .Project }}"
+            {{- end }}
+            {{- if .SLO }}
+            slo = "{{ .SLO }}"
+            {{- end }}
+            {{- if .Objective }}
+            objective = "{{ .Objective }}"
+            {{- end }}
+            {{- if .Weight }}
+            weight = {{ .Weight }}
+            {{- end }}
+            {{- if .WhenDelayed }}
+            when_delayed = "{{ .WhenDelayed }}"
+            {{- end }}
+          }
+          {{- end }}
+        }
+        {{- end }}
+      }
+      {{- end }}
+    }
+    {{- end }}
+  }
+  {{- end }}
+  {{- if .Composite }}
+
+  composite {
+    {{- with (index .Composite 0) }}
+    {{- if not (isNull .Target) }}
+    target = {{ .Target.ValueFloat64 }}
+    {{- end }}
+    {{- if .BurnRateCondition }}
+    {{- range .BurnRateCondition }}
+    burn_rate_condition {
+      {{- if not (isNull .Op) }}
+      op = "{{ valueString .Op }}"
+      {{- end }}
+      {{- if not (isNull .Value) }}
+      value = {{ .Value.ValueFloat64 }}
+      {{- end }}
+    }
+    {{- end }}
+    {{- end }}
+    {{- end }}
+  }
+  {{- end }}
+  {{- if .TimeWindow }}
+
+  time_window {
+    {{- with (index .TimeWindow 0) }}
+    {{- if .Count }}
+    count = {{ .Count }}
+    {{- end }}
+    {{- if .IsRolling }}
+    is_rolling = {{ .IsRolling.ValueBool }}
+    {{- end }}
+    {{- if .Unit }}
+    unit = "{{ .Unit }}"
+    {{- end }}
+    {{- if .Calendar }}
+    {{- with (index .Calendar 0) }}
+    calendar {
+      {{- if .StartTime }}
+      start_time = "{{ .StartTime }}"
+      {{- end }}
+      {{- if .TimeZone }}
+      time_zone = "{{ .TimeZone }}"
+      {{- end }}
+    }
+    {{- end }}
+    {{- end }}
+    {{- end }}
+  }
+  {{- end }}
+  {{- if .Attachments }}
+  {{- range .Attachments }}
+
+  attachment {
+    {{- if not (isNull .DisplayName ) }}
+    display_name = "{{ valueString .DisplayName }}"
+    {{- end }}
+    {{- if not (isNull .URL ) }}
+    url = "{{ valueString .URL }}"
+    {{- end }}
+  }
+  {{- end }}
+  {{- end }}
+  {{- if .AnomalyConfig }}
+
+  anomaly_config {
+    {{- with (index .AnomalyConfig 0) }}
+    {{- if .NoData }}
+    {{- with (index .NoData 0) }}
+    no_data {
+      {{- if not (isNull .AlertAfter ) }}
+      alert_after = "{{ valueString .AlertAfter }}"
+      {{- end }}
+      {{- if .AlertMethods }}
+      {{- range .AlertMethods }}
+      alert_method {
+        {{- if .Name }}
+        name = "{{ .Name }}"
+        {{- end }}
+        {{- if .Project }}
+        project = "{{ .Project }}"
+        {{- end }}
+      }
+      {{- end }}
+      {{- end }}
+    }
+    {{- end }}
+    {{- end }}
+    {{- end }}
+  }
+  {{- end }}
+  {{- if not (isNull .RetrieveHistoricalDataFrom) }}
+  retrieve_historical_data_from = "{{ valueString .RetrieveHistoricalDataFrom }}"
+  {{- end }}
+}

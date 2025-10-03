@@ -7,20 +7,26 @@ NAMESPACE = nobl9
 NAME = nobl9
 BIN_DIR = ./bin
 BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
-VERSION = 0.42.0
-LDFLAGS += -X main.Version=$(VERSION)
+VERSION = 0.44.0
+VERSION_PKG := "$(shell go list -m)/internal/version"
+BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
+REVISION ?= $(shell git rev-parse --short=8 HEAD)
+LDFLAGS += -s -w \
+	-X $(VERSION_PKG).BuildVersion=$(VERSION) \
+	-X $(VERSION_PKG).BuildGitBranch=$(BRANCH) \
+	-X $(VERSION_PKG).BuildGitRevision=$(REVISION)
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 
 # renovate datasource=github-releases depName=securego/gosec
-GOSEC_VERSION := v2.22.5
+GOSEC_VERSION := v2.22.9
 # renovate datasource=github-releases depName=golangci/golangci-lint
 GOLANGCI_LINT_VERSION := v1.64.8
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
 GOVULNCHECK_VERSION := v1.1.4
 # renovate datasource=go depName=golang.org/x/tools/cmd/goimports
-GOIMPORTS_VERSION := v0.34.0
+GOIMPORTS_VERSION := v0.37.0
 # renovate datasource=github-releases depName=segmentio/golines
-GOLINES_VERSION := v0.12.2
+GOLINES_VERSION := v0.13.0
 
 # Check if the program is present in $PATH and install otherwise.
 # ${1} - oneOf{binary,yarn}
@@ -61,13 +67,18 @@ test: test/unit test/acc
 ## Run Go unit tests.
 test/unit:
 	$(call _print_step,Running Go unit tests)
-	go test -i $(TEST) || exit 1
-	echo $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
+	go test -race -cover ./...
 
 ## Run Terraform acceptance tests.
 test/acc:
+	# Why? If we run acceptance tests without the terraform binary already installed,
+	# the testing framework will try to install it for each test and it will lead to
+	# system-level errors "text file busy".
+	# See: https://github.com/hashicorp/terraform-plugin-testing/issues/429.
+	$(call _print_step,Checking for Terraform binary)
+	@which terraform > /dev/null 2>&1 || (echo "Error: terraform binary not found in PATH. Please install Terraform first." && exit 1)
 	$(call _print_step,Running Terraform acceptance tests)
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m nobl9/
+	TF_ACC=1 go test $(TEST) -ldflags="$(LDFLAGS)" -v $(TESTARGS) -timeout 60m nobl9/
 
 .PHONY: release-dry-run
 ## Run Goreleaser in dry-run mode.

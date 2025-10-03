@@ -28,7 +28,7 @@
 
 # Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) 0.10.x
+- [Terraform](https://www.terraform.io/downloads.html) 0.15.x
 
 # Example
 
@@ -37,7 +37,7 @@ terraform {
   required_providers {
     nobl9 = {
       source = "nobl9/nobl9"
-      version = "0.42.0"
+      version = "0.44.0"
     }
   }
 }

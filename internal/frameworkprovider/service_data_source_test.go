@@ -2,43 +2,43 @@ package frameworkprovider
 
 import (
 	"context"
-	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
+	"github.com/nobl9/nobl9-go/tests/e2etestutils"
 )
 
 func TestAccServiceDataSource(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	unixNow := time.Now().UnixNano()
-
-	project1Name := fmt.Sprintf("project-1-%d", unixNow)
 	manifestProject1 := v1alphaProject.New(
 		v1alphaProject.Metadata{
-			Name: project1Name,
+			Name:   e2etestutils.GenerateName(),
+			Labels: e2etestutils.AnnotateLabels(t, nil),
 		},
 		v1alphaProject.Spec{},
 	)
 
-	project2Name := fmt.Sprintf("project-2-%d", unixNow)
 	manifestProject2 := v1alphaProject.New(
 		v1alphaProject.Metadata{
-			Name: project2Name,
+			Name:   e2etestutils.GenerateName(),
+			Labels: e2etestutils.AnnotateLabels(t, nil),
 		},
 		v1alphaProject.Spec{},
 	)
 
-	serviceName := fmt.Sprintf("service-%d", unixNow)
 	manifestService1 := v1alphaService.New(
 		v1alphaService.Metadata{
-			Name:    serviceName,
-			Project: project1Name,
+			Name:    e2etestutils.GenerateName(),
+			Project: manifestProject1.GetName(),
+			Labels:  e2etestutils.AnnotateLabels(t, nil),
 		},
 		v1alphaService.Spec{},
 	)
@@ -47,24 +47,25 @@ func TestAccServiceDataSource(t *testing.T) {
 	}
 
 	manifestService2 := manifestService1
-	manifestService2.Metadata.Project = project2Name
+	manifestService2.Metadata.Project = manifestProject2.GetName()
 
+	service1Resource, _ := newServiceResourceConfigFromManifest(ctx, manifestService1)
+	service2Resource, _ := newServiceResourceConfigFromManifest(ctx, manifestService2)
 	serviceResourceConfig := executeTemplate(t, "service_data_source.hcl.tmpl", map[string]any{
-		"Project1Name": project1Name,
-		"Project2Name": project2Name,
-		"ServiceName":  serviceName,
+		"Service1": service1Resource,
+		"Service2": service2Resource,
 	})
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create Service resource with Service Data Source name in another Project.
 			{
 				PreConfig: func() {
-					applyNobl9Objects(t, ctx, manifestProject1, manifestProject2, manifestService1)
+					objects := []manifest.Object{manifestProject1, manifestProject2, manifestService1}
+					e2etestutils.V1Apply(t, objects)
 					t.Cleanup(func() {
-						deleteNobl9Objects(t, ctx, manifestProject1, manifestProject2, manifestService1)
+						e2etestutils.V1Delete(t, objects)
 					})
 				},
 				Config: serviceResourceConfig,

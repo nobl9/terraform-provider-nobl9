@@ -17,7 +17,7 @@ Use the `depends_on` meta-argument to specify component SLOs your composite must
 
 ## Example Usage
 
-{{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
+{{ tffile (printf "examples/resources/%s/resource.tf" .Name) }}
 
 {{ .SchemaMarkdown | trimspace }}
 

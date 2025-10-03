@@ -2,35 +2,33 @@ package frameworkprovider
 
 import (
 	"context"
-	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
+	"github.com/nobl9/nobl9-go/tests/e2etestutils"
 )
 
 func TestAccProjectDataSource(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	unixNow := time.Now().UnixNano()
-
-	projectName := fmt.Sprintf("project-%d", unixNow)
 	manifestProject := v1alphaProject.New(
 		v1alphaProject.Metadata{
-			Name: projectName,
+			Name: e2etestutils.GenerateName(),
 		},
 		v1alphaProject.Spec{},
 	)
 
-	serviceName := fmt.Sprintf("service-%d", unixNow)
 	manifestService := v1alphaService.New(
 		v1alphaService.Metadata{
-			Name:    serviceName,
-			Project: projectName,
+			Name:    e2etestutils.GenerateName(),
+			Project: manifestProject.GetName(),
 		},
 		v1alphaService.Spec{},
 	)
@@ -38,23 +36,21 @@ func TestAccProjectDataSource(t *testing.T) {
 		SloCount: 0,
 	}
 
+	serviceResource, _ := newServiceResourceConfigFromManifest(ctx, manifestService)
 	serviceResourceConfig := executeTemplate(t, "project_data_source.hcl.tmpl", map[string]any{
-		"DataSourceName": "test",
-		"ResourceName":   "test",
-		"ProjectName":    projectName,
-		"ServiceName":    serviceName,
+		"Project": newProjectResourceConfigFromManifest(manifestProject),
+		"Service": serviceResource,
 	})
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create Service resource with Project Data Source.
 			{
 				PreConfig: func() {
-					applyNobl9Objects(t, ctx, manifestProject)
+					e2etestutils.V1Apply(t, []manifest.Object{manifestProject})
 					t.Cleanup(func() {
-						deleteNobl9Objects(t, ctx, manifestProject)
+						e2etestutils.V1Delete(t, []manifest.Object{manifestProject})
 					})
 				},
 				Config: serviceResourceConfig,
@@ -64,7 +60,7 @@ func TestAccProjectDataSource(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
-						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction("nobl9_service.this", plancheck.ResourceActionCreate),
 					},
 				},
 			},

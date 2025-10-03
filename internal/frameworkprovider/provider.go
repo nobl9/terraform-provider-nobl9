@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+
+	"github.com/nobl9/terraform-provider-nobl9/internal/version"
 )
 
 const providerEnvPrefix = "NOBL9"
@@ -14,20 +16,16 @@ const providerEnvPrefix = "NOBL9"
 // Ensure [Provider] satisfies various provider interfaces.
 var _ provider.Provider = &Provider{}
 
-func New(version string) provider.Provider {
-	return &Provider{
-		version: version,
-	}
+func New() provider.Provider {
+	return &Provider{}
 }
 
 // Provider defines the provider implementation.
-type Provider struct {
-	version string
-}
+type Provider struct{}
 
 func (p *Provider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "nobl9"
-	resp.Version = p.version
+	resp.Version = version.GetBuildVersion()
 }
 
 func (p *Provider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
@@ -95,7 +93,7 @@ func (p *Provider) Configure(ctx context.Context, req provider.ConfigureRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	client, diags := newSDKClient(model, p.version)
+	client, diags := newSDKClient(model)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -108,6 +106,7 @@ func (p *Provider) Resources(context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewServiceResource,
 		NewProjectResource,
+		NewSLOResource,
 	}
 }
 
