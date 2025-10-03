@@ -38,7 +38,7 @@ terraform {
   required_providers {
     nobl9 = {
       source  = "nobl9/nobl9"
-      version = "0.44.0"
+      version = "0.44.1"
     }
   }
 }
