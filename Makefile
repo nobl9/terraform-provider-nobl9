@@ -18,7 +18,7 @@ LDFLAGS += -s -w \
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 
 # renovate datasource=github-releases depName=securego/gosec
-GOSEC_VERSION := v2.22.9
+GOSEC_VERSION := v2.22.10
 # renovate datasource=github-releases depName=golangci/golangci-lint
 GOLANGCI_LINT_VERSION := v1.64.8
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
