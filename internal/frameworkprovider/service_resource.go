@@ -275,10 +275,10 @@ func (s *ServiceResource) readResource(
 }
 
 // nolint: lll
-func addServiceResourceNameChangeWarning(attr schema.StringAttribute) schema.StringAttribute {
+func addServiceResourceNameChangeWarning(attribute schema.StringAttribute) schema.StringAttribute {
 	changeDescription := "If the value of 'name' attribute changes," +
 		" Nobl9 API will remove all SLOs associated with this Service."
-	attr.PlanModifiers = append(attr.PlanModifiers, stringplanmodifier.RequiresReplaceIf(
+	attribute.PlanModifiers = append(attribute.PlanModifiers, stringplanmodifier.RequiresReplaceIf(
 		func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
 			resp.Diagnostics.AddWarning(
 				"Changing Service name results in removal of all associated SLOs and their data.",
@@ -291,13 +291,13 @@ func addServiceResourceNameChangeWarning(attr schema.StringAttribute) schema.Str
 		changeDescription,
 		changeDescription,
 	))
-	return attr
+	return attribute
 }
 
 // nolint: lll
-func addServiceResourceProjectChangeWarning(attr schema.StringAttribute) schema.StringAttribute {
+func addServiceResourceProjectChangeWarning(attribute schema.StringAttribute) schema.StringAttribute {
 	changeDescription := "If the value of 'project' attribute changes, Nobl9 API will remove all SLOs associated with this Service."
-	attr.PlanModifiers = append(attr.PlanModifiers, stringplanmodifier.RequiresReplaceIf(
+	attribute.PlanModifiers = append(attribute.PlanModifiers, stringplanmodifier.RequiresReplaceIf(
 		func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
 			resp.Diagnostics.AddWarning(
 				"Changing Service project results in removal of all associated SLOs and their data.",
@@ -308,5 +308,5 @@ func addServiceResourceProjectChangeWarning(attr schema.StringAttribute) schema.
 		changeDescription,
 		changeDescription,
 	))
-	return attr
+	return attribute
 }

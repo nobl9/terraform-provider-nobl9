@@ -612,9 +612,9 @@ func compositeObjectiveToModel(src *v1alphaSLO.CompositeSpec) *CompositeObjectiv
 		MaxDelay: types.StringValue(src.MaxDelay),
 	}
 	switch {
-	case len(src.Components.Objectives) > 0:
-		compositeObjectives := make([]CompositeObjectiveSpecModel, len(src.Components.Objectives))
-		for i, obj := range src.Components.Objectives {
+	case len(src.Objectives) > 0:
+		compositeObjectives := make([]CompositeObjectiveSpecModel, len(src.Objectives))
+		for i, obj := range src.Objectives {
 			compositeObjectives[i] = CompositeObjectiveSpecModel{
 				Project:     obj.Project,
 				SLO:         obj.SLO,
@@ -628,7 +628,7 @@ func compositeObjectiveToModel(src *v1alphaSLO.CompositeSpec) *CompositeObjectiv
 				CompositeObjective: compositeObjectives,
 			}},
 		}}
-	case src.Components.Objectives != nil:
+	case src.Objectives != nil:
 		model.Components = []CompositeComponentsModel{{
 			Objectives: []CompositeObjectivesModel{{}},
 		}}

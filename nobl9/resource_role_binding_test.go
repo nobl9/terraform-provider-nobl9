@@ -50,7 +50,7 @@ resource "nobl9_role_binding" "%s" {
 `, name, name, testProject)
 }
 
-//nolint:unused,deadcode
+//nolint:unused
 func testOrganizationRoleBindingConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
