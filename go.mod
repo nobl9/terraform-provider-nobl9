@@ -1,6 +1,6 @@
 module github.com/nobl9/terraform-provider-nobl9
 
-go 1.24.8
+go 1.25.4
 
 require (
 	github.com/google/uuid v1.6.0
