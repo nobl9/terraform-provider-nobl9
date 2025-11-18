@@ -89,9 +89,12 @@ func serviceReviewCycleBlock() schema.Block {
 				Description: "Recurring rule in RFC 5545 RRULE format defining when a review should occur.",
 			},
 			"start_time": schema.StringAttribute{
-				Required:            true,
-				MarkdownDescription: "Start time (inclusive) for the first occurrence defined by the rrule. RFC3339 time without time zone (e.g. 2024-01-02T15:04:05).",
-				Description:         "Start time for the first occurrence defined by the rrule.",
+				Required: true,
+				MarkdownDescription: "Start time (inclusive) for the first occurrence defined by the rrule. " +
+					"Specify as an ISO 8601 date-time string without a time zone designator (e.g. 2024-01-02T15:04:05). " +
+					"The time zone is specified separately in the time_zone attribute.",
+				Description: "Start time for the first occurrence defined by the rrule, " +
+					"as an ISO 8601 date-time string without a time zone.",
 			},
 			"time_zone": schema.StringAttribute{
 				Required:            true,
