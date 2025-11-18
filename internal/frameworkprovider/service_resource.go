@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -65,17 +64,57 @@ var serviceResourceSchema = func() schema.Schema {
 				Description: "Status of created service.",
 				AttributeTypes: map[string]attr.Type{
 					"slo_count": types.Int64Type,
-				},
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
+					"review_cycle": types.ObjectType{
+						AttrTypes: map[string]attr.Type{
+							"next": types.StringType,
+						},
+					},
 				},
 			},
 		},
 		Blocks: map[string]schema.Block{
-			"label": metadataLabelsBlock(),
+			"label":            metadataLabelsBlock(),
+			"responsible_user": serviceResponsibleUserBlock(),
+			"review_cycle":     serviceReviewCycleBlock(),
 		},
 	}
 }()
+
+func serviceReviewCycleBlock() schema.Block {
+	return schema.SingleNestedBlock{
+		Description: "Configuration for service review cycle.",
+		Attributes: map[string]schema.Attribute{
+			"rrule": schema.StringAttribute{
+				Required:    true,
+				Description: "Recurring rule in RFC 5545 RRULE format defining when a review should occur.",
+			},
+			"start_time": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "Start time (inclusive) for the first occurrence defined by the rrule. RFC3339 time without time zone (e.g. 2024-01-02T15:04:05).",
+				Description:         "Start time for the first occurrence defined by the rrule.",
+			},
+			"time_zone": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "Time zone identifier (IANA) used to interpret start_time and rrule times (e.g. Europe/Warsaw).",
+				Description:         "Time zone identifier used to interpret start_time and rrule times.",
+			},
+		},
+	}
+}
+
+func serviceResponsibleUserBlock() schema.Block {
+	return schema.ListNestedBlock{
+		Description: "List of users responsible for the service.",
+		NestedObject: schema.NestedBlockObject{
+			Attributes: map[string]schema.Attribute{
+				"id": schema.StringAttribute{
+					Required:    true,
+					Description: "ID of the responsible user.",
+				},
+			},
+		},
+	}
+}
 
 // Create is called when the provider must create a new resource. Config
 // and planned state values should be read from the
@@ -228,6 +267,7 @@ func (s *ServiceResource) readResource(
 	}
 	// Sort Labels.
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
+	updatedModel.ResponsibleUsers = sortResponsibleUsers(model.ResponsibleUsers, updatedModel.ResponsibleUsers)
 	return updatedModel, diagnostics
 }
 

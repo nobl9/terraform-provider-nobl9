@@ -203,8 +203,6 @@ resource "nobl9_slo" "composite_slo" {
 
 ### Optional
 
-> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
-
 - `alert_policies` (Set of String) Alert Policies attached to SLO.
 - `annotations` (Map of String) [Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.
 - `anomaly_config` (Block List) Configuration for anomaly detection. (see [below for nested schema](#nestedblock--anomaly_config))
@@ -215,7 +213,7 @@ resource "nobl9_slo" "composite_slo" {
 - `indicator` (Block List) Configuration for the metric source (Agent/Direct). (see [below for nested schema](#nestedblock--indicator))
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 - `objective` (Block List) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
-- `retrieve_historical_data_from` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) If set, the retrieval of historical data for a newly created SLO will be triggered, starting from the specified date. Needs to be RFC3339 format.
+- `retrieve_historical_data_from` (String) If set, the retrieval of historical data for a newly created SLO will be triggered, starting from the specified date. Needs to be RFC3339 format.
 - `tier` (String) Internal field, do not use.
 - `time_window` (Block List) Time window configuration for the SLO. (see [below for nested schema](#nestedblock--time_window))
 
