@@ -204,6 +204,273 @@ func TestAccServiceResource_planValidation(t *testing.T) {
 	})
 }
 
+func TestAccServiceResource_ResponsibleUsers(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	auxiliaryObjects := []manifest.Object{manifestProject}
+
+	serviceResource := serviceResourceTemplateModel{
+		ResourceName:         "test",
+		ServiceResourceModel: getExampleServiceResource(t),
+	}
+	serviceResource.Project = manifestProject.GetName()
+	serviceResource.ResponsibleUsers = []ResponsibleUserModel{
+		{ID: types.StringValue("user1@example.com")},
+		{ID: types.StringValue("user2@example.com")},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create service with responsible users.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: newServiceResource(t, serviceResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.#", "2"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.0.id", "user1@example.com"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.1.id", "user2@example.com"),
+					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update responsible users - add one more.
+			{
+				Config: newServiceResource(t, func() serviceResourceTemplateModel {
+					m := serviceResource
+					m.ResponsibleUsers = []ResponsibleUserModel{
+						{ID: types.StringValue("user1@example.com")},
+						{ID: types.StringValue("user2@example.com")},
+						{ID: types.StringValue("user3@example.com")},
+					}
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.#", "3"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.0.id", "user1@example.com"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.1.id", "user2@example.com"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.2.id", "user3@example.com"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"responsible_users"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// 3. Remove all responsible users.
+			{
+				Config: newServiceResource(t, func() serviceResourceTemplateModel {
+					m := serviceResource
+					m.ResponsibleUsers = nil
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.#", "0"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"responsible_users"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestAccServiceResource_ReviewCycle(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	auxiliaryObjects := []manifest.Object{manifestProject}
+
+	serviceResource := serviceResourceTemplateModel{
+		ResourceName:         "test",
+		ServiceResourceModel: getExampleServiceResource(t),
+	}
+	serviceResource.Project = manifestProject.GetName()
+	serviceResource.ReviewCycle = &ReviewCycleModel{
+		RRule:     types.StringValue("FREQ=WEEKLY;BYDAY=MO"),
+		StartTime: types.StringValue("2024-01-01T09:00:00"),
+		TimeZone:  types.StringValue("America/New_York"),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create service with review cycle.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: newServiceResource(t, serviceResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=WEEKLY;BYDAY=MO"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-01T09:00:00"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "America/New_York"),
+					resource.TestCheckResourceAttrSet("nobl9_service.test", "status.review_cycle.next"),
+					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update review cycle - change time zone and rrule.
+			{
+				Config: newServiceResource(t, func() serviceResourceTemplateModel {
+					m := serviceResource
+					m.ReviewCycle = &ReviewCycleModel{
+						RRule:     types.StringValue("FREQ=MONTHLY;BYMONTHDAY=1"),
+						StartTime: types.StringValue("2024-01-01T09:00:00"),
+						TimeZone:  types.StringValue("Europe/London"),
+					}
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=MONTHLY;BYMONTHDAY=1"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-01T09:00:00"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "Europe/London"),
+					resource.TestCheckResourceAttrSet("nobl9_service.test", "status.review_cycle.next"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"review_cycle"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// 3. Remove review cycle.
+			{
+				Config: newServiceResource(t, func() serviceResourceTemplateModel {
+					m := serviceResource
+					m.ReviewCycle = nil
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("nobl9_service.test", "review_cycle.rrule"),
+					resource.TestCheckNoResourceAttr("nobl9_service.test", "review_cycle.start_time"),
+					resource.TestCheckNoResourceAttr("nobl9_service.test", "review_cycle.time_zone"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"review_cycle"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestAccServiceResource_ResponsibleUsersAndReviewCycle(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	auxiliaryObjects := []manifest.Object{manifestProject}
+
+	serviceResource := serviceResourceTemplateModel{
+		ResourceName:         "test",
+		ServiceResourceModel: getExampleServiceResource(t),
+	}
+	serviceResource.Project = manifestProject.GetName()
+	serviceResource.ResponsibleUsers = []ResponsibleUserModel{
+		{ID: types.StringValue("user1@example.com")},
+	}
+	serviceResource.ReviewCycle = &ReviewCycleModel{
+		RRule:     types.StringValue("FREQ=WEEKLY;BYDAY=FR"),
+		StartTime: types.StringValue("2024-01-05T14:00:00"),
+		TimeZone:  types.StringValue("UTC"),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create service with both responsible users and review cycle.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: newServiceResource(t, serviceResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.#", "1"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.0.id", "user1@example.com"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=WEEKLY;BYDAY=FR"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-05T14:00:00"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "UTC"),
+					resource.TestCheckResourceAttrSet("nobl9_service.test", "status.review_cycle.next"),
+					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update both responsible users and review cycle.
+			{
+				Config: newServiceResource(t, func() serviceResourceTemplateModel {
+					m := serviceResource
+					m.ResponsibleUsers = []ResponsibleUserModel{
+						{ID: types.StringValue("user2@example.com")},
+						{ID: types.StringValue("user3@example.com")},
+					}
+					m.ReviewCycle = &ReviewCycleModel{
+						RRule:     types.StringValue("FREQ=DAILY"),
+						StartTime: types.StringValue("2024-01-01T08:00:00"),
+						TimeZone:  types.StringValue("Asia/Tokyo"),
+					}
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.#", "2"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.0.id", "user2@example.com"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.1.id", "user3@example.com"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=DAILY"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-01T08:00:00"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "Asia/Tokyo"),
+					resource.TestCheckResourceAttrSet("nobl9_service.test", "status.review_cycle.next"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"responsible_users", "review_cycle"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestRenderServiceResourceTemplate(t *testing.T) {
 	t.Parallel()
 

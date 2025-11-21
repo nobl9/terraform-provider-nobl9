@@ -12,43 +12,33 @@ import (
 
 // ServiceResourceModel describes the [ServiceResource] data model.
 type ServiceResourceModel struct {
-	Name             string                `tfsdk:"name"`
-	DisplayName      types.String          `tfsdk:"display_name"`
-	Project          string                `tfsdk:"project"`
-	Description      types.String          `tfsdk:"description"`
-	Annotations      map[string]string     `tfsdk:"annotations"`
-	Labels           Labels                `tfsdk:"label"`
-	ResponsibleUsers ResponsibleUsersModel `tfsdk:"responsible_user"`
-	ReviewCycle      *ReviewCycleModel     `tfsdk:"review_cycle"`
-	Status           types.Object          `tfsdk:"status"`
+	Name             string                 `tfsdk:"name"`
+	DisplayName      types.String           `tfsdk:"display_name"`
+	Project          string                 `tfsdk:"project"`
+	Description      types.String           `tfsdk:"description"`
+	Annotations      map[string]string      `tfsdk:"annotations"`
+	Labels           Labels                 `tfsdk:"label"`
+	ResponsibleUsers []ResponsibleUserModel `tfsdk:"responsible_users"`
+	ReviewCycle      *ReviewCycleModel      `tfsdk:"review_cycle"`
+	Status           types.Object           `tfsdk:"status"`
 }
 
 // ResponsibleUserModel represents [v1alphaService.ResponsibleUser].
 type ResponsibleUserModel struct {
-	Id types.String `tfsdk:"id"`
+	ID types.String `tfsdk:"id"`
 }
 
-type ResponsibleUsersModel []ResponsibleUserModel
-
-func (r ResponsibleUsersModel) ToManifest() []v1alphaService.ResponsibleUser {
-	responsibleUsersManifest := make([]v1alphaService.ResponsibleUser, 0, len(r))
-	for _, model := range r {
-		responsibleUsersManifest = append(
-			responsibleUsersManifest,
-			v1alphaService.ResponsibleUser{ID: model.Id.ValueString()},
-		)
-	}
-
-	return responsibleUsersManifest
+func (r ResponsibleUserModel) ToManifest() v1alphaService.ResponsibleUser {
+	return v1alphaService.ResponsibleUser{ID: r.ID.ValueString()}
 }
 
 // sortResponsibleUsers sorts the API returned list based on the user-defined list as a reference for sorting order.
-func sortResponsibleUsers(userDefinedResponsibleUsers, apiReturnedList ResponsibleUsersModel) ResponsibleUsersModel {
+func sortResponsibleUsers(userDefinedResponsibleUsers, apiReturnedList []ResponsibleUserModel) []ResponsibleUserModel {
 	return sortListBasedOnReferenceList(
 		apiReturnedList,
 		userDefinedResponsibleUsers,
 		func(a, b ResponsibleUserModel) bool {
-			return a.Id == b.Id
+			return a.ID == b.ID
 		},
 	)
 }
@@ -119,7 +109,7 @@ func newServiceResourceConfigFromManifest(
 func newResponsibleUsersFromManifest(users []v1alphaService.ResponsibleUser) []ResponsibleUserModel {
 	responsibleUsersModel := make([]ResponsibleUserModel, 0, len(users))
 	for _, user := range users {
-		responsibleUsersModel = append(responsibleUsersModel, ResponsibleUserModel{Id: stringValue(user.ID)})
+		responsibleUsersModel = append(responsibleUsersModel, ResponsibleUserModel{ID: stringValue(user.ID)})
 	}
 
 	return responsibleUsersModel
@@ -138,6 +128,11 @@ func newReviewCycleFromManifest(cycle *v1alphaService.ReviewCycle) *ReviewCycleM
 }
 
 func (s ServiceResourceModel) ToManifest() v1alphaService.Service {
+	responsibleUsersManifest := make([]v1alphaService.ResponsibleUser, 0, len(s.ResponsibleUsers))
+	for _, model := range s.ResponsibleUsers {
+		responsibleUsersManifest = append(responsibleUsersManifest, model.ToManifest())
+	}
+
 	return v1alphaService.New(
 		v1alphaService.Metadata{
 			Name:        s.Name,
@@ -148,7 +143,7 @@ func (s ServiceResourceModel) ToManifest() v1alphaService.Service {
 		},
 		v1alphaService.Spec{
 			Description:      s.Description.ValueString(),
-			ResponsibleUsers: s.ResponsibleUsers.ToManifest(),
+			ResponsibleUsers: responsibleUsersManifest,
 			ReviewCycle:      getReviewCycleManifest(s.ReviewCycle),
 		},
 	)

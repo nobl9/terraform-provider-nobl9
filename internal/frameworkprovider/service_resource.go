@@ -71,44 +71,43 @@ var serviceResourceSchema = func() schema.Schema {
 					},
 				},
 			},
+			"responsible_users": serviceResponsibleUserAttribute(),
+			"review_cycle":      serviceReviewCycleAttribute(),
 		},
 		Blocks: map[string]schema.Block{
-			"label":            metadataLabelsBlock(),
-			"responsible_user": serviceResponsibleUserBlock(),
-			"review_cycle":     serviceReviewCycleBlock(),
+			"label": metadataLabelsBlock(),
 		},
 	}
 }()
 
-func serviceReviewCycleBlock() schema.Block {
-	return schema.SingleNestedBlock{
+func serviceReviewCycleAttribute() schema.Attribute {
+	return schema.SingleNestedAttribute{
+		Optional:    true,
 		Description: "Configuration for service review cycle.",
 		Attributes: map[string]schema.Attribute{
 			"rrule": schema.StringAttribute{
-				Required:    true,
-				Description: "Recurring rule in RFC 5545 RRULE format defining when a review should occur.",
+				Required:            true,
+				MarkdownDescription: "Recurring rule in RFC 5545 RRULE format defining when a review should occur.",
 			},
 			"start_time": schema.StringAttribute{
 				Required: true,
 				MarkdownDescription: "Start time (inclusive) for the first occurrence defined by the rrule. " +
-					"Specify as an ISO 8601 date-time string without a time zone designator (e.g. 2024-01-02T15:04:05). " +
-					"The time zone is specified separately in the time_zone attribute.",
-				Description: "Start time for the first occurrence defined by the rrule, " +
-					"as an ISO 8601 date-time string without a time zone.",
+					"Specified as an ISO 8601 date-time string without a time zone designator (e.g. 2024-01-02T15:04:05). " +
+					"The time zone is specified separately in the `time_zone` attribute.",
 			},
 			"time_zone": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "Time zone identifier (IANA) used to interpret start_time and rrule times (e.g. Europe/Warsaw).",
-				Description:         "Time zone identifier used to interpret start_time and rrule times.",
+				MarkdownDescription: "Time zone identifier (IANA) used to interpret `start_time` and `rrule` times (e.g. Europe/Warsaw).",
 			},
 		},
 	}
 }
 
-func serviceResponsibleUserBlock() schema.Block {
-	return schema.ListNestedBlock{
+func serviceResponsibleUserAttribute() schema.Attribute {
+	return schema.ListNestedAttribute{
+		Optional:    true,
 		Description: "List of users responsible for the service.",
-		NestedObject: schema.NestedBlockObject{
+		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"id": schema.StringAttribute{
 					Required:    true,
