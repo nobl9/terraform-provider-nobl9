@@ -301,7 +301,7 @@ func TestAccServiceResource_ReviewCycle(t *testing.T) {
 	}
 	serviceResource.Project = manifestProject.GetName()
 	serviceResource.ReviewCycle = &ReviewCycleModel{
-		RRule:     types.StringValue("FREQ=WEEKLY;BYDAY=MO"),
+		RRule:     types.StringValue("FREQ=WEEKLY"),
 		StartTime: types.StringValue("2024-01-01T09:00:00"),
 		TimeZone:  types.StringValue("America/New_York"),
 	}
@@ -317,7 +317,7 @@ func TestAccServiceResource_ReviewCycle(t *testing.T) {
 				},
 				Config: newServiceResource(t, serviceResource),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=WEEKLY;BYDAY=MO"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=WEEKLY"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-01T09:00:00"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "America/New_York"),
 					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
@@ -395,7 +395,7 @@ func TestAccServiceResource_ResponsibleUsersAndReviewCycle(t *testing.T) {
 		{ID: types.StringValue("user1@example.com")},
 	}
 	serviceResource.ReviewCycle = &ReviewCycleModel{
-		RRule:     types.StringValue("FREQ=WEEKLY;BYDAY=FR"),
+		RRule:     types.StringValue("FREQ=WEEKLY"),
 		StartTime: types.StringValue("2024-01-05T14:00:00"),
 		TimeZone:  types.StringValue("UTC"),
 	}
@@ -413,7 +413,7 @@ func TestAccServiceResource_ResponsibleUsersAndReviewCycle(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.#", "1"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.0.id", "user1@example.com"),
-					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=WEEKLY;BYDAY=FR"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=WEEKLY"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-05T14:00:00"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "UTC"),
 					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
