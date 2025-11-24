@@ -32,9 +32,6 @@ func TestAccProjectDataSource(t *testing.T) {
 		},
 		v1alphaService.Spec{},
 	)
-	manifestService.Status = &v1alphaService.Status{
-		SloCount: 0,
-	}
 
 	serviceResource, _ := newServiceResourceConfigFromManifest(ctx, manifestService)
 	serviceResourceConfig := executeTemplate(t, "project_data_source.hcl.tmpl", map[string]any{

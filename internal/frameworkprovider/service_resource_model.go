@@ -4,9 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 )
 
@@ -20,7 +18,6 @@ type ServiceResourceModel struct {
 	Labels           Labels                 `tfsdk:"label"`
 	ResponsibleUsers []ResponsibleUserModel `tfsdk:"responsible_users"`
 	ReviewCycle      *ReviewCycleModel      `tfsdk:"review_cycle"`
-	Status           types.Object           `tfsdk:"status"`
 }
 
 // ResponsibleUserModel represents [v1alphaService.ResponsibleUser].
@@ -34,6 +31,11 @@ func (r ResponsibleUserModel) ToManifest() v1alphaService.ResponsibleUser {
 
 // sortResponsibleUsers sorts the API returned list based on the user-defined list as a reference for sorting order.
 func sortResponsibleUsers(userDefinedResponsibleUsers, apiReturnedList []ResponsibleUserModel) []ResponsibleUserModel {
+	// Preserve nil when the user-defined list is nil and API returns an empty list.
+	// This ensures consistency between null and empty list in Terraform state.
+	if userDefinedResponsibleUsers == nil && len(apiReturnedList) == 0 {
+		return nil
+	}
 	return sortListBasedOnReferenceList(
 		apiReturnedList,
 		userDefinedResponsibleUsers,
@@ -57,42 +59,10 @@ func (r ReviewCycleModel) ToManifest() *v1alphaService.ReviewCycle {
 	}
 }
 
-type ServiceResourceStatusModel struct {
-	ReviewCycle ServiceResourceStatusReviewCycleModel `tfsdk:"review_cycle"`
-	SLOCount    types.Int64                           `tfsdk:"slo_count"`
-}
-
-type ServiceResourceStatusReviewCycleModel struct {
-	Next types.String `tfsdk:"next"`
-}
-
 func newServiceResourceConfigFromManifest(
 	ctx context.Context,
 	svc v1alphaService.Service,
 ) (*ServiceResourceModel, diag.Diagnostics) {
-	var status types.Object
-	statusType, diags := serviceResourceSchema.TypeAtPath(ctx, path.Root("status"))
-	if diags.HasError() {
-		return nil, diags
-	}
-	statusAttrs := statusType.(basetypes.ObjectType).AttrTypes
-	if svc.Status != nil {
-		statusModel := ServiceResourceStatusModel{
-			SLOCount: types.Int64Value(int64(svc.Status.SloCount)),
-		}
-		if svc.Status.ReviewCycle != nil {
-			statusModel.ReviewCycle = ServiceResourceStatusReviewCycleModel{
-				Next: stringValue(svc.Status.ReviewCycle.Next),
-			}
-		}
-		v, diags := types.ObjectValueFrom(ctx, statusAttrs, statusModel)
-		if diags.HasError() {
-			return nil, diags
-		}
-		status = v
-	} else {
-		status = types.ObjectNull(statusAttrs)
-	}
 	return &ServiceResourceModel{
 		Name:             svc.Metadata.Name,
 		DisplayName:      stringValue(svc.Metadata.DisplayName),
@@ -102,7 +72,6 @@ func newServiceResourceConfigFromManifest(
 		Labels:           newLabelsFromManifest(svc.Metadata.Labels),
 		ResponsibleUsers: newResponsibleUsersFromManifest(svc.Spec.ResponsibleUsers),
 		ReviewCycle:      newReviewCycleFromManifest(svc.Spec.ReviewCycle),
-		Status:           status,
 	}, nil
 }
 
@@ -128,9 +97,12 @@ func newReviewCycleFromManifest(cycle *v1alphaService.ReviewCycle) *ReviewCycleM
 }
 
 func (s ServiceResourceModel) ToManifest() v1alphaService.Service {
-	responsibleUsersManifest := make([]v1alphaService.ResponsibleUser, 0, len(s.ResponsibleUsers))
-	for _, model := range s.ResponsibleUsers {
-		responsibleUsersManifest = append(responsibleUsersManifest, model.ToManifest())
+	var responsibleUsersManifest []v1alphaService.ResponsibleUser
+	if s.ResponsibleUsers != nil {
+		responsibleUsersManifest = make([]v1alphaService.ResponsibleUser, 0, len(s.ResponsibleUsers))
+		for _, model := range s.ResponsibleUsers {
+			responsibleUsersManifest = append(responsibleUsersManifest, model.ToManifest())
+		}
 	}
 
 	return v1alphaService.New(

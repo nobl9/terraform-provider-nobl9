@@ -42,9 +42,6 @@ func TestAccServiceDataSource(t *testing.T) {
 		},
 		v1alphaService.Spec{},
 	)
-	manifestService1.Status = &v1alphaService.Status{
-		SloCount: 0,
-	}
 
 	manifestService2 := manifestService1
 	manifestService2.Metadata.Project = manifestProject2.GetName()

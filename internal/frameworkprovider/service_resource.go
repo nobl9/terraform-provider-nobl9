@@ -4,14 +4,12 @@ import (
 	"context"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/nobl9/nobl9-go/manifest"
 )
 
@@ -57,20 +55,8 @@ var serviceResourceSchema = func() schema.Schema {
 				attr := metadataProjectAttr()
 				return addServiceResourceProjectChangeWarning(attr)
 			}(),
-			"description": specDescriptionAttr(),
-			"annotations": metadataAnnotationsAttr(),
-			"status": schema.ObjectAttribute{
-				Computed:    true,
-				Description: "Status of created service.",
-				AttributeTypes: map[string]attr.Type{
-					"slo_count": types.Int64Type,
-					"review_cycle": types.ObjectType{
-						AttrTypes: map[string]attr.Type{
-							"next": types.StringType,
-						},
-					},
-				},
-			},
+			"description":       specDescriptionAttr(),
+			"annotations":       metadataAnnotationsAttr(),
 			"responsible_users": serviceResponsibleUserAttribute(),
 			"review_cycle":      serviceReviewCycleAttribute(),
 		},

@@ -33,11 +33,6 @@ func TestAccServiceResource(t *testing.T) {
 	}
 	serviceResource.Project = manifestProject.GetName()
 
-	manifestService := serviceResource.ToManifest()
-	manifestService.Status = &v1alphaService.Status{
-		SloCount: 0,
-	}
-
 	recreatedProjectName := e2etestutils.GenerateName()
 
 	resource.Test(t, resource.TestCase{
@@ -51,7 +46,7 @@ func TestAccServiceResource(t *testing.T) {
 				},
 				Config: newServiceResource(t, serviceResource),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assertResourceWasApplied(t, ctx, manifestService),
+					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -64,7 +59,7 @@ func TestAccServiceResource(t *testing.T) {
 			{
 				Config: newServiceResource(t, serviceResource),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assertResourceWasDeleted(t, ctx, manifestService),
+					assertResourceWasDeleted(t, ctx, serviceResource.ToManifest()),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -96,7 +91,7 @@ func TestAccServiceResource(t *testing.T) {
 				},
 				// In the next step we're also verifying the imported state, so we need to persist it.
 				ImportStatePersist: true,
-				PreConfig:          func() { e2etestutils.V1Apply(t, []manifest.Object{manifestService}) },
+				PreConfig:          func() { e2etestutils.V1Apply(t, []manifest.Object{serviceResource.ToManifest()}) },
 			},
 			// 5. Update and Read, ensure computed field does not pollute the plan.
 			{
@@ -108,7 +103,7 @@ func TestAccServiceResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("nobl9_service.test", "display_name", "New Service Display Name"),
 					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
-						svc := manifestService
+						svc := serviceResource.ToManifest()
 						svc.Metadata.DisplayName = "New Service Display Name"
 						return svc
 					}()),
@@ -131,7 +126,7 @@ func TestAccServiceResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("nobl9_service.test", "name", serviceNameRecreatedByNameChange),
 					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
-						svc := manifestService
+						svc := serviceResource.ToManifest()
 						svc.Metadata.Name = serviceNameRecreatedByNameChange
 						return svc
 					}()),
@@ -140,7 +135,6 @@ func TestAccServiceResource(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						expectChangesInResourcePlan(planDiff{
 							Modified: []string{"name", "display_name"},
-							Removed:  []string{"status"},
 						}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
@@ -158,7 +152,7 @@ func TestAccServiceResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("nobl9_service.test", "project", recreatedProjectName),
 					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
-						svc := manifestService
+						svc := serviceResource.ToManifest()
 						svc.Metadata.Name = serviceNameRecreatedByNameChange
 						svc.Metadata.Project = recreatedProjectName
 						return svc
@@ -168,7 +162,6 @@ func TestAccServiceResource(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						expectChangesInResourcePlan(planDiff{
 							Modified: []string{"project"},
-							Removed:  []string{"status"},
 						}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
@@ -327,7 +320,6 @@ func TestAccServiceResource_ReviewCycle(t *testing.T) {
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=WEEKLY;BYDAY=MO"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-01T09:00:00"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "America/New_York"),
-					resource.TestCheckResourceAttrSet("nobl9_service.test", "status.review_cycle.next"),
 					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -352,7 +344,6 @@ func TestAccServiceResource_ReviewCycle(t *testing.T) {
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=MONTHLY;BYMONTHDAY=1"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-01T09:00:00"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "Europe/London"),
-					resource.TestCheckResourceAttrSet("nobl9_service.test", "status.review_cycle.next"),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -425,7 +416,6 @@ func TestAccServiceResource_ResponsibleUsersAndReviewCycle(t *testing.T) {
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=WEEKLY;BYDAY=FR"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-05T14:00:00"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "UTC"),
-					resource.TestCheckResourceAttrSet("nobl9_service.test", "status.review_cycle.next"),
 					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -457,7 +447,6 @@ func TestAccServiceResource_ResponsibleUsersAndReviewCycle(t *testing.T) {
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=DAILY"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-01T08:00:00"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "Asia/Tokyo"),
-					resource.TestCheckResourceAttrSet("nobl9_service.test", "status.review_cycle.next"),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
