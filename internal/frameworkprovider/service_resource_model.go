@@ -1,9 +1,6 @@
 package frameworkprovider
 
 import (
-	"context"
-
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 )
@@ -59,10 +56,7 @@ func (r ReviewCycleModel) ToManifest() *v1alphaService.ReviewCycle {
 	}
 }
 
-func newServiceResourceConfigFromManifest(
-	ctx context.Context,
-	svc v1alphaService.Service,
-) (*ServiceResourceModel, diag.Diagnostics) {
+func newServiceResourceConfigFromManifest(svc v1alphaService.Service) *ServiceResourceModel {
 	return &ServiceResourceModel{
 		Name:             svc.Metadata.Name,
 		DisplayName:      stringValue(svc.Metadata.DisplayName),
@@ -72,7 +66,7 @@ func newServiceResourceConfigFromManifest(
 		Labels:           newLabelsFromManifest(svc.Metadata.Labels),
 		ResponsibleUsers: newResponsibleUsersFromManifest(svc.Spec.ResponsibleUsers),
 		ReviewCycle:      newReviewCycleFromManifest(svc.Spec.ReviewCycle),
-	}, nil
+	}
 }
 
 func newResponsibleUsersFromManifest(users []v1alphaService.ResponsibleUser) []ResponsibleUserModel {

@@ -248,11 +248,7 @@ func (s *ServiceResource) readResource(
 	if diagnostics.HasError() {
 		return nil, diagnostics
 	}
-	updatedModel, diags := newServiceResourceConfigFromManifest(ctx, service)
-	diagnostics.Append(diags...)
-	if diagnostics.HasError() {
-		return nil, diagnostics
-	}
+	updatedModel := newServiceResourceConfigFromManifest(service)
 	// Sort Labels.
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
 	updatedModel.ResponsibleUsers = sortResponsibleUsers(model.ResponsibleUsers, updatedModel.ResponsibleUsers)
