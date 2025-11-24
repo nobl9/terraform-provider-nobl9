@@ -25,4 +25,18 @@ resource "nobl9_service" "this" {
     ]
   }
   description = "Example service"
+
+  responsible_users = [
+    {
+      id = "userID1"
+    },
+    {
+      id = "userID2"
+    },
+  ]
+  review_cycle = {
+    rrule      = "FREQ=DAILY"
+    start_time = "2024-01-01T08:00:00"
+    time_zone  = "Asia/Tokyo"
+  }
 }

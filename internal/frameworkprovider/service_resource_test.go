@@ -499,5 +499,14 @@ func getExampleServiceResource(t *testing.T) ServiceResourceModel {
 			{Key: "team", Values: []string{"green"}},
 			{Key: "env", Values: []string{"dev", "prod"}},
 		}),
+		ReviewCycle: &ReviewCycleModel{
+			RRule:     types.StringValue("FREQ=DAILY"),
+			StartTime: types.StringValue("2024-01-01T08:00:00"),
+			TimeZone:  types.StringValue("Asia/Tokyo"),
+		},
+		ResponsibleUsers: []ResponsibleUserModel{
+			{ID: types.StringValue("userID1")},
+			{ID: types.StringValue("userID2")},
+		},
 	}
 }
