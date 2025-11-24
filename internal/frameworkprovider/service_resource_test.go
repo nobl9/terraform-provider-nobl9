@@ -318,7 +318,11 @@ func TestAccServiceResource_ReviewCycle(t *testing.T) {
 				Config: newServiceResource(t, serviceResource),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=WEEKLY"),
-					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-01T09:00:00"),
+					resource.TestCheckResourceAttr(
+						"nobl9_service.test",
+						"review_cycle.start_time",
+						"2024-01-01T09:00:00",
+					),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "America/New_York"),
 					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
 				),
@@ -341,8 +345,16 @@ func TestAccServiceResource_ReviewCycle(t *testing.T) {
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=MONTHLY;BYMONTHDAY=1"),
-					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-01T09:00:00"),
+					resource.TestCheckResourceAttr(
+						"nobl9_service.test",
+						"review_cycle.rrule",
+						"FREQ=MONTHLY;BYMONTHDAY=1",
+					),
+					resource.TestCheckResourceAttr(
+						"nobl9_service.test",
+						"review_cycle.start_time",
+						"2024-01-01T09:00:00",
+					),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "Europe/London"),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -414,7 +426,11 @@ func TestAccServiceResource_ResponsibleUsersAndReviewCycle(t *testing.T) {
 					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.#", "1"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.0.id", "user1@example.com"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=WEEKLY"),
-					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-05T14:00:00"),
+					resource.TestCheckResourceAttr(
+						"nobl9_service.test",
+						"review_cycle.start_time",
+						"2024-01-05T14:00:00",
+					),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "UTC"),
 					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
 				),
@@ -445,7 +461,11 @@ func TestAccServiceResource_ResponsibleUsersAndReviewCycle(t *testing.T) {
 					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.0.id", "user2@example.com"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.1.id", "user3@example.com"),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=DAILY"),
-					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.start_time", "2024-01-01T08:00:00"),
+					resource.TestCheckResourceAttr(
+						"nobl9_service.test",
+						"review_cycle.start_time",
+						"2024-01-01T08:00:00",
+					),
 					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "Asia/Tokyo"),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
