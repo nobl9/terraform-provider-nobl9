@@ -19,20 +19,15 @@ type ServiceResourceModel struct {
 
 // ResponsibleUserModel represents [v1alphaService.ResponsibleUser].
 type ResponsibleUserModel struct {
-	ID types.String `tfsdk:"id"`
+	ID string `tfsdk:"id"`
 }
 
 func (r ResponsibleUserModel) ToManifest() v1alphaService.ResponsibleUser {
-	return v1alphaService.ResponsibleUser{ID: r.ID.ValueString()}
+	return v1alphaService.ResponsibleUser{ID: r.ID}
 }
 
 // sortResponsibleUsers sorts the API returned list based on the user-defined list as a reference for sorting order.
 func sortResponsibleUsers(userDefinedResponsibleUsers, apiReturnedList []ResponsibleUserModel) []ResponsibleUserModel {
-	// Preserve nil when the user-defined list is nil and API returns an empty list.
-	// This ensures consistency between null and empty list in Terraform state.
-	if userDefinedResponsibleUsers == nil && len(apiReturnedList) == 0 {
-		return nil
-	}
 	return sortListBasedOnReferenceList(
 		apiReturnedList,
 		userDefinedResponsibleUsers,
@@ -43,16 +38,16 @@ func sortResponsibleUsers(userDefinedResponsibleUsers, apiReturnedList []Respons
 }
 
 type ReviewCycleModel struct {
-	RRule     types.String `tfsdk:"rrule"`
-	StartTime types.String `tfsdk:"start_time"`
-	TimeZone  types.String `tfsdk:"time_zone"`
+	RRule     string `tfsdk:"rrule"`
+	StartTime string `tfsdk:"start_time"`
+	TimeZone  string `tfsdk:"time_zone"`
 }
 
 func (r ReviewCycleModel) ToManifest() *v1alphaService.ReviewCycle {
 	return &v1alphaService.ReviewCycle{
-		RRule:     r.RRule.ValueString(),
-		StartTime: r.StartTime.ValueString(),
-		TimeZone:  r.TimeZone.ValueString(),
+		RRule:     r.RRule,
+		StartTime: r.StartTime,
+		TimeZone:  r.TimeZone,
 	}
 }
 
@@ -70,9 +65,12 @@ func newServiceResourceConfigFromManifest(svc v1alphaService.Service) *ServiceRe
 }
 
 func newResponsibleUsersFromManifest(users []v1alphaService.ResponsibleUser) []ResponsibleUserModel {
+	if len(users) == 0 {
+		return nil
+	}
 	responsibleUsersModel := make([]ResponsibleUserModel, 0, len(users))
 	for _, user := range users {
-		responsibleUsersModel = append(responsibleUsersModel, ResponsibleUserModel{ID: stringValue(user.ID)})
+		responsibleUsersModel = append(responsibleUsersModel, ResponsibleUserModel{ID: user.ID})
 	}
 
 	return responsibleUsersModel
@@ -84,9 +82,9 @@ func newReviewCycleFromManifest(cycle *v1alphaService.ReviewCycle) *ReviewCycleM
 	}
 
 	return &ReviewCycleModel{
-		RRule:     stringValue(cycle.RRule),
-		StartTime: stringValue(cycle.StartTime),
-		TimeZone:  stringValue(cycle.TimeZone),
+		RRule:     cycle.RRule,
+		StartTime: cycle.StartTime,
+		TimeZone:  cycle.TimeZone,
 	}
 }
 

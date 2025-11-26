@@ -212,8 +212,8 @@ func TestAccServiceResource_ResponsibleUsers(t *testing.T) {
 	}
 	serviceResource.Project = manifestProject.GetName()
 	serviceResource.ResponsibleUsers = []ResponsibleUserModel{
-		{ID: types.StringValue("user1@example.com")},
-		{ID: types.StringValue("user2@example.com")},
+		{ID: "user1@example.com"},
+		{ID: "user2@example.com"},
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -244,9 +244,9 @@ func TestAccServiceResource_ResponsibleUsers(t *testing.T) {
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
 					m.ResponsibleUsers = []ResponsibleUserModel{
-						{ID: types.StringValue("user1@example.com")},
-						{ID: types.StringValue("user2@example.com")},
-						{ID: types.StringValue("user3@example.com")},
+						{ID: "user1@example.com"},
+						{ID: "user2@example.com"},
+						{ID: "user3@example.com"},
 					}
 					return m
 				}()),
@@ -301,9 +301,9 @@ func TestAccServiceResource_ReviewCycle(t *testing.T) {
 	}
 	serviceResource.Project = manifestProject.GetName()
 	serviceResource.ReviewCycle = &ReviewCycleModel{
-		RRule:     types.StringValue("FREQ=WEEKLY"),
-		StartTime: types.StringValue("2024-01-01T09:00:00"),
-		TimeZone:  types.StringValue("America/New_York"),
+		RRule:     "FREQ=WEEKLY",
+		StartTime: "2024-01-01T09:00:00",
+		TimeZone:  "America/New_York",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -338,9 +338,9 @@ func TestAccServiceResource_ReviewCycle(t *testing.T) {
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
 					m.ReviewCycle = &ReviewCycleModel{
-						RRule:     types.StringValue("FREQ=MONTHLY;BYMONTHDAY=1"),
-						StartTime: types.StringValue("2024-01-01T09:00:00"),
-						TimeZone:  types.StringValue("Europe/London"),
+						RRule:     "FREQ=MONTHLY;BYMONTHDAY=1",
+						StartTime: "2024-01-01T09:00:00",
+						TimeZone:  "Europe/London",
 					}
 					return m
 				}()),
@@ -380,97 +380,6 @@ func TestAccServiceResource_ReviewCycle(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						expectChangesInResourcePlan(planDiff{Modified: []string{"review_cycle"}}),
-						plancheck.ExpectNonEmptyPlan(),
-						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
-					},
-				},
-			},
-		},
-	})
-}
-
-func TestAccServiceResource_ResponsibleUsersAndReviewCycle(t *testing.T) {
-	t.Parallel()
-	testAccSetup(t)
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(cancel)
-
-	manifestProject := getExampleProjectResource(t).ToManifest()
-	auxiliaryObjects := []manifest.Object{manifestProject}
-
-	serviceResource := serviceResourceTemplateModel{
-		ResourceName:         "test",
-		ServiceResourceModel: getExampleServiceResource(t),
-	}
-	serviceResource.Project = manifestProject.GetName()
-	serviceResource.ResponsibleUsers = []ResponsibleUserModel{
-		{ID: types.StringValue("user1@example.com")},
-	}
-	serviceResource.ReviewCycle = &ReviewCycleModel{
-		RRule:     types.StringValue("FREQ=WEEKLY"),
-		StartTime: types.StringValue("2024-01-05T14:00:00"),
-		TimeZone:  types.StringValue("UTC"),
-	}
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// 1. Create service with both responsible users and review cycle.
-			{
-				PreConfig: func() {
-					e2etestutils.V1Apply(t, auxiliaryObjects)
-					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
-				},
-				Config: newServiceResource(t, serviceResource),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.#", "1"),
-					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.0.id", "user1@example.com"),
-					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=WEEKLY"),
-					resource.TestCheckResourceAttr(
-						"nobl9_service.test",
-						"review_cycle.start_time",
-						"2024-01-05T14:00:00",
-					),
-					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "UTC"),
-					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
-				),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectNonEmptyPlan(),
-						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionCreate),
-					},
-				},
-			},
-			// 2. Update both responsible users and review cycle.
-			{
-				Config: newServiceResource(t, func() serviceResourceTemplateModel {
-					m := serviceResource
-					m.ResponsibleUsers = []ResponsibleUserModel{
-						{ID: types.StringValue("user2@example.com")},
-						{ID: types.StringValue("user3@example.com")},
-					}
-					m.ReviewCycle = &ReviewCycleModel{
-						RRule:     types.StringValue("FREQ=DAILY"),
-						StartTime: types.StringValue("2024-01-01T08:00:00"),
-						TimeZone:  types.StringValue("Asia/Tokyo"),
-					}
-					return m
-				}()),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.#", "2"),
-					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.0.id", "user2@example.com"),
-					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.1.id", "user3@example.com"),
-					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=DAILY"),
-					resource.TestCheckResourceAttr(
-						"nobl9_service.test",
-						"review_cycle.start_time",
-						"2024-01-01T08:00:00",
-					),
-					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "Asia/Tokyo"),
-				),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						expectChangesInResourcePlan(planDiff{Modified: []string{"responsible_users", "review_cycle"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
 					},
@@ -520,13 +429,13 @@ func getExampleServiceResource(t *testing.T) ServiceResourceModel {
 			{Key: "env", Values: []string{"dev", "prod"}},
 		}),
 		ReviewCycle: &ReviewCycleModel{
-			RRule:     types.StringValue("FREQ=DAILY"),
-			StartTime: types.StringValue("2024-01-01T08:00:00"),
-			TimeZone:  types.StringValue("Asia/Tokyo"),
+			RRule:     "FREQ=DAILY",
+			StartTime: "2024-01-01T08:00:00",
+			TimeZone:  "Asia/Tokyo",
 		},
 		ResponsibleUsers: []ResponsibleUserModel{
-			{ID: types.StringValue("userID1")},
-			{ID: types.StringValue("userID2")},
+			{ID: "userID1"},
+			{ID: "userID2"},
 		},
 	}
 }

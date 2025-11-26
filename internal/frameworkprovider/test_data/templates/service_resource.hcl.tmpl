@@ -4,16 +4,16 @@ resource "nobl9_service" "{{ .ResourceName }}" {
   responsible_users = [
     {{- range .ResponsibleUsers }}
     {
-      id = "{{ valueString .ID }}"
+      id = "{{ .ID }}"
     },
     {{- end }}
   ]
   {{- end }}
   {{- if .ReviewCycle }}
   review_cycle = {
-    rrule      = "{{ valueString .ReviewCycle.RRule }}"
-    start_time = "{{ valueString .ReviewCycle.StartTime }}"
-    time_zone  = "{{ valueString .ReviewCycle.TimeZone }}"
+    rrule      = "{{ .ReviewCycle.RRule }}"
+    start_time = "{{ .ReviewCycle.StartTime }}"
+    time_zone  = "{{ .ReviewCycle.TimeZone }}"
   }
   {{- end }}
 }
