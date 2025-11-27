@@ -4,15 +4,14 @@ import (
 	"context"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/nobl9/nobl9-go/manifest"
 )
 
@@ -58,24 +57,55 @@ var serviceResourceSchema = func() schema.Schema {
 				attr := metadataProjectAttr()
 				return addServiceResourceProjectChangeWarning(attr)
 			}(),
-			"description": specDescriptionAttr(),
-			"annotations": metadataAnnotationsAttr(),
-			"status": schema.ObjectAttribute{
-				Computed:    true,
-				Description: "Status of created service.",
-				AttributeTypes: map[string]attr.Type{
-					"slo_count": types.Int64Type,
-				},
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-			},
+			"description":       specDescriptionAttr(),
+			"annotations":       metadataAnnotationsAttr(),
+			"responsible_users": serviceResponsibleUserAttribute(),
+			"review_cycle":      serviceReviewCycleAttribute(),
 		},
 		Blocks: map[string]schema.Block{
 			"label": metadataLabelsBlock(),
 		},
 	}
 }()
+
+func serviceReviewCycleAttribute() schema.Attribute {
+	return schema.SingleNestedAttribute{
+		Optional:    true,
+		Description: "Configuration for service review cycle.",
+		Attributes: map[string]schema.Attribute{
+			"rrule": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "Recurring rule in RFC 5545 RRULE format defining when a review should occur.",
+			},
+			"start_time": schema.StringAttribute{
+				Required: true,
+				MarkdownDescription: "Start time (inclusive) for the first occurrence defined by the rrule. " +
+					"Specified as an ISO 8601 date-time string without a time zone designator (e.g. 2024-01-02T15:04:05). " +
+					"The time zone is specified separately in the `time_zone` attribute.",
+			},
+			"time_zone": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "Time zone identifier (IANA) used to interpret `start_time` and `rrule` times (e.g. Europe/Warsaw).",
+			},
+		},
+	}
+}
+
+func serviceResponsibleUserAttribute() schema.Attribute {
+	return schema.ListNestedAttribute{
+		Optional:    true,
+		Description: "List of users responsible for the service.",
+		Validators:  []validator.List{listvalidator.SizeAtLeast(1), listvalidator.UniqueValues()},
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"id": schema.StringAttribute{
+					Required:    true,
+					Description: "ID of the responsible user.",
+				},
+			},
+		},
+	}
+}
 
 // Create is called when the provider must create a new resource. Config
 // and planned state values should be read from the
@@ -221,21 +251,18 @@ func (s *ServiceResource) readResource(
 	if diagnostics.HasError() {
 		return nil, diagnostics
 	}
-	updatedModel, diags := newServiceResourceConfigFromManifest(ctx, service)
-	diagnostics.Append(diags...)
-	if diagnostics.HasError() {
-		return nil, diagnostics
-	}
+	updatedModel := newServiceResourceConfigFromManifest(service)
 	// Sort Labels.
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
+	updatedModel.ResponsibleUsers = sortResponsibleUsers(model.ResponsibleUsers, updatedModel.ResponsibleUsers)
 	return updatedModel, diagnostics
 }
 
 // nolint: lll
-func addServiceResourceNameChangeWarning(attr schema.StringAttribute) schema.StringAttribute {
+func addServiceResourceNameChangeWarning(attribute schema.StringAttribute) schema.StringAttribute {
 	changeDescription := "If the value of 'name' attribute changes," +
 		" Nobl9 API will remove all SLOs associated with this Service."
-	attr.PlanModifiers = append(attr.PlanModifiers, stringplanmodifier.RequiresReplaceIf(
+	attribute.PlanModifiers = append(attribute.PlanModifiers, stringplanmodifier.RequiresReplaceIf(
 		func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
 			resp.Diagnostics.AddWarning(
 				"Changing Service name results in removal of all associated SLOs and their data.",
@@ -248,13 +275,13 @@ func addServiceResourceNameChangeWarning(attr schema.StringAttribute) schema.Str
 		changeDescription,
 		changeDescription,
 	))
-	return attr
+	return attribute
 }
 
 // nolint: lll
-func addServiceResourceProjectChangeWarning(attr schema.StringAttribute) schema.StringAttribute {
+func addServiceResourceProjectChangeWarning(attribute schema.StringAttribute) schema.StringAttribute {
 	changeDescription := "If the value of 'project' attribute changes, Nobl9 API will remove all SLOs associated with this Service."
-	attr.PlanModifiers = append(attr.PlanModifiers, stringplanmodifier.RequiresReplaceIf(
+	attribute.PlanModifiers = append(attribute.PlanModifiers, stringplanmodifier.RequiresReplaceIf(
 		func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
 			resp.Diagnostics.AddWarning(
 				"Changing Service project results in removal of all associated SLOs and their data.",
@@ -265,5 +292,5 @@ func addServiceResourceProjectChangeWarning(attr schema.StringAttribute) schema.
 		changeDescription,
 		changeDescription,
 	))
-	return attr
+	return attribute
 }

@@ -80,7 +80,7 @@ func TestAccProjectResource(t *testing.T) {
 			{
 				Config: newProjectResource(t, func() projectResourceTemplateModel {
 					m := projectResource
-					m.ProjectResourceModel.DisplayName = types.StringValue("New Project Display Name")
+					m.DisplayName = types.StringValue("New Project Display Name")
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -103,7 +103,7 @@ func TestAccProjectResource(t *testing.T) {
 			{
 				Config: newProjectResource(t, func() projectResourceTemplateModel {
 					m := projectResource
-					m.ProjectResourceModel.Name = projectNameRecreatedByNameChange
+					m.Name = projectNameRecreatedByNameChange
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(

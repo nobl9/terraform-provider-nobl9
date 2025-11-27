@@ -54,10 +54,8 @@ resource "nobl9_service" "this" {
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
-
-### Read-Only
-
-- `status` (Object) Status of created service. (see [below for nested schema](#nestedatt--status))
+- `responsible_users` (Attributes List) List of users responsible for the service. (see [below for nested schema](#nestedatt--responsible_users))
+- `review_cycle` (Attributes) Configuration for service review cycle. (see [below for nested schema](#nestedatt--review_cycle))
 
 <a id="nestedblock--label"></a>
 ### Nested Schema for `label`
@@ -68,12 +66,22 @@ Required:
 - `values` (Set of String) A set of values for a single key.
 
 
-<a id="nestedatt--status"></a>
-### Nested Schema for `status`
+<a id="nestedatt--responsible_users"></a>
+### Nested Schema for `responsible_users`
 
-Read-Only:
+Required:
 
-- `slo_count` (Number)
+- `id` (String) ID of the responsible user.
+
+
+<a id="nestedatt--review_cycle"></a>
+### Nested Schema for `review_cycle`
+
+Required:
+
+- `rrule` (String) Recurring rule in RFC 5545 RRULE format defining when a review should occur.
+- `start_time` (String) Start time (inclusive) for the first occurrence defined by the rrule. Specified as an ISO 8601 date-time string without a time zone designator (e.g. 2024-01-02T15:04:05). The time zone is specified separately in the `time_zone` attribute.
+- `time_zone` (String) Time zone identifier (IANA) used to interpret `start_time` and `rrule` times (e.g. Europe/Warsaw).
 
 ## Useful Links
 

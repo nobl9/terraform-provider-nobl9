@@ -33,11 +33,6 @@ func TestAccServiceResource(t *testing.T) {
 	}
 	serviceResource.Project = manifestProject.GetName()
 
-	manifestService := serviceResource.ToManifest()
-	manifestService.Status = &v1alphaService.Status{
-		SloCount: 0,
-	}
-
 	recreatedProjectName := e2etestutils.GenerateName()
 
 	resource.Test(t, resource.TestCase{
@@ -51,7 +46,7 @@ func TestAccServiceResource(t *testing.T) {
 				},
 				Config: newServiceResource(t, serviceResource),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assertResourceWasApplied(t, ctx, manifestService),
+					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -64,7 +59,7 @@ func TestAccServiceResource(t *testing.T) {
 			{
 				Config: newServiceResource(t, serviceResource),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assertResourceWasDeleted(t, ctx, manifestService),
+					assertResourceWasDeleted(t, ctx, serviceResource.ToManifest()),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -96,7 +91,7 @@ func TestAccServiceResource(t *testing.T) {
 				},
 				// In the next step we're also verifying the imported state, so we need to persist it.
 				ImportStatePersist: true,
-				PreConfig:          func() { e2etestutils.V1Apply(t, []manifest.Object{manifestService}) },
+				PreConfig:          func() { e2etestutils.V1Apply(t, []manifest.Object{serviceResource.ToManifest()}) },
 			},
 			// 5. Update and Read, ensure computed field does not pollute the plan.
 			{
@@ -108,7 +103,7 @@ func TestAccServiceResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("nobl9_service.test", "display_name", "New Service Display Name"),
 					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
-						svc := manifestService
+						svc := serviceResource.ToManifest()
 						svc.Metadata.DisplayName = "New Service Display Name"
 						return svc
 					}()),
@@ -131,7 +126,7 @@ func TestAccServiceResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("nobl9_service.test", "name", serviceNameRecreatedByNameChange),
 					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
-						svc := manifestService
+						svc := serviceResource.ToManifest()
 						svc.Metadata.Name = serviceNameRecreatedByNameChange
 						return svc
 					}()),
@@ -140,7 +135,6 @@ func TestAccServiceResource(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						expectChangesInResourcePlan(planDiff{
 							Modified: []string{"name", "display_name"},
-							Removed:  []string{"status"},
 						}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
@@ -158,7 +152,7 @@ func TestAccServiceResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("nobl9_service.test", "project", recreatedProjectName),
 					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
-						svc := manifestService
+						svc := serviceResource.ToManifest()
 						svc.Metadata.Name = serviceNameRecreatedByNameChange
 						svc.Metadata.Project = recreatedProjectName
 						return svc
@@ -168,7 +162,6 @@ func TestAccServiceResource(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						expectChangesInResourcePlan(planDiff{
 							Modified: []string{"project"},
-							Removed:  []string{"status"},
 						}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
@@ -199,6 +192,198 @@ func TestAccServiceResource_planValidation(t *testing.T) {
 					`(?m)Bad Request: Validation for Service 'not valid' in project 'default' has\nfailed`,
 				),
 				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func TestAccServiceResource_ResponsibleUsers(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	auxiliaryObjects := []manifest.Object{manifestProject}
+
+	serviceResource := serviceResourceTemplateModel{
+		ResourceName:         "test",
+		ServiceResourceModel: getExampleServiceResource(t),
+	}
+	serviceResource.Project = manifestProject.GetName()
+	serviceResource.ResponsibleUsers = []ResponsibleUserModel{
+		{ID: "user1@example.com"},
+		{ID: "user2@example.com"},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create service with responsible users.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: newServiceResource(t, serviceResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.#", "2"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.0.id", "user1@example.com"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.1.id", "user2@example.com"),
+					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update responsible users - add one more.
+			{
+				Config: newServiceResource(t, func() serviceResourceTemplateModel {
+					m := serviceResource
+					m.ResponsibleUsers = []ResponsibleUserModel{
+						{ID: "user1@example.com"},
+						{ID: "user2@example.com"},
+						{ID: "user3@example.com"},
+					}
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.#", "3"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.0.id", "user1@example.com"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.1.id", "user2@example.com"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.2.id", "user3@example.com"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"responsible_users"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// 3. Remove all responsible users.
+			{
+				Config: newServiceResource(t, func() serviceResourceTemplateModel {
+					m := serviceResource
+					m.ResponsibleUsers = nil
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "responsible_users.#", "0"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"responsible_users"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestAccServiceResource_ReviewCycle(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	auxiliaryObjects := []manifest.Object{manifestProject}
+
+	serviceResource := serviceResourceTemplateModel{
+		ResourceName:         "test",
+		ServiceResourceModel: getExampleServiceResource(t),
+	}
+	serviceResource.Project = manifestProject.GetName()
+	serviceResource.ReviewCycle = &ReviewCycleModel{
+		RRule:     "FREQ=WEEKLY",
+		StartTime: "2024-01-01T09:00:00",
+		TimeZone:  "America/New_York",
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// 1. Create service with review cycle.
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: newServiceResource(t, serviceResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.rrule", "FREQ=WEEKLY"),
+					resource.TestCheckResourceAttr(
+						"nobl9_service.test",
+						"review_cycle.start_time",
+						"2024-01-01T09:00:00",
+					),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "America/New_York"),
+					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+			// 2. Update review cycle - change time zone and rrule.
+			{
+				Config: newServiceResource(t, func() serviceResourceTemplateModel {
+					m := serviceResource
+					m.ReviewCycle = &ReviewCycleModel{
+						RRule:     "FREQ=MONTHLY;BYMONTHDAY=1",
+						StartTime: "2024-01-01T09:00:00",
+						TimeZone:  "Europe/London",
+					}
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"nobl9_service.test",
+						"review_cycle.rrule",
+						"FREQ=MONTHLY;BYMONTHDAY=1",
+					),
+					resource.TestCheckResourceAttr(
+						"nobl9_service.test",
+						"review_cycle.start_time",
+						"2024-01-01T09:00:00",
+					),
+					resource.TestCheckResourceAttr("nobl9_service.test", "review_cycle.time_zone", "Europe/London"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"review_cycle"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			// 3. Remove review cycle.
+			{
+				Config: newServiceResource(t, func() serviceResourceTemplateModel {
+					m := serviceResource
+					m.ReviewCycle = nil
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("nobl9_service.test", "review_cycle.rrule"),
+					resource.TestCheckNoResourceAttr("nobl9_service.test", "review_cycle.start_time"),
+					resource.TestCheckNoResourceAttr("nobl9_service.test", "review_cycle.time_zone"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"review_cycle"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
+					},
+				},
 			},
 		},
 	})
@@ -243,5 +428,14 @@ func getExampleServiceResource(t *testing.T) ServiceResourceModel {
 			{Key: "team", Values: []string{"green"}},
 			{Key: "env", Values: []string{"dev", "prod"}},
 		}),
+		ReviewCycle: &ReviewCycleModel{
+			RRule:     "FREQ=DAILY",
+			StartTime: "2024-01-01T08:00:00",
+			TimeZone:  "Asia/Tokyo",
+		},
+		ResponsibleUsers: []ResponsibleUserModel{
+			{ID: "userID1"},
+			{ID: "userID2"},
+		},
 	}
 }

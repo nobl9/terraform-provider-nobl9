@@ -1,3 +1,19 @@
 resource "nobl9_service" "{{ .ResourceName }}" {
   {{- template "metadata" . -}}
+  {{- if .ResponsibleUsers }}
+  responsible_users = [
+    {{- range .ResponsibleUsers }}
+    {
+      id = "{{ .ID }}"
+    },
+    {{- end }}
+  ]
+  {{- end }}
+  {{- if .ReviewCycle }}
+  review_cycle = {
+    rrule      = "{{ .ReviewCycle.RRule }}"
+    start_time = "{{ .ReviewCycle.StartTime }}"
+    time_zone  = "{{ .ReviewCycle.TimeZone }}"
+  }
+  {{- end }}
 }

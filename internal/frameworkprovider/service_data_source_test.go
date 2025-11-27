@@ -42,15 +42,12 @@ func TestAccServiceDataSource(t *testing.T) {
 		},
 		v1alphaService.Spec{},
 	)
-	manifestService1.Status = &v1alphaService.Status{
-		SloCount: 0,
-	}
 
 	manifestService2 := manifestService1
 	manifestService2.Metadata.Project = manifestProject2.GetName()
 
-	service1Resource, _ := newServiceResourceConfigFromManifest(ctx, manifestService1)
-	service2Resource, _ := newServiceResourceConfigFromManifest(ctx, manifestService2)
+	service1Resource := newServiceResourceConfigFromManifest(manifestService1)
+	service2Resource := newServiceResourceConfigFromManifest(manifestService2)
 	serviceResourceConfig := executeTemplate(t, "service_data_source.hcl.tmpl", map[string]any{
 		"Service1": service1Resource,
 		"Service2": service2Resource,
