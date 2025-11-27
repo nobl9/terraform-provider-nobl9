@@ -95,7 +95,7 @@ func serviceResponsibleUserAttribute() schema.Attribute {
 	return schema.ListNestedAttribute{
 		Optional:    true,
 		Description: "List of users responsible for the service.",
-		Validators:  []validator.List{listvalidator.SizeAtLeast(1)},
+		Validators:  []validator.List{listvalidator.SizeAtLeast(1), listvalidator.UniqueValues()},
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"id": schema.StringAttribute{
