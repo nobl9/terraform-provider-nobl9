@@ -6,11 +6,14 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
-	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -34,14 +37,16 @@ func init() {
 
 // testAccNewMux returns a new provider server which can multiplex
 // between the SDK and framework provider implementations.
-func testAccNewMux(ctx context.Context) (tfprotov5.ProviderServer, error) {
-	mux, err := tf5muxserver.NewMuxServer(
+func testAccNewMux(ctx context.Context) (tfprotov6.ProviderServer, error) {
+	mux, err := tf6muxserver.NewMuxServer(
 		ctx,
-		func() tfprotov5.ProviderServer {
-			provider := Provider()
-			return schema.NewGRPCProviderServer(provider)
+		func() tfprotov6.ProviderServer {
+			srv, _ := tf5to6server.UpgradeServer(ctx, func() tfprotov5.ProviderServer {
+				return schema.NewGRPCProviderServer(Provider())
+			})
+			return srv
 		},
-		providerserver.NewProtocol5(frameworkprovider.New()),
+		providerserver.NewProtocol6(frameworkprovider.New()),
 	)
 	if err != nil {
 		return nil, err
@@ -49,15 +54,25 @@ func testAccNewMux(ctx context.Context) (tfprotov5.ProviderServer, error) {
 	return mux.ProviderServer(), nil
 }
 
-// testAccProtoV5ProviderFactories are used to instantiate a provider during
+// testAccProtoV6ProviderFactories are used to instantiate a provider during
 // acceptance testing. The factory function will be invoked for every Terraform
 // CLI command executed to create a provider server to which the CLI can
 // reattach.
-var testAccProtoV5ProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
-	"nobl9": func() (tfprotov5.ProviderServer, error) {
-		return testAccNewMux(context.Background())
-	},
-}
+var (
+	testAccProviderServer struct {
+		srv  tfprotov6.ProviderServer
+		err  error
+		once sync.Once
+	}
+	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+		"nobl9": func() (tfprotov6.ProviderServer, error) {
+			testAccProviderServer.once.Do(func() {
+				testAccProviderServer.srv, testAccProviderServer.err = testAccNewMux(context.Background())
+			})
+			return testAccProviderServer.srv, testAccProviderServer.err
+		},
+	}
+)
 
 func TestProvider(t *testing.T) {
 	if err := Provider().InternalValidate(); err != nil {

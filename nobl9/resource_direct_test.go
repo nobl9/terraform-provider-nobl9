@@ -40,7 +40,7 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 		t.Run(tc.directType, func(t *testing.T) {
 			testName := strings.ReplaceAll("test-"+tc.directType, "_", "")
 			resource.Test(t, resource.TestCase{
-				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 				CheckDestroy:             CheckDestroy("nobl9_direct_%s", manifest.KindDirect),
 				Steps: []resource.TestStep{
 					{

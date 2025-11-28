@@ -26,7 +26,7 @@ func TestAcc_Nobl9RoleBinding(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.ParallelTest(t, resource.TestCase{
-				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 				CheckDestroy:             CheckDestroy("nobl9_role_binding", manifest.KindRoleBinding),
 				Steps: []resource.TestStep{
 					{

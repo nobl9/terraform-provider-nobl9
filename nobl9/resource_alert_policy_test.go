@@ -336,7 +336,7 @@ func TestAcc_Nobl9AlertPolicy(t *testing.T) {
 			res := alertPolicyConfig.Build(resourceName, alertPolicyName, testProject)
 
 			resource.Test(t, resource.TestCase{
-				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 				CheckDestroy: destroyMultiple(
 					[]string{"nobl9_alert_policy", "nobl9_alert_method_slack"},
 					[]manifest.Kind{manifest.KindAlertPolicy, manifest.KindAlertMethod},

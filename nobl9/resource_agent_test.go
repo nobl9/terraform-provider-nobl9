@@ -46,7 +46,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
-				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 				CheckDestroy:             CheckDestroy("nobl9_agent", manifest.KindAgent),
 				Steps: []resource.TestStep{
 					{
