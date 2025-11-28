@@ -171,6 +171,9 @@ func assertResourceWasApplied(t *testing.T, ctx context.Context, expected manife
 
 // FIXME remove after https://github.com/nobl9/n9/pull/19719 is released
 func sortSDKResponsibleUsers(users []v1alphaService.ResponsibleUser) []v1alphaService.ResponsibleUser {
+	if users == nil {
+		return nil
+	}
 	userMap := make(map[string]v1alphaService.ResponsibleUser)
 	for _, r := range users {
 		userMap[r.ID] = r
