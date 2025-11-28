@@ -28,7 +28,7 @@ func TestAcc_Nobl9Reports(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.ParallelTest(t, resource.TestCase{
-				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 				CheckDestroy:             CheckDestroy("nobl9_report_"+tc.reportSuffix, manifest.KindReport),
 				Steps: []resource.TestStep{
 					{
@@ -95,7 +95,7 @@ func TestAcc_Nobl9ReportsErrors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			resource.Test(t, resource.TestCase{
-				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 				CheckDestroy:             CheckDestroy("nobl9_report_"+tc.reportSuffix, manifest.KindReport),
 				Steps: []resource.TestStep{
 					{
