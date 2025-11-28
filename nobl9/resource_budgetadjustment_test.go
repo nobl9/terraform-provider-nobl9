@@ -25,7 +25,7 @@ func TestAcc_Nobl9BudgetAdjustments(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			resource.ParallelTest(t, resource.TestCase{
-				ProtoV5ProviderFactories: testAccProtoV5ProviderFactories,
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 				CheckDestroy:             CheckDestroy("nobl9_budget_adjustment", manifest.KindBudgetAdjustment),
 				Steps: []resource.TestStep{
 					{
