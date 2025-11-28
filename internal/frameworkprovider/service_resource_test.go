@@ -111,7 +111,7 @@ func TestAccServiceResource(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						// FIXME enable after https://github.com/nobl9/n9/pull/19719 is released
-						//expectChangesInResourcePlan(planDiff{Modified: []string{"display_name"}}),
+						// expectChangesInResourcePlan(planDiff{Modified: []string{"display_name"}}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
 					},
@@ -135,9 +135,9 @@ func TestAccServiceResource(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						// FIXME enable after https://github.com/nobl9/n9/pull/19719 is released
-						//expectChangesInResourcePlan(planDiff{
-						//	Modified: []string{"name", "display_name"},
-						//}),
+						// expectChangesInResourcePlan(planDiff{
+						//	 Modified: []string{"name", "display_name"},
+						// }),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
 					},

@@ -33,6 +33,27 @@ resource "nobl9_service" "this" {
     {
       id = "userID2"
     },
+    {
+      id = "userID3"
+    },
+    {
+      id = "userID4"
+    },
+    {
+      id = "userID5"
+    },
+    {
+      id = "userID6"
+    },
+    {
+      id = "userID7"
+    },
+    {
+      id = "userID8"
+    },
+    {
+      id = "userID9"
+    },
   ]
   review_cycle = {
     rrule      = "FREQ=DAILY"
