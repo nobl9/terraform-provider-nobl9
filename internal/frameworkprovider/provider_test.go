@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"slices"
+	"sort"
 	"sync"
 	"testing"
 
@@ -158,6 +159,7 @@ func assertResourceWasApplied(t *testing.T, ctx context.Context, expected manife
 			objects[0] = v
 		case v1alphaService.Service:
 			v.Status = nil
+			v.Spec.ResponsibleUsers = sortSDKResponsibleUsers(v.Spec.ResponsibleUsers)
 			objects[0] = v
 		}
 		if !assert.Equal(t, expected, objects[0]) {
@@ -165,6 +167,27 @@ func assertResourceWasApplied(t *testing.T, ctx context.Context, expected manife
 		}
 		return nil
 	}
+}
+
+// FIXME remove after https://github.com/nobl9/n9/pull/19719 is released
+func sortSDKResponsibleUsers(users []v1alphaService.ResponsibleUser) []v1alphaService.ResponsibleUser {
+	if users == nil {
+		return nil
+	}
+	userMap := make(map[string]v1alphaService.ResponsibleUser)
+	for _, r := range users {
+		userMap[r.ID] = r
+	}
+	sortedUsers := make([]v1alphaService.ResponsibleUser, 0, len(userMap))
+	ids := make([]string, 0, len(userMap))
+	for k := range userMap {
+		ids = append(ids, k)
+	}
+	sort.Strings(ids)
+	for _, k := range ids {
+		sortedUsers = append(sortedUsers, userMap[k])
+	}
+	return sortedUsers
 }
 
 // assertResourceWasDeleted is a test check function that asserts if the resource was deleted from the Nobl9 platform.
