@@ -64,9 +64,13 @@ func getJSONFieldName(field reflect.StructField) string {
 }
 
 // getStructJSONFields returns all JSON field names for a given struct.
+// Handles both pointer and value types.
 func getStructJSONFields(configStruct any) []string {
 	var fields []string
 	t := reflect.TypeOf(configStruct)
+	if t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		jsonName := getJSONFieldName(field)
