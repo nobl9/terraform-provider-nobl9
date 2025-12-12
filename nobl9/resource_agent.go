@@ -237,7 +237,7 @@ func marshalAgent(d resourceInterface) (*v1alphaAgent.Agent, diag.Diagnostics) {
 			Datadog:                 marshalAgentDatadog(d, diags),
 			Dynatrace:               marshalAgentDynatrace(d, diags),
 			Elasticsearch:           marshalAgentElasticsearch(d, diags),
-			GCM:                     marshalAgentGCM(d, diags),
+			GCM:                     marshalAgentGCM(d),
 			GrafanaLoki:             marshalAgentGrafanaLoki(d, diags),
 			Graphite:                marshalAgentGraphite(d, diags),
 			Honeycomb:               marshalAgentHoneycomb(d),
@@ -743,7 +743,7 @@ func schemaAgentGCM() map[string]*schema.Schema {
 	}
 }
 
-func marshalAgentGCM(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.GCMConfig {
+func marshalAgentGCM(d resourceInterface) *v1alphaAgent.GCMConfig {
 	if !isAgentType(d, gcmAgentType) {
 		return nil
 	}

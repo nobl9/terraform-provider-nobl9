@@ -78,8 +78,7 @@ func getStructJSONFields(configStruct any) []string {
 }
 
 // getSchemaFields returns all field names from a Terraform schema's nested resource.
-func getSchemaFields(s *schema.Schema) []string {
-	var fields []string
+func getSchemaFields(s *schema.Schema) (fields []string) {
 	if s.Elem == nil {
 		return fields
 	}
@@ -87,6 +86,7 @@ func getSchemaFields(s *schema.Schema) []string {
 	if !ok {
 		return fields
 	}
+	fields = make([]string, 0, len(resource.Schema))
 	for fieldName := range resource.Schema {
 		fields = append(fields, fieldName)
 	}
