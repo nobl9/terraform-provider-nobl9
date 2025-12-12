@@ -237,7 +237,7 @@ func marshalAgent(d resourceInterface) (*v1alphaAgent.Agent, diag.Diagnostics) {
 			Datadog:                 marshalAgentDatadog(d, diags),
 			Dynatrace:               marshalAgentDynatrace(d, diags),
 			Elasticsearch:           marshalAgentElasticsearch(d, diags),
-			GCM:                     marshalAgentGCM(d),
+			GCM:                     marshalAgentGCM(d, diags),
 			GrafanaLoki:             marshalAgentGrafanaLoki(d, diags),
 			Graphite:                marshalAgentGraphite(d, diags),
 			Honeycomb:               marshalAgentHoneycomb(d),
@@ -280,40 +280,10 @@ func unmarshalAgent(d *schema.ResourceData, agent v1alphaAgent.Agent) diag.Diagn
 
 	diags = append(diags, unmarshalQueryDelay(d, agent.Spec.QueryDelay)...)
 	diags = append(diags, unmarshalReleaseChannel(d, agent.Spec.ReleaseChannel)...)
-	spec := v1alphaAgent.Spec{}
-	supportedAgents := []struct {
-		hclName  string
-		jsonName string
-	}{
-		{amazonPrometheusAgentConfigKey, agentSpecJSONName(spec.AmazonPrometheus, diags)},
-		{appDynamicsAgentConfigKey, agentSpecJSONName(spec.AppDynamics, diags)},
-		{azureMonitorAgentConfigKey, agentSpecJSONName(spec.AzureMonitor, diags)},
-		{bigqueryAgentConfigKey, agentSpecJSONName(spec.BigQuery, diags)},
-		{cloudWatchAgentConfigKey, agentSpecJSONName(spec.CloudWatch, diags)},
-		{datadogAgentConfigKey, agentSpecJSONName(spec.Datadog, diags)},
-		{dynatraceAgentConfigKey, agentSpecJSONName(spec.Dynatrace, diags)},
-		{elasticsearchAgentConfigKey, agentSpecJSONName(spec.Elasticsearch, diags)},
-		{gcmAgentConfigKey, agentSpecJSONName(spec.GCM, diags)},
-		{grafanalokiAgentConfigKey, agentSpecJSONName(spec.GrafanaLoki, diags)},
-		{graphiteAgentConfigKey, agentSpecJSONName(spec.Graphite, diags)},
-		{honeycombAgentConfigKey, agentSpecJSONName(spec.Honeycomb, diags)},
-		{influxdbAgentConfigKey, agentSpecJSONName(spec.InfluxDB, diags)},
-		{instanaAgentConfigKey, agentSpecJSONName(spec.Instana, diags)},
-		{lightstepAgentConfigKey, agentSpecJSONName(spec.Lightstep, diags)},
-		{logicMonitorAgentConfigKey, agentSpecJSONName(spec.LogicMonitor, diags)},
-		{newRelicAgentConfigKey, agentSpecJSONName(spec.NewRelic, diags)},
-		{opentsdbAgentConfigKey, agentSpecJSONName(spec.OpenTSDB, diags)},
-		{pingdomAgentConfigKey, agentSpecJSONName(spec.Pingdom, diags)},
-		{prometheusAgentConfigKey, agentSpecJSONName(spec.Prometheus, diags)},
-		{redshiftAgentConfigKey, agentSpecJSONName(spec.Redshift, diags)},
-		{splunkAgentConfigKey, agentSpecJSONName(spec.Splunk, diags)},
-		{splunkObservabilityAgentConfigKey, agentSpecJSONName(spec.SplunkObservability, diags)},
-		{sumologicAgentConfigKey, agentSpecJSONName(spec.SumoLogic, diags)},
-		{thousandeyesAgentConfigKey, agentSpecJSONName(spec.ThousandEyes, diags)},
-	}
 
-	for _, name := range supportedAgents {
-		ok, ds := unmarshalAgentConfig(d, agent, name.hclName, name.jsonName)
+	for _, agentConfig := range getSupportedAgentConfigs() {
+		jsonName := agentSpecJSONName(agentConfig.configStruct, diags)
+		ok, ds := unmarshalAgentConfig(d, agent, agentConfig.configKey, jsonName)
 		if ds.HasError() {
 			diags = append(diags, ds...)
 		}
@@ -329,10 +299,9 @@ func unmarshalAgentConfig(
 	d *schema.ResourceData,
 	agent v1alphaAgent.Agent,
 	hclName,
-	jsonName string) (bool, diag.Diagnostics) {
+	jsonName string,
+) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	// err := d.Set("agent_type", spec[""]) TODO
 
 	spec, err := json.Marshal(&agent.Spec)
 	diags = appendError(diags, err)
@@ -384,6 +353,45 @@ func agentSpecJSONName(agentSpecField any, diags diag.Diagnostics) string {
 	return ""
 }
 
+// supportedAgentConfig defines a supported agent configuration type with its
+// schema config key and corresponding nobl9-go config struct.
+type supportedAgentConfig struct {
+	configKey    string
+	configStruct any
+}
+
+// getSupportedAgentConfigs returns all supported agent configurations.
+// This is the single source of truth for agent types supported by the provider.
+func getSupportedAgentConfigs() []supportedAgentConfig {
+	return []supportedAgentConfig{
+		{amazonPrometheusAgentConfigKey, v1alphaAgent.AmazonPrometheusConfig{}},
+		{appDynamicsAgentConfigKey, v1alphaAgent.AppDynamicsConfig{}},
+		{azureMonitorAgentConfigKey, v1alphaAgent.AzureMonitorConfig{}},
+		{bigqueryAgentConfigKey, v1alphaAgent.BigQueryConfig{}},
+		{cloudWatchAgentConfigKey, v1alphaAgent.CloudWatchConfig{}},
+		{datadogAgentConfigKey, v1alphaAgent.DatadogConfig{}},
+		{dynatraceAgentConfigKey, v1alphaAgent.DynatraceConfig{}},
+		{elasticsearchAgentConfigKey, v1alphaAgent.ElasticsearchConfig{}},
+		{gcmAgentConfigKey, v1alphaAgent.GCMConfig{}},
+		{grafanalokiAgentConfigKey, v1alphaAgent.GrafanaLokiConfig{}},
+		{graphiteAgentConfigKey, v1alphaAgent.GraphiteConfig{}},
+		{honeycombAgentConfigKey, v1alphaAgent.HoneycombConfig{}},
+		{influxdbAgentConfigKey, v1alphaAgent.InfluxDBConfig{}},
+		{instanaAgentConfigKey, v1alphaAgent.InstanaConfig{}},
+		{lightstepAgentConfigKey, v1alphaAgent.LightstepConfig{}},
+		{logicMonitorAgentConfigKey, v1alphaAgent.LogicMonitorConfig{}},
+		{newRelicAgentConfigKey, v1alphaAgent.NewRelicConfig{}},
+		{opentsdbAgentConfigKey, v1alphaAgent.OpenTSDBConfig{}},
+		{pingdomAgentConfigKey, v1alphaAgent.PingdomConfig{}},
+		{prometheusAgentConfigKey, v1alphaAgent.PrometheusConfig{}},
+		{redshiftAgentConfigKey, v1alphaAgent.RedshiftConfig{}},
+		{splunkAgentConfigKey, v1alphaAgent.SplunkConfig{}},
+		{splunkObservabilityAgentConfigKey, v1alphaAgent.SplunkObservabilityConfig{}},
+		{sumologicAgentConfigKey, v1alphaAgent.SumoLogicConfig{}},
+		{thousandeyesAgentConfigKey, v1alphaAgent.ThousandEyesConfig{}},
+	}
+}
+
 /**
  * Amazon Prometheus Agent
  * https://docs.nobl9.com/Sources/Amazon_Prometheus/#ams-prometheus-agent
@@ -411,6 +419,11 @@ func schemaAgentAmazonPrometheus() map[string]*schema.Schema {
 						Required:    true,
 						Description: "AWS region e.g., eu-central-1",
 					},
+					"step": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Query resolution step width in seconds.",
+					},
 				},
 			},
 		},
@@ -427,6 +440,7 @@ func marshalAgentAmazonPrometheus(d resourceInterface, diags diag.Diagnostics) *
 	return &v1alphaAgent.AmazonPrometheusConfig{
 		URL:    data["url"].(string),
 		Region: data["region"].(string),
+		Step:   data["step"].(int),
 	}
 }
 
@@ -717,18 +731,32 @@ func schemaAgentGCM() map[string]*schema.Schema {
 			MinItems: 1,
 			MaxItems: 1,
 			Elem: &schema.Resource{
-				Description: "Agent configuration is not required.",
+				Schema: map[string]*schema.Schema{
+					"step": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Query resolution step width in seconds.",
+					},
+				},
 			},
 		},
 	}
 }
 
-func marshalAgentGCM(d resourceInterface) *v1alphaAgent.GCMConfig {
+func marshalAgentGCM(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.GCMConfig {
 	if !isAgentType(d, gcmAgentType) {
 		return nil
 	}
 
-	return &v1alphaAgent.GCMConfig{}
+	data := d.Get(gcmAgentConfigKey).(*schema.Set).List()
+	if len(data) == 0 {
+		return &v1alphaAgent.GCMConfig{}
+	}
+	resourceData := data[0].(map[string]interface{})
+
+	return &v1alphaAgent.GCMConfig{
+		Step: resourceData["step"].(int),
+	}
 }
 
 /**
@@ -1121,6 +1149,11 @@ func schemaAgentPrometheus() map[string]*schema.Schema {
 						Required:    true,
 						Description: "Base URL to Prometheus server.",
 					},
+					"step": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Query resolution step width in seconds.",
+					},
 				},
 			},
 		},
@@ -1135,7 +1168,8 @@ func marshalAgentPrometheus(d resourceInterface, diags diag.Diagnostics) *v1alph
 	}
 
 	return &v1alphaAgent.PrometheusConfig{
-		URL: data["url"].(string),
+		URL:  data["url"].(string),
+		Step: data["step"].(int),
 	}
 }
 
