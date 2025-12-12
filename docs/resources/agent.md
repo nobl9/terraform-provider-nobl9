@@ -90,6 +90,10 @@ Required:
 - `region` (String) AWS region e.g., eu-central-1
 - `url` (String) Base URL to Amazon Prometheus server.
 
+Optional:
+
+- `step` (Number) Query resolution step width in seconds.
+
 
 <a id="nestedblock--appdynamics_config"></a>
 ### Nested Schema for `appdynamics_config`
@@ -147,6 +151,10 @@ Required:
 
 <a id="nestedblock--gcm_config"></a>
 ### Nested Schema for `gcm_config`
+
+Optional:
+
+- `step` (Number) Query resolution step width in seconds.
 
 
 <a id="nestedblock--grafana_loki_config"></a>
@@ -259,6 +267,10 @@ Required:
 Required:
 
 - `url` (String) Base URL to Prometheus server.
+
+Optional:
+
+- `step` (Number) Query resolution step width in seconds.
 
 
 <a id="nestedblock--query_delay"></a>
