@@ -102,8 +102,9 @@ type MetricSpecModel struct {
 
 // CompositeObjectiveModel represents the composite block in an objective.
 type CompositeObjectiveModel struct {
-	MaxDelay   types.String               `tfsdk:"max_delay"`
-	Components []CompositeComponentsModel `tfsdk:"components"`
+	MaxDelay    types.String               `tfsdk:"max_delay"`
+	Aggregation types.String               `tfsdk:"aggregation"`
+	Components  []CompositeComponentsModel `tfsdk:"components"`
 }
 
 // CompositeComponentsModel represents the components block within a composite objective.
@@ -609,7 +610,8 @@ func compositeObjectiveToModel(src *v1alphaSLO.CompositeSpec) *CompositeObjectiv
 		return nil
 	}
 	model := &CompositeObjectiveModel{
-		MaxDelay: types.StringValue(src.MaxDelay),
+		MaxDelay:    types.StringValue(src.MaxDelay),
+		Aggregation: types.StringValue(src.Aggregation.String()),
 	}
 	switch {
 	case len(src.Objectives) > 0:
@@ -699,9 +701,11 @@ func (c *CompositeObjectiveModel) ToManifest() *v1alphaSLO.CompositeSpec {
 	if c == nil {
 		return nil
 	}
+	aggregation, _ := v1alphaSLO.ParseComponentAggregationMethod(c.Aggregation.ValueString())
 	spec := &v1alphaSLO.CompositeSpec{
-		MaxDelay:   c.MaxDelay.ValueString(),
-		Components: v1alphaSLO.Components{Objectives: make([]v1alphaSLO.CompositeObjective, 0)},
+		MaxDelay:    c.MaxDelay.ValueString(),
+		Aggregation: aggregation,
+		Components:  v1alphaSLO.Components{Objectives: make([]v1alphaSLO.CompositeObjective, 0)},
 	}
 	if len(c.Components) > 0 && len(c.Components[0].Objectives) > 0 &&
 		len(c.Components[0].Objectives[0].CompositeObjective) > 0 {

@@ -1154,6 +1154,27 @@ func TestAccSLOResource_custom(t *testing.T) {
 				return model
 			},
 		},
+		"composite with ErrorBudgetState aggregation": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				model.Objectives = compositeModel.Objectives
+				model.Objectives[0].Composite[0].Aggregation = types.StringValue("ErrorBudgetState")
+				model.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective =
+					[]CompositeObjectiveSpecModel{
+						{
+							Project:     manifestSLOComponent1.GetProject(),
+							SLO:         manifestSLOComponent1.GetName(),
+							Objective:   manifestSLOComponent1.Spec.Objectives[0].Name,
+							Weight:      1,
+							WhenDelayed: v1alphaSLO.WhenDelayedCountAsGood.String(),
+						},
+					}
+				model.Indicator = nil
+				return model
+			},
+		},
 	}
 
 	for name, test := range tests {
