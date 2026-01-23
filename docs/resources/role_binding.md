@@ -24,12 +24,12 @@ For more details, refer to the [Role Binding configuration | Nobl9 Documentation
 
 ## Example Usage
 
-Here's an example of RBAC resource configuration:
+Here's an example of RBAC resource configuration using the preferred `account_id` field:
 
 ```terraform
 resource "nobl9_role_binding" "this" {
   name        = "my-role-binding"
-  user        = "test"
+  account_id  = "00udujwksdl5sTDtu4x7"
   role_ref    = "project-owner"
   project_ref = "default"
 }
@@ -37,6 +37,17 @@ resource "nobl9_role_binding" "this" {
 resource "nobl9_role_binding" "this" {
   name        = "group-role-binding"
   group_ref   = "test"
+  role_ref    = "project-owner"
+  project_ref = "default"
+}
+```
+
+**Deprecated example** (backward compatibility):
+
+```terraform
+resource "nobl9_role_binding" "legacy" {
+  name        = "legacy-role-binding"
+  user        = "00udujwksdl5sTDtu4x7"  # Deprecated: use account_id instead
   role_ref    = "project-owner"
   project_ref = "default"
 }
@@ -51,11 +62,12 @@ resource "nobl9_role_binding" "this" {
 
 ### Optional
 
+- `account_id` (String) Account ID (Okta User ID) that can be retrieved from the Nobl9 UI (**Settings** > **Users**). This is the preferred field for specifying user accounts.
 - `display_name` (String) User-friendly display name of the resource.
-- `group_ref` (String) Group name that can be retrieved from the Nobl9 UI (**Settings** > **Access Controls** > **Groups**) or using sloctl `get usergroups` command.
+- `group_ref` (String) Group name that can be retrieved from the Nobl9 UI (**Settings** > **Groups**) or using sloctl `get usergroups` command.
 - `name` (String) Automatically generated, unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project_ref` (String) Project name, the project in which we want the user or group to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.
-- `user` (String) Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Access Controls** > **Users**).
+- `user` (String, Deprecated) Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Users**). **Deprecated:** Use `account_id` instead. This field will be removed in a future.
 
 ### Read-Only
 

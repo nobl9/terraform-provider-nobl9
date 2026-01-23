@@ -29,17 +29,24 @@ func resourceRoleBinding() *schema.Resource {
 				Description: "Automatically generated, unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).",
 			},
 			"display_name": schemaDisplayName(),
+			"account_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Account ID that can be retrieved from the Nobl9 UI (for **Settings** > **Users** as User ID or **API Keys** as from Client ID).",
+				ConflictsWith: []string{"user", "group_ref"},
+			},
 			"user": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Description:   "Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Access Controls** > **Users**).",
-				ConflictsWith: []string{"group_ref"},
+				Deprecated:    "Use 'account_id' instead. The 'user' field is deprecated and will be removed in a future.",
+				Description:   "Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Users**). Deprecated: use 'account_id' instead.",
+				ConflictsWith: []string{"account_id", "group_ref"},
 			},
 			"group_ref": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Description:   "Group name that can be retrieved from the Nobl9 UI (**Settings** > **Access Controls** > **Groups**) or using sloctl `get usergroups` command.",
-				ConflictsWith: []string{"user"},
+				Description:   "Group name that can be retrieved from the Nobl9 UI (**Settings** > **Groups**) or using sloctl `get usergroups` command.",
+				ConflictsWith: []string{"user", "account_id"},
 			},
 			"role_ref": {
 				Type:        schema.TypeString,
@@ -71,9 +78,14 @@ func marshalRoleBinding(r resourceInterface) *v1alphaRoleBinding.RoleBinding {
 		name = id.String()
 	}
 
-	var user *string
-	if userValue := r.Get("user").(string); userValue != "" {
-		user = &userValue
+	// Handle user/account_id - prefer account_id, fall back to user for backward compatibility
+	// Always send AccountID to the API (never the deprecated User field)
+	var accountID *string
+	if accountIDValue := r.Get("account_id").(string); accountIDValue != "" {
+		accountID = &accountIDValue
+	} else if userValue := r.Get("user").(string); userValue != "" {
+		// Backward compatibility: if user is provided, use it as accountID in the SDK
+		accountID = &userValue
 	}
 
 	var groupRef *string
@@ -86,7 +98,7 @@ func marshalRoleBinding(r resourceInterface) *v1alphaRoleBinding.RoleBinding {
 			Name: name,
 		},
 		v1alphaRoleBinding.Spec{
-			User:       user,
+			AccountID:  accountID,
 			GroupRef:   groupRef,
 			RoleRef:    r.Get("role_ref").(string),
 			ProjectRef: r.Get("project_ref").(string),
@@ -110,8 +122,34 @@ func unmarshalRoleBinding(d *schema.ResourceData, objects []v1alphaRoleBinding.R
 	diags = appendError(diags, err)
 
 	spec := roleBinding.Spec
-	err = d.Set("user", spec.User)
-	diags = appendError(diags, err)
+
+	// Handle backward compatibility for user/account_id
+	// If state has 'user', keep it there; otherwise use 'account_id'
+	_, hasUserInState := d.GetOk("user")
+
+	// Determine which field to populate based on what's in state
+	if hasUserInState {
+		// Preserve 'user' field for backward compatibility with existing states
+		if spec.AccountID != nil {
+			err = d.Set("user", spec.AccountID)
+			diags = appendError(diags, err)
+		} else if spec.User != nil {
+			// Fallback for API responses that still send 'user'
+			err = d.Set("user", spec.User)
+			diags = appendError(diags, err)
+		}
+	} else {
+		// Use 'account_id' for new resources or migrated configs
+		if spec.AccountID != nil {
+			err = d.Set("account_id", spec.AccountID)
+			diags = appendError(diags, err)
+		} else if spec.User != nil {
+			// Fallback for API responses that still send 'user'
+			err = d.Set("account_id", spec.User)
+			diags = appendError(diags, err)
+		}
+	}
+
 	err = d.Set("group_ref", spec.GroupRef)
 	diags = appendError(diags, err)
 	err = d.Set("role_ref", spec.RoleRef)
