@@ -16,9 +16,11 @@ There are two levels of permissions, the organization level and the project leve
 
 For more details, refer to the {{ .Description | trimspace }}.
 
--> **NOTE** To configure RBAC through Terraform, you must provide `role_ref` and `user` values:
+-> **NOTE** To configure RBAC through Terraform, you must provide `role_ref` and either `account_id` or `user` values:
 
-- `user` is a User ID from Okta. You can retrieve it from **Settings** > **Account and Settings** > **Users** in the Nobl9 UI.
+- `account_id` is an Account ID. You can retrieve it from **Settings** > **Users** from User ID or **Settings** > **API Keys** from Client ID in the Nobl9 UI. This is the preferred field.
+
+- `user` is deprecated in favor of `account_id`. While still supported for backward compatibility, new configurations should use `account_id`.
 
 - `role_ref` must be an existing role name that you want the user to assume. If you don't specify the optional `project_ref` value, `role_ref` must contain an Organization Role.
 

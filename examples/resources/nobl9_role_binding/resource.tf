@@ -1,7 +1,7 @@
 # Preferred: using account_id
 resource "nobl9_role_binding" "this" {
   name        = "my-role-binding"
-  account_id  = "00udujwksdl5sTDtu4x7"
+  account_id  = "accountID1234"
   role_ref    = "project-owner"
   project_ref = "default"
 }
@@ -17,7 +17,7 @@ resource "nobl9_role_binding" "group_binding" {
 # Deprecated: using user field (backward compatibility)
 resource "nobl9_role_binding" "legacy" {
   name        = "legacy-role-binding"
-  user        = "00udujwksdl5sTDtu4x7"  # Deprecated: use account_id instead
+  user        = "accountID1234"  # Deprecated: use account_id instead
   role_ref    = "project-owner"
   project_ref = "default"
 }
