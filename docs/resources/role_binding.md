@@ -16,9 +16,11 @@ There are two levels of permissions, the organization level and the project leve
 
 For more details, refer to the [Role Binding configuration | Nobl9 Documentation](https://docs.nobl9.com/yaml-guide#rolebinding).
 
--> **NOTE** To configure RBAC through Terraform, you must provide `role_ref` and `user` values:
+-> **NOTE** To configure RBAC through Terraform, you must provide `role_ref` and either `account_id` or `user` values:
 
-- `user` is a User ID from Okta. You can retrieve it from **Settings** > **Account and Settings** > **Users** in the Nobl9 UI.
+- `account_id` is an Account ID. You can retrieve it from **Settings** > **Users** from User ID or **Settings** > **API Keys** from Client ID in the Nobl9 UI. This is the preferred field.
+
+- `user` is deprecated in favor of `account_id`. While still supported for backward compatibility, new configurations should use `account_id`.
 
 - `role_ref` must be an existing role name that you want the user to assume. If you don't specify the optional `project_ref` value, `role_ref` must contain an Organization Role.
 
@@ -27,16 +29,26 @@ For more details, refer to the [Role Binding configuration | Nobl9 Documentation
 Here's an example of RBAC resource configuration:
 
 ```terraform
+# Preferred: using account_id
 resource "nobl9_role_binding" "this" {
   name        = "my-role-binding"
-  user        = "test"
+  account_id  = "accountID1234"
   role_ref    = "project-owner"
   project_ref = "default"
 }
 
-resource "nobl9_role_binding" "this" {
+# Group-based role binding
+resource "nobl9_role_binding" "group_binding" {
   name        = "group-role-binding"
   group_ref   = "test"
+  role_ref    = "project-owner"
+  project_ref = "default"
+}
+
+# Deprecated: using user field (backward compatibility)
+resource "nobl9_role_binding" "legacy" {
+  name        = "legacy-role-binding"
+  user        = "accountID1234"  # Deprecated: use account_id instead
   role_ref    = "project-owner"
   project_ref = "default"
 }
@@ -51,11 +63,12 @@ resource "nobl9_role_binding" "this" {
 
 ### Optional
 
+- `account_id` (String) Account ID that can be retrieved from the Nobl9 UI (for **Settings** > **Users** as User ID or **API Keys** as from Client ID).
 - `display_name` (String) User-friendly display name of the resource.
-- `group_ref` (String) Group name that can be retrieved from the Nobl9 UI (**Settings** > **Access Controls** > **Groups**) or using sloctl `get usergroups` command.
+- `group_ref` (String) Group name that can be retrieved from the Nobl9 UI (**Settings** > **Groups**) or using sloctl `get usergroups` command.
 - `name` (String) Automatically generated, unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project_ref` (String) Project name, the project in which we want the user or group to assume the specified role. When `project_ref` is empty, `role_ref` must contain an Organization Role.
-- `user` (String) Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Access Controls** > **Users**).
+- `user` (String, Deprecated) Okta User ID that can be retrieved from the Nobl9 UI (**Settings** > **Users**). Deprecated: use 'account_id' instead.
 
 ### Read-Only
 
