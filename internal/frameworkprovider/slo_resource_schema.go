@@ -966,6 +966,15 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 					Required:    true,
 					Description: "Maximum time for your composite SLO to wait for data from objectives.",
 				},
+				"aggregation": schema.StringAttribute{
+					Optional:    true,
+					Computed:    true,
+					Default:     stringdefault.StaticString("Reliability"),
+					Description: "Aggregation method for composite SLO. Valid values: Reliability, ErrorBudgetState.",
+					Validators: []validator.String{
+						stringvalidator.OneOf(v1alphaSLO.ComponentAggregationMethodNames()...),
+					},
+				},
 			},
 			Blocks: map[string]schema.Block{
 				"components": schema.ListNestedBlock{
