@@ -2,7 +2,9 @@
 package frameworkprovider
 
 import (
+	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -967,13 +969,13 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 					Description: "Maximum time for your composite SLO to wait for data from objectives.",
 				},
 				"aggregation": schema.StringAttribute{
-					Optional:    true,
-					Computed:    true,
-					Default:     stringdefault.StaticString("Reliability"),
-					Description: "Aggregation method for composite SLO. Valid values: Reliability, ErrorBudgetState.",
-					Validators: []validator.String{
-						stringvalidator.OneOf(v1alphaSLO.ComponentAggregationMethodNames()...),
-					},
+					Optional: true,
+					Computed: true,
+					Default:  stringdefault.StaticString(v1alphaSLO.ComponentAggregationMethodDefault.String()),
+					Description: fmt.Sprintf(
+						"Aggregation method for composite SLO. Valid values: %s.",
+						strings.Join(v1alphaSLO.ComponentAggregationMethodNames(), ","),
+					),
 				},
 			},
 			Blocks: map[string]schema.Block{

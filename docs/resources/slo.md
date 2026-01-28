@@ -329,7 +329,7 @@ Required:
 
 Optional:
 
-- `aggregation` (String) Aggregation method for composite SLO. Valid values: Reliability, ErrorBudgetState.
+- `aggregation` (String) Aggregation method for composite SLO. Valid values: Reliability,ErrorBudgetState.
 - `components` (Block List) Objectives to be assembled in your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components))
 
 <a id="nestedblock--objective--composite--components"></a>
