@@ -245,9 +245,47 @@ func (s *SLOResource) readResource(
 	}
 	updatedModel := newSLOResourceConfigFromManifest(slo)
 	s.updateEmptyAlertPolicies(ctx, diagnostics, state, plan, updatedModel, slo)
+	s.updateEmptyCompositeAggregation(ctx, state, plan, updatedModel)
 	s.sortLists(model, updatedModel)
 
 	return updatedModel, diagnostics
+}
+
+// updateEmptyCompositeAggregation handles the case when:
+// - user set an empty string for aggregation in composite objective
+// - Nobl9 API returns the default value ("Reliability")
+// This preserves the empty string in state to avoid perpetual drift.
+func (s *SLOResource) updateEmptyCompositeAggregation(
+	ctx context.Context,
+	state tfsdk.State,
+	plan *tfsdk.Plan,
+	model *SLOResourceModel,
+) {
+	var sourceObjectives []ObjectiveModel
+
+	if !state.Raw.IsNull() && plan == nil {
+		// It's a Read - check the saved state
+		_ = state.GetAttribute(ctx, path.Root("objective"), &sourceObjectives)
+	} else if plan != nil {
+		// It's an Update, Create or Import - check the plan
+		_ = plan.GetAttribute(ctx, path.Root("objective"), &sourceObjectives)
+	}
+
+	for i, objective := range model.Objectives {
+		if len(objective.Composite) == 0 {
+			continue
+		}
+		// Check if source had empty aggregation for this objective
+		if i < len(sourceObjectives) &&
+			len(sourceObjectives[i].Composite) > 0 &&
+			sourceObjectives[i].Composite[0].Aggregation.ValueString() == "" {
+			// Preserve empty string if API returned the default
+			if model.Objectives[i].Composite[0].Aggregation.ValueString() ==
+				v1alphaSLO.ComponentAggregationMethodDefault.String() {
+				model.Objectives[i].Composite[0].Aggregation = sourceObjectives[i].Composite[0].Aggregation
+			}
+		}
+	}
 }
 
 // updateEmptyAlertPolicies is a hack to handle the case when:
