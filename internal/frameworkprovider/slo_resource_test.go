@@ -701,7 +701,8 @@ func TestAccSLOResource_moveCompositeAndItsComponent(t *testing.T) {
 	manifestComposite.Spec.AlertPolicies = nil
 	manifestComposite.Spec.Objectives = manifestComposite.Spec.Objectives[:1]
 	manifestComposite.Spec.Objectives[0].Composite = &v1alphaSLO.CompositeSpec{
-		MaxDelay: "1h",
+		MaxDelay:    "1h",
+		Aggregation: v1alphaSLO.ComponentAggregationMethodDefault,
 		Components: v1alphaSLO.Components{
 			Objectives: []v1alphaSLO.CompositeObjective{{
 				Project:     componentResource.Project,
