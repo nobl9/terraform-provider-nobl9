@@ -1439,6 +1439,12 @@ func TestAccSLOResource_examples(t *testing.T) {
 			require.Greater(t, len(metricSpecs), 0, "expected at least 1 metric spec")
 
 			sourceType := metricSpecs[0].DataSourceType()
+
+			// Skip Atlas integration tests - not supported in Terraform provider
+			if sourceType == v1alpha.Atlas {
+				continue
+			}
+
 			var source manifest.Object
 			switch slo.Spec.Indicator.MetricSource.Kind {
 			case manifest.KindDirect:
