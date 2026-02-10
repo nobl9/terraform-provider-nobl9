@@ -1610,6 +1610,12 @@ func TestRenderSLOResourceTemplate_examples(t *testing.T) {
 		if example.GetVariant() == "generic" {
 			continue
 		}
+
+		// Skip Atlas examples - not supported in Terraform provider
+		if strings.Contains(strings.ToLower(example.GetVariant()), "atlas") {
+			continue
+		}
+
 		t.Run(testNameFromExample(example), func(t *testing.T) {
 			t.Parallel()
 
