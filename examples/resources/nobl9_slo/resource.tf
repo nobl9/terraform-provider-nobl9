@@ -147,7 +147,8 @@ resource "nobl9_slo" "composite_slo" {
     name         = "tf-objective-1"
     target       = 0.8
     composite {
-      max_delay = "45m"
+      max_delay   = "45m"
+      aggregation = "Reliability"
       components {
         objectives {
           composite_objective {

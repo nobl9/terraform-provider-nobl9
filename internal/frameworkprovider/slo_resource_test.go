@@ -701,7 +701,8 @@ func TestAccSLOResource_moveCompositeAndItsComponent(t *testing.T) {
 	manifestComposite.Spec.AlertPolicies = nil
 	manifestComposite.Spec.Objectives = manifestComposite.Spec.Objectives[:1]
 	manifestComposite.Spec.Objectives[0].Composite = &v1alphaSLO.CompositeSpec{
-		MaxDelay: "1h",
+		MaxDelay:    "1h",
+		Aggregation: v1alphaSLO.ComponentAggregationMethodDefault,
 		Components: v1alphaSLO.Components{
 			Objectives: []v1alphaSLO.CompositeObjective{{
 				Project:     componentResource.Project,
@@ -1142,6 +1143,27 @@ func TestAccSLOResource_custom(t *testing.T) {
 							Weight:      2,
 							WhenDelayed: v1alphaSLO.WhenDelayedCountAsGood.String(),
 						},
+						{
+							Project:     manifestSLOComponent1.GetProject(),
+							SLO:         manifestSLOComponent1.GetName(),
+							Objective:   manifestSLOComponent1.Spec.Objectives[0].Name,
+							Weight:      1,
+							WhenDelayed: v1alphaSLO.WhenDelayedCountAsGood.String(),
+						},
+					}
+				model.Indicator = nil
+				return model
+			},
+		},
+		"composite with ErrorBudgetState aggregation": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				model.Objectives = compositeModel.Objectives
+				model.Objectives[0].Composite[0].Aggregation = types.StringValue("ErrorBudgetState")
+				model.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective =
+					[]CompositeObjectiveSpecModel{
 						{
 							Project:     manifestSLOComponent1.GetProject(),
 							SLO:         manifestSLOComponent1.GetName(),

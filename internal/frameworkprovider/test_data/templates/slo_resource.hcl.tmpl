@@ -109,6 +109,9 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
       {{- if not (isNull .MaxDelay ) }}
       max_delay = "{{ valueString .MaxDelay }}"
       {{- end }}
+      {{- if not (isNull .Aggregation ) }}
+      aggregation = "{{ valueString .Aggregation }}"
+      {{- end }}
       {{- range .Components }}
       components {
         {{- range .Objectives }}

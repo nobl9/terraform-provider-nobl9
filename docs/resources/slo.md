@@ -167,7 +167,8 @@ resource "nobl9_slo" "composite_slo" {
     name         = "tf-objective-1"
     target       = 0.8
     composite {
-      max_delay = "45m"
+      max_delay   = "45m"
+      aggregation = "Reliability"
       components {
         objectives {
           composite_objective {
@@ -328,6 +329,7 @@ Required:
 
 Optional:
 
+- `aggregation` (String) Aggregation method for composite SLO. Valid values: Reliability,ErrorBudgetState.
 - `components` (Block List) Objectives to be assembled in your composite SLO. (see [below for nested schema](#nestedblock--objective--composite--components))
 
 <a id="nestedblock--objective--composite--components"></a>
