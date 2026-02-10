@@ -1,6 +1,6 @@
 module github.com/nobl9/terraform-provider-nobl9
 
-go 1.25.5
+go 1.25.7
 
 require (
 	github.com/google/uuid v1.6.0
@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1
 	github.com/hashicorp/terraform-plugin-testing v1.14.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/nobl9/nobl9-go v0.122.0-rc3
+	github.com/nobl9/nobl9-go v0.122.2
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.11.1
 	github.com/teambition/rrule-go v1.8.2
