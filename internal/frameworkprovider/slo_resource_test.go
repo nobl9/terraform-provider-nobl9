@@ -1399,6 +1399,11 @@ func TestAccSLOResource_examples(t *testing.T) {
 			continue
 		}
 
+		// Skip Atlas examples - not supported in Terraform provider
+		if strings.Contains(strings.ToLower(example.GetVariant()), "atlas") {
+			continue
+		}
+
 		slo := example.GetObject().(v1alphaSLO.SLO)
 		slo.Metadata = v1alphaSLO.Metadata{
 			Name:        e2etestutils.GenerateName(),
