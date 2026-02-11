@@ -348,8 +348,9 @@ type SumoLogicModel struct {
 }
 
 type ThousandEyesModel struct {
-	TestID   int64        `tfsdk:"test_id"`
-	TestType types.String `tfsdk:"test_type"`
+	TestID         int64        `tfsdk:"test_id"`
+	TestType       types.String `tfsdk:"test_type"`
+	AccountGroupID types.Int64  `tfsdk:"account_group_id"`
 }
 
 type AzurePrometheusModel struct {
@@ -1242,7 +1243,8 @@ func thousandEyesToModel(src *v1alphaSLO.ThousandEyesMetric) *ThousandEyesModel 
 		return nil
 	}
 	model := &ThousandEyesModel{
-		TestType: types.StringPointerValue(src.TestType),
+		TestType:       types.StringPointerValue(src.TestType),
+		AccountGroupID: types.Int64PointerValue(src.AccountGroupID),
 	}
 	if src.TestID != nil {
 		model.TestID = *src.TestID
@@ -1613,6 +1615,10 @@ func modelToThousandEyes(model *ThousandEyesModel) *v1alphaSLO.ThousandEyesMetri
 	if !isNullOrUnknown(model.TestType) {
 		testType := model.TestType.ValueString()
 		spec.TestType = &testType
+	}
+	if !isNullOrUnknown(model.AccountGroupID) {
+		accountGroupID := model.AccountGroupID.ValueInt64()
+		spec.AccountGroupID = &accountGroupID
 	}
 	return spec
 }
