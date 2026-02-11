@@ -928,6 +928,10 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 						Optional:    true,
 						Description: "Type of the test",
 					},
+					"account_group_id": schema.Int64Attribute{
+						Optional:    true,
+						Description: "Account Group ID of the test",
+					},
 				},
 			},
 		},
