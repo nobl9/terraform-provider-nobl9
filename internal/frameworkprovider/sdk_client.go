@@ -114,7 +114,16 @@ func (s sdkClient) DryRunApplyObject(ctx context.Context, obj manifest.Object) d
 		return diag.Diagnostics{
 			diag.NewWarningDiagnostic(
 				fmt.Sprintf("Dry-run apply failed for %s %s", obj.GetVersion(), obj.GetKind()),
-				err.Error(),
+				fmt.Sprintf(
+					"Error: %s\n\n"+
+						"WARNING!\n\n"+
+						"Terraform Providers handle each resource in isolation.\n"+
+						"This means we cannot verify If your entire configuration is valid, "+
+						"the limitation includes name conflicts and non-existing object references.\n"+
+						"The error above might be a false positive and is thus displayed as a warning.\n "+
+						"This can happen for instance when you apply, for the first time, "+
+						"AlertPolicy and SLO which references the policy.",
+					err.Error()),
 			),
 		}
 	}

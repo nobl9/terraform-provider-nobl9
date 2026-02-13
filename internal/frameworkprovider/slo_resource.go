@@ -300,12 +300,12 @@ func (s *SLOResource) updateEmptyAlertPolicies(
 	model *SLOResourceModel,
 	slo v1alphaSLO.SLO,
 ) {
-	var alertPolicies *[]string
+	var alertPolicies []string
 	if !state.Raw.IsNull() && plan == nil {
 		// It's a Read - we need to take a look into the saved state
 		alertPoliciesPath := path.Root("alert_policies")
 		diagnostics.Append(state.GetAttribute(ctx, alertPoliciesPath, &alertPolicies)...)
-	} else if plan != nil { // nolint:gocritic
+	} else if plan != nil {
 		// Is' an Update, Create or Import - we need to read the plan
 		alertPoliciesPath := path.Root("alert_policies")
 		diagnostics.Append(plan.GetAttribute(ctx, alertPoliciesPath, &alertPolicies)...)
@@ -314,7 +314,7 @@ func (s *SLOResource) updateEmptyAlertPolicies(
 		return
 	}
 
-	alertPoliciesAreEmpty := alertPolicies != nil && len(*alertPolicies) == 0
+	alertPoliciesAreEmpty := alertPolicies != nil && len(alertPolicies) == 0
 	if alertPoliciesAreEmpty && len(slo.Spec.AlertPolicies) == 0 {
 		model.AlertPolicies = []string{}
 	}
