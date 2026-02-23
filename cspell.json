@@ -72,6 +72,7 @@
     "tmpl",
     "tpng",
     "tsdbslo",
+    "upgrader",
     "vuln",
     "vulns"
   ]
