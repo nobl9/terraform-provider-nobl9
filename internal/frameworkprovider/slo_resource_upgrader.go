@@ -27,6 +27,8 @@ func upgradeSLOStateV0(ctx context.Context, req resource.UpgradeStateRequest, re
 		removedFieldsWarning(0, []string{"attachments"}, resp)
 	}
 
+	// we don't need a warning for this field because it's a status field read from the API
+	// user will never set it
 	delete(rawStateData, "retrieve_historical_data_from")
 
 	upgradedJSON, err := json.Marshal(rawStateData)
