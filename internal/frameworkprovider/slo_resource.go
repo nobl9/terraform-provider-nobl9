@@ -17,10 +17,11 @@ import (
 
 // Ensure [SLOResource] fully satisfies framework interfaces.
 var (
-	_ resource.Resource                = &SLOResource{}
-	_ resource.ResourceWithImportState = &SLOResource{}
-	_ resource.ResourceWithConfigure   = &SLOResource{}
-	_ resource.ResourceWithModifyPlan  = &SLOResource{}
+	_ resource.Resource                 = &SLOResource{}
+	_ resource.ResourceWithImportState  = &SLOResource{}
+	_ resource.ResourceWithConfigure    = &SLOResource{}
+	_ resource.ResourceWithModifyPlan   = &SLOResource{}
+	_ resource.ResourceWithUpgradeState = &SLOResource{}
 )
 
 func NewSLOResource() resource.Resource {
@@ -209,6 +210,14 @@ func (s *SLOResource) ModifyPlan(
 	resp.Diagnostics.Append(s.client.DryRunApplyObject(ctx, plan.ToManifest())...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+}
+
+// UpgradeState implements [resource.ResourceWithUpgradeState] function.
+// It handles state upgrades from older schema versions to the current version.
+func (s *SLOResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		0: {StateUpgrader: upgradeSLOStateV0},
 	}
 }
 
