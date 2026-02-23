@@ -23,6 +23,7 @@ import (
 var sloResourceSchema = func() schema.Schema {
 	description := "[SLO configuration | Nobl9 documentation](https://docs.nobl9.com/yaml-guide#slo)"
 	return schema.Schema{
+		Version:             1,
 		MarkdownDescription: description,
 		Description:         description,
 		Attributes: map[string]schema.Attribute{

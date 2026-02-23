@@ -2,6 +2,7 @@ package frameworkprovider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -10,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
@@ -17,10 +20,11 @@ import (
 
 // Ensure [SLOResource] fully satisfies framework interfaces.
 var (
-	_ resource.Resource                = &SLOResource{}
-	_ resource.ResourceWithImportState = &SLOResource{}
-	_ resource.ResourceWithConfigure   = &SLOResource{}
-	_ resource.ResourceWithModifyPlan  = &SLOResource{}
+	_ resource.Resource                 = &SLOResource{}
+	_ resource.ResourceWithImportState  = &SLOResource{}
+	_ resource.ResourceWithConfigure    = &SLOResource{}
+	_ resource.ResourceWithModifyPlan   = &SLOResource{}
+	_ resource.ResourceWithUpgradeState = &SLOResource{}
 )
 
 func NewSLOResource() resource.Resource {
@@ -40,6 +44,71 @@ func (s *SLOResource) Metadata(_ context.Context, req resource.MetadataRequest, 
 // Schema implements [resource.Resource.Schema] function.
 func (s *SLOResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = sloResourceSchema
+}
+
+// UpgradeState implements [resource.ResourceWithUpgradeState] function.
+// It handles state upgrades from older schema versions to the current version.
+func (s *SLOResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{
+		0: {StateUpgrader: upgradeSLOStateV0},
+	}
+}
+
+func upgradeSLOStateV0(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+	var rawStateData map[string]json.RawMessage
+	if err := json.Unmarshal(req.RawState.JSON, &rawStateData); err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to Unmarshal Prior State",
+			fmt.Sprintf("Failed to unmarshal SLO state during upgrade from version 0: %s", err),
+		)
+		return
+	}
+
+	if _, ok := rawStateData["attachments"]; ok {
+		delete(rawStateData, "attachments")
+		removedFieldsWarning([]string{"attachments"}, resp)
+	}
+
+	delete(rawStateData, "retrieve_historical_data_from")
+
+	upgradedJSON, err := json.Marshal(rawStateData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to Marshal Upgraded State",
+			fmt.Sprintf("Failed to marshal SLO state during upgrade from version 0: %s", err),
+		)
+		return
+	}
+
+	upgradedRawState := tfprotov6.RawState{JSON: upgradedJSON}
+	schemaType := sloResourceSchema.Type().TerraformType(ctx)
+	rawValue, err := upgradedRawState.UnmarshalWithOpts(
+		schemaType,
+		tfprotov6.UnmarshalOpts{ValueFromJSONOpts: tftypes.ValueFromJSONOpts{IgnoreUndefinedAttributes: true}},
+	)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to Unmarshal Upgraded State",
+			fmt.Sprintf("Failed to unmarshal upgraded SLO state into schema type: %s", err),
+		)
+		return
+	}
+	resp.State = tfsdk.State{
+		Schema: sloResourceSchema,
+		Raw:    rawValue,
+	}
+}
+
+func removedFieldsWarning(fields []string, resp *resource.UpgradeStateResponse) {
+	resp.Diagnostics.AddWarning(
+		"SLO State Upgrade: Deprecated Fields Removed",
+		fmt.Sprintf(
+			"The following deprecated fields were removed from the SLO state "+
+				"during migration from schema version 0: %s. "+
+				"These fields are no longer supported and any previously stored values have been dropped.",
+			strings.Join(fields, ", "),
+		),
+	)
 }
 
 // Create is called when the provider must create a new resource. Config
