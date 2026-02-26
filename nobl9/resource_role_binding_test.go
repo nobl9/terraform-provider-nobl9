@@ -16,9 +16,11 @@ func TestAcc_Nobl9RoleBinding(t *testing.T) {
 		configFunc func(string) string
 	}{
 		{"project-role-binding", testProjectRoleBindingConfig},
+		{"project-role-binding-account-id", testProjectRoleBindingWithAccountIDConfig},
 		// this test is skipped for now because: deleting organizational role bindings is not allowed
 		// {"org-role-binding", testOrganizationRoleBindingConfig},
 		{"role-binding-without-name", testRoleBindingWithoutName},
+		{"role-binding-without-name-account-id", testRoleBindingWithoutNameAccountID},
 		{"role-binding-without-user", testRoleBindingWithoutUser},
 		{"role-binding-without-group", testRoleBindingWithoutGroup},
 	}
@@ -50,6 +52,17 @@ resource "nobl9_role_binding" "%s" {
 `, name, name, testProject)
 }
 
+func testProjectRoleBindingWithAccountIDConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_role_binding" "%s" {
+  name        = "%s"
+  account_id  = "test-account"
+  role_ref    = "project-owner"
+  project_ref = "%s"
+}
+`, name, name, testProject)
+}
+
 //nolint:unused
 func testOrganizationRoleBindingConfig(name string) string {
 	return fmt.Sprintf(`
@@ -65,6 +78,16 @@ func testRoleBindingWithoutName(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_role_binding" "%s" {
   user        = "test"
+  role_ref    = "project-owner"
+  project_ref = "%s"
+}
+`, name, testProject)
+}
+
+func testRoleBindingWithoutNameAccountID(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_role_binding" "%s" {
+  account_id  = "test-account"
   role_ref    = "project-owner"
   project_ref = "%s"
 }

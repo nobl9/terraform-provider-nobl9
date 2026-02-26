@@ -1399,6 +1399,11 @@ func TestAccSLOResource_examples(t *testing.T) {
 			continue
 		}
 
+		// Skip Atlas examples - not supported in Terraform provider
+		if strings.Contains(strings.ToLower(example.GetVariant()), "atlas") {
+			continue
+		}
+
 		slo := example.GetObject().(v1alphaSLO.SLO)
 		slo.Metadata = v1alphaSLO.Metadata{
 			Name:        e2etestutils.GenerateName(),
@@ -1439,6 +1444,12 @@ func TestAccSLOResource_examples(t *testing.T) {
 			require.Greater(t, len(metricSpecs), 0, "expected at least 1 metric spec")
 
 			sourceType := metricSpecs[0].DataSourceType()
+
+			// Skip Atlas integration tests - not supported in Terraform provider
+			if sourceType == v1alpha.Atlas {
+				continue
+			}
+
 			var source manifest.Object
 			switch slo.Spec.Indicator.MetricSource.Kind {
 			case manifest.KindDirect:
@@ -1599,6 +1610,12 @@ func TestRenderSLOResourceTemplate_examples(t *testing.T) {
 		if example.GetVariant() == "generic" {
 			continue
 		}
+
+		// Skip Atlas examples - not supported in Terraform provider
+		if strings.Contains(strings.ToLower(example.GetVariant()), "atlas") {
+			continue
+		}
+
 		t.Run(testNameFromExample(example), func(t *testing.T) {
 			t.Parallel()
 
