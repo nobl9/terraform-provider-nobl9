@@ -341,10 +341,16 @@ type SplunkObservabilityModel struct {
 }
 
 type SumoLogicModel struct {
-	Type         string       `tfsdk:"type"`
-	Query        string       `tfsdk:"query"`
-	Quantization types.String `tfsdk:"quantization"`
-	Rollup       types.String `tfsdk:"rollup"`
+	Type         string                  `tfsdk:"type"`
+	Query        types.String            `tfsdk:"query"`
+	Quantization types.String            `tfsdk:"quantization"`
+	Rollup       types.String            `tfsdk:"rollup"`
+	Queries      []SumoLogicQueryModel   `tfsdk:"queries"`
+}
+
+type SumoLogicQueryModel struct {
+	RowID string `tfsdk:"row_id"`
+	Query string `tfsdk:"query"`
 }
 
 type ThousandEyesModel struct {
@@ -1229,12 +1235,23 @@ func sumoLogicToModel(src *v1alphaSLO.SumoLogicMetric) *SumoLogicModel {
 	if src == nil {
 		return nil
 	}
-	return &SumoLogicModel{
+	model := &SumoLogicModel{
 		Type:         *src.Type,
-		Query:        *src.Query,
+		Query:        types.StringPointerValue(src.Query),
 		Rollup:       types.StringPointerValue(src.Rollup),
 		Quantization: types.StringPointerValue(src.Quantization),
 	}
+	if len(src.Queries) > 0 {
+		queries := make([]SumoLogicQueryModel, len(src.Queries))
+		for i, q := range src.Queries {
+			queries[i] = SumoLogicQueryModel{
+				RowID: q.RowID,
+				Query: q.Query,
+			}
+		}
+		model.Queries = queries
+	}
+	return model
 }
 
 func thousandEyesToModel(src *v1alphaSLO.ThousandEyesMetric) *ThousandEyesModel {
@@ -1593,12 +1610,23 @@ func modelToSumoLogic(model *SumoLogicModel) *v1alphaSLO.SumoLogicMetric {
 	if model == nil {
 		return nil
 	}
-	return &v1alphaSLO.SumoLogicMetric{
+	spec := &v1alphaSLO.SumoLogicMetric{
 		Type:         &model.Type,
-		Query:        &model.Query,
+		Query:        model.Query.ValueStringPointer(),
 		Rollup:       model.Rollup.ValueStringPointer(),
 		Quantization: model.Quantization.ValueStringPointer(),
 	}
+	if len(model.Queries) > 0 {
+		queries := make([]v1alphaSLO.SumoLogicQuery, len(model.Queries))
+		for i, q := range model.Queries {
+			queries[i] = v1alphaSLO.SumoLogicQuery{
+				RowID: q.RowID,
+				Query: q.Query,
+			}
+		}
+		spec.Queries = queries
+	}
+	return spec
 }
 
 func modelToThousandEyes(model *ThousandEyesModel) *v1alphaSLO.ThousandEyesMetric {

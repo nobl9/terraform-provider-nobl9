@@ -902,8 +902,9 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 						Description: "Sumologic source - metrics or logs",
 					},
 					"query": schema.StringAttribute{
-						Required:    true,
-						Description: "Query for the metrics",
+						Optional:           true,
+						Description:        "Query for the metrics. Deprecated: use 'queries' block instead.",
+						DeprecationMessage: "Use 'queries' block instead for multi-query support.",
 					},
 					"rollup": schema.StringAttribute{
 						Optional:    true,
@@ -912,6 +913,24 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 					"quantization": schema.StringAttribute{
 						Optional:    true,
 						Description: "Period of data aggregation",
+					},
+				},
+				Blocks: map[string]schema.Block{
+					"queries": schema.ListNestedBlock{
+						Description: "Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the last row.",
+						Validators:  []validator.List{listvalidator.SizeBetween(1, 6)},
+						NestedObject: schema.NestedBlockObject{
+							Attributes: map[string]schema.Attribute{
+								"row_id": schema.StringAttribute{
+									Required:    true,
+									Description: "Row identifier, single uppercase letter A-F",
+								},
+								"query": schema.StringAttribute{
+									Required:    true,
+									Description: "Query string for this row",
+								},
+							},
+						},
 					},
 				},
 			},
