@@ -204,8 +204,6 @@ resource "nobl9_slo" "composite_slo" {
 
 ### Optional
 
-> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
-
 - `alert_policies` (Set of String) Alert Policies attached to SLO.
 - `annotations` (Map of String) [Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.
 - `anomaly_config` (Block List) Configuration for anomaly detection. (see [below for nested schema](#nestedblock--anomaly_config))
@@ -216,7 +214,7 @@ resource "nobl9_slo" "composite_slo" {
 - `indicator` (Block List) Configuration for the metric source (Agent/Direct). (see [below for nested schema](#nestedblock--indicator))
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--label))
 - `objective` (Block List) [Objectives documentation](https://docs.nobl9.com/yaml-guide#objective) (see [below for nested schema](#nestedblock--objective))
-- `retrieve_historical_data_from` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) If set, the retrieval of historical data for a newly created SLO will be triggered, starting from the specified date. Needs to be RFC3339 format.
+- `retrieve_historical_data_from` (String) If set, the retrieval of historical data for a newly created SLO will be triggered, starting from the specified date. Needs to be RFC3339 format.
 - `tier` (String) Internal field, do not use.
 - `time_window` (Block List) Time window configuration for the SLO. (see [below for nested schema](#nestedblock--time_window))
 
@@ -742,13 +740,23 @@ Required:
 
 Required:
 
-- `query` (String) Query for the metrics
 - `type` (String) Sumologic source - metrics or logs
 
 Optional:
 
 - `quantization` (String) Period of data aggregation
+- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the row with the highest letter ID (e.g., if rows A, B, C are defined, the result comes from row C). (see [below for nested schema](#nestedblock--objective--count_metrics--bad--sumologic--queries))
+- `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
+
+<a id="nestedblock--objective--count_metrics--bad--sumologic--queries"></a>
+### Nested Schema for `objective.count_metrics.bad.sumologic.queries`
+
+Required:
+
+- `query` (String) Query string for this row
+- `row_id` (String) Row identifier, single uppercase letter A-F
+
 
 
 <a id="nestedblock--objective--count_metrics--bad--thousandeyes"></a>
@@ -1131,13 +1139,23 @@ Required:
 
 Required:
 
-- `query` (String) Query for the metrics
 - `type` (String) Sumologic source - metrics or logs
 
 Optional:
 
 - `quantization` (String) Period of data aggregation
+- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the row with the highest letter ID (e.g., if rows A, B, C are defined, the result comes from row C). (see [below for nested schema](#nestedblock--objective--count_metrics--good--sumologic--queries))
+- `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
+
+<a id="nestedblock--objective--count_metrics--good--sumologic--queries"></a>
+### Nested Schema for `objective.count_metrics.good.sumologic.queries`
+
+Required:
+
+- `query` (String) Query string for this row
+- `row_id` (String) Row identifier, single uppercase letter A-F
+
 
 
 <a id="nestedblock--objective--count_metrics--good--thousandeyes"></a>
@@ -1520,13 +1538,23 @@ Required:
 
 Required:
 
-- `query` (String) Query for the metrics
 - `type` (String) Sumologic source - metrics or logs
 
 Optional:
 
 - `quantization` (String) Period of data aggregation
+- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the row with the highest letter ID (e.g., if rows A, B, C are defined, the result comes from row C). (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--sumologic--queries))
+- `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
+
+<a id="nestedblock--objective--count_metrics--good_total--sumologic--queries"></a>
+### Nested Schema for `objective.count_metrics.good_total.sumologic.queries`
+
+Required:
+
+- `query` (String) Query string for this row
+- `row_id` (String) Row identifier, single uppercase letter A-F
+
 
 
 <a id="nestedblock--objective--count_metrics--good_total--thousandeyes"></a>
@@ -1909,13 +1937,23 @@ Required:
 
 Required:
 
-- `query` (String) Query for the metrics
 - `type` (String) Sumologic source - metrics or logs
 
 Optional:
 
 - `quantization` (String) Period of data aggregation
+- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the row with the highest letter ID (e.g., if rows A, B, C are defined, the result comes from row C). (see [below for nested schema](#nestedblock--objective--count_metrics--total--sumologic--queries))
+- `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
+
+<a id="nestedblock--objective--count_metrics--total--sumologic--queries"></a>
+### Nested Schema for `objective.count_metrics.total.sumologic.queries`
+
+Required:
+
+- `query` (String) Query string for this row
+- `row_id` (String) Row identifier, single uppercase letter A-F
+
 
 
 <a id="nestedblock--objective--count_metrics--total--thousandeyes"></a>
@@ -2306,13 +2344,23 @@ Required:
 
 Required:
 
-- `query` (String) Query for the metrics
 - `type` (String) Sumologic source - metrics or logs
 
 Optional:
 
 - `quantization` (String) Period of data aggregation
+- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the row with the highest letter ID (e.g., if rows A, B, C are defined, the result comes from row C). (see [below for nested schema](#nestedblock--objective--raw_metric--query--sumologic--queries))
+- `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
+
+<a id="nestedblock--objective--raw_metric--query--sumologic--queries"></a>
+### Nested Schema for `objective.raw_metric.query.sumologic.queries`
+
+Required:
+
+- `query` (String) Query string for this row
+- `row_id` (String) Row identifier, single uppercase letter A-F
+
 
 
 <a id="nestedblock--objective--raw_metric--query--thousandeyes"></a>

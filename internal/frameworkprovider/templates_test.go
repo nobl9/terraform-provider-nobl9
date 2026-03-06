@@ -121,9 +121,11 @@ func renderMetricTypeFields(blockName string, metricModel interface{}, baseInden
 			if field.Len() == 0 {
 				continue
 			}
-			firstElem := field.Index(0)
-			fieldValue = renderMetricTypeFields(fieldName, firstElem.Interface(), baseIndent+2)
-			fields = append(fields, fieldValue)
+			for j := 0; j < field.Len(); j++ {
+				elem := field.Index(j)
+				fieldValue = renderMetricTypeFields(fieldName, elem.Interface(), baseIndent+2)
+				fields = append(fields, fieldValue)
+			}
 		default:
 			fieldValue = fmt.Sprintf(`%v`, field.Interface())
 			fields = append(fields, fmt.Sprintf(`%s = %s`, fieldName, fieldValue))

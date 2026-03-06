@@ -1250,6 +1250,7 @@ func sumoLogicToModel(src *v1alphaSLO.SumoLogicMetric) *SumoLogicModel {
 			}
 		}
 		model.Queries = queries
+		model.Query = types.StringNull()
 	}
 	return model
 }

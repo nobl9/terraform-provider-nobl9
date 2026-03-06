@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func newDateTimeValidator(layout string) dateTimeValidator {
@@ -38,6 +39,39 @@ func (v dateTimeValidator) ValidateString(
 			req.Path,
 			"Invalid datetime format",
 			fmt.Sprintf("Invalid datetime format: %q", value),
+		)
+	}
+}
+
+type sumoLogicQueriesTypeValidator struct{}
+
+func (v sumoLogicQueriesTypeValidator) Description(ctx context.Context) string {
+	return v.MarkdownDescription(ctx)
+}
+
+func (v sumoLogicQueriesTypeValidator) MarkdownDescription(_ context.Context) string {
+	return "Ensure that queries block is not used with logs type"
+}
+
+func (v sumoLogicQueriesTypeValidator) ValidateList(
+	ctx context.Context,
+	req validator.ListRequest,
+	resp *validator.ListResponse,
+) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() || len(req.ConfigValue.Elements()) == 0 {
+		return
+	}
+	typePath := req.Path.ParentPath().AtName("type")
+	var typeVal types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, typePath, &typeVal)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if typeVal.ValueString() == "logs" {
+		resp.Diagnostics.AddAttributeError(
+			req.Path,
+			"queries block is not supported for logs type",
+			"Multi-query (ABC pattern) is only supported for metrics type. Use the 'query' attribute for logs.",
 		)
 	}
 }

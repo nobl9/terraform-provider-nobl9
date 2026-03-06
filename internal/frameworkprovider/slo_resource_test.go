@@ -1569,6 +1569,26 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 				return model
 			},
 		},
+		"sumologic multi-query": {
+			expectedFile: "slo-sumologic-multi-query.tf",
+			resourceModifier: func(model SLOResourceModel) SLOResourceModel {
+				model.AlertPolicies = nil
+				model.Labels = nil
+				model.Annotations = nil
+				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
+					SumoLogic: []SumoLogicModel{{
+						Type:         "metrics",
+						Quantization: types.StringValue("15s"),
+						Rollup:       types.StringValue("Avg"),
+						Queries: []SumoLogicQueryModel{
+							{RowID: "A", Query: "metric=cpu_idle"},
+							{RowID: "B", Query: "#A + 1"},
+						},
+					}},
+				}
+				return model
+			},
+		},
 		"multiline query": {
 			expectedFile: "slo-multiline-query.tf",
 			resourceModifier: func(model SLOResourceModel) SLOResourceModel {

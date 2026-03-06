@@ -905,6 +905,11 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 						Optional:           true,
 						Description:        "Query for the metrics. Deprecated: use 'queries' block instead.",
 						DeprecationMessage: "Use 'queries' block instead for multi-query support.",
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(
+								path.MatchRelative().AtParent().AtName("queries"),
+							),
+						},
 					},
 					"rollup": schema.StringAttribute{
 						Optional:    true,
@@ -917,8 +922,14 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 				},
 				Blocks: map[string]schema.Block{
 					"queries": schema.ListNestedBlock{
-						Description: "Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the last row.",
-						Validators:  []validator.List{listvalidator.SizeBetween(1, 6)},
+						Description: "Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the row with the highest letter ID (e.g., if rows A, B, C are defined, the result comes from row C).",
+						Validators: []validator.List{
+							listvalidator.SizeBetween(1, 6),
+							listvalidator.ConflictsWith(
+								path.MatchRelative().AtParent().AtName("query"),
+							),
+							sumoLogicQueriesTypeValidator{},
+						},
 						NestedObject: schema.NestedBlockObject{
 							Attributes: map[string]schema.Attribute{
 								"row_id": schema.StringAttribute{
