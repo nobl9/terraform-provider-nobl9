@@ -229,8 +229,6 @@ resource "nobl9_alert_method_servicenow" "%s" {
 }
 
 func TestAcc_Nobl9AlertMethodServiceNowValidation(t *testing.T) {
-	t.Parallel()
-
 	cases := []struct {
 		name         string
 		configFunc   func(string) string
