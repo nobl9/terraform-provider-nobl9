@@ -13,6 +13,11 @@ The **ServiceNow Alert Method** automatically opens an issue in your ServiceNow 
 
 For more details, refer to [ServiceNow Alert Method | Nobl9 Documentation](https://docs.nobl9.com/alerting/alert-methods/servicenow).
 
+Authentication options:
+- basic auth requires both `username` and `password`.
+- token auth requires `apitoken`.
+- Basic and token credentials cannot be used together.
+
 ## Example Usage
 
 Here's an example of ServiceNow Terraform resource configuration:
@@ -37,14 +42,15 @@ resource "nobl9_alert_method_servicenow" "this" {
 - `instance_name` (String) ServiceNow InstanceName. For details see [Nobl9 documentation](https://docs.nobl9.com/alerting/alert-methods/servicenow#servicenow-credentials).
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `username` (String) ServiceNow username.
 
 ### Optional
 
+- `apitoken` (String, Sensitive) ServiceNow API token used for token authentication.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `password` (String, Sensitive) ServiceNow password.
 - `send_resolution` (Block Set, Max: 1) Sends a notification after the cooldown period is over. (see [below for nested schema](#nestedblock--send_resolution))
+- `username` (String) ServiceNow username.
 
 ### Read-Only
 

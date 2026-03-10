@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -84,11 +85,40 @@ func (a alertMethod) unmarshalAlertMethod(
 
 func (a alertMethod) resourceAlertMethodValidate(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	am := a.marshalAlertMethod(d)
+	if am.Spec.ServiceNow != nil {
+		if err := validateServiceNowAuth(d); err != nil {
+			return err
+		}
+	}
 	errs := manifest.Validate([]manifest.Object{am})
 	if errs != nil {
 		return formatErrorsAsSingleError(errs)
 	}
 	return nil
+}
+
+func validateServiceNowAuth(r resourceInterface) error {
+	username := r.Get("username").(string)
+	password := r.Get("password").(string)
+	apiToken := r.Get("apitoken").(string)
+
+	hasBasicAuth := username != "" || password != ""
+	hasTokenAuth := apiToken != ""
+
+	if hasBasicAuth && hasTokenAuth {
+		return fmt.Errorf("`username` and `password` cannot be set together with `apitoken`")
+	}
+	if hasBasicAuth {
+		if username == "" || password == "" {
+			return fmt.Errorf("`username` and `password` must be set together")
+		}
+		return nil
+	}
+	if hasTokenAuth {
+		return nil
+	}
+
+	return fmt.Errorf("either basic auth (`username` and `password`) or token auth (`apitoken`) must be provided")
 }
 
 //nolint:lll
@@ -458,8 +488,12 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"username": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			Description: "ServiceNow username.",
+			RequiredWith: []string{
+				"password",
+			},
+			ConflictsWith: []string{"apitoken"},
 		},
 		"password": {
 			Type:        schema.TypeString,
@@ -467,6 +501,18 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 			Description: "ServiceNow password.",
 			Sensitive:   true,
 			Computed:    true,
+			RequiredWith: []string{
+				"username",
+			},
+			ConflictsWith: []string{"apitoken"},
+		},
+		"apitoken": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "ServiceNow API token used for token authentication.",
+			Sensitive:     true,
+			Computed:      true,
+			ConflictsWith: []string{"username", "password"},
 		},
 		"instance_name": {
 			Type:        schema.TypeString,
@@ -485,14 +531,21 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 }
 
 func (i alertMethodServiceNow) MarshalSpec(r resourceInterface) v1alphaAlertMethod.Spec {
+	serviceNow := &v1alphaAlertMethod.ServiceNowAlertMethod{
+		InstanceName:   r.Get("instance_name").(string),
+		SendResolution: marshalSendResolution(r.Get("send_resolution")),
+	}
+
+	if r.Get("apitoken").(string) != "" {
+		serviceNow.ApiToken = r.Get("apitoken").(string)
+	} else {
+		serviceNow.Username = r.Get("username").(string)
+		serviceNow.Password = r.Get("password").(string)
+	}
+
 	return v1alphaAlertMethod.Spec{
 		Description: r.Get("description").(string),
-		ServiceNow: &v1alphaAlertMethod.ServiceNowAlertMethod{
-			Username:       r.Get("username").(string),
-			Password:       r.Get("password").(string),
-			InstanceName:   r.Get("instance_name").(string),
-			SendResolution: marshalSendResolution(r.Get("send_resolution")),
-		},
+		ServiceNow:  serviceNow,
 	}
 }
 
