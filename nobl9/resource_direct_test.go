@@ -34,6 +34,7 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 		{splunkObservabilityDirectType, testSplunkObservabilityDirect},
 		{sumologicDirectType, testSumoLogicDirect},
 		{thousandeyesDirectType, testThousandEyesDirect},
+		{dash0DirectType, testDash0Direct},
 	}
 
 	for _, tc := range cases {
@@ -498,6 +499,34 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   oauth_bearer_token = "secret"
   log_collection_enabled = true
+  release_channel = "stable"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
+}
+`, directType, name, name, testProject)
+}
+
+func testDash0Direct(directType, name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
+  url = "https://api.eu-west-1.aws.dash0.com/api/prometheus"
+  access_token = "secret"
+  log_collection_enabled = true
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
   release_channel = "stable"
   query_delay {
     unit = "Minute"

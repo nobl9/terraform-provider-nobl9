@@ -1211,3 +1211,50 @@ func (s thousandeyesDirectSpec) UnmarshalSpec(
 	set(d, "description", spec.Description, &diags)
 	return
 }
+
+// Dash0 Direct
+// https://docs.nobl9.com/Sources/dash0#dash0-direct
+const dash0DirectType = "dash0"
+
+type dash0DirectSpec struct{}
+
+func (s dash0DirectSpec) GetDescription() string {
+	return "[Dash0 Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/dash0#dash0-direct)."
+}
+
+func (s dash0DirectSpec) GetSchema() map[string]*schema.Schema {
+	dash0Schema := map[string]*schema.Schema{
+		"url": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Dash0 Prometheus-compatible API URL.",
+		},
+		"access_token": {
+			Type:        schema.TypeString,
+			Description: "[required] | Dash0 API Access Token.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
+		},
+	}
+	setHistoricalDataRetrievalSchema(dash0Schema)
+	setLogCollectionSchema(dash0Schema)
+
+	return dash0Schema
+}
+
+func (s dash0DirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
+	return v1alphaDirect.Spec{Dash0: &v1alphaDirect.Dash0Config{
+		URL:         r.Get("url").(string),
+		AccessToken: r.Get("access_token").(string),
+	}}
+}
+
+func (s dash0DirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
+	set(d, "url", spec.Dash0.URL, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
