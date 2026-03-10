@@ -1423,6 +1423,11 @@ func schemaAgentDash0() map[string]*schema.Schema {
 						Required:    true,
 						Description: "Dash0 Prometheus-compatible API URL.",
 					},
+					"step": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Query resolution step width in seconds.",
+					},
 				},
 			},
 		},
@@ -1437,7 +1442,8 @@ func marshalAgentDash0(d resourceInterface, diags diag.Diagnostics) *v1alphaAgen
 	}
 
 	return &v1alphaAgent.Dash0Config{
-		URL: data["url"].(string),
+		URL:  data["url"].(string),
+		Step: data["step"].(int),
 	}
 }
 
