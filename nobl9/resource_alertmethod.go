@@ -214,8 +214,10 @@ func (i alertMethodWebhook) MarshalSpec(r resourceInterface) v1alphaAlertMethod.
 		templateFields = nil
 	}
 
-	headers := make([]v1alphaAlertMethod.WebhookHeader, 0)
-	for key, value := range r.Get("headers").(map[string]interface{}) {
+	headersMap := r.Get("headers").(map[string]interface{})
+	sensitiveHeadersMap := r.Get("sensitive_headers").(map[string]interface{})
+	headers := make([]v1alphaAlertMethod.WebhookHeader, 0, len(headersMap)+len(sensitiveHeadersMap))
+	for key, value := range headersMap {
 		header := v1alphaAlertMethod.WebhookHeader{
 			Name:     key,
 			Value:    value.(string),
@@ -223,7 +225,7 @@ func (i alertMethodWebhook) MarshalSpec(r resourceInterface) v1alphaAlertMethod.
 		}
 		headers = append(headers, header)
 	}
-	for key, value := range r.Get("sensitive_headers").(map[string]interface{}) {
+	for key, value := range sensitiveHeadersMap {
 		header := v1alphaAlertMethod.WebhookHeader{
 			Name:     key,
 			Value:    value.(string),

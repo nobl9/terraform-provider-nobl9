@@ -389,13 +389,13 @@ func (ap alertPolicyConfig) Build(resourceName, name, project string) string {
 	}`
 
 	b := strings.Builder{}
-	b.WriteString(fmt.Sprintf(`
+	fmt.Fprintf(&b, `
 %s
-resource "nobl9_alert_policy" "%s" {`, ap.AdditionalResources, resourceName))
+resource "nobl9_alert_policy" "%s" {`, ap.AdditionalResources, resourceName)
 	b.WriteString("\n	")
-	b.WriteString(fmt.Sprintf(`name = "%s"`, name))
+	fmt.Fprintf(&b, `name = "%s"`, name)
 	b.WriteString("\n	")
-	b.WriteString(fmt.Sprintf(`project = "%s"`, project))
+	fmt.Fprintf(&b, `project = "%s"`, project)
 	b.WriteString("\n	")
 	if ap.OverrideAnnotationsBlock != "" {
 		b.WriteString(ap.OverrideAnnotationsBlock)
