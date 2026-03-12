@@ -1229,9 +1229,9 @@ func (s dash0DirectSpec) GetSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Dash0 Prometheus-compatible API URL.",
 		},
-		"access_token": {
+		"auth_token": {
 			Type:        schema.TypeString,
-			Description: "[required] | Dash0 API Access Token.",
+			Description: "[required] | Dash0 API Auth Token.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -1248,8 +1248,8 @@ func (s dash0DirectSpec) GetSchema() map[string]*schema.Schema {
 
 func (s dash0DirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{Dash0: &v1alphaDirect.Dash0Config{
-		URL:         r.Get("url").(string),
-		AccessToken: r.Get("access_token").(string),
+		URL:       r.Get("url").(string),
+		AuthToken: r.Get("auth_token").(string),
 	}}
 }
 

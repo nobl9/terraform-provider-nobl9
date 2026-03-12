@@ -515,7 +515,7 @@ resource "nobl9_direct_%s" "%s" {
   project = "%s"
   description = "desc"
   url = "https://api.eu-west-1.aws.dash0.com/api/prometheus"
-  access_token = "secret"
+  auth_token = "secret"
   log_collection_enabled = true
   historical_data_retrieval {
     default_duration  {
