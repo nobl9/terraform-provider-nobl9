@@ -81,10 +81,14 @@ linters:
       - linters:
           - staticcheck
         text: slo.Spec.Composite is deprecated
+      - linters:
+          - prealloc
+        path: _test\.go
     paths:
       - third_party$
       - builtin$
       - examples$
+      - node_modules
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0

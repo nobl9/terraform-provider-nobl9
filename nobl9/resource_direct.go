@@ -210,7 +210,7 @@ func (dr directResource) marshalDirect(r resourceInterface) (*v1alphaDirect.Dire
 }
 
 func (dr directResource) unmarshalDirect(d *schema.ResourceData, direct v1alphaDirect.Direct) diag.Diagnostics {
-	var diags diag.Diagnostics
+	diags := make(diag.Diagnostics, 0, 5)
 
 	set(d, "status", direct.Status.DirectType, &diags)
 	set(d, "name", direct.Metadata.Name, &diags)
