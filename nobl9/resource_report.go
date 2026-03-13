@@ -234,10 +234,10 @@ func marshalReportLabels(labelList []interface{}) v1alpha.Labels {
 }
 
 func unmarshalReportLabels(labelsRaw v1alpha.Labels) interface{} {
-	resultLabels := make([]map[string]interface{}, 0)
+	resultLabels := make([]map[string]interface{}, 0, len(labelsRaw))
 
 	for labelKey, labelValuesRaw := range labelsRaw {
-		var labelValuesStr []string
+		labelValuesStr := make([]string, 0, len(labelValuesRaw))
 		labelValuesStr = append(labelValuesStr, labelValuesRaw...)
 		labelKeyWithValues := make(map[string]interface{})
 		labelKeyWithValues["key"] = labelKey
