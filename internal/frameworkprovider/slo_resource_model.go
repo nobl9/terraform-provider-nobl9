@@ -98,6 +98,7 @@ type MetricSpecModel struct {
 	ThousandEyes        []ThousandEyesModel        `tfsdk:"thousandeyes"`
 	AzurePrometheus     []AzurePrometheusModel     `tfsdk:"azure_prometheus"`
 	Coralogix           []CoralogixModel           `tfsdk:"coralogix"`
+	Dash0               []Dash0Model               `tfsdk:"dash0"`
 }
 
 // CompositeObjectiveModel represents the composite block in an objective.
@@ -358,6 +359,10 @@ type AzurePrometheusModel struct {
 }
 
 type CoralogixModel struct {
+	PromQL string `tfsdk:"promql"`
+}
+
+type Dash0Model struct {
 	PromQL string `tfsdk:"promql"`
 }
 
@@ -834,6 +839,9 @@ func metricSpecToModel(spec *v1alphaSLO.MetricSpec) MetricSpecModel {
 	if coralogix := coralogixToModel(spec.Coralogix); coralogix != nil {
 		model.Coralogix = []CoralogixModel{*coralogix}
 	}
+	if dash0 := dash0ToModel(spec.Dash0); dash0 != nil {
+		model.Dash0 = []Dash0Model{*dash0}
+	}
 
 	return model
 }
@@ -921,6 +929,9 @@ func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 	}
 	if len(m.Coralogix) > 0 {
 		spec.Coralogix = modelToCoralogix(&m.Coralogix[0])
+	}
+	if len(m.Dash0) > 0 {
+		spec.Dash0 = modelToDash0(&m.Dash0[0])
 	}
 
 	return spec
@@ -1637,6 +1648,24 @@ func modelToCoralogix(model *CoralogixModel) *v1alphaSLO.CoralogixMetric {
 	}
 	return &v1alphaSLO.CoralogixMetric{
 		PromQL: model.PromQL,
+	}
+}
+
+func dash0ToModel(src *v1alphaSLO.Dash0Metric) *Dash0Model {
+	if src == nil {
+		return nil
+	}
+	return &Dash0Model{
+		PromQL: *src.PromQL,
+	}
+}
+
+func modelToDash0(model *Dash0Model) *v1alphaSLO.Dash0Metric {
+	if model == nil {
+		return nil
+	}
+	return &v1alphaSLO.Dash0Metric{
+		PromQL: &model.PromQL,
 	}
 }
 
