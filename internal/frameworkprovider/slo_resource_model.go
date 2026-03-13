@@ -1025,6 +1025,15 @@ func cloudWatchToModel(src *v1alphaSLO.CloudWatchMetric) *CloudWatchModel {
 	return model
 }
 
+func dash0ToModel(src *v1alphaSLO.Dash0Metric) *Dash0Model {
+	if src == nil {
+		return nil
+	}
+	return &Dash0Model{
+		PromQL: *src.PromQL,
+	}
+}
+
 func datadogToModel(src *v1alphaSLO.DatadogMetric) *DatadogModel {
 	if src == nil {
 		return nil
@@ -1373,6 +1382,15 @@ func modelToCloudWatch(model *CloudWatchModel) *v1alphaSLO.CloudWatchMetric {
 	return spec
 }
 
+func modelToDash0(model *Dash0Model) *v1alphaSLO.Dash0Metric {
+	if model == nil {
+		return nil
+	}
+	return &v1alphaSLO.Dash0Metric{
+		PromQL: &model.PromQL,
+	}
+}
+
 func modelToDatadog(model *DatadogModel) *v1alphaSLO.DatadogMetric {
 	if model == nil {
 		return nil
@@ -1648,24 +1666,6 @@ func modelToCoralogix(model *CoralogixModel) *v1alphaSLO.CoralogixMetric {
 	}
 	return &v1alphaSLO.CoralogixMetric{
 		PromQL: model.PromQL,
-	}
-}
-
-func dash0ToModel(src *v1alphaSLO.Dash0Metric) *Dash0Model {
-	if src == nil {
-		return nil
-	}
-	return &Dash0Model{
-		PromQL: *src.PromQL,
-	}
-}
-
-func modelToDash0(model *Dash0Model) *v1alphaSLO.Dash0Metric {
-	if model == nil {
-		return nil
-	}
-	return &v1alphaSLO.Dash0Metric{
-		PromQL: &model.PromQL,
 	}
 }
 

@@ -527,7 +527,7 @@ resource "nobl9_direct_%s" "%s" {
       value = 10
     }
   }
-  release_channel = "stable"
+  release_channel = "beta"
   query_delay {
     unit = "Minute"
     value = 6
