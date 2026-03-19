@@ -237,7 +237,7 @@ func TestAcc_Nobl9AlertMethodServiceNowValidation(t *testing.T) {
 		{
 			name:         "servicenow-basic-auth-requires-password",
 			configFunc:   testServiceNowBasicAuthMissingPasswordConfig,
-			errorMessage: "all of `username,password` must be specified",
+			errorMessage: "all of `password,username` must be specified",
 		},
 		{
 			name:         "servicenow-requires-authentication",
