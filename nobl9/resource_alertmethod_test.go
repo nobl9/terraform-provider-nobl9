@@ -189,7 +189,7 @@ resource "nobl9_alert_method_servicenow" "%s" {
   name           = "%s"
   project        = "%s"
   description    = "servicenow"
-  apitoken       = "very secret"
+  api_token       = "very secret"
   instance_name  = "name"
 }
 `, name, name, testProject)
@@ -247,7 +247,7 @@ func TestAcc_Nobl9AlertMethodServiceNowValidation(t *testing.T) {
 		{
 			name:         "servicenow-auth-methods-conflict",
 			configFunc:   testServiceNowBothAuthMethodsConfig,
-			errorMessage: "\"apitoken\": conflicts with username",
+			errorMessage: "\"api_token\": conflicts with username",
 		},
 	}
 
@@ -297,7 +297,7 @@ resource "nobl9_alert_method_servicenow" "%s" {
   description    = "servicenow"
   username       = "nobleUser"
   password       = "very secret"
-  apitoken       = "very secret"
+  api_token       = "very secret"
   instance_name  = "name"
 }
 `, name, name, testProject)
