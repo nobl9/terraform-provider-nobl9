@@ -7,4 +7,3 @@ resource "nobl9_alert_method_servicenow" "this" {
   password      = "secret"
   instance_name = "my_snow_instance_name"
 }
-
