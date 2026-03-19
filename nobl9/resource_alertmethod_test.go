@@ -2,6 +2,7 @@ package nobl9
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -25,6 +26,7 @@ func TestAcc_Nobl9AlertMethod(t *testing.T) {
 		{"test-discord", "discord", testDiscordConfig},
 		{"test-opsgenie", "opsgenie", testOpsgenieConfig},
 		{"test-servicenow", "servicenow", testServiceNowConfig},
+		{"test-servicenow-token", "servicenow", testServiceNowTokenConfig},
 		{"test-servicenow-send-resolution", "servicenow", testServiceNowWithSendResolutionConfig},
 		{"test-servicenow-send-resolution-message", "servicenow", testServiceNowWithSendResolutionMessageEmptyConfig},
 		{"test-jira", "jira", testJiraConfig},
@@ -181,6 +183,18 @@ resource "nobl9_alert_method_servicenow" "%s" {
 `, name, name, testProject)
 }
 
+func testServiceNowTokenConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_servicenow" "%s" {
+  name           = "%s"
+  project        = "%s"
+  description    = "servicenow"
+  api_token       = "very secret"
+  instance_name  = "name"
+}
+`, name, name, testProject)
+}
+
 func testServiceNowWithSendResolutionConfig(name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_alert_method_servicenow" "%s" {
@@ -210,6 +224,81 @@ resource "nobl9_alert_method_servicenow" "%s" {
 
   send_resolution {
   }
+}
+`, name, name, testProject)
+}
+
+func TestAcc_Nobl9AlertMethodServiceNowValidation(t *testing.T) {
+	cases := []struct {
+		name         string
+		configFunc   func(string) string
+		errorMessage string
+	}{
+		{
+			name:         "servicenow-basic-auth-requires-password",
+			configFunc:   testServiceNowBasicAuthMissingPasswordConfig,
+			errorMessage: "all of `username,password` must be specified",
+		},
+		{
+			name:         "servicenow-requires-authentication",
+			configFunc:   testServiceNowMissingAuthConfig,
+			errorMessage: "either basic auth",
+		},
+		{
+			name:         "servicenow-auth-methods-conflict",
+			configFunc:   testServiceNowBothAuthMethodsConfig,
+			errorMessage: "\"api_token\": conflicts with username",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				Steps: []resource.TestStep{
+					{
+						Config:      tc.configFunc(tc.name),
+						ExpectError: regexp.MustCompile(tc.errorMessage),
+					},
+				},
+			})
+		})
+	}
+}
+
+func testServiceNowBasicAuthMissingPasswordConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_servicenow" "%s" {
+  name           = "%s"
+  project        = "%s"
+  description    = "servicenow"
+  username       = "nobleUser"
+  instance_name  = "name"
+}
+`, name, name, testProject)
+}
+
+func testServiceNowMissingAuthConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_servicenow" "%s" {
+  name           = "%s"
+  project        = "%s"
+  description    = "servicenow"
+  instance_name  = "name"
+}
+`, name, name, testProject)
+}
+
+func testServiceNowBothAuthMethodsConfig(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_alert_method_servicenow" "%s" {
+  name           = "%s"
+  project        = "%s"
+  description    = "servicenow"
+  username       = "nobleUser"
+  password       = "very secret"
+  api_token       = "very secret"
+  instance_name  = "name"
 }
 `, name, name, testProject)
 }

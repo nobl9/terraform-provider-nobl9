@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.0
 	github.com/hashicorp/terraform-plugin-testing v1.15.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/nobl9/nobl9-go v0.125.0
+	github.com/nobl9/nobl9-go v0.126.0-rc1
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.11.1
 	github.com/teambition/rrule-go v1.8.2
@@ -92,7 +92,7 @@ require (
 	golang.org/x/tools v0.42.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
-	google.golang.org/grpc v1.79.2 // indirect
+	google.golang.org/grpc v1.79.3 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
