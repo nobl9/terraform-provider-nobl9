@@ -100,13 +100,13 @@ func (a alertMethod) resourceAlertMethodValidate(_ context.Context, d *schema.Re
 func validateServiceNowAuth(r resourceInterface) error {
 	username := r.Get("username").(string)
 	password := r.Get("password").(string)
-	apiToken := r.Get("apitoken").(string)
+	apiToken := r.Get("api_token").(string)
 
 	hasBasicAuth := username != "" || password != ""
 	hasTokenAuth := apiToken != ""
 
 	if hasBasicAuth && hasTokenAuth {
-		return fmt.Errorf("`username` and `password` cannot be set together with `apitoken`")
+		return fmt.Errorf("`username` and `password` cannot be set together with `api_token`")
 	}
 	if hasBasicAuth {
 		if username == "" || password == "" {
@@ -118,7 +118,7 @@ func validateServiceNowAuth(r resourceInterface) error {
 		return nil
 	}
 
-	return fmt.Errorf("either basic auth (`username` and `password`) or token auth (`apitoken`) must be provided")
+	return fmt.Errorf("either basic auth (`username` and `password`) or token auth (`api_token`) must be provided")
 }
 
 //nolint:lll
@@ -495,7 +495,7 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 			RequiredWith: []string{
 				"password",
 			},
-			ConflictsWith: []string{"apitoken"},
+			ConflictsWith: []string{"api_token"},
 		},
 		"password": {
 			Type:        schema.TypeString,
@@ -506,9 +506,9 @@ func (i alertMethodServiceNow) GetSchema() map[string]*schema.Schema {
 			RequiredWith: []string{
 				"username",
 			},
-			ConflictsWith: []string{"apitoken"},
+			ConflictsWith: []string{"api_token"},
 		},
-		"apitoken": {
+		"api_token": {
 			Type:          schema.TypeString,
 			Optional:      true,
 			Description:   "ServiceNow API token used for token authentication.",
@@ -538,8 +538,8 @@ func (i alertMethodServiceNow) MarshalSpec(r resourceInterface) v1alphaAlertMeth
 		SendResolution: marshalSendResolution(r.Get("send_resolution")),
 	}
 
-	if r.Get("apitoken").(string) != "" {
-		serviceNow.ApiToken = r.Get("apitoken").(string)
+	if r.Get("api_token").(string) != "" {
+		serviceNow.ApiToken = r.Get("api_token").(string)
 	} else {
 		serviceNow.Username = r.Get("username").(string)
 		serviceNow.Password = r.Get("password").(string)

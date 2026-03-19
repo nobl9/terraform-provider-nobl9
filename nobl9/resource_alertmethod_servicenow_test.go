@@ -28,41 +28,41 @@ func TestValidateServiceNowAuth(t *testing.T) {
 	}{
 		"basic auth valid": {
 			resourceData: mockResourceData{
-				"username": "user",
-				"password": "pass",
-				"apitoken": "",
+				"username":  "user",
+				"password":  "pass",
+				"api_token": "",
 			},
 			expectError: false,
 		},
 		"token auth valid": {
 			resourceData: mockResourceData{
-				"username": "",
-				"password": "",
-				"apitoken": "token",
+				"username":  "",
+				"password":  "",
+				"api_token": "token",
 			},
 			expectError: false,
 		},
 		"basic auth missing password": {
 			resourceData: mockResourceData{
-				"username": "user",
-				"password": "",
-				"apitoken": "",
+				"username":  "user",
+				"password":  "",
+				"api_token": "",
 			},
 			expectError: true,
 		},
 		"token auth missing token": {
 			resourceData: mockResourceData{
-				"username": "",
-				"password": "",
-				"apitoken": "",
+				"username":  "",
+				"password":  "",
+				"api_token": "",
 			},
 			expectError: true,
 		},
 		"both auth methods provided": {
 			resourceData: mockResourceData{
-				"username": "user",
-				"password": "pass",
-				"apitoken": "token",
+				"username":  "user",
+				"password":  "pass",
+				"api_token": "token",
 			},
 			expectError: true,
 		},
@@ -86,7 +86,7 @@ func TestAlertMethodServiceNowMarshalSpec(t *testing.T) {
 		"description":     "desc",
 		"username":        "user",
 		"password":        "pass",
-		"apitoken":        "",
+		"api_token":       "",
 		"instance_name":   "instance",
 		"send_resolution": nil,
 	})
@@ -104,7 +104,7 @@ func TestAlertMethodServiceNowMarshalSpec(t *testing.T) {
 		"description":     "desc",
 		"username":        "",
 		"password":        "",
-		"apitoken":        "token",
+		"api_token":       "token",
 		"instance_name":   "instance",
 		"send_resolution": nil,
 	})
