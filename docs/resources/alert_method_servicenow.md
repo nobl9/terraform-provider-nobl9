@@ -15,7 +15,7 @@ For more details, refer to [ServiceNow Alert Method | Nobl9 Documentation](https
 
 Authentication options:
 - basic auth requires both `username` and `password`.
-- token auth requires `apitoken`.
+- token auth requires `api_token`.
 - Basic and token credentials cannot be used together.
 
 ## Example Usage
