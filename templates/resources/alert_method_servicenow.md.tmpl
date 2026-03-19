@@ -13,6 +13,11 @@ The **ServiceNow Alert Method** automatically opens an issue in your ServiceNow 
 
 For more details, refer to {{ .Description | trimspace }}.
 
+Authentication options:
+- basic auth requires both `username` and `password`.
+- token auth requires `api_token`.
+- Basic and token credentials cannot be used together.
+
 ## Example Usage
 
 Here's an example of ServiceNow Terraform resource configuration:
