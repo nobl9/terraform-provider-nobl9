@@ -45,7 +45,7 @@ resource "nobl9_alert_method_servicenow" "this" {
 
 ### Optional
 
-- `apitoken` (String, Sensitive) ServiceNow API token used for token authentication.
+- `api_token` (String, Sensitive) ServiceNow API token used for token authentication.
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `password` (String, Sensitive) ServiceNow password.
