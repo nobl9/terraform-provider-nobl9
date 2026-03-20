@@ -1239,6 +1239,11 @@ func (s dash0DirectSpec) GetSchema() map[string]*schema.Schema {
 				validation.StringIsNotEmpty,
 			),
 		},
+		"step": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "Query resolution step width in seconds.",
+		},
 	}
 	setHistoricalDataRetrievalSchema(dash0Schema)
 	setLogCollectionSchema(dash0Schema)
@@ -1250,11 +1255,13 @@ func (s dash0DirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{Dash0: &v1alphaDirect.Dash0Config{
 		URL:       r.Get("url").(string),
 		AuthToken: r.Get("auth_token").(string),
+		Step:      r.Get("step").(int),
 	}}
 }
 
 func (s dash0DirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
 	set(d, "url", spec.Dash0.URL, &diags)
+	set(d, "step", spec.Dash0.Step, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
 }
