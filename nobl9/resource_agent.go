@@ -105,6 +105,7 @@ func agentSchema() map[string]*schema.Schema {
 		schemaAgentSplunkObservability(),
 		schemaAgentSumoLogic(),
 		schemaAgentThousandEyes(),
+		schemaAgentDash0(),
 	}
 
 	for _, agentSchemaDef := range agentSchemaDefinitions {
@@ -254,6 +255,7 @@ func marshalAgent(d resourceInterface) (*v1alphaAgent.Agent, diag.Diagnostics) {
 			SplunkObservability:     marshalAgentSplunkObservability(d, diags),
 			SumoLogic:               marshalAgentSumoLogic(d, diags),
 			ThousandEyes:            marshalAgentThousandEyes(d),
+			Dash0:                   marshalAgentDash0(d, diags),
 			QueryDelay:              marshalQueryDelay(d),
 			ReleaseChannel:          marshalReleaseChannel(d, diags),
 			HistoricalDataRetrieval: marshalHistoricalDataRetrieval(d),
@@ -390,6 +392,7 @@ func getSupportedAgentConfigs() []supportedAgentConfig {
 		{splunkObservabilityAgentConfigKey, (*v1alphaAgent.SplunkObservabilityConfig)(nil)},
 		{sumologicAgentConfigKey, (*v1alphaAgent.SumoLogicConfig)(nil)},
 		{thousandeyesAgentConfigKey, (*v1alphaAgent.ThousandEyesConfig)(nil)},
+		{dash0AgentConfigKey, (*v1alphaAgent.Dash0Config)(nil)},
 	}
 }
 
@@ -1395,6 +1398,52 @@ func marshalAgentLogicMonitor(d resourceInterface, diags diag.Diagnostics) *v1al
 
 	return &v1alphaAgent.LogicMonitorConfig{
 		Account: data["account"].(string),
+	}
+}
+
+/**
+ * Dash0 Agent
+ * https://docs.nobl9.com/Sources/dash0#dash0-agent
+ */
+const dash0AgentType = "dash0"
+const dash0AgentConfigKey = "dash0_config"
+
+func schemaAgentDash0() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		dash0AgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/dash0#dash0-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Dash0 Prometheus-compatible API URL.",
+					},
+					"step": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Query resolution step width in seconds.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentDash0(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.Dash0Config {
+	data := getAgentResourceData(d, dash0AgentType, dash0AgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &v1alphaAgent.Dash0Config{
+		URL:  data["url"].(string),
+		Step: data["step"].(int),
 	}
 }
 
