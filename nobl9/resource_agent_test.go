@@ -41,6 +41,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 		{"test-splunk-observability", testSplunkObservabilityAgent},
 		{"test-sumologic", testSumoLogicAgent},
 		{"test-thousandeyes", testThousandEyesAgent},
+		{"test-dash0", testDash0Agent},
 	}
 
 	for _, tc := range cases {
@@ -545,6 +546,25 @@ resource "nobl9_agent" "%s" {
   name      = "%s"
   project   = "%s"
   agent_type = "thousandeyes"
+  release_channel = "beta"
+  query_delay {
+    unit = "Minute"
+    value = 6
+  }
+}
+`, name, name, testProject)
+}
+
+func testDash0Agent(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  agent_type = "dash0"
+  dash0_config {
+    url  = "https://api.eu-west-1.aws.dash0.com/api/prometheus"
+    step = 60
+  }
   release_channel = "beta"
   query_delay {
     unit = "Minute"
