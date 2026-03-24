@@ -756,7 +756,7 @@ Required:
 Optional:
 
 - `quantization` (String) Period of data aggregation
-- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the row with the highest letter ID (e.g., if rows A, B, C are defined, the result comes from row C). (see [below for nested schema](#nestedblock--objective--count_metrics--bad--sumologic--queries))
+- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the last query in order. (see [below for nested schema](#nestedblock--objective--count_metrics--bad--sumologic--queries))
 - `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
 
@@ -1165,7 +1165,7 @@ Required:
 Optional:
 
 - `quantization` (String) Period of data aggregation
-- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the row with the highest letter ID (e.g., if rows A, B, C are defined, the result comes from row C). (see [below for nested schema](#nestedblock--objective--count_metrics--good--sumologic--queries))
+- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the last query in order. (see [below for nested schema](#nestedblock--objective--count_metrics--good--sumologic--queries))
 - `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
 
@@ -1574,7 +1574,7 @@ Required:
 Optional:
 
 - `quantization` (String) Period of data aggregation
-- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the row with the highest letter ID (e.g., if rows A, B, C are defined, the result comes from row C). (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--sumologic--queries))
+- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the last query in order. (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--sumologic--queries))
 - `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
 
@@ -1983,7 +1983,7 @@ Required:
 Optional:
 
 - `quantization` (String) Period of data aggregation
-- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the row with the highest letter ID (e.g., if rows A, B, C are defined, the result comes from row C). (see [below for nested schema](#nestedblock--objective--count_metrics--total--sumologic--queries))
+- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the last query in order. (see [below for nested schema](#nestedblock--objective--count_metrics--total--sumologic--queries))
 - `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
 
@@ -2400,7 +2400,7 @@ Required:
 Optional:
 
 - `quantization` (String) Period of data aggregation
-- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the row with the highest letter ID (e.g., if rows A, B, C are defined, the result comes from row C). (see [below for nested schema](#nestedblock--objective--raw_metric--query--sumologic--queries))
+- `queries` (Block List) Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the last query in order. (see [below for nested schema](#nestedblock--objective--raw_metric--query--sumologic--queries))
 - `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
 

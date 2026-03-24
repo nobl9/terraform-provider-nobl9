@@ -925,7 +925,7 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 				},
 				Blocks: map[string]schema.Block{
 					"queries": schema.ListNestedBlock{
-						Description: "Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the row with the highest letter ID (e.g., if rows A, B, C are defined, the result comes from row C).",
+						Description: "Multi-query configuration for metrics type (ABC pattern). Each query row has a row ID (A-F) and a query string. The SLI result is taken from the last query in order.",
 						Validators: []validator.List{
 							listvalidator.SizeBetween(1, 6),
 							listvalidator.ConflictsWith(
