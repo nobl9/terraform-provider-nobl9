@@ -925,7 +925,7 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 				},
 				Blocks: map[string]schema.Block{
 					"queries": schema.ListNestedBlock{
-						Description: "ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query.",
+						Description: "ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query",
 						Validators: []validator.List{
 							listvalidator.SizeBetween(1, 6),
 							listvalidator.ConflictsWith(

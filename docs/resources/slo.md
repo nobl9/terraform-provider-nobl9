@@ -756,7 +756,7 @@ Required:
 Optional:
 
 - `quantization` (String) Period of data aggregation
-- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query. (see [below for nested schema](#nestedblock--objective--count_metrics--bad--sumologic--queries))
+- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query (see [below for nested schema](#nestedblock--objective--count_metrics--bad--sumologic--queries))
 - `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
 
@@ -1165,7 +1165,7 @@ Required:
 Optional:
 
 - `quantization` (String) Period of data aggregation
-- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query. (see [below for nested schema](#nestedblock--objective--count_metrics--good--sumologic--queries))
+- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query (see [below for nested schema](#nestedblock--objective--count_metrics--good--sumologic--queries))
 - `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
 
@@ -1574,7 +1574,7 @@ Required:
 Optional:
 
 - `quantization` (String) Period of data aggregation
-- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query. (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--sumologic--queries))
+- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--sumologic--queries))
 - `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
 
@@ -1983,7 +1983,7 @@ Required:
 Optional:
 
 - `quantization` (String) Period of data aggregation
-- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query. (see [below for nested schema](#nestedblock--objective--count_metrics--total--sumologic--queries))
+- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query (see [below for nested schema](#nestedblock--objective--count_metrics--total--sumologic--queries))
 - `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
 
@@ -2400,7 +2400,7 @@ Required:
 Optional:
 
 - `quantization` (String) Period of data aggregation
-- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query. (see [below for nested schema](#nestedblock--objective--raw_metric--query--sumologic--queries))
+- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query (see [below for nested schema](#nestedblock--objective--raw_metric--query--sumologic--queries))
 - `query` (String, Deprecated) Query for the metrics. Deprecated: use 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
 
