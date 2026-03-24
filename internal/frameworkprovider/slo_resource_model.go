@@ -342,11 +342,11 @@ type SplunkObservabilityModel struct {
 }
 
 type SumoLogicModel struct {
-	Type         string                  `tfsdk:"type"`
-	Query        types.String            `tfsdk:"query"`
-	Quantization types.String            `tfsdk:"quantization"`
-	Rollup       types.String            `tfsdk:"rollup"`
-	Queries      []SumoLogicQueryModel   `tfsdk:"queries"`
+	Type         string                `tfsdk:"type"`
+	Query        types.String          `tfsdk:"query"`
+	Quantization types.String          `tfsdk:"quantization"`
+	Rollup       types.String          `tfsdk:"rollup"`
+	Queries      []SumoLogicQueryModel `tfsdk:"queries"`
 }
 
 type SumoLogicQueryModel struct {
