@@ -994,6 +994,18 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 				},
 			},
 		},
+		"dash0": schema.ListNestedBlock{
+			Description: "[Configuration documentation](https://docs.nobl9.com/sources/create-slo/dash0)",
+			Validators:  []validator.List{listvalidator.SizeAtMost(1)},
+			NestedObject: schema.NestedBlockObject{
+				Attributes: map[string]schema.Attribute{
+					"promql": schema.StringAttribute{
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
 	}
 }
 

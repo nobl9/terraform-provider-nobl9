@@ -48,6 +48,7 @@ resource "nobl9_agent" "this" {
 - `azure_monitor_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-agent) (see [below for nested schema](#nestedblock--azure_monitor_config))
 - `bigquery_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-agent) (see [below for nested schema](#nestedblock--bigquery_config))
 - `cloudwatch_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-agent) (see [below for nested schema](#nestedblock--cloudwatch_config))
+- `dash0_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/dash0#dash0-agent) (see [below for nested schema](#nestedblock--dash0_config))
 - `datadog_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#datadog-agent) (see [below for nested schema](#nestedblock--datadog_config))
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
@@ -117,6 +118,18 @@ Required:
 
 <a id="nestedblock--cloudwatch_config"></a>
 ### Nested Schema for `cloudwatch_config`
+
+
+<a id="nestedblock--dash0_config"></a>
+### Nested Schema for `dash0_config`
+
+Required:
+
+- `url` (String) Dash0 Prometheus-compatible API URL.
+
+Optional:
+
+- `step` (Number) Query resolution step width in seconds.
 
 
 <a id="nestedblock--datadog_config"></a>
