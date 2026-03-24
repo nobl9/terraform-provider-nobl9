@@ -903,7 +903,7 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 					},
 					"query": schema.StringAttribute{
 						Optional:           true,
-						Description:        "Query for the metrics. Deprecated: use 'queries' block instead.",
+						Description:        "Query for the metrics. Deprecated: use the 'queries' block instead.",
 						DeprecationMessage: "Use 'queries' block instead for multi-query support.",
 						Validators: []validator.String{
 							stringvalidator.ConflictsWith(
@@ -925,7 +925,7 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 				},
 				Blocks: map[string]schema.Block{
 					"queries": schema.ListNestedBlock{
-						Description: "ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query",
+						Description: "ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query",
 						Validators: []validator.List{
 							listvalidator.SizeBetween(1, 6),
 							listvalidator.ConflictsWith(
@@ -942,7 +942,7 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 								},
 								"query": schema.StringAttribute{
 									Required:    true,
-									Description: "The Sumo Logic query. Subsequent queries can reference earlier ones (e.g., #A, #B). The final query defines the SLI for this objective.",
+									Description: "The Sumo Logic query. Subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective.",
 								},
 							},
 						},
