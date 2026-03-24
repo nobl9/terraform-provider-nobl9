@@ -909,6 +909,9 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 							stringvalidator.ConflictsWith(
 								path.MatchRelative().AtParent().AtName("queries"),
 							),
+							stringvalidator.AtLeastOneOf(
+								path.MatchRelative().AtParent().AtName("queries"),
+							),
 						},
 					},
 					"rollup": schema.StringAttribute{
@@ -929,6 +932,7 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 								path.MatchRelative().AtParent().AtName("query"),
 							),
 							sumoLogicQueriesTypeValidator{},
+							sumoLogicQueriesUniqueRowIDValidator{},
 						},
 						NestedObject: schema.NestedBlockObject{
 							Attributes: map[string]schema.Attribute{

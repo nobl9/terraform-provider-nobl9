@@ -768,6 +768,7 @@ Required:
 
 Optional:
 
+- `account_group_id` (Number) ID of the account group
 - `test_type` (String) Type of the test
 
 
@@ -1167,6 +1168,7 @@ Required:
 
 Optional:
 
+- `account_group_id` (Number) ID of the account group
 - `test_type` (String) Type of the test
 
 
@@ -1566,6 +1568,7 @@ Required:
 
 Optional:
 
+- `account_group_id` (Number) ID of the account group
 - `test_type` (String) Type of the test
 
 
@@ -1965,6 +1968,7 @@ Required:
 
 Optional:
 
+- `account_group_id` (Number) ID of the account group
 - `test_type` (String) Type of the test
 
 
@@ -2372,6 +2376,7 @@ Required:
 
 Optional:
 
+- `account_group_id` (Number) ID of the account group
 - `test_type` (String) Type of the test
 
 

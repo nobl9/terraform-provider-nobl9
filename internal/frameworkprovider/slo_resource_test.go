@@ -1358,6 +1358,105 @@ func TestAccSLOResource_objectiveValueErrors(t *testing.T) {
 	}
 }
 
+func TestAccSLOResource_sumologicValidationErrors(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	tests := map[string]struct {
+		configFunc    func() string
+		expectedError string
+	}{
+		"queries with type=logs": {
+			configFunc: func() string {
+				model := getExampleSLOResource(t)
+				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
+					SumoLogic: []SumoLogicModel{{
+						Type: "logs",
+						Queries: []SumoLogicQueryModel{
+							{RowID: "A", Query: "some_query"},
+						},
+					}},
+				}
+				return newSLOResource(t, sloResourceTemplateModel{
+					ResourceName:     "this",
+					SLOResourceModel: model,
+				})
+			},
+			expectedError: "queries block is not supported for logs type",
+		},
+		"neither query nor queries provided": {
+			configFunc: func() string {
+				model := getExampleSLOResource(t)
+				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
+					SumoLogic: []SumoLogicModel{{
+						Type: "metrics",
+					}},
+				}
+				return newSLOResource(t, sloResourceTemplateModel{
+					ResourceName:     "this",
+					SLOResourceModel: model,
+				})
+			},
+			expectedError: "(?i)at least one",
+		},
+		"both query and queries provided": {
+			configFunc: func() string {
+				model := getExampleSLOResource(t)
+				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
+					SumoLogic: []SumoLogicModel{{
+						Type:  "metrics",
+						Query: types.StringValue("old_query"),
+						Queries: []SumoLogicQueryModel{
+							{RowID: "A", Query: "metric=cpu_idle"},
+						},
+					}},
+				}
+				return newSLOResource(t, sloResourceTemplateModel{
+					ResourceName:     "this",
+					SLOResourceModel: model,
+				})
+			},
+			expectedError: "(?i)conflict",
+		},
+		"duplicate row_id": {
+			configFunc: func() string {
+				model := getExampleSLOResource(t)
+				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
+					SumoLogic: []SumoLogicModel{{
+						Type: "metrics",
+						Queries: []SumoLogicQueryModel{
+							{RowID: "A", Query: "metric=cpu_idle"},
+							{RowID: "A", Query: "#A + 1"},
+						},
+					}},
+				}
+				return newSLOResource(t, sloResourceTemplateModel{
+					ResourceName:     "this",
+					SLOResourceModel: model,
+				})
+			},
+			expectedError: "duplicate row_id in queries block",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				Steps: []resource.TestStep{
+					{
+						Config:      test.configFunc(),
+						ExpectError: regexp.MustCompile(test.expectedError),
+						PlanOnly:    true,
+					},
+				},
+			})
+		})
+	}
+}
+
 const slosPerService = 50
 
 // nolint: gocognit

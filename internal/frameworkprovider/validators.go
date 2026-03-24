@@ -75,3 +75,48 @@ func (v sumoLogicQueriesTypeValidator) ValidateList(
 		)
 	}
 }
+
+type sumoLogicQueriesUniqueRowIDValidator struct{}
+
+func (v sumoLogicQueriesUniqueRowIDValidator) Description(ctx context.Context) string {
+	return v.MarkdownDescription(ctx)
+}
+
+func (v sumoLogicQueriesUniqueRowIDValidator) MarkdownDescription(_ context.Context) string {
+	return "Ensure that row_id values in queries block are unique"
+}
+
+func (v sumoLogicQueriesUniqueRowIDValidator) ValidateList(
+	_ context.Context,
+	req validator.ListRequest,
+	resp *validator.ListResponse,
+) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() || len(req.ConfigValue.Elements()) == 0 {
+		return
+	}
+	seen := make(map[string]bool)
+	for _, elem := range req.ConfigValue.Elements() {
+		obj, ok := elem.(types.Object)
+		if !ok {
+			continue
+		}
+		rowIDAttr, exists := obj.Attributes()["row_id"]
+		if !exists {
+			continue
+		}
+		rowID, ok := rowIDAttr.(types.String)
+		if !ok || rowID.IsNull() || rowID.IsUnknown() {
+			continue
+		}
+		id := rowID.ValueString()
+		if seen[id] {
+			resp.Diagnostics.AddAttributeError(
+				req.Path,
+				"duplicate row_id in queries block",
+				fmt.Sprintf("Each query must have a unique row_id. Found duplicate: %q", id),
+			)
+			return
+		}
+		seen[id] = true
+	}
+}
