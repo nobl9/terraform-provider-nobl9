@@ -23,10 +23,6 @@ GOSEC_VERSION := v2.25.0
 GOLANGCI_LINT_VERSION := v2.11.3
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
 GOVULNCHECK_VERSION := v1.1.4
-# renovate datasource=go depName=golang.org/x/tools/cmd/goimports
-GOIMPORTS_VERSION := v0.43.0
-# renovate datasource=github-releases depName=segmentio/golines
-GOLINES_VERSION := v0.13.0
 
 # Check if the program is present in $PATH and install otherwise.
 # ${1} - oneOf{binary,yarn}
@@ -157,11 +153,8 @@ format: format/go format/cspell
 ## Format Go files.
 format/go:
 	echo "Formatting Go files..."
-	$(call _ensure_installed,binary,goimports)
-	$(call _ensure_installed,binary,golines)
-	gofmt -w -l -s .
-	$(BIN_DIR)/goimports -local=github.com/nobl9/terraform-provider-nobl9 -w .
-	$(BIN_DIR)/golines --ignore-generated -m 120 -w .
+	$(call _ensure_installed,binary,golangci-lint)
+	$(BIN_DIR)/golangci-lint fmt
 
 ## Format cspell config file.
 format/cspell:
@@ -169,9 +162,9 @@ format/cspell:
 	$(call _ensure_installed,yarn,yaml)
 	yarn --silent format-cspell-config
 
-.PHONY: install install/yarn install/golangci-lint install/gosec install/govulncheck install/goimports
+.PHONY: install install/yarn install/golangci-lint install/gosec install/govulncheck
 ## Install all dev dependencies.
-install: install/yarn install/golangci-lint install/gosec install/govulncheck install/goimports
+install: install/yarn install/golangci-lint install/gosec install/govulncheck
 
 ## Install JS dependencies with yarn.
 install/yarn:
@@ -194,16 +187,6 @@ install/gosec:
 install/govulncheck:
 	echo "Installing govulncheck..."
 	$(call _install_go_binary,golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION))
-
-## Install goimports (https://pkg.go.dev/golang.org/x/tools/cmd/goimports).
-install/goimports:
-	echo "Installing goimports..."
-	$(call _install_go_binary,golang.org/x/tools/cmd/goimports@$(GOIMPORTS_VERSION))
-
-## Install golines (https://github.com/segmentio/golines).
-install/golines:
-	echo "Installing golines..."
-	$(call _install_go_binary,github.com/segmentio/golines@$(GOLINES_VERSION))
 
 .PHONY: help
 ## Print this help message.
