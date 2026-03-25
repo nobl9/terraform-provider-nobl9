@@ -929,6 +929,10 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 						Optional:    true,
 						Description: "Type of the test",
 					},
+					"account_group_id": schema.Int64Attribute{
+						Optional:    true,
+						Description: "ID of the account group",
+					},
 				},
 			},
 		},
@@ -946,6 +950,18 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 		},
 		"coralogix": schema.ListNestedBlock{
 			Description: "[Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix)",
+			Validators:  []validator.List{listvalidator.SizeAtMost(1)},
+			NestedObject: schema.NestedBlockObject{
+				Attributes: map[string]schema.Attribute{
+					"promql": schema.StringAttribute{
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
+		"dash0": schema.ListNestedBlock{
+			Description: "[Configuration documentation](https://docs.nobl9.com/sources/create-slo/dash0)",
 			Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 			NestedObject: schema.NestedBlockObject{
 				Attributes: map[string]schema.Attribute{

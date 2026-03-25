@@ -98,6 +98,7 @@ type MetricSpecModel struct {
 	ThousandEyes        []ThousandEyesModel        `tfsdk:"thousandeyes"`
 	AzurePrometheus     []AzurePrometheusModel     `tfsdk:"azure_prometheus"`
 	Coralogix           []CoralogixModel           `tfsdk:"coralogix"`
+	Dash0               []Dash0Model               `tfsdk:"dash0"`
 }
 
 // CompositeObjectiveModel represents the composite block in an objective.
@@ -348,8 +349,9 @@ type SumoLogicModel struct {
 }
 
 type ThousandEyesModel struct {
-	TestID   int64        `tfsdk:"test_id"`
-	TestType types.String `tfsdk:"test_type"`
+	TestID         int64        `tfsdk:"test_id"`
+	TestType       types.String `tfsdk:"test_type"`
+	AccountGroupID types.Int64  `tfsdk:"account_group_id"`
 }
 
 type AzurePrometheusModel struct {
@@ -357,6 +359,10 @@ type AzurePrometheusModel struct {
 }
 
 type CoralogixModel struct {
+	PromQL string `tfsdk:"promql"`
+}
+
+type Dash0Model struct {
 	PromQL string `tfsdk:"promql"`
 }
 
@@ -833,6 +839,9 @@ func metricSpecToModel(spec *v1alphaSLO.MetricSpec) MetricSpecModel {
 	if coralogix := coralogixToModel(spec.Coralogix); coralogix != nil {
 		model.Coralogix = []CoralogixModel{*coralogix}
 	}
+	if dash0 := dash0ToModel(spec.Dash0); dash0 != nil {
+		model.Dash0 = []Dash0Model{*dash0}
+	}
 
 	return model
 }
@@ -920,6 +929,9 @@ func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 	}
 	if len(m.Coralogix) > 0 {
 		spec.Coralogix = modelToCoralogix(&m.Coralogix[0])
+	}
+	if len(m.Dash0) > 0 {
+		spec.Dash0 = modelToDash0(&m.Dash0[0])
 	}
 
 	return spec
@@ -1011,6 +1023,15 @@ func cloudWatchToModel(src *v1alphaSLO.CloudWatchMetric) *CloudWatchModel {
 		model.Dimensions = dimensions
 	}
 	return model
+}
+
+func dash0ToModel(src *v1alphaSLO.Dash0Metric) *Dash0Model {
+	if src == nil {
+		return nil
+	}
+	return &Dash0Model{
+		PromQL: *src.PromQL,
+	}
 }
 
 func datadogToModel(src *v1alphaSLO.DatadogMetric) *DatadogModel {
@@ -1242,7 +1263,8 @@ func thousandEyesToModel(src *v1alphaSLO.ThousandEyesMetric) *ThousandEyesModel 
 		return nil
 	}
 	model := &ThousandEyesModel{
-		TestType: types.StringPointerValue(src.TestType),
+		TestType:       types.StringPointerValue(src.TestType),
+		AccountGroupID: types.Int64PointerValue(src.AccountGroupID),
 	}
 	if src.TestID != nil {
 		model.TestID = *src.TestID
@@ -1358,6 +1380,15 @@ func modelToCloudWatch(model *CloudWatchModel) *v1alphaSLO.CloudWatchMetric {
 		spec.Dimensions = dimensions
 	}
 	return spec
+}
+
+func modelToDash0(model *Dash0Model) *v1alphaSLO.Dash0Metric {
+	if model == nil {
+		return nil
+	}
+	return &v1alphaSLO.Dash0Metric{
+		PromQL: &model.PromQL,
+	}
 }
 
 func modelToDatadog(model *DatadogModel) *v1alphaSLO.DatadogMetric {
@@ -1613,6 +1644,9 @@ func modelToThousandEyes(model *ThousandEyesModel) *v1alphaSLO.ThousandEyesMetri
 	if !isNullOrUnknown(model.TestType) {
 		testType := model.TestType.ValueString()
 		spec.TestType = &testType
+	}
+	if !isNullOrUnknown(model.AccountGroupID) {
+		spec.AccountGroupID = model.AccountGroupID.ValueInt64Pointer()
 	}
 	return spec
 }
