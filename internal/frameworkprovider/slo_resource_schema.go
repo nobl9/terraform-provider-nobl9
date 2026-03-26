@@ -902,8 +902,17 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 						Description: "Sumologic source - metrics or logs",
 					},
 					"query": schema.StringAttribute{
-						Required:    true,
-						Description: "Query for the metrics",
+						Optional:           true,
+						Description:        "Query for the metrics. Deprecated: use the 'queries' block instead.",
+						DeprecationMessage: "Use 'queries' block instead for multi-query support.",
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(
+								path.MatchRelative().AtParent().AtName("queries"),
+							),
+							stringvalidator.AtLeastOneOf(
+								path.MatchRelative().AtParent().AtName("queries"),
+							),
+						},
 					},
 					"rollup": schema.StringAttribute{
 						Optional:    true,
@@ -912,6 +921,31 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 					"quantization": schema.StringAttribute{
 						Optional:    true,
 						Description: "Period of data aggregation",
+					},
+				},
+				Blocks: map[string]schema.Block{
+					"queries": schema.ListNestedBlock{
+						Description: "ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query",
+						Validators: []validator.List{
+							listvalidator.SizeBetween(1, 6),
+							listvalidator.ConflictsWith(
+								path.MatchRelative().AtParent().AtName("query"),
+							),
+							sumoLogicQueriesTypeValidator{},
+							sumoLogicQueriesUniqueRowIDValidator{},
+						},
+						NestedObject: schema.NestedBlockObject{
+							Attributes: map[string]schema.Attribute{
+								"row_id": schema.StringAttribute{
+									Required:    true,
+									Description: "Query identifier, single uppercase letter A-F.",
+								},
+								"query": schema.StringAttribute{
+									Required:    true,
+									Description: "The Sumo Logic query. Subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective.",
+								},
+							},
+						},
 					},
 				},
 			},
