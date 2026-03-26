@@ -76,6 +76,39 @@ func (v sumoLogicQueriesTypeValidator) ValidateList(
 	}
 }
 
+type sumoLogicQueriesConflictWithQueryValidator struct{}
+
+func (v sumoLogicQueriesConflictWithQueryValidator) Description(ctx context.Context) string {
+	return v.MarkdownDescription(ctx)
+}
+
+func (v sumoLogicQueriesConflictWithQueryValidator) MarkdownDescription(_ context.Context) string {
+	return "Ensure that 'queries' block conflicts with deprecated 'query' attribute"
+}
+
+func (v sumoLogicQueriesConflictWithQueryValidator) ValidateList(
+	ctx context.Context,
+	req validator.ListRequest,
+	resp *validator.ListResponse,
+) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() || len(req.ConfigValue.Elements()) == 0 {
+		return
+	}
+	queryPath := req.Path.ParentPath().AtName("query")
+	var queryVal types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, queryPath, &queryVal)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !queryVal.IsNull() && !queryVal.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			req.Path,
+			"Conflicting attributes",
+			"'queries' block conflicts with the deprecated 'query' attribute. Use one or the other, not both.",
+		)
+	}
+}
+
 type sumoLogicQueriesUniqueRowIDValidator struct{}
 
 func (v sumoLogicQueriesUniqueRowIDValidator) Description(ctx context.Context) string {
