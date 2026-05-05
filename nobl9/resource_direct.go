@@ -1077,7 +1077,7 @@ func (s splunkObservabilityDirectSpec) GetDescription() string {
 }
 
 func (s splunkObservabilityDirectSpec) GetSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	splunkObservabilitySchema := map[string]*schema.Schema{
 		"realm": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -1094,6 +1094,9 @@ func (s splunkObservabilityDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+	setHistoricalDataRetrievalSchema(splunkObservabilitySchema)
+
+	return splunkObservabilitySchema
 }
 
 func (s splunkObservabilityDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
