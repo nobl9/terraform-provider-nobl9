@@ -97,6 +97,7 @@ func Provider() *schema.Provider {
 			"nobl9_direct_" + azureMonitorDirectType:        resourceDirectFactory(azureMonitorDirectSpec{}),
 			"nobl9_direct_" + bigqueryDirectType:            resourceDirectFactory(bigqueryDirectSpec{}),
 			"nobl9_direct_" + cloudWatchDirectType:          resourceDirectFactory(cloudWatchDirectSpec{}),
+			"nobl9_direct_" + clickHouseDirectType:          resourceDirectFactory(clickHouseDirectSpec{}),
 			"nobl9_direct_" + datadogDirectType:             resourceDirectFactory(datadogDirectSpec{}),
 			"nobl9_direct_" + dynatraceDirectType:           resourceDirectFactory(dynatraceDirectSpec{}),
 			"nobl9_direct_" + gcmDirectType:                 resourceDirectFactory(gcmDirectSpec{}),

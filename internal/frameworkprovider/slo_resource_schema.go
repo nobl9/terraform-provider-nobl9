@@ -523,6 +523,18 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 				},
 			},
 		},
+		"clickhouse": schema.ListNestedBlock{
+			Description: "[Configuration documentation](https://docs.nobl9.com/sources/create-slo/clickhouse)",
+			Validators:  []validator.List{listvalidator.SizeAtMost(1)},
+			NestedObject: schema.NestedBlockObject{
+				Attributes: map[string]schema.Attribute{
+					"query": schema.StringAttribute{
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+				},
+			},
+		},
 		"datadog": schema.ListNestedBlock{
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/datadog#creating-slos-with-datadog)",
 			Validators:  []validator.List{listvalidator.SizeAtMost(1)},

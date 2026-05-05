@@ -85,6 +85,7 @@ func agentSchema() map[string]*schema.Schema {
 		schemaAgentAzureMonitor(),
 		schemaAgentBigQuery(),
 		schemaAgentCloudWatch(),
+		schemaAgentClickHouse(),
 		schemaAgentDatadog(),
 		schemaAgentDynatrace(),
 		schemaAgentElasticsearch(),
@@ -235,6 +236,7 @@ func marshalAgent(d resourceInterface) (*v1alphaAgent.Agent, diag.Diagnostics) {
 			AzureMonitor:            marshalAgentAzureMonitor(d, diags),
 			BigQuery:                marshalAgentBigQuery(d),
 			CloudWatch:              marshalAgentCloudWatch(d),
+			ClickHouse:              marshalAgentClickHouse(d, diags),
 			Datadog:                 marshalAgentDatadog(d, diags),
 			Dynatrace:               marshalAgentDynatrace(d, diags),
 			Elasticsearch:           marshalAgentElasticsearch(d, diags),
@@ -372,6 +374,7 @@ func getSupportedAgentConfigs() []supportedAgentConfig {
 		{azureMonitorAgentConfigKey, (*v1alphaAgent.AzureMonitorConfig)(nil)},
 		{bigqueryAgentConfigKey, (*v1alphaAgent.BigQueryConfig)(nil)},
 		{cloudWatchAgentConfigKey, (*v1alphaAgent.CloudWatchConfig)(nil)},
+		{clickHouseAgentConfigKey, (*v1alphaAgent.ClickHouseConfig)(nil)},
 		{datadogAgentConfigKey, (*v1alphaAgent.DatadogConfig)(nil)},
 		{dynatraceAgentConfigKey, (*v1alphaAgent.DynatraceConfig)(nil)},
 		{elasticsearchAgentConfigKey, (*v1alphaAgent.ElasticsearchConfig)(nil)},
@@ -1444,6 +1447,52 @@ func marshalAgentDash0(d resourceInterface, diags diag.Diagnostics) *v1alphaAgen
 	return &v1alphaAgent.Dash0Config{
 		URL:  data["url"].(string),
 		Step: data["step"].(int),
+	}
+}
+
+/**
+ * ClickHouse Agent
+ * https://docs.nobl9.com/Sources/clickhouse#clickhouse-agent
+ */
+const clickHouseAgentType = "clickhouse"
+const clickHouseAgentConfigKey = "clickhouse_config"
+
+func schemaAgentClickHouse() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		clickHouseAgentConfigKey: {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/clickhouse#clickhouse-agent)",
+			MinItems:    1,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "ClickHouse HTTP API URL.",
+					},
+					"database": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "ClickHouse database name.",
+					},
+				},
+			},
+		},
+	}
+}
+
+func marshalAgentClickHouse(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.ClickHouseConfig {
+	data := getAgentResourceData(d, clickHouseAgentType, clickHouseAgentConfigKey, diags)
+
+	if data == nil {
+		return nil
+	}
+
+	return &v1alphaAgent.ClickHouseConfig{
+		URL:      data["url"].(string),
+		Database: data["database"].(string),
 	}
 }
 
