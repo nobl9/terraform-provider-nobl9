@@ -607,7 +607,8 @@ func (r reportReliabilityRollup) GetSchema() map[string]*schema.Schema {
 			Optional: true,
 			Description: "Custom hierarchy of folders and SLOs encoded as a JSON string. " +
 				"The Terraform SDK does not support recursive schemas, so the hierarchy is passed verbatim. " +
-				"Shape: `[{\"displayName\":\"…\",\"children\":[…],\"slos\":[{\"name\":\"…\",\"project\":\"…\",\"displayName\":\"…\"}]}]`. " +
+				"Shape: a list of folders, each with `displayName`, optional `children` (same shape), " +
+				"and optional `slos` (each `{name, project, displayName}`). " +
 				"When omitted, the report uses the auto-generated structure derived from `filters`.",
 			ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsJSON),
 		},
@@ -660,10 +661,10 @@ func marshalReliabilityRollupTimeFrame(timeFrameSet *schema.Set) v1alphaReport.R
 			out.Calendar.To = &to
 		}
 		if unit, ok := c["unit"].(string); ok && unit != "" {
-			out.Calendar.Repeat.Unit = &unit
+			out.Calendar.Unit = &unit
 		}
 		if count, ok := c["count"].(int); ok && count != 0 {
-			out.Calendar.Repeat.Count = &count
+			out.Calendar.Count = &count
 		}
 	}
 	return out
@@ -720,4 +721,3 @@ func unmarshalCustomHierarchy(raw string) []v1alphaReport.HierarchyFolder {
 	}
 	return folders
 }
-
