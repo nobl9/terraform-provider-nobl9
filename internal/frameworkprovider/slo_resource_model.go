@@ -229,7 +229,8 @@ type CloudWatchDimensionModel struct {
 }
 
 type ClickHouseModel struct {
-	Query string `tfsdk:"query"`
+	Query      string            `tfsdk:"query"`
+	Parameters map[string]string `tfsdk:"parameters"`
 }
 
 type DatadogModel struct {
@@ -1414,7 +1415,8 @@ func clickHouseToModel(src *v1alphaSLO.ClickHouseMetric) *ClickHouseModel {
 		return nil
 	}
 	return &ClickHouseModel{
-		Query: src.Query,
+		Query:      src.Query,
+		Parameters: src.Parameters,
 	}
 }
 
@@ -1429,7 +1431,8 @@ func modelToClickHouse(model *ClickHouseModel) *v1alphaSLO.ClickHouseMetric {
 		return nil
 	}
 	return &v1alphaSLO.ClickHouseMetric{
-		Query: model.Query,
+		Query:      model.Query,
+		Parameters: model.Parameters,
 	}
 }
 

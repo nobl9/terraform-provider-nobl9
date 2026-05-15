@@ -489,6 +489,10 @@ Required:
 
 - `query` (String) Query for the metrics
 
+Optional:
+
+- `parameters` (Map of String) Optional named parameters forwarded to ClickHouse as param_<name> HTTP query parameters.
+
 
 <a id="nestedblock--objective--count_metrics--bad--cloudwatch"></a>
 ### Nested Schema for `objective.count_metrics.bad.cloudwatch`
@@ -906,6 +910,10 @@ Required:
 Required:
 
 - `query` (String) Query for the metrics
+
+Optional:
+
+- `parameters` (Map of String) Optional named parameters forwarded to ClickHouse as param_<name> HTTP query parameters.
 
 
 <a id="nestedblock--objective--count_metrics--good--cloudwatch"></a>
@@ -1325,6 +1333,10 @@ Required:
 
 - `query` (String) Query for the metrics
 
+Optional:
+
+- `parameters` (Map of String) Optional named parameters forwarded to ClickHouse as param_<name> HTTP query parameters.
+
 
 <a id="nestedblock--objective--count_metrics--good_total--cloudwatch"></a>
 ### Nested Schema for `objective.count_metrics.good_total.cloudwatch`
@@ -1742,6 +1754,10 @@ Required:
 Required:
 
 - `query` (String) Query for the metrics
+
+Optional:
+
+- `parameters` (Map of String) Optional named parameters forwarded to ClickHouse as param_<name> HTTP query parameters.
 
 
 <a id="nestedblock--objective--count_metrics--total--cloudwatch"></a>
@@ -2168,6 +2184,10 @@ Required:
 Required:
 
 - `query` (String) Query for the metrics
+
+Optional:
+
+- `parameters` (Map of String) Optional named parameters forwarded to ClickHouse as param_<name> HTTP query parameters.
 
 
 <a id="nestedblock--objective--raw_metric--query--cloudwatch"></a>

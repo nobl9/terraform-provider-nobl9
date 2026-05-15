@@ -532,6 +532,11 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 						Required:    true,
 						Description: "Query for the metrics",
 					},
+					"parameters": schema.MapAttribute{
+						Optional:    true,
+						ElementType: types.StringType,
+						Description: "Optional named parameters forwarded to ClickHouse as param_<name> HTTP query parameters.",
+					},
 				},
 			},
 		},
