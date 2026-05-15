@@ -1327,6 +1327,7 @@ func (s clickHouseDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spe
 func (s clickHouseDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
 	set(d, "url", spec.ClickHouse.URL, &diags)
 	set(d, "database", spec.ClickHouse.Database, &diags)
+	set(d, "username", spec.ClickHouse.Username, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
 }
