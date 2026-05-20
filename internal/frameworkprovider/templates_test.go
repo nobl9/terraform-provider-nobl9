@@ -61,7 +61,7 @@ func typesValueToStringTplFunc(vs valueStringer) string {
 
 func hasFieldTplFunc(name string, v interface{}) bool {
 	rv := reflect.ValueOf(v)
-	if rv.Kind() == reflect.Ptr {
+	if rv.Kind() == reflect.Pointer {
 		rv = rv.Elem()
 	}
 	if rv.Kind() != reflect.Struct {
@@ -72,7 +72,7 @@ func hasFieldTplFunc(name string, v interface{}) bool {
 
 func renderMetricSpecTplFunc(metricSpec interface{}) string {
 	rv := reflect.ValueOf(metricSpec)
-	if rv.Kind() == reflect.Ptr {
+	if rv.Kind() == reflect.Pointer {
 		rv = rv.Elem()
 	}
 	if rv.Kind() != reflect.Struct {
@@ -94,7 +94,7 @@ func renderMetricSpecTplFunc(metricSpec interface{}) string {
 
 func renderMetricTypeFields(blockName string, metricModel interface{}, baseIndent int) string {
 	rv := reflect.ValueOf(metricModel)
-	if rv.Kind() == reflect.Ptr {
+	if rv.Kind() == reflect.Pointer {
 		rv = rv.Elem()
 	}
 	if rv.Kind() != reflect.Struct {

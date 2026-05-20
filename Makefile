@@ -174,7 +174,7 @@ install/yarn:
 ## Install golangci-lint (https://golangci-lint.run).
 install/golangci-lint:
 	echo "Installing golangci-lint..."
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |\
+	curl -sSfL https://golangci-lint.run/install.sh |\
  		sh -s -- -b $(BIN_DIR) $(GOLANGCI_LINT_VERSION)
 
 ## Install gosec (https://github.com/securego/gosec).
