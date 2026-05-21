@@ -197,6 +197,9 @@ func marshalReportFilters(filtersRaw interface{}) *v1alphaReport.Filters {
 }
 
 func unmarshalReportFilters(d *schema.ResourceData, filters *v1alphaReport.Filters) error {
+	if filters == nil {
+		return d.Set("filters", []interface{}{})
+	}
 	services := make([]map[string]interface{}, 0, len(filters.Services))
 	for _, service := range filters.Services {
 		serviceMap := map[string]interface{}{
