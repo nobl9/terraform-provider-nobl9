@@ -13,7 +13,7 @@ import (
 func GetAttributeTypes(structValue any) map[string]attr.Type {
 	val := reflect.ValueOf(structValue)
 	typ := reflect.TypeOf(structValue)
-	if val.Kind() == reflect.Ptr {
+	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
 			val = reflect.New(typ.Elem()).Elem()
 			typ = typ.Elem()
