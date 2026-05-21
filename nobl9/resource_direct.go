@@ -527,7 +527,17 @@ func (s dynatraceDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"dynatrace_token": {
 			Type:        schema.TypeString,
-			Description: "[required] | Dynatrace Token.",
+			Description: "Dynatrace Token used for metric selector queries.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
+		},
+		"platform_token": {
+			Type:        schema.TypeString,
+			Description: "Dynatrace Platform Token used for DQL queries.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
@@ -547,6 +557,7 @@ func (s dynatraceDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec
 		Dynatrace: &v1alphaDirect.DynatraceConfig{
 			URL:            r.Get("url").(string),
 			DynatraceToken: r.Get("dynatrace_token").(string),
+			PlatformToken:  r.Get("platform_token").(string),
 		},
 	}
 }
