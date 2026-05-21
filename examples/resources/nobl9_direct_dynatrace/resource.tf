@@ -4,6 +4,7 @@ resource "nobl9_direct_dynatrace" "test-dynatrace" {
   description            = "desc"
   url                    = "https://web.net"
   dynatrace_token        = "secret"
+  platform_token         = "platform-secret"
   log_collection_enabled = true
   historical_data_retrieval {
     default_duration {

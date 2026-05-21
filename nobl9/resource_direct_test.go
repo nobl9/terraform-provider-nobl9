@@ -54,6 +54,53 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 	}
 }
 
+func TestDynatraceDirectMarshalSpec(t *testing.T) {
+	tests := map[string]struct {
+		resourceData           mockResourceData
+		expectedDynatraceToken string
+		expectedPlatformToken  string
+	}{
+		"dynatrace and platform tokens": {
+			resourceData: mockResourceData{
+				"url":             "https://example.live.dynatrace.com",
+				"dynatrace_token": "dynatrace-secret",
+				"platform_token":  "platform-secret",
+			},
+			expectedDynatraceToken: "dynatrace-secret",
+			expectedPlatformToken:  "platform-secret",
+		},
+		"platform token only": {
+			resourceData: mockResourceData{
+				"url":             "https://example.live.dynatrace.com",
+				"dynatrace_token": "",
+				"platform_token":  "platform-secret",
+			},
+			expectedPlatformToken: "platform-secret",
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			spec := dynatraceDirectSpec{}.MarshalSpec(tc.resourceData)
+
+			if spec.Dynatrace == nil {
+				t.Fatal("expected dynatrace spec")
+			}
+			if spec.Dynatrace.URL != "https://example.live.dynatrace.com" {
+				t.Fatalf("expected dynatrace URL, got %q", spec.Dynatrace.URL)
+			}
+			if spec.Dynatrace.DynatraceToken != tc.expectedDynatraceToken {
+				t.Fatalf("expected dynatrace token %q, got %q",
+					tc.expectedDynatraceToken, spec.Dynatrace.DynatraceToken)
+			}
+			if spec.Dynatrace.PlatformToken != tc.expectedPlatformToken {
+				t.Fatalf("expected platform token %q, got %q",
+					tc.expectedPlatformToken, spec.Dynatrace.PlatformToken)
+			}
+		})
+	}
+}
+
 func testAppDynamicsDirect(directType, name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_direct_%s" "%s" {
@@ -194,6 +241,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   url = "https://web.net"
   dynatrace_token = "secret"
+  platform_token = "platform-secret"
   log_collection_enabled = true
   historical_data_retrieval {
     default_duration  {

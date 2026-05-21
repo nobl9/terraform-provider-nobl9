@@ -232,7 +232,13 @@ type DatadogModel struct {
 }
 
 type DynatraceModel struct {
-	MetricSelector string `tfsdk:"metric_selector"`
+	MetricSelector types.String        `tfsdk:"metric_selector"`
+	DQL            []DynatraceDQLModel `tfsdk:"dql"`
+}
+
+type DynatraceDQLModel struct {
+	Query    string       `tfsdk:"query"`
+	Interval types.String `tfsdk:"interval"`
 }
 
 type ElasticsearchModel struct {
@@ -874,7 +880,7 @@ func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 		spec.Datadog = modelToDatadog(&m.Datadog[0])
 	}
 	if len(m.Dynatrace) > 0 {
-		spec.Dynatrace = modelToDynatrace(&m.Dynatrace[0])
+		spec.Dynatrace = m.Dynatrace[0].ToManifest()
 	}
 	if len(m.Elasticsearch) > 0 {
 		spec.Elasticsearch = modelToElasticsearch(&m.Elasticsearch[0])
@@ -1053,9 +1059,17 @@ func dynatraceToModel(src *v1alphaSLO.DynatraceMetric) *DynatraceModel {
 	if src == nil {
 		return nil
 	}
-	return &DynatraceModel{
-		MetricSelector: *src.MetricSelector,
+	model := &DynatraceModel{}
+	switch src.QueryType() {
+	case v1alphaSLO.DynatraceMetricQueryTypeMetricSelector:
+		model.MetricSelector = types.StringPointerValue(src.MetricSelector)
+	case v1alphaSLO.DynatraceMetricQueryTypeDQL:
+		model.DQL = []DynatraceDQLModel{{
+			Query:    src.DQL.Query,
+			Interval: stringValue(src.DQL.Interval),
+		}}
 	}
+	return model
 }
 
 func elasticsearchToModel(src *v1alphaSLO.ElasticsearchMetric) *ElasticsearchModel {
@@ -1418,13 +1432,21 @@ func modelToDatadog(model *DatadogModel) *v1alphaSLO.DatadogMetric {
 	}
 }
 
-func modelToDynatrace(model *DynatraceModel) *v1alphaSLO.DynatraceMetric {
-	if model == nil {
+func (m *DynatraceModel) ToManifest() *v1alphaSLO.DynatraceMetric {
+	if m == nil {
 		return nil
 	}
-	return &v1alphaSLO.DynatraceMetric{
-		MetricSelector: &model.MetricSelector,
+	metric := &v1alphaSLO.DynatraceMetric{
+		MetricSelector: m.MetricSelector.ValueStringPointer(),
 	}
+	if len(m.DQL) > 0 {
+		dql := m.DQL[0]
+		metric.DQL = &v1alphaSLO.DynatraceDQL{
+			Query:    dql.Query,
+			Interval: dql.Interval.ValueString(),
+		}
+	}
+	return metric
 }
 
 func modelToElasticsearch(model *ElasticsearchModel) *v1alphaSLO.ElasticsearchMetric {
