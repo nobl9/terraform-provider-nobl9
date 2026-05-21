@@ -3,10 +3,13 @@ package nobl9
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alpha "github.com/nobl9/nobl9-go/manifest/v1alpha"
@@ -610,7 +613,8 @@ func (r reportReliabilityRollup) GetSchema() map[string]*schema.Schema {
 				"Shape: a list of folders, each with `displayName`, optional `children` (same shape), " +
 				"and optional `slos` (each `{name, project, displayName}`). " +
 				"When omitted, the report uses the auto-generated structure derived from `filters`.",
-			ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsJSON),
+			ValidateDiagFunc: validateCustomHierarchy,
+			DiffSuppressFunc: structure.SuppressJsonDiff,
 		},
 	}
 }
@@ -716,8 +720,31 @@ func marshalCustomHierarchy(folders []v1alphaReport.HierarchyFolder) string {
 
 func unmarshalCustomHierarchy(raw string) []v1alphaReport.HierarchyFolder {
 	var folders []v1alphaReport.HierarchyFolder
-	if err := json.Unmarshal([]byte(raw), &folders); err != nil {
+	_ = json.Unmarshal([]byte(raw), &folders)
+	return folders
+}
+
+func validateCustomHierarchy(v interface{}, path cty.Path) diag.Diagnostics {
+	raw, ok := v.(string)
+	if !ok {
+		return diag.Diagnostics{{
+			Severity:      diag.Error,
+			Summary:       "Invalid type",
+			Detail:        fmt.Sprintf("Expected string value got: %T", v),
+			AttributePath: path,
+		}}
+	}
+	if raw == "" {
 		return nil
 	}
-	return folders
+	var folders []v1alphaReport.HierarchyFolder
+	if err := json.Unmarshal([]byte(raw), &folders); err != nil {
+		return diag.Diagnostics{{
+			Severity:      diag.Error,
+			Summary:       "Invalid custom_hierarchy",
+			Detail:        fmt.Sprintf("custom_hierarchy must be a JSON array of hierarchy folders: %s", err),
+			AttributePath: path,
+		}}
+	}
+	return nil
 }
