@@ -615,6 +615,7 @@ func (r reportReliabilityRollup) GetSchema() map[string]*schema.Schema {
 				"The Terraform SDK does not support recursive schemas, so the hierarchy is passed verbatim. " +
 				"Shape: a list of folders, each with `displayName`, optional `children` (same shape), " +
 				"and optional `slos` (each `{name, project, displayName}`). " +
+				"Each hierarchy level can contain up to 8 nodes. " +
 				"When omitted, the report uses the auto-generated structure derived from `filters`.",
 			ValidateDiagFunc: validateCustomHierarchy,
 			DiffSuppressFunc: structure.SuppressJsonDiff,
