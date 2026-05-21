@@ -17,9 +17,9 @@ Custom hierarchy can contain up to 8 nodes at each hierarchy level.
 Here's an example of Reliability Roll-up Report resource configuration:
 
 ```terraform
-resource "nobl9_report_reliability_rollup" "calendar_current_month" {
-  name         = "my-rrr-current-month"
-  display_name = "My Reliability Roll-up - Current Month"
+resource "nobl9_report_reliability_rollup" "calendar_last_month" {
+  name         = "my-rrr-last-month"
+  display_name = "My Reliability Roll-up - Last Month"
 
   filters {
     service {
