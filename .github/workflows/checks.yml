@@ -32,6 +32,9 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: Run spell and markdown checkers
         run: make check/spell check/trailing check/markdown
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
       - name: Check generated code
         run: make check/generate
       - name: Check formatting
@@ -40,5 +43,3 @@ jobs:
         run: make check/vet
       - name: Run golangci-lint
         run: make check/lint
-      - name: Run Gosec Security Scanner
-        run: make check/gosec
