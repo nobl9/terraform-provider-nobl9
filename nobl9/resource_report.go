@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alpha "github.com/nobl9/nobl9-go/manifest/v1alpha"
@@ -618,7 +618,7 @@ func (r reportReliabilityRollup) GetSchema() map[string]*schema.Schema {
 				"Each hierarchy level can contain up to 8 nodes. " +
 				"When omitted, the report uses the auto-generated structure derived from `filters`.",
 			ValidateDiagFunc: validateCustomHierarchy,
-			DiffSuppressFunc: structure.SuppressJsonDiff,
+			DiffSuppressFunc: suppressCustomHierarchyDiff,
 		},
 	}
 }
@@ -726,6 +726,20 @@ func unmarshalCustomHierarchy(raw string) []v1alphaReport.HierarchyFolder {
 	var folders []v1alphaReport.HierarchyFolder
 	_ = json.Unmarshal([]byte(raw), &folders)
 	return folders
+}
+
+func suppressCustomHierarchyDiff(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+	if oldValue == newValue {
+		return true
+	}
+	var oldVal, newVal interface{}
+	if err := json.Unmarshal([]byte(oldValue), &oldVal); err != nil {
+		return false
+	}
+	if err := json.Unmarshal([]byte(newValue), &newVal); err != nil {
+		return false
+	}
+	return reflect.DeepEqual(oldVal, newVal)
 }
 
 func validateCustomHierarchy(v interface{}, path cty.Path) diag.Diagnostics {
