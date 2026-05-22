@@ -57,24 +57,31 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 func TestDynatraceDirectMarshalSpec(t *testing.T) {
 	tests := map[string]struct {
 		resourceData           mockResourceData
+		expectedURL            string
+		expectedPlatformURL    string
 		expectedDynatraceToken string
 		expectedPlatformToken  string
 	}{
 		"dynatrace and platform tokens": {
 			resourceData: mockResourceData{
 				"url":             "https://example.live.dynatrace.com",
+				"platform_url":    "https://example.apps.dynatrace.com",
 				"dynatrace_token": "dynatrace-secret",
 				"platform_token":  "platform-secret",
 			},
+			expectedURL:            "https://example.live.dynatrace.com",
+			expectedPlatformURL:    "https://example.apps.dynatrace.com",
 			expectedDynatraceToken: "dynatrace-secret",
 			expectedPlatformToken:  "platform-secret",
 		},
 		"platform token only": {
 			resourceData: mockResourceData{
-				"url":             "https://example.live.dynatrace.com",
+				"url":             "",
+				"platform_url":    "https://example.apps.dynatrace.com",
 				"dynatrace_token": "",
 				"platform_token":  "platform-secret",
 			},
+			expectedPlatformURL:   "https://example.apps.dynatrace.com",
 			expectedPlatformToken: "platform-secret",
 		},
 	}
@@ -86,8 +93,11 @@ func TestDynatraceDirectMarshalSpec(t *testing.T) {
 			if spec.Dynatrace == nil {
 				t.Fatal("expected dynatrace spec")
 			}
-			if spec.Dynatrace.URL != "https://example.live.dynatrace.com" {
-				t.Fatalf("expected dynatrace URL, got %q", spec.Dynatrace.URL)
+			if spec.Dynatrace.URL != tc.expectedURL {
+				t.Fatalf("expected dynatrace URL %q, got %q", tc.expectedURL, spec.Dynatrace.URL)
+			}
+			if spec.Dynatrace.PlatformURL != tc.expectedPlatformURL {
+				t.Fatalf("expected platform URL %q, got %q", tc.expectedPlatformURL, spec.Dynatrace.PlatformURL)
 			}
 			if spec.Dynatrace.DynatraceToken != tc.expectedDynatraceToken {
 				t.Fatalf("expected dynatrace token %q, got %q",
@@ -240,6 +250,7 @@ resource "nobl9_direct_%s" "%s" {
   project = "%s"
   description = "desc"
   url = "https://web.net"
+  platform_url = "https://web.apps.dynatrace.com"
   dynatrace_token = "secret"
   platform_token = "platform-secret"
   log_collection_enabled = true
