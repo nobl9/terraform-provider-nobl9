@@ -751,13 +751,23 @@ Required:
 
 Required:
 
-- `query` (String) Query for the metrics
 - `type` (String) Sumologic source - metrics or logs
 
 Optional:
 
 - `quantization` (String) Period of data aggregation
+- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query (see [below for nested schema](#nestedblock--objective--count_metrics--bad--sumologic--queries))
+- `query` (String, Deprecated) Query for the metrics. Deprecated: use the 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
+
+<a id="nestedblock--objective--count_metrics--bad--sumologic--queries"></a>
+### Nested Schema for `objective.count_metrics.bad.sumologic.queries`
+
+Required:
+
+- `query` (String) The Sumo Logic query. Subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective.
+- `row_id` (String) Query identifier, single uppercase letter A-F.
+
 
 
 <a id="nestedblock--objective--count_metrics--bad--thousandeyes"></a>
@@ -1150,13 +1160,23 @@ Required:
 
 Required:
 
-- `query` (String) Query for the metrics
 - `type` (String) Sumologic source - metrics or logs
 
 Optional:
 
 - `quantization` (String) Period of data aggregation
+- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query (see [below for nested schema](#nestedblock--objective--count_metrics--good--sumologic--queries))
+- `query` (String, Deprecated) Query for the metrics. Deprecated: use the 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
+
+<a id="nestedblock--objective--count_metrics--good--sumologic--queries"></a>
+### Nested Schema for `objective.count_metrics.good.sumologic.queries`
+
+Required:
+
+- `query` (String) The Sumo Logic query. Subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective.
+- `row_id` (String) Query identifier, single uppercase letter A-F.
+
 
 
 <a id="nestedblock--objective--count_metrics--good--thousandeyes"></a>
@@ -1549,13 +1569,23 @@ Required:
 
 Required:
 
-- `query` (String) Query for the metrics
 - `type` (String) Sumologic source - metrics or logs
 
 Optional:
 
 - `quantization` (String) Period of data aggregation
+- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--sumologic--queries))
+- `query` (String, Deprecated) Query for the metrics. Deprecated: use the 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
+
+<a id="nestedblock--objective--count_metrics--good_total--sumologic--queries"></a>
+### Nested Schema for `objective.count_metrics.good_total.sumologic.queries`
+
+Required:
+
+- `query` (String) The Sumo Logic query. Subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective.
+- `row_id` (String) Query identifier, single uppercase letter A-F.
+
 
 
 <a id="nestedblock--objective--count_metrics--good_total--thousandeyes"></a>
@@ -1948,13 +1978,23 @@ Required:
 
 Required:
 
-- `query` (String) Query for the metrics
 - `type` (String) Sumologic source - metrics or logs
 
 Optional:
 
 - `quantization` (String) Period of data aggregation
+- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query (see [below for nested schema](#nestedblock--objective--count_metrics--total--sumologic--queries))
+- `query` (String, Deprecated) Query for the metrics. Deprecated: use the 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
+
+<a id="nestedblock--objective--count_metrics--total--sumologic--queries"></a>
+### Nested Schema for `objective.count_metrics.total.sumologic.queries`
+
+Required:
+
+- `query` (String) The Sumo Logic query. Subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective.
+- `row_id` (String) Query identifier, single uppercase letter A-F.
+
 
 
 <a id="nestedblock--objective--count_metrics--total--thousandeyes"></a>
@@ -2355,13 +2395,23 @@ Required:
 
 Required:
 
-- `query` (String) Query for the metrics
 - `type` (String) Sumologic source - metrics or logs
 
 Optional:
 
 - `quantization` (String) Period of data aggregation
+- `queries` (Block List) ABC pattern-based query configuration. Specify individual queries in letter-labeled rows (A-F), where subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective. Up to six queries per SLI, including the resulting formula query (see [below for nested schema](#nestedblock--objective--raw_metric--query--sumologic--queries))
+- `query` (String, Deprecated) Query for the metrics. Deprecated: use the 'queries' block instead.
 - `rollup` (String) Aggregation function - avg, sum, min, max, count, none
+
+<a id="nestedblock--objective--raw_metric--query--sumologic--queries"></a>
+### Nested Schema for `objective.raw_metric.query.sumologic.queries`
+
+Required:
+
+- `query` (String) The Sumo Logic query. Subsequent queries can reference previous queries (e.g., Query #C can reference Query #A and Query #B). The final query defines the SLI for this objective.
+- `row_id` (String) Query identifier, single uppercase letter A-F.
+
 
 
 <a id="nestedblock--objective--raw_metric--query--thousandeyes"></a>

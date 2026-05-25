@@ -17,16 +17,10 @@ LDFLAGS += -s -w \
 	-X $(VERSION_PKG).BuildGitRevision=$(REVISION)
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 
-# renovate datasource=github-releases depName=securego/gosec
-GOSEC_VERSION := v2.25.0
 # renovate datasource=github-releases depName=golangci/golangci-lint
-GOLANGCI_LINT_VERSION := v2.11.3
+GOLANGCI_LINT_VERSION := v2.12.2
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
-GOVULNCHECK_VERSION := v1.1.4
-# renovate datasource=go depName=golang.org/x/tools/cmd/goimports
-GOIMPORTS_VERSION := v0.41.0
-# renovate datasource=github-releases depName=segmentio/golines
-GOLINES_VERSION := v0.13.0
+GOVULNCHECK_VERSION := v1.3.0
 
 # Check if the program is present in $PATH and install otherwise.
 # ${1} - oneOf{binary,yarn}
@@ -86,9 +80,9 @@ release-dry-run:
 	$(call _print_step,Running Goreleaser in dry run mode)
 	goreleaser release --snapshot --skip-publish --clean
 
-.PHONY: check check/vet check/lint check/gosec check/spell check/trailing check/markdown check/format check/generate check/vulns
+.PHONY: check check/vet check/lint check/spell check/trailing check/markdown check/format check/generate check/vulns
 ## Run all checks.
-check: check/vet check/lint check/gosec check/spell check/trailing check/markdown check/format check/generate check/vulns
+check: check/vet check/lint check/spell check/trailing check/markdown check/format check/generate check/vulns
 
 ## Run 'go vet' on the whole project.
 check/vet:
@@ -100,12 +94,6 @@ check/lint:
 	$(call _print_step,Running golangci-lint)
 	$(call _ensure_installed,binary,golangci-lint)
 	$(BIN_DIR)/golangci-lint run
-
-## Check for security problems using gosec, which inspects the Go code by scanning the AST.
-check/gosec:
-	$(call _print_step,Running gosec)
-	$(call _ensure_installed,binary,gosec)
-	$(BIN_DIR)/gosec -exclude-generated -quiet ./...
 
 ## Check spelling, rules are defined in cspell.json.
 check/spell:
@@ -157,11 +145,8 @@ format: format/go format/cspell
 ## Format Go files.
 format/go:
 	echo "Formatting Go files..."
-	$(call _ensure_installed,binary,goimports)
-	$(call _ensure_installed,binary,golines)
-	gofmt -w -l -s .
-	$(BIN_DIR)/goimports -local=github.com/nobl9/terraform-provider-nobl9 -w .
-	$(BIN_DIR)/golines --ignore-generated -m 120 -w .
+	$(call _ensure_installed,binary,golangci-lint)
+	$(BIN_DIR)/golangci-lint fmt
 
 ## Format cspell config file.
 format/cspell:
@@ -169,9 +154,9 @@ format/cspell:
 	$(call _ensure_installed,yarn,yaml)
 	yarn --silent format-cspell-config
 
-.PHONY: install install/yarn install/golangci-lint install/gosec install/govulncheck install/goimports
+.PHONY: install install/yarn install/golangci-lint install/govulncheck
 ## Install all dev dependencies.
-install: install/yarn install/golangci-lint install/gosec install/govulncheck install/goimports
+install: install/yarn install/golangci-lint install/govulncheck
 
 ## Install JS dependencies with yarn.
 install/yarn:
@@ -181,29 +166,13 @@ install/yarn:
 ## Install golangci-lint (https://golangci-lint.run).
 install/golangci-lint:
 	echo "Installing golangci-lint..."
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh |\
+	curl -sSfL https://golangci-lint.run/install.sh |\
  		sh -s -- -b $(BIN_DIR) $(GOLANGCI_LINT_VERSION)
-
-## Install gosec (https://github.com/securego/gosec).
-install/gosec:
-	echo "Installing gosec..."
-	curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh |\
- 		sh -s -- -b $(BIN_DIR) $(GOSEC_VERSION)
 
 ## Install govulncheck (https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck).
 install/govulncheck:
 	echo "Installing govulncheck..."
 	$(call _install_go_binary,golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION))
-
-## Install goimports (https://pkg.go.dev/golang.org/x/tools/cmd/goimports).
-install/goimports:
-	echo "Installing goimports..."
-	$(call _install_go_binary,golang.org/x/tools/cmd/goimports@$(GOIMPORTS_VERSION))
-
-## Install golines (https://github.com/segmentio/golines).
-install/golines:
-	echo "Installing golines..."
-	$(call _install_go_binary,github.com/segmentio/golines@$(GOLINES_VERSION))
 
 .PHONY: help
 ## Print this help message.

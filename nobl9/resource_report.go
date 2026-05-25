@@ -2,8 +2,12 @@ package nobl9
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"reflect"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -193,6 +197,9 @@ func marshalReportFilters(filtersRaw interface{}) *v1alphaReport.Filters {
 }
 
 func unmarshalReportFilters(d *schema.ResourceData, filters *v1alphaReport.Filters) error {
+	if filters == nil {
+		return d.Set("filters", []interface{}{})
+	}
 	services := make([]map[string]interface{}, 0, len(filters.Services))
 	for _, service := range filters.Services {
 		serviceMap := map[string]interface{}{
@@ -550,4 +557,212 @@ func unmarshalReportThresholds(d *schema.ResourceData, thresholds v1alphaReport.
 			"show_no_data": thresholds.ShowNoData,
 		},
 	}))
+}
+
+type reportReliabilityRollup struct{}
+
+func (r reportReliabilityRollup) GetDescription() string {
+	return "[Reliability Roll-up Report | Nobl9 Documentation](https://docs.nobl9.com/reports/reliability-rollup)"
+}
+
+func (r reportReliabilityRollup) GetSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"time_frame": {
+			Type:     schema.TypeSet,
+			Required: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"time_zone": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Timezone name in IANA Time Zone Database.",
+					},
+					"rolling": {
+						Type:        schema.TypeSet,
+						Optional:    true,
+						MaxItems:    1,
+						Description: "Rolling time frame. Mutually exclusive with calendar.",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"unit":  {Type: schema.TypeString, Required: true, Description: "Repeat unit (e.g. Day, Week, Month, Year)."},
+								"count": {Type: schema.TypeInt, Required: true, Description: "Number of units in the rolling window."},
+							},
+						},
+					},
+					"calendar": {
+						Type:        schema.TypeSet,
+						Optional:    true,
+						MaxItems:    1,
+						Description: "Calendar time frame. Mutually exclusive with rolling.",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"from":  {Type: schema.TypeString, Optional: true, Description: "Start of the calendar window in RFC3339."},
+								"to":    {Type: schema.TypeString, Optional: true, Description: "End of the calendar window in RFC3339."},
+								"unit":  {Type: schema.TypeString, Optional: true, Description: "Repeat unit; required when count is set."},
+								"count": {Type: schema.TypeInt, Optional: true, Description: "Repetition count; required when unit is set."},
+							},
+						},
+					},
+				},
+			},
+		},
+		"custom_hierarchy": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "Custom hierarchy of folders and SLOs encoded as a JSON string. " +
+				"The Terraform SDK does not support recursive schemas, so the hierarchy is passed verbatim. " +
+				"Shape: a list of folders, each with `displayName`, optional `children` (same shape), " +
+				"and optional `slos` (each `{name, project, displayName}`). " +
+				"Each hierarchy level can contain up to 8 nodes. " +
+				"When omitted, the report uses the auto-generated structure derived from `filters`.",
+			ValidateDiagFunc: validateCustomHierarchy,
+			DiffSuppressFunc: suppressCustomHierarchyDiff,
+		},
+	}
+}
+
+func (r reportReliabilityRollup) MarshalSpec(spec v1alphaReport.Spec, ri resourceInterface) v1alphaReport.Spec {
+	cfg := &v1alphaReport.ReliabilityRollupConfig{
+		TimeFrame: marshalReliabilityRollupTimeFrame(ri.Get("time_frame").(*schema.Set)),
+	}
+	if raw, ok := ri.Get("custom_hierarchy").(string); ok && raw != "" {
+		cfg.CustomHierarchy = unmarshalCustomHierarchy(raw)
+	}
+	spec.ReliabilityRollup = cfg
+	return spec
+}
+
+func (r reportReliabilityRollup) UnmarshalSpec(d *schema.ResourceData, spec v1alphaReport.Spec) diag.Diagnostics {
+	config := spec.ReliabilityRollup
+	var diags diag.Diagnostics
+	if config == nil {
+		return diags
+	}
+	diags = appendError(diags, unmarshalReliabilityRollupTimeFrame(d, config.TimeFrame))
+	diags = appendError(diags, d.Set("custom_hierarchy", marshalCustomHierarchy(config.CustomHierarchy)))
+	return diags
+}
+
+func marshalReliabilityRollupTimeFrame(timeFrameSet *schema.Set) v1alphaReport.ReliabilityRollupTimeFrame {
+	if timeFrameSet.Len() == 0 {
+		return v1alphaReport.ReliabilityRollupTimeFrame{}
+	}
+	tf := timeFrameSet.List()[0].(map[string]interface{})
+	out := v1alphaReport.ReliabilityRollupTimeFrame{
+		TimeZone: tf["time_zone"].(string),
+	}
+	if rolling := tf["rolling"].(*schema.Set); rolling.Len() > 0 {
+		r := rolling.List()[0].(map[string]interface{})
+		unit := r["unit"].(string)
+		count := r["count"].(int)
+		out.Rolling = &v1alphaReport.RollingTimeFrame{Repeat: v1alphaReport.Repeat{Unit: &unit, Count: &count}}
+	}
+	if calendar := tf["calendar"].(*schema.Set); calendar.Len() > 0 {
+		c := calendar.List()[0].(map[string]interface{})
+		out.Calendar = &v1alphaReport.CalendarTimeFrame{}
+		if from, ok := c["from"].(string); ok && from != "" {
+			out.Calendar.From = &from
+		}
+		if to, ok := c["to"].(string); ok && to != "" {
+			out.Calendar.To = &to
+		}
+		if unit, ok := c["unit"].(string); ok && unit != "" {
+			out.Calendar.Unit = &unit
+		}
+		if count, ok := c["count"].(int); ok && count != 0 {
+			out.Calendar.Count = &count
+		}
+	}
+	return out
+}
+
+func unmarshalReliabilityRollupTimeFrame(d *schema.ResourceData, tf v1alphaReport.ReliabilityRollupTimeFrame) error {
+	out := map[string]interface{}{
+		"time_zone": tf.TimeZone,
+	}
+	if tf.Rolling != nil {
+		rolling := map[string]interface{}{}
+		if tf.Rolling.Unit != nil {
+			rolling["unit"] = *tf.Rolling.Unit
+		}
+		if tf.Rolling.Count != nil {
+			rolling["count"] = *tf.Rolling.Count
+		}
+		out["rolling"] = schema.NewSet(oneElementSet, []interface{}{rolling})
+	}
+	if tf.Calendar != nil {
+		calendar := map[string]interface{}{}
+		if tf.Calendar.From != nil {
+			calendar["from"] = *tf.Calendar.From
+		}
+		if tf.Calendar.To != nil {
+			calendar["to"] = *tf.Calendar.To
+		}
+		if tf.Calendar.Unit != nil {
+			calendar["unit"] = *tf.Calendar.Unit
+		}
+		if tf.Calendar.Count != nil {
+			calendar["count"] = *tf.Calendar.Count
+		}
+		out["calendar"] = schema.NewSet(oneElementSet, []interface{}{calendar})
+	}
+	return d.Set("time_frame", schema.NewSet(oneElementSet, []interface{}{out}))
+}
+
+func marshalCustomHierarchy(folders []v1alphaReport.HierarchyFolder) string {
+	if len(folders) == 0 {
+		return ""
+	}
+	b, err := json.Marshal(folders)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func unmarshalCustomHierarchy(raw string) []v1alphaReport.HierarchyFolder {
+	var folders []v1alphaReport.HierarchyFolder
+	_ = json.Unmarshal([]byte(raw), &folders)
+	return folders
+}
+
+func suppressCustomHierarchyDiff(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+	if oldValue == newValue {
+		return true
+	}
+	var oldVal, newVal interface{}
+	if err := json.Unmarshal([]byte(oldValue), &oldVal); err != nil {
+		return false
+	}
+	if err := json.Unmarshal([]byte(newValue), &newVal); err != nil {
+		return false
+	}
+	return reflect.DeepEqual(oldVal, newVal)
+}
+
+func validateCustomHierarchy(v interface{}, path cty.Path) diag.Diagnostics {
+	raw, ok := v.(string)
+	if !ok {
+		return diag.Diagnostics{{
+			Severity:      diag.Error,
+			Summary:       "Invalid type",
+			Detail:        fmt.Sprintf("Expected string value got: %T", v),
+			AttributePath: path,
+		}}
+	}
+	if raw == "" {
+		return nil
+	}
+	var folders []v1alphaReport.HierarchyFolder
+	if err := json.Unmarshal([]byte(raw), &folders); err != nil {
+		return diag.Diagnostics{{
+			Severity:      diag.Error,
+			Summary:       "Invalid custom_hierarchy",
+			Detail:        fmt.Sprintf("custom_hierarchy must be a JSON array of hierarchy folders: %s", err),
+			AttributePath: path,
+		}}
+	}
+	return nil
 }
