@@ -464,6 +464,16 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   realm = "eu"
   access_token = "secret"
+  historical_data_retrieval {
+    default_duration  {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 10
+    }
+  }
   release_channel = "alpha"
   query_delay {
     unit = "Minute"
