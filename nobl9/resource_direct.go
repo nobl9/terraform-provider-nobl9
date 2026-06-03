@@ -1296,7 +1296,6 @@ func (s clickHouseDirectSpec) GetSchema() map[string]*schema.Schema {
 			Description: "[required] | ClickHouse username.",
 			Optional:    true,
 			Computed:    true,
-			Sensitive:   true,
 			ValidateDiagFunc: validation.ToDiagFunc(
 				validation.StringIsNotEmpty,
 			),
