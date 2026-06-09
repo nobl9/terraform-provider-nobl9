@@ -880,7 +880,7 @@ func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 		spec.Datadog = modelToDatadog(&m.Datadog[0])
 	}
 	if len(m.Dynatrace) > 0 {
-		spec.Dynatrace = m.Dynatrace[0].ToManifest()
+		spec.Dynatrace = modelToDynatrace(&m.Dynatrace[0])
 	}
 	if len(m.Elasticsearch) > 0 {
 		spec.Elasticsearch = modelToElasticsearch(&m.Elasticsearch[0])
@@ -1432,15 +1432,15 @@ func modelToDatadog(model *DatadogModel) *v1alphaSLO.DatadogMetric {
 	}
 }
 
-func (m *DynatraceModel) ToManifest() *v1alphaSLO.DynatraceMetric {
-	if m == nil {
+func modelToDynatrace(model *DynatraceModel) *v1alphaSLO.DynatraceMetric {
+	if model == nil {
 		return nil
 	}
 	metric := &v1alphaSLO.DynatraceMetric{
-		MetricSelector: m.MetricSelector.ValueStringPointer(),
+		MetricSelector: model.MetricSelector.ValueStringPointer(),
 	}
-	if len(m.DQL) > 0 {
-		dql := m.DQL[0]
+	if len(model.DQL) > 0 {
+		dql := model.DQL[0]
 		metric.DQL = &v1alphaSLO.DynatraceDQL{
 			Query:    dql.Query,
 			Interval: dql.Interval.ValueString(),
