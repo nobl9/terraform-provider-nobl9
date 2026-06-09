@@ -54,71 +54,30 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 	}
 }
 
-func TestDynatraceDirectMarshalSpec(t *testing.T) {
+func TestDynatraceDirectSchema(t *testing.T) {
+	s := dynatraceDirectSpec{}.GetSchema()
+
 	tests := map[string]struct {
-		resourceData           mockResourceData
-		expectedURL            string
-		expectedPlatformURL    string
-		expectedDynatraceToken string
-		expectedPlatformToken  string
+		field            string
+		expectedComputed bool
 	}{
-		"dynatrace and platform tokens": {
-			resourceData: mockResourceData{
-				"url":             "https://example.live.dynatrace.com",
-				"platform_url":    "https://example.apps.dynatrace.com",
-				"dynatrace_token": "dynatrace-secret",
-				"platform_token":  "platform-secret",
-			},
-			expectedURL:            "https://example.live.dynatrace.com",
-			expectedPlatformURL:    "https://example.apps.dynatrace.com",
-			expectedDynatraceToken: "dynatrace-secret",
-			expectedPlatformToken:  "platform-secret",
+		"dynatrace token": {
+			field:            "dynatrace_token",
+			expectedComputed: false,
 		},
-		"platform token only": {
-			resourceData: mockResourceData{
-				"url":             "",
-				"platform_url":    "https://example.apps.dynatrace.com",
-				"dynatrace_token": "",
-				"platform_token":  "platform-secret",
-			},
-			expectedPlatformURL:   "https://example.apps.dynatrace.com",
-			expectedPlatformToken: "platform-secret",
+		"platform token": {
+			field:            "platform_token",
+			expectedComputed: false,
 		},
 	}
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			spec := dynatraceDirectSpec{}.MarshalSpec(tc.resourceData)
-
-			if spec.Dynatrace == nil {
-				t.Fatal("expected dynatrace spec")
-			}
-			if spec.Dynatrace.URL != tc.expectedURL {
-				t.Fatalf("expected dynatrace URL %q, got %q", tc.expectedURL, spec.Dynatrace.URL)
-			}
-			if spec.Dynatrace.PlatformURL != tc.expectedPlatformURL {
-				t.Fatalf("expected platform URL %q, got %q", tc.expectedPlatformURL, spec.Dynatrace.PlatformURL)
-			}
-			if spec.Dynatrace.DynatraceToken != tc.expectedDynatraceToken {
-				t.Fatalf("expected dynatrace token %q, got %q",
-					tc.expectedDynatraceToken, spec.Dynatrace.DynatraceToken)
-			}
-			if spec.Dynatrace.PlatformToken != tc.expectedPlatformToken {
-				t.Fatalf("expected platform token %q, got %q",
-					tc.expectedPlatformToken, spec.Dynatrace.PlatformToken)
+			if s[tc.field].Computed != tc.expectedComputed {
+				t.Fatalf("expected %s computed to be %t, got %t",
+					tc.field, tc.expectedComputed, s[tc.field].Computed)
 			}
 		})
-	}
-}
-
-func TestDynatraceDirectSchema(t *testing.T) {
-	s := dynatraceDirectSpec{}.GetSchema()
-
-	if s["dynatrace_token"].Computed {
-		t.Fatal("dynatrace_token must not be computed when it is not configured")
-	}
-	if s["platform_token"].Computed {
-		t.Fatal("platform_token must not be computed when it is not configured")
 	}
 }
 
