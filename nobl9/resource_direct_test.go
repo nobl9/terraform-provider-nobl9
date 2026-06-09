@@ -111,6 +111,17 @@ func TestDynatraceDirectMarshalSpec(t *testing.T) {
 	}
 }
 
+func TestDynatraceDirectSchema(t *testing.T) {
+	s := dynatraceDirectSpec{}.GetSchema()
+
+	if s["dynatrace_token"].Computed {
+		t.Fatal("dynatrace_token must not be computed when it is not configured")
+	}
+	if s["platform_token"].Computed {
+		t.Fatal("platform_token must not be computed when it is not configured")
+	}
+}
+
 func testAppDynamicsDirect(directType, name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_direct_%s" "%s" {

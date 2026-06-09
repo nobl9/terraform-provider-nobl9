@@ -534,7 +534,6 @@ func (s dynatraceDirectSpec) GetSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Description: "Dynatrace Token used for metric selector queries.",
 			Optional:    true,
-			Computed:    true,
 			Sensitive:   true,
 			ValidateDiagFunc: validation.ToDiagFunc(
 				validation.StringIsNotEmpty,
@@ -544,7 +543,6 @@ func (s dynatraceDirectSpec) GetSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Description: "Dynatrace Platform Token used for DQL queries.",
 			Optional:    true,
-			Computed:    true,
 			Sensitive:   true,
 			ValidateDiagFunc: validation.ToDiagFunc(
 				validation.StringIsNotEmpty,
