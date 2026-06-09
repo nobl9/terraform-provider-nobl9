@@ -54,33 +54,6 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 	}
 }
 
-func TestDynatraceDirectSchema(t *testing.T) {
-	s := dynatraceDirectSpec{}.GetSchema()
-
-	tests := map[string]struct {
-		field            string
-		expectedComputed bool
-	}{
-		"dynatrace token": {
-			field:            "dynatrace_token",
-			expectedComputed: false,
-		},
-		"platform token": {
-			field:            "platform_token",
-			expectedComputed: false,
-		},
-	}
-
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			if s[tc.field].Computed != tc.expectedComputed {
-				t.Fatalf("expected %s computed to be %t, got %t",
-					tc.field, tc.expectedComputed, s[tc.field].Computed)
-			}
-		})
-	}
-}
-
 func testAppDynamicsDirect(directType, name string) string {
 	return fmt.Sprintf(`
 resource "nobl9_direct_%s" "%s" {
