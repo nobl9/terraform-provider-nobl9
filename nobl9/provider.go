@@ -116,6 +116,7 @@ func Provider() *schema.Provider {
 			"nobl9_role_binding":                            resourceRoleBinding(),
 			"nobl9_budget_adjustment":                       budgetAdjustment(),
 			"nobl9_report_system_health_review":             resourceReportFactory(reportSystemHealthReview{}),
+			"nobl9_report_reliability_rollup":               resourceReportFactory(reportReliabilityRollup{}),
 		},
 
 		ConfigureContextFunc: func(_ context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
