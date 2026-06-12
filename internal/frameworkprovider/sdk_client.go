@@ -31,7 +31,6 @@ type sdkClient struct {
 }
 
 // newSDKClient creates new [sdk.Client] based on the [ProviderModel].
-// [ProviderModel] should be first validated with [ProviderModel] before being passed to this function.
 func newSDKClient(provider ProviderModel) (*sdkClient, diag.Diagnostics) {
 	options := []sdk.ConfigOption{
 		sdk.ConfigOptionWithCredentials(provider.ClientID.ValueString(), provider.ClientSecret.ValueString()),
@@ -43,6 +42,9 @@ func newSDKClient(provider ProviderModel) (*sdkClient, diag.Diagnostics) {
 	sdkConfig, err := sdk.ReadConfig(options...)
 	if err != nil {
 		return nil, diag.Diagnostics{diag.NewErrorDiagnostic("failed to read Nobl9 SDK configuration", err.Error())}
+	}
+	if diags := validateResolvedCredentials(sdkConfig); diags.HasError() {
+		return nil, diags
 	}
 	if ingestURL := provider.IngestURL.ValueString(); ingestURL != "" {
 		sdkConfig.URL, err = url.Parse(ingestURL)
@@ -79,6 +81,36 @@ func newSDKClient(provider ProviderModel) (*sdkClient, diag.Diagnostics) {
 	}
 	setClientUserAgent(client)
 	return &sdkClient{client: client}, nil
+}
+
+func validateResolvedCredentials(config *sdk.Config) diag.Diagnostics {
+	if config.AccessToken != "" || config.DisableOkta {
+		return nil
+	}
+	if config.ClientID == "" && config.ClientSecret == "" {
+		return diag.Diagnostics{diag.NewErrorDiagnostic(
+			"missing Nobl9 client credentials",
+			"Both client_id and client_secret must be provided through provider configuration, "+
+				"environment variables, or Nobl9 configuration file.",
+		)}
+	}
+	if config.ClientID == "" {
+		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(
+			path.Root("client_id"),
+			"missing Nobl9 client ID",
+			"client_id must be provided together with client_secret through provider configuration, "+
+				"environment variables, or Nobl9 configuration file.",
+		)}
+	}
+	if config.ClientSecret == "" {
+		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(
+			path.Root("client_secret"),
+			"missing Nobl9 client secret",
+			"client_secret must be provided together with client_id through provider configuration, "+
+				"environment variables, or Nobl9 configuration file.",
+		)}
+	}
+	return nil
 }
 
 func (s sdkClient) ApplyObject(ctx context.Context, obj manifest.Object) diag.Diagnostics {

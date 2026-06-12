@@ -57,6 +57,9 @@ func (l Labels) ToManifest() v1alpha.Labels {
 func metadataLabelsBlock() *schema.ListNestedBlock {
 	return &schema.ListNestedBlock{
 		Description: "[Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values.",
+		Validators: []validator.List{
+			labelKeysUniqueValidator{},
+		},
 		NestedObject: schema.NestedBlockObject{
 			Attributes: map[string]schema.Attribute{
 				"key": schema.StringAttribute{

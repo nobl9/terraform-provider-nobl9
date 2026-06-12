@@ -66,6 +66,7 @@ var (
 	}
 	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
 		"nobl9": func() (tfprotov6.ProviderServer, error) {
+			defaultToConfigFileForAcceptanceTests()
 			testAccProviderServer.once.Do(func() {
 				testAccProviderServer.srv, testAccProviderServer.err = testAccNewMux(context.Background())
 			})
@@ -73,6 +74,12 @@ var (
 		},
 	}
 )
+
+func defaultToConfigFileForAcceptanceTests() {
+	if _, ok := os.LookupEnv("NOBL9_NO_CONFIG_FILE"); !ok {
+		_ = os.Setenv("NOBL9_NO_CONFIG_FILE", "false")
+	}
+}
 
 func TestProvider(t *testing.T) {
 	if err := Provider().InternalValidate(); err != nil {
