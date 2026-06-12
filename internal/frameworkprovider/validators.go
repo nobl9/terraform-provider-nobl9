@@ -153,3 +153,51 @@ func (v sumoLogicQueriesUniqueRowIDValidator) ValidateList(
 		seen[id] = true
 	}
 }
+
+type labelKeysUniqueValidator struct{}
+
+func (v labelKeysUniqueValidator) Description(ctx context.Context) string {
+	return v.MarkdownDescription(ctx)
+}
+
+func (v labelKeysUniqueValidator) MarkdownDescription(_ context.Context) string {
+	return "Ensure that label keys are unique"
+}
+
+func (v labelKeysUniqueValidator) ValidateList(
+	_ context.Context,
+	req validator.ListRequest,
+	resp *validator.ListResponse,
+) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() || len(req.ConfigValue.Elements()) == 0 {
+		return
+	}
+	seenKeys := make(map[string]struct{}, len(req.ConfigValue.Elements()))
+	for i, elem := range req.ConfigValue.Elements() {
+		obj, ok := elem.(types.Object)
+		if !ok || obj.IsNull() || obj.IsUnknown() {
+			continue
+		}
+		keyAttr, exists := obj.Attributes()["key"]
+		if !exists {
+			continue
+		}
+		key, ok := keyAttr.(types.String)
+		if !ok || key.IsNull() || key.IsUnknown() {
+			continue
+		}
+		keyValue := key.ValueString()
+		if _, ok := seenKeys[keyValue]; ok {
+			resp.Diagnostics.AddAttributeError(
+				req.Path.AtListIndex(i).AtName("key"),
+				"duplicate label key",
+				fmt.Sprintf(
+					"duplicate label key [%s] found - expected only one occurrence of each label key",
+					keyValue,
+				),
+			)
+			return
+		}
+		seenKeys[keyValue] = struct{}{}
+	}
+}

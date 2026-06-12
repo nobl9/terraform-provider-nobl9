@@ -235,6 +235,33 @@ func TestAccSLOResource_planValidation(t *testing.T) {
 	})
 }
 
+func TestAccSLOResource_labelValidationErrors(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	model := getExampleSLOResource(t)
+	model.Labels = Labels{
+		{Key: "slo-owners", Values: []string{"team-a"}},
+		{Key: "slo-owners", Values: []string{"team-b"}},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: newSLOResource(t, sloResourceTemplateModel{
+					ResourceName:     "test",
+					SLOResourceModel: model,
+				}),
+				ExpectError: regexp.MustCompile(
+					`duplicate label key \[slo-owners\] found - expected only one occurrence of each label key`,
+				),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestAccSLOResource_changeAlertPolicies(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
