@@ -3,7 +3,9 @@ resource "nobl9_direct_dynatrace" "test-dynatrace" {
   project                = "terraform"
   description            = "desc"
   url                    = "https://web.net"
+  platform_url           = "https://web.apps.dynatrace.com"
   dynatrace_token        = "secret"
+  platform_token         = "platform-secret"
   log_collection_enabled = true
   historical_data_retrieval {
     default_duration {

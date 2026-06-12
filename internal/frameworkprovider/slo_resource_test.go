@@ -1688,6 +1688,23 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 				return model
 			},
 		},
+		"dynatrace dql": {
+			expectedFile: "slo-dynatrace-dql.tf",
+			resourceModifier: func(model SLOResourceModel) SLOResourceModel {
+				model.AlertPolicies = nil
+				model.Labels = nil
+				model.Annotations = nil
+				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
+					Dynatrace: []DynatraceModel{{
+						DQL: []DynatraceDQLModel{{
+							Query:    "timeseries value = avg(dt.host.cpu.usage)",
+							Interval: types.StringValue("1m"),
+						}},
+					}},
+				}
+				return model
+			},
+		},
 		"multiline query": {
 			expectedFile: "slo-multiline-query.tf",
 			resourceModifier: func(model SLOResourceModel) SLOResourceModel {

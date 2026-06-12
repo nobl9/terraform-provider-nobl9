@@ -149,8 +149,9 @@ Required:
 <a id="nestedblock--dynatrace_config"></a>
 ### Nested Schema for `dynatrace_config`
 
-Required:
+Optional:
 
+- `platform_url` (String) Dynatrace Platform URL used for DQL queries.
 - `url` (String) Dynatrace API URL.
 
 
