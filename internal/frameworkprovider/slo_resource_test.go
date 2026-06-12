@@ -254,7 +254,7 @@ func TestAccSLOResource_labelValidationErrors(t *testing.T) {
 					SLOResourceModel: model,
 				}),
 				ExpectError: regexp.MustCompile(
-					`duplicate label key \[slo-owners\] found - expected only one occurrence of each label key`,
+					`duplicate label key \[slo-owners\] found - expected only one occurrence of each\s+label key`,
 				),
 				PlanOnly: true,
 			},
