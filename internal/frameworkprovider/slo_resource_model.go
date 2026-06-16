@@ -238,7 +238,13 @@ type DatadogModel struct {
 }
 
 type DynatraceModel struct {
-	MetricSelector string `tfsdk:"metric_selector"`
+	MetricSelector types.String        `tfsdk:"metric_selector"`
+	DQL            []DynatraceDQLModel `tfsdk:"dql"`
+}
+
+type DynatraceDQLModel struct {
+	Query    string       `tfsdk:"query"`
+	Interval types.String `tfsdk:"interval"`
 }
 
 type ElasticsearchModel struct {
@@ -1063,9 +1069,17 @@ func dynatraceToModel(src *v1alphaSLO.DynatraceMetric) *DynatraceModel {
 	if src == nil {
 		return nil
 	}
-	return &DynatraceModel{
-		MetricSelector: *src.MetricSelector,
+	model := &DynatraceModel{}
+	switch src.QueryType() {
+	case v1alphaSLO.DynatraceMetricQueryTypeMetricSelector:
+		model.MetricSelector = types.StringPointerValue(src.MetricSelector)
+	case v1alphaSLO.DynatraceMetricQueryTypeDQL:
+		model.DQL = []DynatraceDQLModel{{
+			Query:    src.DQL.Query,
+			Interval: stringValue(src.DQL.Interval),
+		}}
 	}
+	return model
 }
 
 func elasticsearchToModel(src *v1alphaSLO.ElasticsearchMetric) *ElasticsearchModel {
@@ -1458,9 +1472,17 @@ func modelToDynatrace(model *DynatraceModel) *v1alphaSLO.DynatraceMetric {
 	if model == nil {
 		return nil
 	}
-	return &v1alphaSLO.DynatraceMetric{
-		MetricSelector: &model.MetricSelector,
+	metric := &v1alphaSLO.DynatraceMetric{
+		MetricSelector: model.MetricSelector.ValueStringPointer(),
 	}
+	if len(model.DQL) > 0 {
+		dql := model.DQL[0]
+		metric.DQL = &v1alphaSLO.DynatraceDQL{
+			Query:    dql.Query,
+			Interval: dql.Interval.ValueString(),
+		}
+	}
+	return metric
 }
 
 func modelToElasticsearch(model *ElasticsearchModel) *v1alphaSLO.ElasticsearchMetric {

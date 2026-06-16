@@ -548,9 +548,22 @@ Required:
 <a id="nestedblock--objective--count_metrics--bad--dynatrace"></a>
 ### Nested Schema for `objective.count_metrics.bad.dynatrace`
 
+Optional:
+
+- `dql` (Block List) Dynatrace Query Language configuration. (see [below for nested schema](#nestedblock--objective--count_metrics--bad--dynatrace--dql))
+- `metric_selector` (String) Selector for the metrics
+
+<a id="nestedblock--objective--count_metrics--bad--dynatrace--dql"></a>
+### Nested Schema for `objective.count_metrics.bad.dynatrace.dql`
+
 Required:
 
-- `metric_selector` (String) Selector for the metrics
+- `query` (String) Dynatrace Query Language query.
+
+Optional:
+
+- `interval` (String) Time-series interval used for the Dynatrace Query Language query.
+
 
 
 <a id="nestedblock--objective--count_metrics--bad--elasticsearch"></a>
@@ -970,9 +983,22 @@ Required:
 <a id="nestedblock--objective--count_metrics--good--dynatrace"></a>
 ### Nested Schema for `objective.count_metrics.good.dynatrace`
 
+Optional:
+
+- `dql` (Block List) Dynatrace Query Language configuration. (see [below for nested schema](#nestedblock--objective--count_metrics--good--dynatrace--dql))
+- `metric_selector` (String) Selector for the metrics
+
+<a id="nestedblock--objective--count_metrics--good--dynatrace--dql"></a>
+### Nested Schema for `objective.count_metrics.good.dynatrace.dql`
+
 Required:
 
-- `metric_selector` (String) Selector for the metrics
+- `query` (String) Dynatrace Query Language query.
+
+Optional:
+
+- `interval` (String) Time-series interval used for the Dynatrace Query Language query.
+
 
 
 <a id="nestedblock--objective--count_metrics--good--elasticsearch"></a>
@@ -1392,9 +1418,22 @@ Required:
 <a id="nestedblock--objective--count_metrics--good_total--dynatrace"></a>
 ### Nested Schema for `objective.count_metrics.good_total.dynatrace`
 
+Optional:
+
+- `dql` (Block List) Dynatrace Query Language configuration. (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--dynatrace--dql))
+- `metric_selector` (String) Selector for the metrics
+
+<a id="nestedblock--objective--count_metrics--good_total--dynatrace--dql"></a>
+### Nested Schema for `objective.count_metrics.good_total.dynatrace.dql`
+
 Required:
 
-- `metric_selector` (String) Selector for the metrics
+- `query` (String) Dynatrace Query Language query.
+
+Optional:
+
+- `interval` (String) Time-series interval used for the Dynatrace Query Language query.
+
 
 
 <a id="nestedblock--objective--count_metrics--good_total--elasticsearch"></a>
@@ -1814,9 +1853,22 @@ Required:
 <a id="nestedblock--objective--count_metrics--total--dynatrace"></a>
 ### Nested Schema for `objective.count_metrics.total.dynatrace`
 
+Optional:
+
+- `dql` (Block List) Dynatrace Query Language configuration. (see [below for nested schema](#nestedblock--objective--count_metrics--total--dynatrace--dql))
+- `metric_selector` (String) Selector for the metrics
+
+<a id="nestedblock--objective--count_metrics--total--dynatrace--dql"></a>
+### Nested Schema for `objective.count_metrics.total.dynatrace.dql`
+
 Required:
 
-- `metric_selector` (String) Selector for the metrics
+- `query` (String) Dynatrace Query Language query.
+
+Optional:
+
+- `interval` (String) Time-series interval used for the Dynatrace Query Language query.
+
 
 
 <a id="nestedblock--objective--count_metrics--total--elasticsearch"></a>
@@ -2244,9 +2296,22 @@ Required:
 <a id="nestedblock--objective--raw_metric--query--dynatrace"></a>
 ### Nested Schema for `objective.raw_metric.query.dynatrace`
 
+Optional:
+
+- `dql` (Block List) Dynatrace Query Language configuration. (see [below for nested schema](#nestedblock--objective--raw_metric--query--dynatrace--dql))
+- `metric_selector` (String) Selector for the metrics
+
+<a id="nestedblock--objective--raw_metric--query--dynatrace--dql"></a>
+### Nested Schema for `objective.raw_metric.query.dynatrace.dql`
+
 Required:
 
-- `metric_selector` (String) Selector for the metrics
+- `query` (String) Dynatrace Query Language query.
+
+Optional:
+
+- `interval` (String) Time-series interval used for the Dynatrace Query Language query.
+
 
 
 <a id="nestedblock--objective--raw_metric--query--elasticsearch"></a>

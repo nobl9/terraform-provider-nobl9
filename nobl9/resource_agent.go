@@ -660,8 +660,13 @@ func schemaAgentDynatrace() map[string]*schema.Schema {
 				Schema: map[string]*schema.Schema{
 					"url": {
 						Type:        schema.TypeString,
-						Required:    true,
+						Optional:    true,
 						Description: "Dynatrace API URL.",
+					},
+					"platform_url": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Dynatrace Platform URL used for DQL queries.",
 					},
 				},
 			},
@@ -677,7 +682,8 @@ func marshalAgentDynatrace(d resourceInterface, diags diag.Diagnostics) *v1alpha
 	}
 
 	return &v1alphaAgent.DynatraceConfig{
-		URL: data["url"].(string),
+		URL:         data["url"].(string),
+		PlatformURL: data["platform_url"].(string),
 	}
 }
 

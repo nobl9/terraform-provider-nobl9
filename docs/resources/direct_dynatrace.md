@@ -17,7 +17,9 @@ resource "nobl9_direct_dynatrace" "test-dynatrace" {
   project                = "terraform"
   description            = "desc"
   url                    = "https://web.net"
+  platform_url           = "https://web.apps.dynatrace.com"
   dynatrace_token        = "secret"
+  platform_token         = "platform-secret"
   log_collection_enabled = true
   historical_data_retrieval {
     default_duration {
@@ -39,18 +41,20 @@ resource "nobl9_direct_dynatrace" "test-dynatrace" {
 
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
-- `url` (String) Dynatrace API URL.
 
 ### Optional
 
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
-- `dynatrace_token` (String, Sensitive) [required] | Dynatrace Token.
+- `dynatrace_token` (String, Sensitive) Dynatrace Token used for metric selector queries.
 - `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
 - `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/features/slo-troubleshooting/event-logs)
+- `platform_token` (String, Sensitive) Dynatrace Platform Token used for DQL queries.
+- `platform_url` (String) Dynatrace Platform URL used for DQL queries.
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created data source [stable/beta]
 - `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
+- `url` (String) Dynatrace API URL.
 
 ### Read-Only
 

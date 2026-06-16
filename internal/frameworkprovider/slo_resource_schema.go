@@ -558,8 +558,26 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 			NestedObject: schema.NestedBlockObject{
 				Attributes: map[string]schema.Attribute{
 					"metric_selector": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
 						Description: "Selector for the metrics",
+					},
+				},
+				Blocks: map[string]schema.Block{
+					"dql": schema.ListNestedBlock{
+						Description: "Dynatrace Query Language configuration.",
+						Validators:  []validator.List{listvalidator.SizeAtMost(1)},
+						NestedObject: schema.NestedBlockObject{
+							Attributes: map[string]schema.Attribute{
+								"query": schema.StringAttribute{
+									Required:    true,
+									Description: "Dynatrace Query Language query.",
+								},
+								"interval": schema.StringAttribute{
+									Optional:    true,
+									Description: "Time-series interval used for the Dynatrace Query Language query.",
+								},
+							},
+						},
 					},
 				},
 			},

@@ -201,6 +201,7 @@ resource "nobl9_agent" "%s" {
   agent_type = "dynatrace"
   dynatrace_config {
     url = "http://web.net"
+    platform_url = "https://web.apps.dynatrace.com"
   }
   release_channel = "stable"
   query_delay {
@@ -219,6 +220,7 @@ resource "nobl9_agent" "%s" {
   agent_type = "dynatrace"
   dynatrace_config {
     url = "http://web.net"
+    platform_url = "https://web.apps.dynatrace.com"
   }
   release_channel = "stable"
 }
