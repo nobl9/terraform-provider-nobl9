@@ -40,7 +40,7 @@ Do not run them without explicit user permission.
 
 Before writing or modifying acceptance tests, read:
 
-- [dev-docs/DEVELOPMENT.md](./dev-docs/DEVELOPMENT.md#end-to-end-test)
+- [dev-docs/DEVELOPMENT.md](./dev-docs/DEVELOPMENT.md#testing)
 - sample existing tests to follow the established style and practices
 
 ## Code standards
