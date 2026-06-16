@@ -89,10 +89,6 @@ func (p *Provider) Configure(ctx context.Context, req provider.ConfigureRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	resp.Diagnostics.Append(model.validate()...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	client, diags := newSDKClient(model)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
