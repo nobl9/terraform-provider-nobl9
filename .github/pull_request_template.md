@@ -14,7 +14,8 @@ List related changes from other PRs (if any).
 ## Testing
 
 - Describe how to check introduced code changes manually.
-- Take care of test coverage on unit, integration or end-to-end levels.
+- Simple `main.tf` which covers the changes is a welcome addition.
+- Take care of test coverage on unit and acceptance test levels.
 
 ## Release Notes
 
