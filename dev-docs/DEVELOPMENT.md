@@ -219,7 +219,7 @@ and you can place them in the templates using the following functions:
       // When set to false, you won't need to provide any further env variables.
       no_config_file = false
     }
-    
+
     resource "nobl9_project" "this" {
       name         = "my-project"
     }

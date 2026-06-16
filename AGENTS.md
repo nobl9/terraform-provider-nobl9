@@ -5,7 +5,7 @@ Do not use this file as a replacement for the project documentation.
 
 Read the existing docs before changing behavior, tests, or release logic:
 
-- [docs/DEVELOPMENT.md](./dev-docs/DEVELOPMENT.md) for development workflow,
+- [dev-docs/DEVELOPMENT.md](./dev-docs/DEVELOPMENT.md) for development workflow,
   Makefile behavior, CI, validation tests, e2e tests, code generation, and
   dependencies.
 - [README.md](./README.md) for user-facing purpose and usage.
@@ -40,7 +40,7 @@ Do not run them without explicit user permission.
 
 Before writing or modifying acceptance tests, read:
 
-- [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md#end-to-end-test)
+- [dev-docs/DEVELOPMENT.md](./dev-docs/DEVELOPMENT.md#end-to-end-test)
 - sample existing tests to follow the established style and practices
 
 ## Code standards
