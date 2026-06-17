@@ -2,7 +2,6 @@ package frameworkprovider
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -54,25 +53,4 @@ func (p *ProviderModel) setDefaultsFromEnv() diag.Diagnostics {
 		p.NoConfigFile = env.NoConfigFile
 	}
 	return nil
-}
-
-// validate ensures required fields are set.
-// It should be called after [ProviderModel.setDefaultsFromEnv] is called.
-func (p *ProviderModel) validate() diag.Diagnostics {
-	diags := diag.Diagnostics{}
-	if p.ClientID.IsNull() {
-		diags.Append(diag.NewAttributeErrorDiagnostic(
-			path.Root("client_id"),
-			"missing required field",
-			"client_id is required to connect to Nobl9",
-		))
-	}
-	if p.ClientSecret.IsNull() {
-		diags.Append(diag.NewAttributeErrorDiagnostic(
-			path.Root("client_secret"),
-			"missing required field",
-			"client_secret is required to connect to Nobl9",
-		))
-	}
-	return diags
 }

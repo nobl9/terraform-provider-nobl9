@@ -78,6 +78,7 @@ var (
 	}
 	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
 		"nobl9": func() (tfprotov6.ProviderServer, error) {
+			defaultToConfigFileForAcceptanceTests()
 			testAccProviderServer.once.Do(func() {
 				testAccProviderServer.srv, testAccProviderServer.err = testAccNewMux(context.Background())
 			})
@@ -96,15 +97,7 @@ var testSDKClient = struct {
 func testAccSetup(t *testing.T) {
 	t.Helper()
 	checkIfAcceptanceTestIsSet(t)
-
-	// Check ENVs everytime to fail all tests using the SDK client
-	for _, key := range []string{
-		"NOBL9_CLIENT_ID",
-		"NOBL9_CLIENT_SECRET",
-	} {
-		_, ok := os.LookupEnv(key)
-		require.True(t, ok, "required environment variable %q is not set", key)
-	}
+	defaultToConfigFileForAcceptanceTests()
 
 	// Initialize the SDK client.
 	testSDKClient.once.Do(func() {
@@ -128,6 +121,12 @@ func testAccSetup(t *testing.T) {
 			testSDKClient.client.Config.OktaOrgURL.JoinPath(testSDKClient.client.Config.OktaAuthServer),
 			testSDKClient.client.Config.ClientID)
 	})
+}
+
+func defaultToConfigFileForAcceptanceTests() {
+	if _, ok := os.LookupEnv("NOBL9_NO_CONFIG_FILE"); !ok {
+		_ = os.Setenv("NOBL9_NO_CONFIG_FILE", "false")
+	}
 }
 
 // assertResourceWasApplied is a test check function that asserts if the resource was applied

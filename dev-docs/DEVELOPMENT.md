@@ -47,15 +47,21 @@ More on acceptance tests can be found
 The acceptance tests are only run automatically for releases, be it official
 version or pre-release (release candidate).
 The tests are executed against the production application.
-If you want to run the tests manually against a different environment, you can
-run the following command:
+If you already have a Nobl9 `config.toml` on your machine with valid device credentials,
+run this command:
+
+```shell
+NOBL9_NO_CONFIG_FILE=false \
+make test/acc
+```
+
+Otherwise, you need to provide all the required auth details like this:
 
 ```shell
 NOBL9_CLIENT_ID=<client_id> \
 NOBL9_CLIENT_SECRET=<client_secret> \
 NOBL9_OKTA_URL=https://accounts.nobl9.dev \
 NOBL9_OKTA_AUTH=<dev_auth_server> \
-NOBL9_URL=<ingest_server_url> \
 make test/acc
 ```
 
@@ -206,6 +212,16 @@ and you can place them in the templates using the following functions:
           version = "0.19.0"
         }
       }
+    }
+
+    provider "nobl9" {
+      // Add this If you want to use `config.toml` credentials.
+      // When set to false, you won't need to provide any further env variables.
+      no_config_file = false
+    }
+
+    resource "nobl9_project" "this" {
+      name         = "my-project"
     }
     ```
 
