@@ -196,11 +196,15 @@ and you can place them in the templates using the following functions:
 2. Before the next step, verify if the Makefile variable `OS_ARCH` matches your
     system (for example _darwin_arm64_ for Apple Silicon based Mac's).
     If not override it.
-3. Run `make install/provider`. Make sure that the plugin was installed:
+3. Run `make version` to check the provider version that will be installed.
+    By default, the Makefile derives it from the latest reachable Git tag.
+    Use `VERSION=<version> make install/provider` when you need a specific
+    local test version.
+4. Run `make install/provider`. Make sure that the plugin was installed:
     `ls ~/.terraform.d/plugins/nobl9.com/nobl9/nobl9/`
-    It will show you the current version of the plugin, ex: _0.19.0_.
-4. Copy the path to the plugin after ~/.terraform.d/plugins/, for example:
-    `nobl9.com/nobl9/nobl9/0.19.0/linux_amd64/terraform-provider-nobl9`
+    It will show you the installed plugin version.
+5. Copy the path to the plugin after ~/.terraform.d/plugins/, for example:
+    `nobl9.com/nobl9/nobl9/<version>/linux_amd64/terraform-provider-nobl9`
     and configure your `.tf` file with it.
     Usually it will look like this, just change the version:
 
@@ -209,7 +213,7 @@ and you can place them in the templates using the following functions:
       required_providers {
         nobl9 = {
           source = "nobl9.com/nobl9/nobl9"
-          version = "0.19.0"
+          version = "<version>"
         }
       }
     }
@@ -226,7 +230,7 @@ and you can place them in the templates using the following functions:
     ```
 
     Now you're all set, you can use the locally built provider anywhere, as long
-    as you use the right version (see above).
+    as you use the installed version (see above).
 
 ## Releases
 
