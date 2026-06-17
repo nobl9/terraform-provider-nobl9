@@ -60,7 +60,7 @@ resource "nobl9_direct_clickhouse" "test-clickhouse" {
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created data source [stable/beta]
 - `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
-- `username` (String, Sensitive) [required] | ClickHouse username.
+- `username` (String) [required] | ClickHouse username.
 
 ### Read-Only
 
