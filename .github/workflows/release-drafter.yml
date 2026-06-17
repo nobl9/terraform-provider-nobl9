@@ -20,6 +20,7 @@ jobs:
       - id: drafter
         uses: release-drafter/release-drafter@v7.3.1
         with:
+          commitish: main
           token: ${{ secrets.RELEASE_LABELER_TOKEN }}
 
   update_release_notes:

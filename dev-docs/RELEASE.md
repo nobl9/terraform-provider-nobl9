@@ -18,11 +18,10 @@ you'll have to manually remove `security` label.
 On each commit to `main` branch, Release Drafter will update the next release
 draft.
 
-To start a release, run the `Promote Release Draft` workflow manually.
-The workflow resolves the next tag from Release Drafter, updates the generated
-release notes, and pushes that tag to GitHub.
-The tag push triggers the `Release` workflow, which runs acceptance tests,
-waits for QA approval, and publishes assets with GoReleaser.
+To start a release, publish the prepared draft from GitHub Releases.
+Publishing the draft creates the release tag and triggers the `Release`
+workflow, which runs acceptance tests, waits for QA approval, and publishes
+assets with GoReleaser.
 
 Do not update provider versions manually in the Makefile, README, or examples.
 Local builds derive the provider version from the latest reachable Git tag,
