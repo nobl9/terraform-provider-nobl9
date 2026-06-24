@@ -37,8 +37,7 @@ The following is an exemplary configuration:
 terraform {
   required_providers {
     nobl9 = {
-      source  = "nobl9/nobl9"
-      version = "0.46.2"
+      source = "nobl9/nobl9"
     }
   }
 }

@@ -75,5 +75,4 @@ while IFS= read -r line; do
 done <<<"$RELEASE_NOTES"
 
 echo "Uploading release notes for $VERSION"
-# shellcheck disable=2059
-printf "$new_notes" | gh release edit "$VERSION" --verify-tag -F -
+printf "%b" "$new_notes" | gh release edit "$VERSION" -F -
