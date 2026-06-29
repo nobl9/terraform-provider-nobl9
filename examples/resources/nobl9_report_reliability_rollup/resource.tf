@@ -1,3 +1,21 @@
+resource "nobl9_report_reliability_rollup" "all_projects" {
+  name         = "my-rrr-all-projects"
+  display_name = "My Reliability Roll-up - All Projects"
+
+  filters {
+    project_scope = "all"
+  }
+
+  time_frame {
+    time_zone = "Europe/Warsaw"
+
+    rolling {
+      unit  = "Week"
+      count = 4
+    }
+  }
+}
+
 resource "nobl9_report_reliability_rollup" "calendar_last_month" {
   name         = "my-rrr-last-month"
   display_name = "My Reliability Roll-up - Last Month"

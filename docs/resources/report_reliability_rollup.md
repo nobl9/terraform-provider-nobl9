@@ -17,6 +17,24 @@ Custom hierarchy can contain up to 8 nodes at each hierarchy level.
 Here's an example of Reliability Roll-up Report resource configuration:
 
 ```terraform
+resource "nobl9_report_reliability_rollup" "all_projects" {
+  name         = "my-rrr-all-projects"
+  display_name = "My Reliability Roll-up - All Projects"
+
+  filters {
+    project_scope = "all"
+  }
+
+  time_frame {
+    time_zone = "Europe/Warsaw"
+
+    rolling {
+      unit  = "Week"
+      count = 4
+    }
+  }
+}
+
 resource "nobl9_report_reliability_rollup" "calendar_last_month" {
   name         = "my-rrr-last-month"
   display_name = "My Reliability Roll-up - Last Month"
@@ -146,6 +164,7 @@ Required:
 Optional:
 
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--filters--label))
+- `project_scope` (String) Project scope to pull data for report from. Use `selected` for explicitly selected projects, services, or SLOs, or `all` for all current and future projects.
 - `projects` (List of String) Projects to pull data for report from.
 - `service` (Block List) Services to pull data for report from. (see [below for nested schema](#nestedblock--filters--service))
 - `slo` (Block List) SLOs to pull data for report from. (see [below for nested schema](#nestedblock--filters--slo))

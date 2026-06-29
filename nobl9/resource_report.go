@@ -73,6 +73,20 @@ func schemaFilters() *schema.Schema {
 		Description: "Filters are used to select scope for Report.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"project_scope": {
+					Type:                  schema.TypeString,
+					Optional:              true,
+					Computed:              true,
+					Description:           "Project scope to pull data for report from. Use `selected` for explicitly selected projects, services, or SLOs, or `all` for all current and future projects.",
+					DiffSuppressFunc:      suppressDefaultReportProjectScopeDiff,
+					DiffSuppressOnRefresh: true,
+					ValidateDiagFunc: validation.ToDiagFunc(
+						validation.StringInSlice([]string{
+							string(v1alphaReport.ProjectScopeSelected),
+							string(v1alphaReport.ProjectScopeAll),
+						}, false),
+					),
+				},
 				"projects": {
 					Type:        schema.TypeList,
 					Optional:    true,
@@ -126,6 +140,14 @@ func schemaFilters() *schema.Schema {
 	}
 }
 
+func suppressDefaultReportProjectScopeDiff(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+	return isDefaultReportProjectScope(oldValue) && isDefaultReportProjectScope(newValue)
+}
+
+func isDefaultReportProjectScope(value string) bool {
+	return value == "" || value == string(v1alphaReport.ProjectScopeSelected)
+}
+
 func (r reportResource) marshalReport(ri resourceInterface) *v1alphaReport.Report {
 	spec := v1alphaReport.Spec{
 		Shared:  ri.Get("shared").(bool),
@@ -160,6 +182,8 @@ func marshalReportFilters(filtersRaw interface{}) *v1alphaReport.Filters {
 	}
 	filters := filtersRaw.([]interface{})[0].(map[string]interface{})
 
+	projectScope, _ := filters["project_scope"].(string)
+
 	projectList := filters["projects"].([]interface{})
 	projects := make([]string, 0, len(projectList))
 	for _, filter := range projectList {
@@ -189,10 +213,11 @@ func marshalReportFilters(filtersRaw interface{}) *v1alphaReport.Filters {
 	}
 
 	return &v1alphaReport.Filters{
-		Projects: projects,
-		Services: services,
-		SLOs:     slos,
-		Labels:   marshalReportLabels(filters["label"].([]interface{})),
+		ProjectScope: v1alphaReport.ProjectScope(projectScope),
+		Projects:     projects,
+		Services:     services,
+		SLOs:         slos,
+		Labels:       marshalReportLabels(filters["label"].([]interface{})),
 	}
 }
 
@@ -219,9 +244,10 @@ func unmarshalReportFilters(d *schema.ResourceData, filters *v1alphaReport.Filte
 	}
 
 	f := map[string]interface{}{
-		"projects": filters.Projects,
-		"service":  services,
-		"slo":      slos,
+		"project_scope": string(filters.ProjectScope),
+		"projects":      filters.Projects,
+		"service":       services,
+		"slo":           slos,
 	}
 
 	if len(filters.Labels) > 0 {
