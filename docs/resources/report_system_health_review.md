@@ -13,6 +13,38 @@ The System Health Review report facilitates recurring reliability check-ins by g
 Here's an example of Error Budget Status Report resource configuration:
 
 ```terraform
+resource "nobl9_report_system_health_review" "all_projects" {
+  name         = "my-shr-all-projects"
+  display_name = "My System Health Review Report - All Projects"
+  shared       = true
+  row_group_by = "project"
+
+  filters {
+    project_scope = "all"
+  }
+
+  time_frame {
+    time_zone = "Europe/Warsaw"
+    snapshot {
+      point = "latest"
+    }
+  }
+
+  column {
+    display_name = "Column 1"
+    label {
+      key    = "key1"
+      values = ["value1"]
+    }
+  }
+
+  thresholds {
+    red_lte      = 0.8
+    green_gt     = 0.95
+    show_no_data = true
+  }
+}
+
 resource "nobl9_report_system_health_review" "this" {
   name         = "my-shr-report"
   display_name = "My System Health Review Report"
@@ -152,7 +184,7 @@ Optional:
 Optional:
 
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--filters--label))
-- `project_scope` (String) Project scope to pull data for report from. Use `selected` for explicitly selected projects, services, or SLOs, or `all` for all current and future projects.
+- `project_scope` (String) Project scope to pull data for report from. Use `selected` for explicitly selected projects, services, or SLOs, or `all` for all current and future projects. After applying `all`, set this field explicitly to `selected` to switch back to selected scope.
 - `projects` (List of String) Projects to pull data for report from.
 - `service` (Block List) Services to pull data for report from. (see [below for nested schema](#nestedblock--filters--service))
 - `slo` (Block List) SLOs to pull data for report from. (see [below for nested schema](#nestedblock--filters--slo))

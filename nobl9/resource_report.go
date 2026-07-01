@@ -77,7 +77,7 @@ func schemaFilters() *schema.Schema {
 					Type:                  schema.TypeString,
 					Optional:              true,
 					Computed:              true,
-					Description:           "Project scope to pull data for report from. Use `selected` for explicitly selected projects, services, or SLOs, or `all` for all current and future projects.",
+					Description:           "Project scope to pull data for report from. Use `selected` for explicitly selected projects, services, or SLOs, or `all` for all current and future projects. After applying `all`, set this field explicitly to `selected` to switch back to selected scope.",
 					DiffSuppressFunc:      suppressDefaultReportProjectScopeDiff,
 					DiffSuppressOnRefresh: true,
 					ValidateDiagFunc: validation.ToDiagFunc(

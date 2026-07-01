@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaReport "github.com/nobl9/nobl9-go/manifest/v1alpha/report"
 )
 
@@ -42,6 +44,62 @@ func TestMarshalReportFiltersProjectScope(t *testing.T) {
 
 	require.NotNil(t, filters)
 	assert.Equal(t, v1alphaReport.ProjectScopeAll, filters.ProjectScope)
+}
+
+func TestMarshalReportFiltersProjectScopeAllWithLabels(t *testing.T) {
+	filters := marshalReportFilters([]interface{}{
+		map[string]interface{}{
+			"project_scope": "all",
+			"projects":      []interface{}{},
+			"service":       []interface{}{},
+			"slo":           []interface{}{},
+			"label": []interface{}{
+				map[string]interface{}{
+					"key":    "team",
+					"values": []interface{}{"platform"},
+				},
+			},
+		},
+	})
+
+	require.NotNil(t, filters)
+	assert.Equal(t, v1alphaReport.ProjectScopeAll, filters.ProjectScope)
+	assert.Equal(t, v1alpha.Labels{"team": []string{"platform"}}, filters.Labels)
+
+	redLTE := 0.8
+	greenGT := 0.95
+	report := v1alphaReport.New(
+		v1alphaReport.Metadata{
+			Name:        "test-report",
+			DisplayName: "Test Report",
+		},
+		v1alphaReport.Spec{
+			Shared:  true,
+			Filters: filters,
+			SystemHealthReview: &v1alphaReport.SystemHealthReviewConfig{
+				TimeFrame: v1alphaReport.SystemHealthReviewTimeFrame{
+					Snapshot: v1alphaReport.SnapshotTimeFrame{
+						Point: v1alphaReport.SnapshotPointLatest,
+					},
+					TimeZone: "Europe/Warsaw",
+				},
+				RowGroupBy: v1alphaReport.RowGroupByProject,
+				Columns: []v1alphaReport.ColumnSpec{
+					{
+						DisplayName: "Column 1",
+						Labels:      v1alpha.Labels{"team": []string{"platform"}},
+					},
+				},
+				Thresholds: v1alphaReport.Thresholds{
+					RedLessThanOrEqual: &redLTE,
+					GreenGreaterThan:   &greenGT,
+					ShowNoData:         true,
+				},
+			},
+		},
+	)
+
+	assert.Empty(t, manifest.Validate([]manifest.Object{report}))
 }
 
 func TestUnmarshalReportFiltersProjectScope(t *testing.T) {

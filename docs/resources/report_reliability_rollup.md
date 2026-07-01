@@ -164,7 +164,7 @@ Required:
 Optional:
 
 - `label` (Block List) [Labels](https://docs.nobl9.com/features/labels/) containing a single key and a list of values. (see [below for nested schema](#nestedblock--filters--label))
-- `project_scope` (String) Project scope to pull data for report from. Use `selected` for explicitly selected projects, services, or SLOs, or `all` for all current and future projects.
+- `project_scope` (String) Project scope to pull data for report from. Use `selected` for explicitly selected projects, services, or SLOs, or `all` for all current and future projects. After applying `all`, set this field explicitly to `selected` to switch back to selected scope.
 - `projects` (List of String) Projects to pull data for report from.
 - `service` (Block List) Services to pull data for report from. (see [below for nested schema](#nestedblock--filters--service))
 - `slo` (Block List) SLOs to pull data for report from. (see [below for nested schema](#nestedblock--filters--slo))
