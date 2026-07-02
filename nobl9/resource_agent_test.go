@@ -42,6 +42,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 		{"test-sumologic", testSumoLogicAgent},
 		{"test-thousandeyes", testThousandEyesAgent},
 		{"test-dash0", testDash0Agent},
+		{"test-clickhouse", testClickHouseAgent},
 	}
 
 	for _, tc := range cases {
@@ -581,6 +582,35 @@ resource "nobl9_agent" "%s" {
   query_delay {
     unit = "Minute"
     value = 6
+  }
+}
+`, name, name, testProject)
+}
+
+func testClickHouseAgent(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name      = "%s"
+  project   = "%s"
+  agent_type = "clickhouse"
+  clickhouse_config {
+    url = "https://clickhouse.example.com:8443"
+    database = "observability"
+  }
+  release_channel = "beta"
+  query_delay {
+    unit = "Second"
+    value = 31
+  }
+  historical_data_retrieval {
+    default_duration {
+      unit = "Day"
+      value = 15
+    }
+    max_duration {
+      unit = "Day"
+      value = 30
+    }
   }
 }
 `, name, name, testProject)
