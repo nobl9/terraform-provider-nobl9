@@ -8,6 +8,8 @@ description: |-
 
 ClickHouse is a column-oriented database management system for online analytical processing. Nobl9 connects to ClickHouse for SLI measurement collection and comparison with SLO targets.
 
+ClickHouse data sources are available on the beta release channel.
+
 For more information, refer to [ClickHouse Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/clickhouse#clickhouse-direct).
 
 ## Example Usage
@@ -56,7 +58,7 @@ resource "nobl9_direct_clickhouse" "test-clickhouse" {
 - `display_name` (String) User-friendly display name of the resource.
 - `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
 - `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/features/slo-troubleshooting/event-logs)
-- `password` (String, Sensitive) [required] | ClickHouse password.
+- `password` (String, Sensitive) ClickHouse password. Optional when the ClickHouse user does not require a password.
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created data source [stable/beta]
 - `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.

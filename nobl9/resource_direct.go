@@ -1318,13 +1318,10 @@ func (s clickHouseDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"password": {
 			Type:        schema.TypeString,
-			Description: "[required] | ClickHouse password.",
+			Description: "ClickHouse password. Optional when the ClickHouse user does not require a password.",
 			Optional:    true,
 			Computed:    true,
 			Sensitive:   true,
-			ValidateDiagFunc: validation.ToDiagFunc(
-				validation.StringIsNotEmpty,
-			),
 		},
 	}
 	setHistoricalDataRetrievalSchema(clickHouseSchema)
