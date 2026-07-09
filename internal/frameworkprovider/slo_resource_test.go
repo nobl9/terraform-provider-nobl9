@@ -1810,7 +1810,12 @@ func TestSLOResourceAnomalyConfigNoDataTreatZeroAsNoDataRoundTrip(t *testing.T) 
 	}
 
 	for name, treatZeroAsNoData := range tests {
+		name := name
+		treatZeroAsNoData := treatZeroAsNoData
+
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			model := getExampleSLOResource(t)
 			model.AnomalyConfig = []AnomalyConfigModel{{
 				NoData: []AnomalyConfigNoDataModel{{
