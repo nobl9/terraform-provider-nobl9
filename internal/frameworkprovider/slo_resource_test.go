@@ -1798,6 +1798,48 @@ func TestRenderSLOResourceTemplate_examples(t *testing.T) {
 	}
 }
 
+func TestSLOResourceAnomalyConfigNoDataTreatZeroAsNoDataRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	boolPtr := func(v bool) *bool { return &v }
+
+	tests := map[string]*bool{
+		"unset": nil,
+		"true":  boolPtr(true),
+		"false": boolPtr(false),
+	}
+
+	for name, treatZeroAsNoData := range tests {
+		t.Run(name, func(t *testing.T) {
+			model := getExampleSLOResource(t)
+			model.AnomalyConfig = []AnomalyConfigModel{{
+				NoData: []AnomalyConfigNoDataModel{{
+					AlertAfter: types.StringValue("10m"),
+					AlertMethods: []AnomalyConfigAlertMethodModel{{
+						Name:    "alerts",
+						Project: "default",
+					}},
+					TreatZeroAsNoData: types.BoolPointerValue(treatZeroAsNoData),
+				}},
+			}}
+
+			manifestModel := model.ToManifest()
+			require.NotNil(t, manifestModel.Spec.AnomalyConfig)
+			require.NotNil(t, manifestModel.Spec.AnomalyConfig.NoData)
+			assert.Equal(t, treatZeroAsNoData, manifestModel.Spec.AnomalyConfig.NoData.TreatZeroAsNoData)
+
+			roundTrippedModel := newSLOResourceConfigFromManifest(manifestModel)
+			require.Len(t, roundTrippedModel.AnomalyConfig, 1)
+			require.Len(t, roundTrippedModel.AnomalyConfig[0].NoData, 1)
+			assert.Equal(
+				t,
+				types.BoolPointerValue(treatZeroAsNoData),
+				roundTrippedModel.AnomalyConfig[0].NoData[0].TreatZeroAsNoData,
+			)
+		})
+	}
+}
+
 func TestRenderSLOResourceTemplate_compositeV1Example(t *testing.T) {
 	t.Parallel()
 

@@ -216,6 +216,9 @@ resource "nobl9_slo" "{{ .ResourceName }}" {
       {{- if not (isNull .AlertAfter ) }}
       alert_after = "{{ valueString .AlertAfter }}"
       {{- end }}
+      {{- if not (isNull .TreatZeroAsNoData ) }}
+      treat_zero_as_no_data = {{ .TreatZeroAsNoData.ValueBool }}
+      {{- end }}
       {{- if .AlertMethods }}
       {{- range .AlertMethods }}
       alert_method {

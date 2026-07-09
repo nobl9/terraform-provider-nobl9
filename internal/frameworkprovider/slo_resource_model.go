@@ -153,8 +153,9 @@ type AnomalyConfigModel struct {
 }
 
 type AnomalyConfigNoDataModel struct {
-	AlertAfter   types.String                    `tfsdk:"alert_after"`
-	AlertMethods []AnomalyConfigAlertMethodModel `tfsdk:"alert_method"`
+	AlertAfter        types.String                    `tfsdk:"alert_after"`
+	AlertMethods      []AnomalyConfigAlertMethodModel `tfsdk:"alert_method"`
+	TreatZeroAsNoData types.Bool                      `tfsdk:"treat_zero_as_no_data"`
 }
 
 type AnomalyConfigAlertMethodModel struct {
@@ -467,8 +468,9 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 		}
 		model.AnomalyConfig = []AnomalyConfigModel{{
 			NoData: []AnomalyConfigNoDataModel{{
-				AlertAfter:   types.StringPointerValue(ac.AlertAfter),
-				AlertMethods: methods,
+				AlertAfter:        types.StringPointerValue(ac.AlertAfter),
+				AlertMethods:      methods,
+				TreatZeroAsNoData: types.BoolPointerValue(ac.TreatZeroAsNoData),
 			}},
 		}}
 	}
@@ -582,8 +584,9 @@ func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {
 		}
 		slo.Spec.AnomalyConfig = &v1alphaSLO.AnomalyConfig{
 			NoData: &v1alphaSLO.AnomalyConfigNoData{
-				AlertAfter:   alertAfter,
-				AlertMethods: methods,
+				AlertAfter:        alertAfter,
+				AlertMethods:      methods,
+				TreatZeroAsNoData: ac.TreatZeroAsNoData.ValueBoolPointer(),
 			},
 		}
 	}
