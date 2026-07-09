@@ -7,7 +7,8 @@ NAMESPACE = nobl9
 NAME = nobl9
 BIN_DIR = ./bin
 BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
-VERSION = 0.46.2
+GIT_VERSION := $(shell git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null | sed 's/^v//')
+VERSION ?= $(or $(GIT_VERSION),0.0.0)
 VERSION_PKG := "$(shell go list -m)/internal/version"
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 REVISION ?= $(shell git rev-parse --short=8 HEAD)
@@ -54,6 +55,11 @@ build:
 	$(call _print_step,Building provider binary)
 	go build -ldflags="$(LDFLAGS)" -o $(BINARY)
 
+.PHONY: version
+## Print provider version.
+version:
+	printf '%s\n' "$(VERSION)"
+
 .PHONY: test test/unit test/acc
 ## Run all tests.
 test: test/unit test/acc
@@ -78,7 +84,7 @@ test/acc:
 ## Run Goreleaser in dry-run mode.
 release-dry-run:
 	$(call _print_step,Running Goreleaser in dry run mode)
-	goreleaser release --snapshot --skip-publish --clean
+	goreleaser release --snapshot --skip=sign --clean
 
 .PHONY: check check/vet check/lint check/spell check/trailing check/markdown check/format check/generate check/vulns
 ## Run all checks.
