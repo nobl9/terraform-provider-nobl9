@@ -1284,3 +1284,49 @@ func (s dash0DirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirec
 	set(d, "description", spec.Description, &diags)
 	return
 }
+
+// Elasticsearch Direct
+// https://docs.nobl9.com/Sources/elasticsearch#elasticsearch-direct
+const elasticsearchDirectType = "elasticsearch"
+
+type elasticsearchDirectSpec struct{}
+
+func (s elasticsearchDirectSpec) GetDescription() string {
+	return "[Elasticsearch Direct | Nobl9 Documentation]" +
+		"(https://docs.nobl9.com/Sources/elasticsearch#elasticsearch-direct)."
+}
+
+func (s elasticsearchDirectSpec) GetSchema() map[string]*schema.Schema {
+	elasticsearchSchema := map[string]*schema.Schema{
+		"url": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Public HTTPS Elasticsearch endpoint URL.",
+		},
+		"api_key": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Sensitive:        true,
+			Description:      "Encoded Elasticsearch API key.",
+			ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotEmpty),
+		},
+	}
+	setHistoricalDataRetrievalSchema(elasticsearchSchema)
+	return elasticsearchSchema
+}
+
+func (s elasticsearchDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
+	return v1alphaDirect.Spec{Elasticsearch: &v1alphaDirect.ElasticsearchConfig{
+		URL:    r.Get("url").(string),
+		APIKey: r.Get("api_key").(string),
+	}}
+}
+
+func (s elasticsearchDirectSpec) UnmarshalSpec(
+	d *schema.ResourceData,
+	spec v1alphaDirect.Spec,
+) (diags diag.Diagnostics) {
+	set(d, "url", spec.Elasticsearch.URL, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
