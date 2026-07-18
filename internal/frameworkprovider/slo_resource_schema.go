@@ -334,6 +334,10 @@ func anomalyConfigBlock() schema.ListNestedBlock {
 									"The value must be a valid Go duration string, such as \"1h\" for one hour. " +
 									"If not specified, the system defaults to \"15m\" (15 minutes).",
 							},
+							"treat_zero_as_no_data": schema.BoolAttribute{
+								Optional:    true,
+								Description: "Specifies whether zero values should be treated as no data.",
+							},
 						},
 					},
 				},
