@@ -65,8 +65,6 @@ jobs:
         with:
           ref: ${{ needs.validate_release.outputs.tag_name }}
           fetch-depth: 0
-      - name: Unshallow
-        run: git fetch --prune --unshallow
       - name: Set up Go
         uses: actions/setup-go@v6.4.0
         with:
