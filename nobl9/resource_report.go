@@ -593,6 +593,16 @@ func (r reportReliabilityRollup) GetDescription() string {
 
 func (r reportReliabilityRollup) GetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"reliability_score_type": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Default:  v1alphaReport.ReliabilityScoreTypeSLOTimeWindow.String(),
+			Description: "Reliability scoring mechanism. Supported values are `SLOTimeWindow` and " +
+				"`ReportTimeFrame`. Defaults to `SLOTimeWindow` when omitted.",
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringInSlice(v1alphaReport.ReliabilityScoreTypeNames(), false),
+			),
+		},
 		"time_frame": {
 			Type:     schema.TypeSet,
 			Required: true,
@@ -651,7 +661,8 @@ func (r reportReliabilityRollup) GetSchema() map[string]*schema.Schema {
 
 func (r reportReliabilityRollup) MarshalSpec(spec v1alphaReport.Spec, ri resourceInterface) v1alphaReport.Spec {
 	cfg := &v1alphaReport.ReliabilityRollupConfig{
-		TimeFrame: marshalReliabilityRollupTimeFrame(ri.Get("time_frame").(*schema.Set)),
+		TimeFrame:            marshalReliabilityRollupTimeFrame(ri.Get("time_frame").(*schema.Set)),
+		ReliabilityScoreType: v1alphaReport.ReliabilityScoreType(ri.Get("reliability_score_type").(string)),
 	}
 	if raw, ok := ri.Get("custom_hierarchy").(string); ok && raw != "" {
 		cfg.CustomHierarchy = unmarshalCustomHierarchy(raw)
@@ -666,6 +677,11 @@ func (r reportReliabilityRollup) UnmarshalSpec(d *schema.ResourceData, spec v1al
 	if config == nil {
 		return diags
 	}
+	reliabilityScoreType := config.ReliabilityScoreType
+	if reliabilityScoreType == "" {
+		reliabilityScoreType = v1alphaReport.ReliabilityScoreTypeSLOTimeWindow
+	}
+	diags = appendError(diags, d.Set("reliability_score_type", reliabilityScoreType.String()))
 	diags = appendError(diags, unmarshalReliabilityRollupTimeFrame(d, config.TimeFrame))
 	diags = appendError(diags, d.Set("custom_hierarchy", marshalCustomHierarchy(config.CustomHierarchy)))
 	return diags
