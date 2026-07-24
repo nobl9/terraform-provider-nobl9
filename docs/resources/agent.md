@@ -47,6 +47,7 @@ resource "nobl9_agent" "this" {
 - `appdynamics_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/appdynamics#appdynamics-agent) (see [below for nested schema](#nestedblock--appdynamics_config))
 - `azure_monitor_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#azure-monitor-agent) (see [below for nested schema](#nestedblock--azure_monitor_config))
 - `bigquery_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#bigquery-agent) (see [below for nested schema](#nestedblock--bigquery_config))
+- `clickhouse_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/clickhouse#clickhouse-agent) (see [below for nested schema](#nestedblock--clickhouse_config))
 - `cloudwatch_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#cloudwatch-agent) (see [below for nested schema](#nestedblock--cloudwatch_config))
 - `dash0_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/dash0#dash0-agent) (see [below for nested schema](#nestedblock--dash0_config))
 - `datadog_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/datadog#datadog-agent) (see [below for nested schema](#nestedblock--datadog_config))
@@ -114,6 +115,18 @@ Required:
 
 <a id="nestedblock--bigquery_config"></a>
 ### Nested Schema for `bigquery_config`
+
+
+<a id="nestedblock--clickhouse_config"></a>
+### Nested Schema for `clickhouse_config`
+
+Required:
+
+- `url` (String) ClickHouse HTTP API URL.
+
+Optional:
+
+- `database` (String) ClickHouse database name.
 
 
 <a id="nestedblock--cloudwatch_config"></a>
