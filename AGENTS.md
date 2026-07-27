@@ -72,6 +72,12 @@ Always ask the use for for `## Motivation`,
 unless you already know it from a spec or ticket.
 Be vigilant of any breaking changes and document them in `## Breaking Changes` section.
 
+In the `## Testing` section DO NOT list what targets from Makefile you've run.
+This is useless information. Focus on the actual testing performed to verify
+the changes work.
+Good practice is to add a small, reproducible provider and resource configuration
+(without exposing any secrets of course).
+
 ## Verification
 
 Always verify changes with project targets before claiming completion.
