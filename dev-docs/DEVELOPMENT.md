@@ -51,7 +51,6 @@ If you already have a Nobl9 `config.toml` on your machine with valid device cred
 run this command:
 
 ```shell
-NOBL9_NO_CONFIG_FILE=false \
 make test/acc
 ```
 
@@ -214,19 +213,21 @@ and you can place them in the templates using the following functions:
       }
     }
 
-    provider "nobl9" {
-      // Add this If you want to use `config.toml` credentials.
-      // When set to false, you won't need to provide any further env variables.
-      no_config_file = false
-    }
+    provider "nobl9" {}
 
     resource "nobl9_project" "this" {
       name         = "my-project"
     }
     ```
 
-    Now you're all set, you can use the locally built provider anywhere, as long
-    as you use the right version (see above).
+    When provider credentials and `NOBL9_` environment variables
+    are absent or empty,
+    the provider reads credentials from `config.toml`.
+    Set `no_config_file = true` to disable this fallback.
+
+    Now you're all set.
+    You can use the locally built provider anywhere,
+    as long as you use the right version (see above).
 
 ## Releases
 

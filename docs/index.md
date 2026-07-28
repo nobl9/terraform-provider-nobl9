@@ -29,7 +29,13 @@ The Nobl9 Terraform Provider does not support the configuration of the following
 
 ## Configuration
 
-To start using Nobl9 Terraform Provider, you must configure the provider with the proper credentials. Then, use the navigation on the left to learn more about the available resources.
+Configure the provider with credentials in the provider block,
+`NOBL9_` environment variables,
+or the Nobl9 `config.toml` file.
+Provider arguments take precedence over environment variables,
+which take precedence over `config.toml`.
+Configuration-file loading is enabled by default.
+Set `no_config_file = true` to disable it.
 
 The following is an exemplary configuration:
 
@@ -57,7 +63,7 @@ provider "nobl9" {
 - `client_id` (String) The [Client ID](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.
 - `client_secret` (String, Sensitive) The [Client Secret](https://docs.nobl9.com/sloctl-user-guide/#configuration) of your Nobl9 account required to connect to Nobl9.
 - `ingest_url` (String) Nobl9 API URL.
-- `no_config_file` (Boolean) Disable reading configuration from file.
+- `no_config_file` (Boolean) Set to true to disable reading configuration from file. Defaults to false.
 - `okta_auth_server` (String) Authorization service configuration.
 - `okta_org_url` (String) Authorization service URL.
 - `organization` (String) Nobl9 Organization ID that contains resources managed by the provider.
