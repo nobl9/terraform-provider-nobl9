@@ -1437,7 +1437,7 @@ func clickHouseToModel(src *v1alphaSLO.ClickHouseMetric) *ClickHouseModel {
 	}
 }
 
-// setClickHouseModel keeps metricSpecToModel under the gocyclo limit;
+// setClickHouseModel keeps metricSpecToModel under the cyclomatic-complexity limit;
 // inlining the nil-check like the sibling sources pushes it over.
 func setClickHouseModel(model *MetricSpecModel, src *v1alphaSLO.ClickHouseMetric) {
 	if clickHouse := clickHouseToModel(src); clickHouse != nil {
