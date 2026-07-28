@@ -16,12 +16,13 @@ import (
 // terraform-plugin-framework requires an exact bidirectional 1:1 match between
 // object type and struct, so every non-empty good_total list failed with
 // "Struct defines fields not found in object: clickhouse" — breaking
-// Read/Create/Update/Delete for existing GA SLOs of every other source. The
-// metric-spec schema must stay uniform across good/bad/total/good_total;
-// source capability is enforced by validation, not by schema shape.
-func TestSLOResourceGoodTotalDecodesMetricSpecModel(t *testing.T) {
+// Read/Create/Update/Delete for existing GA SLOs of every other source.
+// MetricSpecModel is decoded at five sites (good, bad, total, good_total,
+// raw_metric.query); reducing ANY of them reintroduces the bug, so each site
+// is round-tripped against the real schema here. Source capability is
+// enforced by validation, not by schema shape.
+func TestSLOResourceMetricSpecSitesDecodeMetricSpecModel(t *testing.T) {
 	ctx := context.Background()
-	objType := goodTotalNestedObjectType(t)
 
 	// A non-ClickHouse source: that is the population the regression broke.
 	model := metricSpecToModel(&v1alphaSLO.MetricSpec{
@@ -30,33 +31,38 @@ func TestSLOResourceGoodTotalDecodesMetricSpecModel(t *testing.T) {
 		},
 	})
 
-	value, diags := types.ObjectValueFrom(ctx, objType.AttrTypes, model)
-	require.Empty(t, diags,
-		"good_total object type must accept the full MetricSpecModel: %v", diags)
+	for _, site := range []string{"good", "bad", "total", "good_total", "raw_metric.query"} {
+		t.Run(site, func(t *testing.T) {
+			objType := metricSpecObjectType(t, site)
 
-	var decoded MetricSpecModel
-	diags = value.As(ctx, &decoded, basetypes.ObjectAsOptions{})
-	require.Empty(t, diags, "good_total value must decode back into MetricSpecModel: %v", diags)
-	require.Equal(t, model, decoded)
+			value, diags := types.ObjectValueFrom(ctx, objType.AttrTypes, model)
+			require.Empty(t, diags,
+				"%s object type must accept the full MetricSpecModel: %v", site, diags)
+
+			var decoded MetricSpecModel
+			diags = value.As(ctx, &decoded, basetypes.ObjectAsOptions{})
+			require.Empty(t, diags,
+				"%s value must decode back into MetricSpecModel: %v", site, diags)
+			require.Equal(t, model, decoded)
+		})
+	}
 }
 
-// The good_total block must expose the exact same metric-spec blocks as
-// good/bad/total so the shared MetricSpecModel decodes all four.
-func TestSLOResourceGoodTotalSchemaIsUniform(t *testing.T) {
-	countMetrics := countMetricsNestedBlock(t)
-
-	goodTotal, ok := countMetrics.NestedObject.Blocks["good_total"].(schema.ListNestedBlock)
-	require.True(t, ok)
-	good, ok := countMetrics.NestedObject.Blocks["good"].(schema.ListNestedBlock)
-	require.True(t, ok)
-
-	require.Equal(t, good.NestedObject.Type(), goodTotal.NestedObject.Type(),
-		"good_total must expose the same metric-spec object type as good")
-	require.Contains(t, goodTotal.NestedObject.Blocks, "clickhouse")
-	require.Contains(t, goodTotal.NestedObject.Blocks, "prometheus")
+// Every metric-spec site must expose the exact same object type so the shared
+// MetricSpecModel decodes all of them; clickhouse must be among the blocks.
+func TestSLOResourceMetricSpecSchemaIsUniform(t *testing.T) {
+	good := metricSpecObjectType(t, "good")
+	for _, site := range []string{"bad", "total", "good_total", "raw_metric.query"} {
+		require.Equal(t, good, metricSpecObjectType(t, site),
+			"%s must expose the same metric-spec object type as good", site)
+	}
+	require.Contains(t, good.AttrTypes, "clickhouse")
+	require.Contains(t, good.AttrTypes, "prometheus")
 }
 
-// Manifest round-trip through the model for a good_total counter.
+// Manifest round-trip through the model for a good_total counter. This covers
+// the countMetricsToModel/ToManifest mapping only; the schema decode paths
+// are exercised by the tests above.
 func TestSLOResourceGoodTotalManifestRoundTrip(t *testing.T) {
 	spec := &v1alphaSLO.CountMetricsSpec{
 		Incremental: boolPtr(false),
@@ -74,27 +80,30 @@ func TestSLOResourceGoodTotalManifestRoundTrip(t *testing.T) {
 	require.Equal(t, spec, roundTripped)
 }
 
-// countMetricsNestedBlock walks the real resource schema down to the
-// count_metrics block (objective -> count_metrics).
-func countMetricsNestedBlock(t *testing.T) schema.ListNestedBlock {
+// metricSpecObjectType walks the real resource schema down to the metric-spec
+// nested-object type at the given decode site (objective -> count_metrics ->
+// good/bad/total/good_total, or objective -> raw_metric -> query).
+func metricSpecObjectType(t *testing.T, site string) basetypes.ObjectType {
 	t.Helper()
-	objective, ok := sloResourceSchema.Blocks["objective"].(schema.ListNestedBlock)
-	require.True(t, ok)
-	countMetrics, ok := objective.NestedObject.Blocks["count_metrics"].(schema.ListNestedBlock)
-	require.True(t, ok)
-	return countMetrics
+	objective := nestedBlock(t, sloResourceSchema.Blocks, "objective")
+	var block schema.ListNestedBlock
+	if site == "raw_metric.query" {
+		rawMetric := nestedBlock(t, objective.NestedObject.Blocks, "raw_metric")
+		block = nestedBlock(t, rawMetric.NestedObject.Blocks, "query")
+	} else {
+		countMetrics := nestedBlock(t, objective.NestedObject.Blocks, "count_metrics")
+		block = nestedBlock(t, countMetrics.NestedObject.Blocks, site)
+	}
+	objType, ok := block.NestedObject.Type().(basetypes.ObjectType)
+	require.True(t, ok, "%s nested-object type must be basetypes.ObjectType", site)
+	return objType
 }
 
-// goodTotalNestedObjectType extracts the good_total nested-object type from the
-// real resource schema.
-func goodTotalNestedObjectType(t *testing.T) basetypes.ObjectType {
+func nestedBlock(t *testing.T, blocks map[string]schema.Block, name string) schema.ListNestedBlock {
 	t.Helper()
-	countMetrics := countMetricsNestedBlock(t)
-	goodTotal, ok := countMetrics.NestedObject.Blocks["good_total"].(schema.ListNestedBlock)
-	require.True(t, ok)
-	objType, ok := goodTotal.NestedObject.Type().(basetypes.ObjectType)
-	require.True(t, ok)
-	return objType
+	block, ok := blocks[name].(schema.ListNestedBlock)
+	require.True(t, ok, "block %q must be a schema.ListNestedBlock", name)
+	return block
 }
 
 func stringPtr(s string) *string { return &s }
