@@ -1285,8 +1285,7 @@ func (s dash0DirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirec
 	return
 }
 
-// ClickHouse Direct
-// https://docs.nobl9.com/Sources/clickhouse#clickhouse-direct
+// ClickHouse Direct: https://docs.nobl9.com/Sources/clickhouse#clickhouse-direct
 const clickHouseDirectType = "clickhouse"
 
 type clickHouseDirectSpec struct{}

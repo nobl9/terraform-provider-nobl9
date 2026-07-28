@@ -1456,10 +1456,7 @@ func marshalAgentDash0(d resourceInterface, diags diag.Diagnostics) *v1alphaAgen
 	}
 }
 
-/**
- * ClickHouse Agent
- * https://docs.nobl9.com/Sources/clickhouse#clickhouse-agent
- */
+// ClickHouse Agent: https://docs.nobl9.com/Sources/clickhouse#clickhouse-agent
 const clickHouseAgentType = "clickhouse"
 const clickHouseAgentConfigKey = "clickhouse_config"
 

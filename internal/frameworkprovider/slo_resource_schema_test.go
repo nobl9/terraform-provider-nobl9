@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSLOResourceMetricSpecBlocksWithout(t *testing.T) {
-	blocks := sloResourceMetricSpecBlocksWithout("clickhouse")
+func TestSLOResourceMetricSpecBlocksWithoutClickHouse(t *testing.T) {
+	blocks := sloResourceMetricSpecBlocksWithoutClickHouse()
 
 	require.NotContains(t, blocks, "clickhouse")
 	require.Contains(t, blocks, "prometheus")
