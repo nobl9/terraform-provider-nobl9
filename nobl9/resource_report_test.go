@@ -62,7 +62,7 @@ func TestAcc_Nobl9ReportsErrors(t *testing.T) {
 		{"system-health-review-wrong-filters",
 			"system_health_review",
 			testSHRWrongFilters,
-			`at least one of the following fields is required: projects, services, slos`,
+			`at least one of the following fields is required: projectScope=all, projects, services, slos`,
 		},
 		{"system-health-review-empty-column",
 			"system_health_review",

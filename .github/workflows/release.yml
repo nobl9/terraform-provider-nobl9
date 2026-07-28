@@ -1,4 +1,4 @@
-# This GitHub action can publish assets for release when a release draft is published.
+# This GitHub action publishes assets when a stable release tag is created.
 #
 # This uses an action (hashicorp/ghaction-import-gpg) that assumes you set your
 # private key in the `GPG_PRIVATE_KEY` secret and passphrase in the `PASSPHRASE`
@@ -10,15 +10,16 @@
 #
 name: Release
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
 jobs:
   test:
     uses: ./.github/workflows/acc-tests.yml
     with:
       clientId: "${{ vars.TERRAFORM_NOBL9_CLIENT_ID }}"
       project: "${{ vars.TERRAFORM_NOBL9_PROJECT }}"
-      ref: "${{ github.event.release.tag_name }}"
+      ref: "${{ github.ref_name }}"
     secrets:
       clientSecret: "${{ secrets.TERRAFORM_NOBL9_CLIENT_SECRET }}"
   qa-approval:
@@ -32,12 +33,12 @@ jobs:
     needs: [test, qa-approval]
     steps:
       - name: Checkout
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
       - name: Set up Go
-        uses: actions/setup-go@v6.4.0
+        uses: actions/setup-go@v7.0.0
         with:
           go-version-file: go.mod
           check-latest: true
@@ -50,11 +51,11 @@ jobs:
       - name: setup github
         run: git config --global url."https://n9-machine-user:${{ secrets.GH_TOKEN }}@github.com".insteadOf "https://github.com"
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v7.2.2
+        uses: goreleaser/goreleaser-action@v7.2.3
         with:
           version: latest
           args: release --clean
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          GORELEASER_CURRENT_TAG: ${{ github.event.release.tag_name }}
+          GORELEASER_CURRENT_TAG: ${{ github.ref_name }}

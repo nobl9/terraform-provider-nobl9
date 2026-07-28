@@ -197,7 +197,8 @@ and you can place them in the templates using the following functions:
     system (for example _darwin_arm64_ for Apple Silicon based Mac's).
     If not override it.
 3. Run `make version` to check the provider version that will be installed.
-    By default, the Makefile derives it from the latest reachable Git tag.
+    By default, the Makefile uses the nearest matching Git tag reachable from
+    the current commit. If no matching tag is reachable, it uses `0.0.0`.
     Use `VERSION=<version> make install/provider` when you need a specific
     local test version.
 4. Run `make install/provider`. Make sure that the plugin was installed:

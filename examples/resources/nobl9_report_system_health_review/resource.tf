@@ -1,3 +1,35 @@
+resource "nobl9_report_system_health_review" "all_projects" {
+  name         = "my-shr-all-projects"
+  display_name = "My System Health Review Report - All Projects"
+  shared       = true
+  row_group_by = "project"
+
+  filters {
+    project_scope = "all"
+  }
+
+  time_frame {
+    time_zone = "Europe/Warsaw"
+    snapshot {
+      point = "latest"
+    }
+  }
+
+  column {
+    display_name = "Column 1"
+    label {
+      key    = "key1"
+      values = ["value1"]
+    }
+  }
+
+  thresholds {
+    red_lte      = 0.8
+    green_gt     = 0.95
+    show_no_data = true
+  }
+}
+
 resource "nobl9_report_system_health_review" "this" {
   name         = "my-shr-report"
   display_name = "My System Health Review Report"
@@ -55,4 +87,3 @@ resource "nobl9_report_system_health_review" "this" {
     show_no_data = true
   }
 }
-
