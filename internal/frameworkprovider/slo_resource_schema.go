@@ -192,7 +192,7 @@ func sloResourceObjectiveBlock() schema.ListNestedBlock {
 								Description: "Configuration for single query series metrics.",
 								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
-									Blocks: sloResourceMetricSpecBlocksWithoutClickHouse(),
+									Blocks: sloResourceMetricSpecBlocks(),
 								},
 							},
 						},
@@ -1041,12 +1041,6 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 			},
 		},
 	}
-}
-
-func sloResourceMetricSpecBlocksWithoutClickHouse() map[string]schema.Block {
-	blocks := sloResourceMetricSpecBlocks()
-	delete(blocks, "clickhouse")
-	return blocks
 }
 
 func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
