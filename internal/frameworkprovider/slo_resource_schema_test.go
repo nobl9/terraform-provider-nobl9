@@ -11,7 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Every MetricSpecModel decode site must use the full schema because terraform-plugin-framework requires an exact object/struct match.
+// Every MetricSpecModel decode site must use the full schema because terraform-plugin-framework
+// requires an exact object/struct match.
 // Reducing good_total once broke all non-empty good_total SLOs.
 func TestSLOResourceMetricSpecSitesDecodeMetricSpecModel(t *testing.T) {
 	ctx := context.Background()
