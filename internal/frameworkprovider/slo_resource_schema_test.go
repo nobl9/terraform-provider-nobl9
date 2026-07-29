@@ -11,16 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Regression test: good_total was once built with a reduced block set (without
-// clickhouse) while CountMetricsModel.GoodTotal kept the full MetricSpecModel.
-// terraform-plugin-framework requires an exact bidirectional 1:1 match between
-// object type and struct, so every non-empty good_total list failed with
-// "Struct defines fields not found in object: clickhouse" — breaking
-// Read/Create/Update/Delete for existing GA SLOs of every other source.
-// MetricSpecModel is decoded at five sites (good, bad, total, good_total,
-// raw_metric.query); reducing ANY of them reintroduces the bug, so each site
-// is round-tripped against the real schema here. Source capability is
-// enforced by validation, not by schema shape.
+// Every MetricSpecModel decode site must use the full schema because terraform-plugin-framework requires an exact object/struct match.
+// Reducing good_total once broke all non-empty good_total SLOs.
 func TestSLOResourceMetricSpecSitesDecodeMetricSpecModel(t *testing.T) {
 	ctx := context.Background()
 
@@ -48,8 +40,7 @@ func TestSLOResourceMetricSpecSitesDecodeMetricSpecModel(t *testing.T) {
 	}
 }
 
-// Every metric-spec site must expose the exact same object type so the shared
-// MetricSpecModel decodes all of them; clickhouse must be among the blocks.
+// Every decode site must expose the same object type, including the ClickHouse block.
 func TestSLOResourceMetricSpecSchemaIsUniform(t *testing.T) {
 	good := metricSpecObjectType(t, "good")
 	for _, site := range []string{"bad", "total", "good_total", "raw_metric.query"} {
@@ -60,9 +51,7 @@ func TestSLOResourceMetricSpecSchemaIsUniform(t *testing.T) {
 	require.Contains(t, good.AttrTypes, "prometheus")
 }
 
-// Manifest round-trip through the model for a good_total counter. This covers
-// the countMetricsToModel/ToManifest mapping only; the schema decode paths
-// are exercised by the tests above.
+// Covers model/manifest mapping; the tests above cover schema decoding.
 func TestSLOResourceGoodTotalManifestRoundTrip(t *testing.T) {
 	spec := &v1alphaSLO.CountMetricsSpec{
 		Incremental: boolPtr(false),
@@ -80,9 +69,6 @@ func TestSLOResourceGoodTotalManifestRoundTrip(t *testing.T) {
 	require.Equal(t, spec, roundTripped)
 }
 
-// metricSpecObjectType walks the real resource schema down to the metric-spec
-// nested-object type at the given decode site (objective -> count_metrics ->
-// good/bad/total/good_total, or objective -> raw_metric -> query).
 func metricSpecObjectType(t *testing.T, site string) basetypes.ObjectType {
 	t.Helper()
 	objective := nestedBlock(t, sloResourceSchema.Blocks, "objective")
