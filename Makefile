@@ -5,6 +5,7 @@ TEST ?= $$(go list ./... | grep -v 'vendor')
 HOSTNAME = nobl9.com
 NAMESPACE = nobl9
 NAME = nobl9
+PROVIDER_ADDRESS = $(HOSTNAME)/$(NAMESPACE)/$(NAME)
 BIN_DIR = ./bin
 BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
 GIT_VERSION := $(shell git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null | sed 's/^v//')
@@ -17,6 +18,7 @@ LDFLAGS += -s -w \
 	-X $(VERSION_PKG).BuildGitBranch=$(BRANCH) \
 	-X $(VERSION_PKG).BuildGitRevision=$(REVISION)
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
+PROVIDER_INSTALL_DIR = $(HOME)/.terraform.d/plugins/$(PROVIDER_ADDRESS)/$(VERSION)/$(OS_ARCH)
 
 # renovate datasource=github-releases depName=golangci/golangci-lint
 GOLANGCI_LINT_VERSION := v2.12.2
@@ -43,22 +45,29 @@ define _print_step
 endef
 
 .PHONY: install/provider
-## Install provider locally.
+## Install provider locally and print its Terraform declaration.
 install/provider: build
 	$(call _print_step,Installing provider $(VERSION) locally)
-	mkdir -p ~/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(NAME)/$(VERSION)/$(OS_ARCH)
-	mv $(BINARY) ~/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(NAME)/$(VERSION)/$(OS_ARCH)
+	mkdir -p "$(PROVIDER_INSTALL_DIR)"
+	mv "$(BINARY)" "$(PROVIDER_INSTALL_DIR)"
+	printf -- '%s\n' \
+		'' \
+		'Use this provider declaration in your Terraform configuration:' \
+		'' \
+		'terraform {' \
+		'  required_providers {' \
+		'    $(NAME) = {' \
+		'      source  = "$(PROVIDER_ADDRESS)"' \
+		'      version = "$(VERSION)"' \
+		'    }' \
+		'  }' \
+		'}'
 
 .PHONY: build
 ## Build provider binary.
 build:
 	$(call _print_step,Building provider binary)
 	go build -ldflags="$(LDFLAGS)" -o $(BINARY)
-
-.PHONY: version
-## Print provider version.
-version:
-	printf '%s\n' "$(VERSION)"
 
 .PHONY: test test/unit test/acc
 ## Run all tests.

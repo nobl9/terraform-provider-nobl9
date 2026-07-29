@@ -196,29 +196,17 @@ and you can place them in the templates using the following functions:
 2. Before the next step, verify if the Makefile variable `OS_ARCH` matches your
     system (for example _darwin_arm64_ for Apple Silicon based Mac's).
     If not override it.
-3. Run `make version` to check the provider version that will be installed.
+3. Run `make install/provider`.
     By default, the Makefile uses the nearest matching Git tag reachable from
     the current commit. If no matching tag is reachable, it uses `0.0.0`.
     Use `VERSION=<version> make install/provider` when you need a specific
     local test version.
-4. Run `make install/provider`. Make sure that the plugin was installed:
-    `ls ~/.terraform.d/plugins/nobl9.com/nobl9/nobl9/`
-    It will show you the installed plugin version.
-5. Copy the path to the plugin after ~/.terraform.d/plugins/, for example:
-    `nobl9.com/nobl9/nobl9/<version>/linux_amd64/terraform-provider-nobl9`
-    and configure your `.tf` file with it.
-    Usually it will look like this, just change the version:
+    Run `make version` first if you want to inspect the resolved version.
+4. Copy the printed provider declaration into your Terraform configuration.
+    It contains the installed provider's exact source address and version.
+5. Configure the provider and add resources as needed, for example:
 
     ```terraform
-    terraform {
-      required_providers {
-        nobl9 = {
-          source = "nobl9.com/nobl9/nobl9"
-          version = "<version>"
-        }
-      }
-    }
-
     provider "nobl9" {
       // Add this If you want to use `config.toml` credentials.
       // When set to false, you won't need to provide any further env variables.
@@ -230,8 +218,8 @@ and you can place them in the templates using the following functions:
     }
     ```
 
-    Now you're all set, you can use the locally built provider anywhere, as long
-    as you use the installed version (see above).
+    You can use the locally built provider anywhere with the declaration printed
+    by `make install/provider`.
 
 ## Releases
 
