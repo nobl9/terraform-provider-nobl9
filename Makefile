@@ -84,7 +84,7 @@ test/acc:
 ## Run Goreleaser in dry-run mode.
 release-dry-run:
 	$(call _print_step,Running Goreleaser in dry run mode)
-	goreleaser release --snapshot --skip=sign --clean
+	goreleaser release --snapshot --skip-publish --clean
 
 .PHONY: check check/vet check/lint check/spell check/trailing check/markdown check/format check/generate check/vulns
 ## Run all checks.

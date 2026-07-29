@@ -1,4 +1,5 @@
-# This GitHub action publishes assets when a stable release tag is created.
+# This GitHub action can publish assets for release when a tag is created.
+# Currently its setup to run on any tag that matches the pattern "v*" (ie. v0.1.0).
 #
 # This uses an action (hashicorp/ghaction-import-gpg) that assumes you set your
 # private key in the `GPG_PRIVATE_KEY` secret and passphrase in the `PASSPHRASE`
@@ -13,6 +14,8 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-beta"
+      - "v[0-9]+.[0-9]+.[0-9]+-alpha"
 jobs:
   test:
     uses: ./.github/workflows/acc-tests.yml
@@ -34,9 +37,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
-        with:
-          ref: ${{ github.ref_name }}
-          fetch-depth: 0
+      - name: Unshallow
+        run: git fetch --prune --unshallow
       - name: Set up Go
         uses: actions/setup-go@v7.0.0
         with:
@@ -44,7 +46,7 @@ jobs:
           check-latest: true
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v7.0.0
+        uses:  crazy-max/ghaction-import-gpg@v7.0.0
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY_2024_03 }}
           passphrase: ${{ secrets.PASSPHRASE_2024_03 }}

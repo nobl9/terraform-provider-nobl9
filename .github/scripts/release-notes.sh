@@ -39,7 +39,7 @@ indent() {
 new_notes=""
 rls_header=""
 while IFS= read -r line; do
-	new_notes+="${line}"$'\n'
+	new_notes+="$line\n"
 	if [[ $line == \##* ]]; then
 		if ! [[ $line =~ $rls_header_re ]]; then
 			rls_header=""
@@ -59,7 +59,8 @@ while IFS= read -r line; do
 	add_notes() {
 		local notes="$1"
 		if [[ $notes != "" ]]; then
-			new_notes+="$(indent "$notes")"$'\n'
+			new_notes+=$(indent "$notes")
+			new_notes+="\n"
 		fi
 	}
 
@@ -74,4 +75,5 @@ while IFS= read -r line; do
 done <<<"$RELEASE_NOTES"
 
 echo "Uploading release notes for $VERSION"
-printf '%s' "$new_notes" | gh release edit "$VERSION" -F -
+# shellcheck disable=2059
+printf "$new_notes" | gh release edit "$VERSION" --verify-tag -F -
