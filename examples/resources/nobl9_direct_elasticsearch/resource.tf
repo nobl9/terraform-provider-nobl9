@@ -3,7 +3,7 @@ resource "nobl9_direct_elasticsearch" "example" {
   project         = "default"
   url             = "https://example.aws.found.io"
   api_key         = "encoded-api-key"
-  release_channel = "stable"
+  release_channel = "beta"
 
   historical_data_retrieval {
     default_duration {

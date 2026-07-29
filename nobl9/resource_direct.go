@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaDirect "github.com/nobl9/nobl9-go/manifest/v1alpha/direct"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
@@ -1298,6 +1299,16 @@ func (s elasticsearchDirectSpec) GetDescription() string {
 
 func (s elasticsearchDirectSpec) GetSchema() map[string]*schema.Schema {
 	elasticsearchSchema := map[string]*schema.Schema{
+		releaseChannel: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     v1alpha.ReleaseChannelBeta.String(),
+			Description: "Release channel of the created data source [beta]",
+			ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice(
+				[]string{v1alpha.ReleaseChannelBeta.String()},
+				false,
+			)),
+		},
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,

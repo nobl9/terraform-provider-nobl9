@@ -18,7 +18,7 @@ resource "nobl9_direct_elasticsearch" "example" {
   project         = "default"
   url             = "https://example.aws.found.io"
   api_key         = "encoded-api-key"
-  release_channel = "stable"
+  release_channel = "beta"
 
   historical_data_retrieval {
     default_duration {
@@ -54,7 +54,7 @@ resource "nobl9_direct_elasticsearch" "example" {
 - `display_name` (String) User-friendly display name of the resource.
 - `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
-- `release_channel` (String) Release channel of the created data source [stable/beta]
+- `release_channel` (String) Release channel of the created data source [beta]
 - `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
 
 ### Read-Only

@@ -558,7 +558,7 @@ resource "nobl9_direct_%s" "%s" {
   description = "desc"
   url = "https://example.aws.found.io"
   api_key = "encoded-api-key"
-  release_channel = "stable"
+  release_channel = "beta"
   historical_data_retrieval {
     default_duration {
       unit = "Day"

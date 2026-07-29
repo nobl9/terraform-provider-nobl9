@@ -3,10 +3,12 @@ package nobl9
 import (
 	"testing"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaDirect "github.com/nobl9/nobl9-go/manifest/v1alpha/direct"
 )
 
@@ -17,6 +19,12 @@ func TestElasticsearchDirectSpec(t *testing.T) {
 	assert.True(t, resourceSchema["url"].Required)
 	assert.True(t, resourceSchema["api_key"].Required)
 	assert.True(t, resourceSchema["api_key"].Sensitive)
+
+	releaseChannelSchema := resourceSchema[releaseChannel]
+	assert.Equal(t, v1alpha.ReleaseChannelBeta.String(), releaseChannelSchema.Default)
+	path := cty.GetAttrPath(releaseChannel)
+	assert.Empty(t, releaseChannelSchema.ValidateDiagFunc(v1alpha.ReleaseChannelBeta.String(), path))
+	assert.NotEmpty(t, releaseChannelSchema.ValidateDiagFunc(v1alpha.ReleaseChannelStable.String(), path))
 
 	spec := provider.MarshalSpec(mockResourceData{
 		"url":     "https://example.aws.found.io",
