@@ -274,11 +274,21 @@ func (s *SLOResource) readResource(
 		return nil, diagnostics
 	}
 	updatedModel := newSLOResourceConfigFromManifest(slo)
+	preserveNullIndicatorProject(model, updatedModel)
 	s.updateEmptyAlertPolicies(ctx, diagnostics, state, plan, updatedModel, slo)
 	s.updateEmptyCompositeAggregation(ctx, state, plan, updatedModel)
 	s.sortLists(model, updatedModel)
 
 	return updatedModel, diagnostics
+}
+
+func preserveNullIndicatorProject(source, target *SLOResourceModel) {
+	if len(source.Indicator) == 0 || len(target.Indicator) == 0 {
+		return
+	}
+	if source.Indicator[0].Project.IsNull() {
+		target.Indicator[0].Project = source.Indicator[0].Project
+	}
 }
 
 // updateEmptyCompositeAggregation handles the case when:
