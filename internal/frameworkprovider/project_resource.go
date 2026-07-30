@@ -41,6 +41,7 @@ func (s *ProjectResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 		MarkdownDescription: description,
 		Description:         description,
 		Attributes: map[string]schema.Attribute{
+			"id": resourceIDAttr(),
 			"name": func() schema.StringAttribute {
 				attr := metadataNameAttr()
 				return addProjectResourceNameChangeWarning(attr)
