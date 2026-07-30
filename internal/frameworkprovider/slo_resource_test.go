@@ -179,6 +179,45 @@ func TestAccSLOResource(t *testing.T) {
 	})
 }
 
+func TestAccSLOResource_timeWindowPeriod(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx := t.Context()
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	sloResource := sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource.Name = e2etestutils.GenerateName()
+	sloResource.Project = manifestProject.GetName()
+	sloResource.Service = manifestService.GetName()
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	manifestSLO := sloResource.ToManifest()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{{
+			PreConfig: func() {
+				e2etestutils.V1Apply(t, auxiliaryObjects)
+				t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+			},
+			Config: newSLOResource(t, sloResource),
+			Check:  assertSLOTimeWindowPeriodMatchesAPI(t, ctx, "nobl9_slo.test", manifestSLO),
+		}},
+	})
+}
+
 func TestAccSLOResource_planValidation(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
@@ -1877,6 +1916,56 @@ func TestRenderSLOResourceTemplate_compositeV1Example(t *testing.T) {
 
 	assertHCL(t, actual)
 	assert.Equal(t, readExpectedConfig(t, "slo-composite-v1-config.tf"), actual)
+}
+
+func assertSLOTimeWindowPeriodMatchesAPI(
+	t *testing.T,
+	ctx context.Context,
+	resourceName string,
+	expected v1alphaSLO.SLO,
+) resource.TestCheckFunc {
+	t.Helper()
+
+	return func(state *terraform.State) error {
+		objects, err := getObjectsFromTheNobl9API(t, ctx, expected)
+		if err != nil {
+			return fmt.Errorf("get SLO time window period from API: %w", err)
+		}
+		if len(objects) != 1 {
+			return fmt.Errorf("expected exactly one API object, got %d", len(objects))
+		}
+		slo, ok := objects[0].(v1alphaSLO.SLO)
+		if !ok {
+			return fmt.Errorf("expected API object to be an SLO, got %T", objects[0])
+		}
+		if len(slo.Spec.TimeWindows) != 1 {
+			return fmt.Errorf("expected exactly one API SLO time window, got %d", len(slo.Spec.TimeWindows))
+		}
+		period := slo.Spec.TimeWindows[0].Period
+		if period == nil {
+			return errors.New("expected API SLO time window period to be set")
+		}
+
+		resourceState, ok := state.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("terraform resource not found in state: %s", resourceName)
+		}
+		begin, ok := resourceState.Primary.Attributes["time_window.0.period.begin"]
+		if !ok {
+			return errors.New("terraform time_window.0.period.begin attribute not found in state")
+		}
+		if begin != period.Begin {
+			return fmt.Errorf("terraform period begin %q does not match API period begin %q", begin, period.Begin)
+		}
+		end, ok := resourceState.Primary.Attributes["time_window.0.period.end"]
+		if !ok {
+			return errors.New("terraform time_window.0.period.end attribute not found in state")
+		}
+		if end != period.End {
+			return fmt.Errorf("terraform period end %q does not match API period end %q", end, period.End)
+		}
+		return nil
+	}
 }
 
 type sloResourceTemplateModel struct {
