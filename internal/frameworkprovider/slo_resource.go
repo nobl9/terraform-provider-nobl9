@@ -253,6 +253,9 @@ func (s *SLOResource) readResource(
 		return nil, diagnostics
 	}
 	updatedModel := newSLOResourceConfigFromManifest(slo)
+	updatedModel.DisplayName = preserveExplicitEmptyString(model.DisplayName, updatedModel.DisplayName)
+	updatedModel.Description = preserveExplicitEmptyString(model.Description, updatedModel.Description)
+	updatedModel.Annotations = preserveExplicitEmptyAnnotations(model.Annotations, updatedModel.Annotations)
 	s.updateEmptyAlertPolicies(ctx, diagnostics, state, plan, updatedModel, slo)
 	s.updateEmptyCompositeAggregation(ctx, state, plan, updatedModel)
 	s.sortLists(model, updatedModel)

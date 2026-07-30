@@ -8,8 +8,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaProject "github.com/nobl9/nobl9-go/manifest/v1alpha/project"
 	"github.com/nobl9/nobl9-go/tests/e2etestutils"
@@ -123,6 +126,41 @@ func TestAccProjectResource(t *testing.T) {
 				},
 			},
 			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccProjectResource_explicitEmptyMetadata(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	projectResource := projectResourceTemplateModel{
+		ResourceName: "test",
+		ProjectResourceModel: ProjectResourceModel{
+			Name:        e2etestutils.GenerateName(),
+			DisplayName: types.StringValue(""),
+			Description: types.StringValue(""),
+			Annotations: map[string]string{},
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: newProjectResource(t, projectResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_project.test", "display_name", ""),
+					resource.TestCheckResourceAttr("nobl9_project.test", "description", ""),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"nobl9_project.test",
+						tfjsonpath.New("annotations"),
+						knownvalue.MapExact(map[string]knownvalue.Check{}),
+					),
+				},
+			},
 		},
 	})
 }

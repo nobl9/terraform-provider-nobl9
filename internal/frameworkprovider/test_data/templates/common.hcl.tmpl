@@ -6,7 +6,7 @@
   {{- if hasField "Project" . }}
   project = "{{ .Project }}"
   {{- end }}
-  {{- if .Annotations }}
+  {{- if not (eq .Annotations nil) }}
   annotations = {
     {{- range $key, $value := .Annotations }}
     {{ $key }} = "{{ $value }}",
