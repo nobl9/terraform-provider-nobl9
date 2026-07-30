@@ -31,16 +31,19 @@ func (s sloObjectiveValuePlanModifier) PlanModifyFloat64(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	nullOrUnknown := isNullOrUnknown(req.PlanValue)
+	if req.PlanValue.IsUnknown() {
+		return
+	}
+	valueIsNull := req.PlanValue.IsNull()
 	compositeObjectives := hasCompositeObjectives(objectives)
 	switch {
-	case !nullOrUnknown && compositeObjectives:
+	case !valueIsNull && compositeObjectives:
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
 			"objective value cannot be set when defining composite SLOs",
 			"",
 		)
-	case nullOrUnknown && !compositeObjectives:
+	case valueIsNull && !compositeObjectives:
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
 			"objective value must be set for ratio and threshold objectives",

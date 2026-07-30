@@ -1385,6 +1385,62 @@ func TestAccSLOResource_objectiveValueErrors(t *testing.T) {
 	}
 }
 
+func TestAccSLOResource_unknownObjectiveValue(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	sloResource := sloResourceTemplateModel{
+		ResourceName:     "this",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource.Name = e2etestutils.GenerateName()
+	sloResource.Project = manifestProject.GetName()
+	sloResource.Service = manifestService.GetName()
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+
+	manifestSLO := sloResource.ToManifest()
+	sloConfig := newSLOResource(t, sloResource)
+	sloConfig = strings.Replace(
+		sloConfig,
+		"\n    value = 1\n",
+		"\n    value = terraform_data.objective_value.output\n",
+		1,
+	)
+	require.Contains(t, sloConfig, "value = terraform_data.objective_value.output")
+	sloConfig = `
+resource "terraform_data" "objective_value" {
+  input = 1
+}
+` + sloConfig
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: sloConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, t.Context(), manifestSLO),
+				),
+			},
+		},
+	})
+}
+
 func TestAccSLOResource_sumologicValidationErrors(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
