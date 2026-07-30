@@ -51,7 +51,6 @@ If you already have a Nobl9 `config.toml` on your machine with valid device cred
 run this command:
 
 ```shell
-NOBL9_NO_CONFIG_FILE=false \
 make test/acc
 ```
 
@@ -201,22 +200,22 @@ and you can place them in the templates using the following functions:
     the current commit. If no matching tag is reachable, it uses `0.0.0`.
     Use `VERSION=<version> make install/provider` when you need a specific
     local test version.
-    Run `make version` first if you want to inspect the resolved version.
 4. Copy the printed provider declaration into your Terraform configuration.
     It contains the installed provider's exact source address and version.
 5. Configure the provider and add resources as needed, for example:
 
     ```terraform
-    provider "nobl9" {
-      // Add this If you want to use `config.toml` credentials.
-      // When set to false, you won't need to provide any further env variables.
-      no_config_file = false
-    }
+    provider "nobl9" {}
 
     resource "nobl9_project" "this" {
       name         = "my-project"
     }
     ```
+
+    When provider credentials and `NOBL9_` environment variables
+    are absent or empty,
+    the provider reads credentials from `config.toml`.
+    Set `no_config_file = true` to disable this fallback.
 
     You can use the locally built provider anywhere with the declaration printed
     by `make install/provider`.
