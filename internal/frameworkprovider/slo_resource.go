@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
@@ -257,6 +258,7 @@ func (s *SLOResource) readResource(
 	s.updateEmptyAlertPolicies(ctx, diagnostics, state, plan, updatedModel, slo)
 	s.updateEmptyCompositeAggregation(ctx, state, plan, updatedModel)
 	s.sortLists(model, updatedModel)
+	preserveNullInstanaApplicationBooleans(model, updatedModel)
 
 	return updatedModel, diagnostics
 }
@@ -267,6 +269,42 @@ func preserveNullIndicatorProject(source, target *SLOResourceModel) {
 	}
 	if source.Indicator[0].Project.IsNull() {
 		target.Indicator[0].Project = source.Indicator[0].Project
+	}
+}
+
+func preserveNullInstanaApplicationBooleans(source, target *SLOResourceModel) {
+	for objectiveIndex := range min(len(source.Objectives), len(target.Objectives)) {
+		sourceObjective := &source.Objectives[objectiveIndex]
+		targetObjective := &target.Objectives[objectiveIndex]
+		if len(sourceObjective.RawMetric) == 0 || len(targetObjective.RawMetric) == 0 {
+			continue
+		}
+		sourceQueries := sourceObjective.RawMetric[0].Query
+		targetQueries := targetObjective.RawMetric[0].Query
+		for queryIndex := range min(len(sourceQueries), len(targetQueries)) {
+			sourceInstana := sourceQueries[queryIndex].Instana
+			targetInstana := targetQueries[queryIndex].Instana
+			if len(sourceInstana) == 0 || len(targetInstana) == 0 ||
+				len(sourceInstana[0].Application) == 0 || len(targetInstana[0].Application) == 0 {
+				continue
+			}
+			sourceApplication := &sourceInstana[0].Application[0]
+			targetApplication := &targetInstana[0].Application[0]
+			preserveNullInstanaApplicationBoolean(
+				sourceApplication.IncludeInternal,
+				&targetApplication.IncludeInternal,
+			)
+			preserveNullInstanaApplicationBoolean(
+				sourceApplication.IncludeSynthetic,
+				&targetApplication.IncludeSynthetic,
+			)
+		}
+	}
+}
+
+func preserveNullInstanaApplicationBoolean(source types.Bool, target *types.Bool) {
+	if source.IsNull() && !target.IsNull() && !target.IsUnknown() && !target.ValueBool() {
+		*target = source
 	}
 }
 
