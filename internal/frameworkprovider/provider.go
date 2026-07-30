@@ -71,7 +71,7 @@ func (p *Provider) Schema(_ context.Context, _ provider.SchemaRequest, resp *pro
 			},
 			"no_config_file": schema.BoolAttribute{
 				Optional:    true,
-				Description: "Disable reading configuration from file.",
+				Description: "Set to true to disable reading configuration from file. Defaults to false.",
 				CustomType:  envConfigurableBoolType{},
 			},
 		},
