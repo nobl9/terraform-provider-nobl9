@@ -149,6 +149,44 @@ func TestAccProjectResource_planValidation(t *testing.T) {
 	})
 }
 
+func TestAccProjectResource_externalDeletion(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	projectResource := projectResourceTemplateModel{
+		ResourceName:         "test",
+		ProjectResourceModel: getExampleProjectResource(t),
+	}
+	manifestProject := projectResource.ToManifest()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: newProjectResource(t, projectResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, t.Context(), manifestProject),
+				),
+			},
+			{
+				PreConfig: func() {
+					e2etestutils.V1Delete(t, []manifest.Object{manifestProject})
+				},
+				Config: newProjectResource(t, projectResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, t.Context(), manifestProject),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_project.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestRenderProjectResourceTemplate(t *testing.T) {
 	t.Parallel()
 
