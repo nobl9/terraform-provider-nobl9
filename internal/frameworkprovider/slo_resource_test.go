@@ -179,6 +179,153 @@ func TestAccSLOResource(t *testing.T) {
 	})
 }
 
+func TestAccSLOResource_instanaOptionalBooleanState(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+	e2etestutils.V1Apply(t, auxiliaryObjects)
+	t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+
+	manifestSLO := e2etestutils.GetExampleObject[v1alphaSLO.SLO](
+		t,
+		manifest.KindSLO,
+		func(example v1alphaExamples.Example) bool {
+			slo := example.GetObject().(v1alphaSLO.SLO)
+			for _, spec := range slo.Spec.AllMetricSpecs() {
+				if spec.Instana != nil && spec.Instana.Application != nil {
+					return true
+				}
+			}
+			return false
+		},
+	)
+	manifestSLO.Metadata.Name = e2etestutils.GenerateName()
+	manifestSLO.Metadata.Project = manifestProject.GetName()
+	manifestSLO.Metadata.Labels = e2etestutils.AnnotateLabels(t, nil)
+	manifestSLO.Spec.Service = manifestService.GetName()
+	manifestSLO.Spec.AlertPolicies = nil
+	manifestSLO.Spec.AnomalyConfig = nil
+	e2etestutils.ProvisionDataSourceForSLO(t, &manifestSLO)
+
+	model := newSLOResourceConfigFromManifest(manifestSLO)
+	application := &model.Objectives[0].RawMetric[0].Query[0].Instana[0].Application[0]
+	application.IncludeInternal = types.BoolNull()
+	application.IncludeSynthetic = types.BoolNull()
+	omittedConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: *model,
+	})
+	application.IncludeInternal = types.BoolValue(false)
+	application.IncludeSynthetic = types.BoolValue(false)
+	explicitFalseConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: *model,
+	})
+	explicitFalseImportConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "imported",
+		SLOResourceModel: *model,
+	})
+	application.IncludeInternal = types.BoolValue(true)
+	application.IncludeSynthetic = types.BoolValue(true)
+	explicitTrueConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: *model,
+	})
+
+	const applicationPath = "objective.0.raw_metric.0.query.0.instana.0.application.0"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: omittedConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(
+						"nobl9_slo.test",
+						applicationPath+".include_internal",
+					),
+					resource.TestCheckNoResourceAttr(
+						"nobl9_slo.test",
+						applicationPath+".include_synthetic",
+					),
+				),
+			},
+			{
+				Config: omittedConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+			{
+				Config: explicitFalseConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"nobl9_slo.test",
+						applicationPath+".include_internal",
+						"false",
+					),
+					resource.TestCheckResourceAttr(
+						"nobl9_slo.test",
+						applicationPath+".include_synthetic",
+						"false",
+					),
+				),
+			},
+			{
+				ResourceName:  "nobl9_slo.imported",
+				ImportStateId: model.Project + "/" + model.Name,
+				ImportState:   true,
+				Config:        explicitFalseImportConfig,
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					if len(states) != 1 {
+						return fmt.Errorf("expected exactly one imported state, got %d", len(states))
+					}
+					for _, attribute := range []string{
+						applicationPath + ".include_internal",
+						applicationPath + ".include_synthetic",
+					} {
+						if actual := states[0].Attributes[attribute]; actual != "false" {
+							return fmt.Errorf("expected imported %s to be false, got %q", attribute, actual)
+						}
+					}
+					return nil
+				},
+			},
+			{
+				Config: explicitFalseConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+			{
+				Config: explicitTrueConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"nobl9_slo.test",
+						applicationPath+".include_internal",
+						"true",
+					),
+					resource.TestCheckResourceAttr(
+						"nobl9_slo.test",
+						applicationPath+".include_synthetic",
+						"true",
+					),
+				),
+			},
+			{
+				Config: explicitTrueConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+		},
+	})
+}
+
 func TestAccSLOResource_planValidation(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
