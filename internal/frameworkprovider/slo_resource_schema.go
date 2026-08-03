@@ -305,8 +305,12 @@ func anomalyConfigBlock() schema.ListNestedBlock {
 					NestedObject: schema.NestedBlockObject{
 						Blocks: map[string]schema.Block{
 							"alert_method": schema.ListNestedBlock{
-								Description: "Alert methods attached to Anomaly Config.",
-								Validators:  []validator.List{listvalidator.SizeBetween(1, 5)},
+								Description: "Required alert methods attached to Anomaly Config. " +
+									"At least 1 and at most 5 alert methods can be configured.",
+								Validators: []validator.List{
+									listvalidator.IsRequired(),
+									listvalidator.SizeBetween(1, 5),
+								},
 								NestedObject: schema.NestedBlockObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
