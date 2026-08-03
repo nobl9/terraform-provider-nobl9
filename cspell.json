@@ -64,6 +64,7 @@
     "sloctl",
     "slos",
     "tffile",
+    "tfjsonpath",
     "tflog",
     "tfplugindocs",
     "tfprotov",
