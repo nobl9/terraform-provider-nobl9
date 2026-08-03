@@ -250,10 +250,20 @@ func TestAccSLOResource_deprecatedCompositeCardinality(t *testing.T) {
 	config += `
   composite {
     target = 0.95
+
+    burn_rate_condition {
+      op    = "gt"
+      value = 2
+    }
   }
 
   composite {
     target = 0.90
+
+    burn_rate_condition {
+      op    = "gt"
+      value = 2
+    }
   }
 }
 `
