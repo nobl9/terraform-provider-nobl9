@@ -11,9 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 	"github.com/nobl9/nobl9-go/tests/e2etestutils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccServiceResource(t *testing.T) {
@@ -163,6 +165,7 @@ func TestAccServiceResource(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						expectChangesInResourcePlan(planDiff{
+							Removed:  []string{"status"},
 							Modified: []string{"project"},
 						}),
 						plancheck.ExpectNonEmptyPlan(),
@@ -171,6 +174,68 @@ func TestAccServiceResource(t *testing.T) {
 				},
 			},
 			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccServiceResource_status(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	serviceResource := serviceResourceTemplateModel{
+		ResourceName:         "test",
+		ServiceResourceModel: getExampleServiceResource(t),
+	}
+	serviceResource.Project = manifestProject.GetName()
+	serviceResource.ResponsibleUsers = nil
+	serviceResource.ReviewCycle = nil
+
+	sloResource := sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource.Name = e2etestutils.GenerateName()
+	sloResource.Project = manifestProject.GetName()
+	sloResource.Service = serviceResource.Name
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	manifestSLO := sloResource.ToManifest()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, []manifest.Object{manifestProject})
+					t.Cleanup(func() { e2etestutils.V1Delete(t, []manifest.Object{manifestProject}) })
+				},
+				Config: newServiceResource(t, serviceResource),
+				Check:  resource.TestCheckResourceAttr("nobl9_service.test", "status.slo_count", "0"),
+			},
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, []manifest.Object{manifestSLO})
+					t.Cleanup(func() {
+						objects, err := getObjectsFromTheNobl9API(
+							t,
+							context.WithoutCancel(t.Context()),
+							manifestSLO,
+						)
+						require.NoError(t, err)
+						if len(objects) == 1 {
+							e2etestutils.V1Delete(t, []manifest.Object{manifestSLO})
+						}
+					})
+				},
+				Config: newServiceResource(t, serviceResource),
+				Check:  resource.TestCheckResourceAttr("nobl9_service.test", "status.slo_count", "1"),
+			},
 		},
 	})
 }
