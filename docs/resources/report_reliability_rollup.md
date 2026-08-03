@@ -119,6 +119,7 @@ resource "nobl9_report_reliability_rollup" "custom_hierarchy" {
 - `custom_hierarchy` (String) Custom hierarchy of folders and SLOs encoded as a JSON string. The Terraform SDK does not support recursive schemas, so the hierarchy is passed verbatim. Shape: a list of folders, each with `displayName`, optional `children` (same shape), and optional `slos` (each `{name, project, displayName}`). Each hierarchy level can contain up to 8 nodes. When omitted, the report uses the auto-generated structure derived from `filters`.
 - `display_name` (String) User-friendly display name of the resource.
 - `filters` (Block List, Max: 1) Filters are used to select scope for Report. (see [below for nested schema](#nestedblock--filters))
+- `reliability_score_type` (String) Reliability scoring mechanism. Supported values are `SLOTimeWindow` and `ReportTimeFrame`. Defaults to `SLOTimeWindow` when omitted.
 - `shared` (Boolean) Is report shared for all users with access to included projects.
 
 ### Read-Only
