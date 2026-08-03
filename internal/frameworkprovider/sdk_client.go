@@ -177,12 +177,33 @@ func (s sdkClient) GetService(ctx context.Context, name, project string) (v1alph
 	return genericGetObject[v1alphaService.Service](ctx, s.client, manifest.KindService, name, project)
 }
 
+func (s sdkClient) FindService(
+	ctx context.Context,
+	name, project string,
+) (v1alphaService.Service, bool, diag.Diagnostics) {
+	return genericFindObject[v1alphaService.Service](ctx, s.client, manifest.KindService, name, project)
+}
+
 func (s sdkClient) GetProject(ctx context.Context, name string) (v1alphaProject.Project, diag.Diagnostics) {
 	return genericGetObject[v1alphaProject.Project](ctx, s.client, manifest.KindProject, name, "")
 }
 
+func (s sdkClient) FindProject(
+	ctx context.Context,
+	name string,
+) (v1alphaProject.Project, bool, diag.Diagnostics) {
+	return genericFindObject[v1alphaProject.Project](ctx, s.client, manifest.KindProject, name, "")
+}
+
 func (s sdkClient) GetSLO(ctx context.Context, name, project string) (v1alphaSLO.SLO, diag.Diagnostics) {
 	return genericGetObject[v1alphaSLO.SLO](ctx, s.client, manifest.KindSLO, name, project)
+}
+
+func (s sdkClient) FindSLO(
+	ctx context.Context,
+	name, project string,
+) (v1alphaSLO.SLO, bool, diag.Diagnostics) {
+	return genericFindObject[v1alphaSLO.SLO](ctx, s.client, manifest.KindSLO, name, project)
 }
 
 // Replay runs historical data retrieval for the given SLO.
@@ -238,6 +259,23 @@ func genericGetObject[T manifest.Object](
 	kind manifest.Kind,
 	name, project string,
 ) (typed T, diags diag.Diagnostics) {
+	typed, found, diags := genericFindObject[T](ctx, client, kind, name, project)
+	if diags.HasError() || found {
+		return typed, diags
+	}
+	diags.AddError(
+		fmt.Sprintf("Failed to get %s %s", manifest.VersionV1alpha, kind),
+		"unexpected number of objects in response, expected 1, got 0",
+	)
+	return typed, diags
+}
+
+func genericFindObject[T manifest.Object](
+	ctx context.Context,
+	client *sdk.Client,
+	kind manifest.Kind,
+	name, project string,
+) (typed T, found bool, diags diag.Diagnostics) {
 	header := http.Header{}
 	if project != "" {
 		header.Add(sdk.HeaderProject, project)
@@ -249,12 +287,15 @@ func genericGetObject[T manifest.Object](
 		url.Values{v1Objects.QueryKeyName: []string{name}},
 	)
 	if err != nil {
-		return typed, diag.Diagnostics{
+		return typed, false, diag.Diagnostics{
 			diag.NewErrorDiagnostic(fmt.Sprintf("Failed to get %s %s", manifest.VersionV1alpha, kind), err.Error()),
 		}
 	}
+	if len(objects) == 0 {
+		return typed, false, nil
+	}
 	if len(objects) != 1 {
-		return typed, diag.Diagnostics{
+		return typed, false, diag.Diagnostics{
 			diag.NewErrorDiagnostic(
 				fmt.Sprintf("Failed to get %s %s", manifest.VersionV1alpha, kind),
 				fmt.Sprintf("unexpected number of objects in response, expected 1, got %d", len(objects))),
@@ -265,13 +306,13 @@ func genericGetObject[T manifest.Object](
 	var ok bool
 	typed, ok = obj.(T)
 	if !ok {
-		return typed, diag.Diagnostics{
+		return typed, false, diag.Diagnostics{
 			diag.NewErrorDiagnostic(
 				fmt.Sprintf("Failed to cast %T to %T", obj, typed),
 				"Please report this issue to the provider developers."),
 		}
 	}
-	return typed, nil
+	return typed, true, nil
 }
 
 func getManifestObjectTraceAttrs(obj manifest.Object) map[string]any {
