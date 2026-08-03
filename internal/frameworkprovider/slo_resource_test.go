@@ -179,6 +179,149 @@ func TestAccSLOResource(t *testing.T) {
 	})
 }
 
+func TestAccSLOResource_logicMonitorOptionalIDs(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestAgent := e2etestutils.ProvisionStaticAgent(t, v1alpha.LogicMonitor)
+	sloModel := getExampleSLOResource(t)
+	sloModel.Name = e2etestutils.GenerateName()
+	sloModel.Project = manifestProject.GetName()
+	sloModel.Service = manifestService.GetName()
+	sloModel.Indicator = []IndicatorModel{{
+		Name:    manifestAgent.GetName(),
+		Project: types.StringValue(manifestAgent.GetProject()),
+		Kind:    types.StringValue(manifestAgent.GetKind().String()),
+	}}
+	sloModel.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
+		LogicMonitor: []LogicMonitorModel{{
+			QueryType:                  types.StringValue(v1alphaSLO.LMQueryTypeWebsiteMetrics),
+			DeviceDataSourceInstanceID: types.Int64Null(),
+			GraphID:                    types.Int64Null(),
+			WebsiteID:                  types.StringValue("123"),
+			CheckpointID:               types.StringValue("456"),
+			GraphName:                  types.StringValue("response-time"),
+			Line:                       types.StringValue("average"),
+		}},
+	}
+
+	const (
+		deviceDataSourceInstanceIDPath = "objective.0.raw_metric.0.query.0.logic_monitor.0.device_data_source_instance_id"
+		graphIDPath                    = "objective.0.raw_metric.0.query.0.logic_monitor.0.graph_id"
+	)
+	resourceName := "nobl9_slo.test"
+
+	omittedIDsConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: sloModel,
+	})
+	omittedIDsManifest := sloModel.ToManifest()
+	explicitZeroIDsModel := *newSLOResourceConfigFromManifest(omittedIDsManifest)
+	explicitZeroLogicMonitor := &explicitZeroIDsModel.Objectives[0].RawMetric[0].Query[0].LogicMonitor[0]
+	explicitZeroLogicMonitor.DeviceDataSourceInstanceID = types.Int64Value(0)
+	explicitZeroLogicMonitor.GraphID = types.Int64Value(0)
+	explicitZeroIDsConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: explicitZeroIDsModel,
+	})
+	explicitZeroIDsManifest := explicitZeroIDsModel.ToManifest()
+	explicitNonzeroIDsModel := *newSLOResourceConfigFromManifest(explicitZeroIDsManifest)
+	explicitNonzeroLogicMonitor := &explicitNonzeroIDsModel.Objectives[0].RawMetric[0].Query[0].LogicMonitor[0]
+	explicitNonzeroLogicMonitor.QueryType = types.StringValue(v1alphaSLO.LMQueryTypeDeviceMetrics)
+	explicitNonzeroLogicMonitor.DeviceDataSourceInstanceID = types.Int64Value(123)
+	explicitNonzeroLogicMonitor.GraphID = types.Int64Value(456)
+	explicitNonzeroLogicMonitor.WebsiteID = types.StringNull()
+	explicitNonzeroLogicMonitor.CheckpointID = types.StringNull()
+	explicitNonzeroLogicMonitor.GraphName = types.StringNull()
+	explicitNonzeroIDsConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: explicitNonzeroIDsModel,
+	})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: omittedIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(resourceName, deviceDataSourceInstanceIDPath),
+					resource.TestCheckNoResourceAttr(resourceName, graphIDPath),
+					assertResourceWasApplied(t, t.Context(), omittedIDsManifest),
+				),
+			},
+			{
+				Config: explicitZeroIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, deviceDataSourceInstanceIDPath, "0"),
+					resource.TestCheckResourceAttr(resourceName, graphIDPath, "0"),
+					assertResourceWasApplied(t, t.Context(), explicitZeroIDsManifest),
+				),
+			},
+			{
+				Config: explicitZeroIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasDeleted(t, t.Context(), explicitZeroIDsManifest),
+				),
+				Destroy: true,
+			},
+			{
+				ResourceName:  resourceName,
+				ImportStateId: sloModel.Project + "/" + sloModel.Name,
+				ImportState:   true,
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					if !assert.Len(t, states, 1) {
+						return errors.New("expected exactly one state")
+					}
+					assert.Equal(t, "0", states[0].Attributes[deviceDataSourceInstanceIDPath])
+					assert.Equal(t, "0", states[0].Attributes[graphIDPath])
+					return nil
+				},
+				ImportStatePersist: true,
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, []manifest.Object{explicitZeroIDsManifest})
+				},
+			},
+			{
+				Config: omittedIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(resourceName, deviceDataSourceInstanceIDPath),
+					resource.TestCheckNoResourceAttr(resourceName, graphIDPath),
+					assertResourceWasApplied(t, t.Context(), omittedIDsManifest),
+				),
+			},
+			{
+				Config: omittedIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(resourceName, deviceDataSourceInstanceIDPath),
+					resource.TestCheckNoResourceAttr(resourceName, graphIDPath),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+			{
+				Config: explicitNonzeroIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, deviceDataSourceInstanceIDPath, "123"),
+					resource.TestCheckResourceAttr(resourceName, graphIDPath, "456"),
+					assertResourceWasApplied(t, t.Context(), explicitNonzeroIDsModel.ToManifest()),
+				),
+			},
+		},
+	})
+}
+
 func TestAccSLOResource_planValidation(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
