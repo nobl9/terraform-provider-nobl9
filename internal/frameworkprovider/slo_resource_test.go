@@ -658,13 +658,13 @@ func TestAccSLOResource_moveSLOAndDetachAlertPolicies(t *testing.T) {
 					m := sloResource
 					m.Project = newProjectName
 					m.Service = newServiceName
-					m.AlertPolicies = nil
+					m.AlertPolicies = []string{}
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("nobl9_slo.test", "project", newProjectName),
 					resource.TestCheckResourceAttr("nobl9_slo.test", "service", newServiceName),
-					resource.TestCheckNoResourceAttr("nobl9_slo.test", "alert_policies"),
+					resource.TestCheckResourceAttr("nobl9_slo.test", "alert_policies.#", "0"),
 					assertResourceWasApplied(t, ctx, movedManifestSLO),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
