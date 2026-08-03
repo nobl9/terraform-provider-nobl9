@@ -235,6 +235,84 @@ func TestAccSLOResource_planValidation(t *testing.T) {
 	})
 }
 
+func TestAccSLOResource_instanaApplicationRequiresExactlyOneGroupBy(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	model := getExampleSLOResource(t)
+	model.Name = e2etestutils.GenerateName()
+	model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
+		Instana: []InstanaModel{{
+			MetricType: "application",
+			Application: []InstanaApplicationModel{{
+				MetricID:    "calls",
+				Aggregation: "sum",
+				APIQuery:    "{}",
+			}},
+		}},
+	}
+
+	configWithoutGroupBy := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: model,
+	})
+	configWithEmptyGroupBy := strings.Replace(
+		configWithoutGroupBy,
+		`api_query = "{}"`,
+		`api_query = "{}"
+
+            dynamic "group_by" {
+              for_each = []
+              content {
+                tag        = "unused"
+                tag_entity = "NOT_APPLICABLE"
+              }
+            }`,
+		1,
+	)
+	require.NotEqual(t, configWithoutGroupBy, configWithEmptyGroupBy)
+	configWithTwoGroupBy := strings.Replace(
+		configWithoutGroupBy,
+		`api_query = "{}"`,
+		`api_query = "{}"
+
+            group_by {
+              tag        = "first"
+              tag_entity = "NOT_APPLICABLE"
+            }
+
+            group_by {
+              tag        = "second"
+              tag_entity = "NOT_APPLICABLE"
+            }`,
+		1,
+	)
+	require.NotEqual(t, configWithoutGroupBy, configWithTwoGroupBy)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      configWithoutGroupBy,
+				ExpectError: regexp.MustCompile(`(?s)Error: Invalid Block.*marked it as required`),
+				PlanOnly:    true,
+			},
+			{
+				Config:      configWithEmptyGroupBy,
+				ExpectError: regexp.MustCompile(`(?s)Error: Invalid Block.*marked it as required`),
+				PlanOnly:    true,
+			},
+			{
+				Config: configWithTwoGroupBy,
+				ExpectError: regexp.MustCompile(
+					`(?s)Error: Invalid Attribute Value.*list\s+must contain at least 1 elements and at most 1 elements`,
+				),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestAccSLOResource_labelValidationErrors(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
