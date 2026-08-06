@@ -72,8 +72,8 @@ func Provider() *schema.Provider {
 			"no_config_file": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_NO_CONFIG_FILE", true),
-				Description: "Disable reading configuration from file.",
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_NO_CONFIG_FILE", false),
+				Description: "Set to true to disable reading configuration from file. Defaults to false.",
 			},
 		},
 
