@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaDirect "github.com/nobl9/nobl9-go/manifest/v1alpha/direct"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
@@ -1281,6 +1282,62 @@ func (s dash0DirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 func (s dash0DirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
 	set(d, "url", spec.Dash0.URL, &diags)
 	set(d, "step", spec.Dash0.Step, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
+// Elasticsearch Direct
+// https://docs.nobl9.com/Sources/elasticsearch#elasticsearch-direct
+const elasticsearchDirectType = "elasticsearch"
+
+type elasticsearchDirectSpec struct{}
+
+func (s elasticsearchDirectSpec) GetDescription() string {
+	return "[Elasticsearch Direct | Nobl9 Documentation]" +
+		"(https://docs.nobl9.com/Sources/elasticsearch#elasticsearch-direct)."
+}
+
+func (s elasticsearchDirectSpec) GetSchema() map[string]*schema.Schema {
+	elasticsearchSchema := map[string]*schema.Schema{
+		releaseChannel: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     v1alpha.ReleaseChannelBeta.String(),
+			Description: "Release channel of the created data source [beta]",
+			ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice(
+				[]string{v1alpha.ReleaseChannelBeta.String()},
+				false,
+			)),
+		},
+		"url": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Public HTTPS Elasticsearch endpoint URL.",
+		},
+		"api_key": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Sensitive:        true,
+			Description:      "Encoded Elasticsearch API key.",
+			ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotEmpty),
+		},
+	}
+	setHistoricalDataRetrievalSchema(elasticsearchSchema)
+	return elasticsearchSchema
+}
+
+func (s elasticsearchDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
+	return v1alphaDirect.Spec{Elasticsearch: &v1alphaDirect.ElasticsearchConfig{
+		URL:    r.Get("url").(string),
+		APIKey: r.Get("api_key").(string),
+	}}
+}
+
+func (s elasticsearchDirectSpec) UnmarshalSpec(
+	d *schema.ResourceData,
+	spec v1alphaDirect.Spec,
+) (diags diag.Diagnostics) {
+	set(d, "url", spec.Elasticsearch.URL, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
 }
