@@ -23,7 +23,7 @@ PROVIDER_INSTALL_DIR = $(HOME)/.terraform.d/plugins/$(PROVIDER_ADDRESS)/$(VERSIO
 # renovate datasource=github-releases depName=golangci/golangci-lint
 GOLANGCI_LINT_VERSION := v2.12.2
 # renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
-GOVULNCHECK_VERSION := v1.6.0
+GOVULNCHECK_VERSION := v1.7.0
 
 # Check if the program is present in $PATH and install otherwise.
 # ${1} - oneOf{binary,yarn}
