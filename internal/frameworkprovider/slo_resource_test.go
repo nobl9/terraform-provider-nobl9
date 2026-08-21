@@ -261,6 +261,32 @@ func TestAccSLOResource_instanaOptionalBooleanState(t *testing.T) {
 				},
 			},
 			{
+				PreConfig: func() {
+					for _, spec := range manifestSLO.Spec.AllMetricSpecs() {
+						if spec.Instana == nil || spec.Instana.Application == nil {
+							continue
+						}
+						spec.Instana.Application.IncludeInternal = true
+						spec.Instana.Application.IncludeSynthetic = true
+					}
+					e2etestutils.V1Apply(t, []manifest.Object{manifestSLO})
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"nobl9_slo.test",
+						applicationPath+".include_internal",
+						"true",
+					),
+					resource.TestCheckResourceAttr(
+						"nobl9_slo.test",
+						applicationPath+".include_synthetic",
+						"true",
+					),
+				),
+			},
+			{
 				Config: explicitFalseConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(
