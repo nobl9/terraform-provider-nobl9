@@ -339,6 +339,35 @@ func matchSourceObjectives(source, target *SLOResourceModel) []*ObjectiveModel {
 	return matches
 }
 
+func sortObjectivesBasedOnSource(source, target []ObjectiveModel) []ObjectiveModel {
+	if target == nil {
+		return nil
+	}
+
+	sourceModel := &SLOResourceModel{Objectives: source}
+	targetModel := &SLOResourceModel{Objectives: target}
+	matches := matchSourceObjectives(sourceModel, targetModel)
+	matchedTargets := make([]bool, len(target))
+	sorted := make([]ObjectiveModel, 0, len(target))
+
+	for sourceIndex := range sourceModel.Objectives {
+		for targetIndex, matchedSource := range matches {
+			if matchedSource != &sourceModel.Objectives[sourceIndex] {
+				continue
+			}
+			sorted = append(sorted, target[targetIndex])
+			matchedTargets[targetIndex] = true
+			break
+		}
+	}
+	for targetIndex := range target {
+		if !matchedTargets[targetIndex] {
+			sorted = append(sorted, target[targetIndex])
+		}
+	}
+	return sorted
+}
+
 func preserveNullLogicMonitorIDsInMetricSpecs(source, target []MetricSpecModel) {
 	for i := range min(len(source), len(target)) {
 		if len(source[i].LogicMonitor) == 0 || len(target[i].LogicMonitor) == 0 {
@@ -439,13 +468,7 @@ func (s *SLOResource) updateEmptyAlertPolicies(
 // sortLists sorts lists returned by the API to ensure consistent ordering.
 func (s *SLOResource) sortLists(model, updatedModel *SLOResourceModel) {
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
-	updatedModel.Objectives = sortListBasedOnReferenceList(
-		updatedModel.Objectives,
-		model.Objectives,
-		func(a, b ObjectiveModel) bool {
-			return a.Name == b.Name
-		},
-	)
+	updatedModel.Objectives = sortObjectivesBasedOnSource(model.Objectives, updatedModel.Objectives)
 	for i := range updatedModel.Objectives {
 		if !updatedModel.Objectives[i].HasCompositeObjectives() {
 			continue
