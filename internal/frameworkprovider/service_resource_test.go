@@ -192,6 +192,8 @@ func TestAccServiceResource_status(t *testing.T) {
 	serviceResource.Project = manifestProject.GetName()
 	serviceResource.ResponsibleUsers = nil
 	serviceResource.ReviewCycle = nil
+	updatedServiceResource := serviceResource
+	updatedServiceResource.Description = types.StringValue("Updated service description")
 
 	sloResource := sloResourceTemplateModel{
 		ResourceName:     "test",
@@ -235,6 +237,25 @@ func TestAccServiceResource_status(t *testing.T) {
 				},
 				Config: newServiceResource(t, serviceResource),
 				Check:  resource.TestCheckResourceAttr("nobl9_service.test", "status.slo_count", "1"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+			{
+				Config: newServiceResource(t, updatedServiceResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "description", "Updated service description"),
+					resource.TestCheckResourceAttr("nobl9_service.test", "status.slo_count", "1"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{Modified: []string{"description"}}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionUpdate),
+					},
+				},
 			},
 		},
 	})
