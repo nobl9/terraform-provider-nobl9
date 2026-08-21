@@ -1045,7 +1045,10 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 						strings.Join(v1alphaSLO.ComponentAggregationMethodNames(), ","),
 					),
 					Validators: []validator.String{
-						stringvalidator.OneOf(v1alphaSLO.ComponentAggregationMethodNames()...),
+						stringvalidator.OneOf(append(
+							[]string{""},
+							v1alphaSLO.ComponentAggregationMethodNames()...,
+						)...),
 					},
 				},
 			},

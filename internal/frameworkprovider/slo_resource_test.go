@@ -253,8 +253,8 @@ func TestAccSLOResource_compositeAggregationValidation(t *testing.T) {
 					SLOResourceModel: *model,
 				}),
 				ExpectError: regexp.MustCompile(
-					`(?s)Invalid Attribute Value.*objective\[0\]\.composite\[0\]\.aggregation.*` +
-						`Reliability.*ErrorBudgetState.*got: "invalid"`,
+					`(?s)Invalid Attribute Value Match.*objective\[0\]\.composite\[0\]\.aggregation.*` +
+						`must be one of: \[""\s+"Reliability"\s+"ErrorBudgetState"\], got: "invalid"`,
 				),
 				PlanOnly: true,
 			},
@@ -1228,6 +1228,31 @@ func TestAccSLOResource_custom(t *testing.T) {
 					}
 				model.Indicator = nil
 				return model
+			},
+		},
+		"composite with empty aggregation": {
+			sloResourceModelModifier: func(t *testing.T, model SLOResourceModel) SLOResourceModel {
+				slo := getCompositeSLOExample(t)
+				compositeModel := newSLOResourceConfigFromManifest(slo)
+				compositeModel.Objectives = compositeModel.Objectives[:1]
+				model.Objectives = compositeModel.Objectives
+				model.Objectives[0].Composite[0].Aggregation = types.StringValue("")
+				model.Objectives[0].Composite[0].Components[0].Objectives[0].CompositeObjective =
+					[]CompositeObjectiveSpecModel{
+						{
+							Project:     manifestSLOComponent1.GetProject(),
+							SLO:         manifestSLOComponent1.GetName(),
+							Objective:   manifestSLOComponent1.Spec.Objectives[0].Name,
+							Weight:      1,
+							WhenDelayed: v1alphaSLO.WhenDelayedCountAsGood.String(),
+						},
+					}
+				model.Indicator = nil
+				return model
+			},
+			sloManifestModifier: func(t *testing.T, slo v1alphaSLO.SLO) v1alphaSLO.SLO {
+				slo.Spec.Objectives[0].Composite.Aggregation = v1alphaSLO.ComponentAggregationMethodDefault
+				return slo
 			},
 		},
 	}
