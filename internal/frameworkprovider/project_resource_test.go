@@ -181,6 +181,13 @@ func TestAccProjectResource_importWithUnorderedLabels(t *testing.T) {
 	)
 	updatedManifestProject := updatedProjectResource.ToManifest()
 
+	expandedProjectResource := updatedProjectResource
+	expandedProjectResource.Labels = append(
+		slices.Clone(updatedProjectResource.Labels),
+		LabelBlockModel{Key: "scope", Values: []string{"test"}},
+	)
+	expandedManifestProject := expandedProjectResource.ToManifest()
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -209,6 +216,22 @@ func TestAccProjectResource_importWithUnorderedLabels(t *testing.T) {
 						plancheck.ExpectResourceAction("nobl9_project.test", plancheck.ResourceActionUpdate),
 					},
 				},
+			},
+			{
+				Config: newProjectResource(t, expandedProjectResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, t.Context(), expandedManifestProject),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_project.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			{
+				Config:   newProjectResource(t, expandedProjectResource),
+				PlanOnly: true,
 			},
 		},
 	})
