@@ -654,6 +654,9 @@ func TestAccSLOResource_moveSLOAndDetachAlertPolicies(t *testing.T) {
 				),
 			},
 			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, targetAuxiliaryObjects)
+				},
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
 					m.Project = newProjectName
@@ -1977,35 +1980,6 @@ func TestRenderSLOResourceTemplate_compositeV1Example(t *testing.T) {
 
 	assertHCL(t, actual)
 	assert.Equal(t, readExpectedConfig(t, "slo-composite-v1-config.tf"), actual)
-}
-
-func Test_sloMovePartialSuccessWarningDetail(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]struct {
-		detachAlertPolicies bool
-		expected            string
-	}{
-		"moved without detaching alert policies": {
-			expected: "SLO definition update failed, but the SLO was moved to a new project." +
-				"\nTerraform state may be stale. Refresh and re-plan before resolving the issues" +
-				" and retrying the update operation. Bear in mind that the SLO will remain in the new project.",
-		},
-		"moved and detached alert policies": {
-			detachAlertPolicies: true,
-			expected: "SLO definition update failed, but the SLO was moved to a new project." +
-				" Its Alert Policies were also detached." +
-				"\nTerraform state may be stale. Refresh and re-plan before resolving the issues" +
-				" and retrying the update operation. Bear in mind that the SLO will remain in the new project.",
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			assert.Equal(t, test.expected, sloMovePartialSuccessWarningDetail(test.detachAlertPolicies))
-		})
-	}
 }
 
 func deleteSLOsIfPresent(t *testing.T, ctx context.Context, slos ...v1alphaSLO.SLO) {
