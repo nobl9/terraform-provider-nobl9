@@ -21,7 +21,7 @@ OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 PROVIDER_INSTALL_DIR = $(HOME)/.terraform.d/plugins/$(PROVIDER_ADDRESS)/$(VERSION)/$(OS_ARCH)
 
 # renovate datasource=github-releases depName=golangci/golangci-lint
-GOLANGCI_LINT_VERSION := v2.12.2
+GOLANGCI_LINT_VERSION := v2.13.1
 
 # Check if the program is present in $PATH and install otherwise.
 # ${1} - oneOf{binary,yarn}
