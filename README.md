@@ -16,9 +16,6 @@
       <td>
         <img alt="tests" src="https://github.com/nobl9/terraform-provider-nobl9/actions/workflows/unit-tests.yml/badge.svg?event=push">
       </td>
-      <td>
-        <img alt="vulnerabilities" src="https://github.com/nobl9/terraform-provider-nobl9/actions/workflows/vulns.yml/badge.svg?event=push">
-      </td>
     </tr>
   </table>
 </div>
