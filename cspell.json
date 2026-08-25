@@ -45,7 +45,6 @@
     "golines",
     "gopath",
     "gosec",
-    "govulncheck",
     "hclparse",
     "kusto",
     "ldflags",
@@ -72,8 +71,6 @@
     "tmpl",
     "tpng",
     "tsdbslo",
-    "upgrader",
-    "vuln",
-    "vulns"
+    "upgrader"
   ]
 }
