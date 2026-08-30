@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -577,6 +578,108 @@ func TestAccSLOResource_moveSLO(t *testing.T) {
 				},
 			},
 			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccSLOResource_moveSLOAndDetachAlertPolicies(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+	ctx := t.Context()
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+
+	manifestAlertPolicy := e2etestutils.GetExampleObject[v1alphaAlertPolicy.AlertPolicy](
+		t,
+		manifest.KindAlertPolicy,
+		nil,
+	)
+	manifestAlertPolicy.Metadata.Name = e2etestutils.GenerateName()
+	manifestAlertPolicy.Metadata.Project = manifestProject.GetName()
+	manifestAlertPolicy.Metadata.Labels = e2etestutils.AnnotateLabels(t, nil)
+	manifestAlertPolicy.Spec.AlertMethods = nil
+
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService, manifestAlertPolicy}
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	sloResource := sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource.Name = e2etestutils.GenerateName()
+	sloResource.Project = manifestProject.GetName()
+	sloResource.Service = manifestService.GetName()
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	sloResource.AlertPolicies = []string{manifestAlertPolicy.GetName()}
+
+	manifestSLO := sloResource.ToManifest()
+	newProjectName := e2etestutils.GenerateName()
+	newServiceName := e2etestutils.GenerateName()
+
+	newProjectManifest := manifestProject
+	newProjectManifest.Metadata.Name = newProjectName
+	newServiceManifest := manifestService
+	newServiceManifest.Metadata.Project = newProjectName
+	newServiceManifest.Metadata.Name = newServiceName
+	targetAuxiliaryObjects := []manifest.Object{newProjectManifest, newServiceManifest}
+
+	movedManifestSLO := manifestSLO
+	movedManifestSLO.Metadata.Project = newProjectName
+	movedManifestSLO.Spec.Service = newServiceName
+	movedManifestSLO.Spec.AlertPolicies = nil
+
+	// Cleanup callbacks run in reverse registration order.
+	t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+	t.Cleanup(func() { e2etestutils.V1Delete(t, targetAuxiliaryObjects) })
+	t.Cleanup(func() {
+		deleteSLOsIfPresent(t, context.WithoutCancel(ctx), movedManifestSLO, manifestSLO)
+	})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+				},
+				Config: newSLOResource(t, sloResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, ctx, manifestSLO),
+				),
+			},
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, targetAuxiliaryObjects)
+				},
+				Config: newSLOResource(t, func() sloResourceTemplateModel {
+					m := sloResource
+					m.Project = newProjectName
+					m.Service = newServiceName
+					m.AlertPolicies = []string{}
+					return m
+				}()),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.test", "project", newProjectName),
+					resource.TestCheckResourceAttr("nobl9_slo.test", "service", newServiceName),
+					resource.TestCheckResourceAttr("nobl9_slo.test", "alert_policies.#", "0"),
+					assertResourceWasApplied(t, ctx, movedManifestSLO),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						expectChangesInResourcePlan(planDiff{
+							Modified: []string{"alert_policies", "project", "service"},
+						}),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
 		},
 	})
 }
@@ -1877,6 +1980,38 @@ func TestRenderSLOResourceTemplate_compositeV1Example(t *testing.T) {
 
 	assertHCL(t, actual)
 	assert.Equal(t, readExpectedConfig(t, "slo-composite-v1-config.tf"), actual)
+}
+
+func deleteSLOsIfPresent(t *testing.T, ctx context.Context, slos ...v1alphaSLO.SLO) {
+	t.Helper()
+
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
+	defer cancel()
+
+	for _, slo := range slos {
+		objects, err := getObjectsFromTheNobl9API(t, ctx, slo)
+		if err != nil {
+			t.Errorf(
+				"failed to locate SLO %q in project %q during cleanup: %v",
+				slo.GetName(),
+				slo.GetProject(),
+				err,
+			)
+			continue
+		}
+		if len(objects) == 0 {
+			continue
+		}
+		if err := testSDKClient.client.Objects().V1().
+			DeleteByName(ctx, manifest.KindSLO, slo.GetProject(), slo.GetName()); err != nil {
+			t.Errorf(
+				"failed to delete SLO %q from project %q during cleanup: %v",
+				slo.GetName(),
+				slo.GetProject(),
+				err,
+			)
+		}
+	}
 }
 
 type sloResourceTemplateModel struct {
