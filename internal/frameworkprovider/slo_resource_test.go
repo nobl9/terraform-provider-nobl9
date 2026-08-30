@@ -78,6 +78,7 @@ func TestAccSLOResource(t *testing.T) {
 				},
 				Config: sloConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.test", "id", sloResource.Name),
 					assertResourceWasApplied(t, ctx, manifestSLO),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -118,6 +119,7 @@ func TestAccSLOResource(t *testing.T) {
 					if !assert.Len(t, states, 1) {
 						return errors.New("expected exactly one state")
 					}
+					assert.Equal(t, sloResource.Name, states[0].Attributes["id"])
 					assert.Equal(t, sloResource.Name, states[0].Attributes["name"])
 					assert.Equal(t, sloResource.Project, states[0].Attributes["project"])
 					return nil
@@ -159,6 +161,7 @@ func TestAccSLOResource(t *testing.T) {
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.test", "id", sloNameRecreatedByNameChange),
 					resource.TestCheckResourceAttr("nobl9_slo.test", "name", sloNameRecreatedByNameChange),
 					assertResourceWasApplied(t, ctx, func() v1alphaSLO.SLO {
 						slo := manifestSLO
@@ -168,7 +171,10 @@ func TestAccSLOResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectChangesInResourcePlan(planDiff{Modified: []string{"name", "display_name"}}),
+						expectChangesInResourcePlan(planDiff{
+							Modified: []string{"name", "display_name"},
+							Removed:  []string{"id"},
+						}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionReplace),
 					},

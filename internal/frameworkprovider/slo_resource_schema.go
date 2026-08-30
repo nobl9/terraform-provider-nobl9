@@ -27,6 +27,7 @@ var sloResourceSchema = func() schema.Schema {
 		MarkdownDescription: description,
 		Description:         description,
 		Attributes: map[string]schema.Attribute{
+			"id":           resourceIDAttr(),
 			"name":         metadataNameAttr(),
 			"display_name": metadataDisplayNameAttr(),
 			"project": func() schema.Attribute {
