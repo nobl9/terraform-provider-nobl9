@@ -1,6 +1,7 @@
 package frameworkprovider
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
@@ -131,6 +132,7 @@ type CompositeObjectiveSpecModel struct {
 type TimeWindowModel struct {
 	Count     int64           `tfsdk:"count"`
 	IsRolling types.Bool      `tfsdk:"is_rolling"`
+	Period    types.Map       `tfsdk:"period"`
 	Unit      string          `tfsdk:"unit"`
 	Calendar  []CalendarModel `tfsdk:"calendar"`
 }
@@ -437,6 +439,7 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 		twModel := TimeWindowModel{
 			Count:     int64(tw.Count),
 			IsRolling: types.BoolValue(tw.IsRolling),
+			Period:    timeWindowPeriodToMap(tw.Period),
 			Unit:      tw.Unit,
 		}
 		if tw.Calendar != nil {
@@ -476,6 +479,16 @@ func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 	}
 	model.Composite = compositeV1ToModel(slo.Spec.Composite)
 	return model
+}
+
+func timeWindowPeriodToMap(period *v1alphaSLO.Period) types.Map {
+	if period == nil {
+		return types.MapNull(types.StringType)
+	}
+	return types.MapValueMust(types.StringType, map[string]attr.Value{
+		"begin": types.StringValue(period.Begin),
+		"end":   types.StringValue(period.End),
+	})
 }
 
 func (s SLOResourceModel) ToManifest() v1alphaSLO.SLO {

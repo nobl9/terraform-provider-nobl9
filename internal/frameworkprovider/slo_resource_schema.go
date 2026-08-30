@@ -241,6 +241,11 @@ func sloResourceTimeWindowBlock() schema.ListNestedBlock {
 					Default:     booldefault.StaticBool(false),
 					Description: "Is the window moving or not.",
 				},
+				"period": schema.MapAttribute{
+					ElementType: types.StringType,
+					Computed:    true,
+					Description: "Period between start time and added count.",
+				},
 				"unit": schema.StringAttribute{
 					Required:    true,
 					Description: "Unit of time.",
