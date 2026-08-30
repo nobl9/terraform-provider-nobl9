@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"regexp"
+	"slices"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -144,6 +145,93 @@ func TestAccProjectResource_planValidation(t *testing.T) {
 				Config:      newProjectResource(t, projectResource),
 				ExpectError: regexp.MustCompile(`Bad Request: Validation for Project 'not valid' has failed`),
 				PlanOnly:    true,
+			},
+		},
+	})
+}
+
+func TestAccProjectResource_importWithUnorderedLabels(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	projectResource := projectResourceTemplateModel{
+		ResourceName:         "test",
+		ProjectResourceModel: getExampleProjectResource(t),
+	}
+	slices.Reverse(projectResource.Labels)
+	manifestProject := projectResource.ToManifest()
+	t.Cleanup(func() {
+		objects, err := getObjectsFromTheNobl9API(t, context.Background(), manifestProject)
+		if err == nil && len(objects) > 0 {
+			e2etestutils.V1Delete(t, []manifest.Object{manifestProject})
+		}
+	})
+
+	updatedProjectResource := projectResource
+	updatedProjectResource.Labels = slices.Clone(projectResource.Labels)
+	teamLabelIndex := slices.IndexFunc(updatedProjectResource.Labels, func(label LabelBlockModel) bool {
+		return label.Key == "team"
+	})
+	if teamLabelIndex < 0 {
+		t.Fatal("expected test Project to contain a team label")
+	}
+	updatedProjectResource.Labels[teamLabelIndex].Values = append(
+		slices.Clone(updatedProjectResource.Labels[teamLabelIndex].Values),
+		"orange",
+	)
+	updatedManifestProject := updatedProjectResource.ToManifest()
+
+	expandedProjectResource := updatedProjectResource
+	expandedProjectResource.Labels = append(
+		slices.Clone(updatedProjectResource.Labels),
+		LabelBlockModel{Key: "scope", Values: []string{"test"}},
+	)
+	expandedManifestProject := expandedProjectResource.ToManifest()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				ResourceName:       "nobl9_project.test",
+				Config:             newProjectResource(t, projectResource),
+				ImportStateId:      projectResource.Name,
+				ImportState:        true,
+				ImportStatePersist: true,
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, []manifest.Object{manifestProject})
+				},
+			},
+			{
+				Config:   newProjectResource(t, projectResource),
+				PlanOnly: true,
+			},
+			{
+				Config: newProjectResource(t, updatedProjectResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, t.Context(), updatedManifestProject),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_project.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			{
+				Config: newProjectResource(t, expandedProjectResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, t.Context(), expandedManifestProject),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_project.test", plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+			{
+				Config:   newProjectResource(t, expandedProjectResource),
+				PlanOnly: true,
 			},
 		},
 	})
