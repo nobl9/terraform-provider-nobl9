@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
 	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
@@ -257,6 +258,7 @@ func (s *SLOResource) readResource(
 	s.updateEmptyAlertPolicies(ctx, diagnostics, state, plan, updatedModel, slo)
 	s.updateEmptyCompositeAggregation(ctx, state, plan, updatedModel)
 	s.sortLists(model, updatedModel)
+	preserveNullLogicMonitorMetricIDs(model, updatedModel)
 
 	return updatedModel, diagnostics
 }
@@ -268,6 +270,130 @@ func preserveNullIndicatorProject(source, target *SLOResourceModel) {
 	if source.Indicator[0].Project.IsNull() {
 		target.Indicator[0].Project = source.Indicator[0].Project
 	}
+}
+
+func preserveNullLogicMonitorMetricIDs(source, target *SLOResourceModel) {
+	sourceObjectives := matchSourceObjectives(source, target)
+	for i := range target.Objectives {
+		sourceObjective := sourceObjectives[i]
+		if sourceObjective == nil {
+			continue
+		}
+		targetObjective := &target.Objectives[i]
+
+		for j := range min(len(sourceObjective.RawMetric), len(targetObjective.RawMetric)) {
+			preserveNullLogicMonitorIDsInMetricSpecs(
+				sourceObjective.RawMetric[j].Query,
+				targetObjective.RawMetric[j].Query,
+			)
+		}
+		for j := range min(len(sourceObjective.CountMetrics), len(targetObjective.CountMetrics)) {
+			sourceCountMetrics := &sourceObjective.CountMetrics[j]
+			targetCountMetrics := &targetObjective.CountMetrics[j]
+			preserveNullLogicMonitorIDsInMetricSpecs(sourceCountMetrics.Good, targetCountMetrics.Good)
+			preserveNullLogicMonitorIDsInMetricSpecs(sourceCountMetrics.Bad, targetCountMetrics.Bad)
+			preserveNullLogicMonitorIDsInMetricSpecs(sourceCountMetrics.Total, targetCountMetrics.Total)
+			preserveNullLogicMonitorIDsInMetricSpecs(sourceCountMetrics.GoodTotal, targetCountMetrics.GoodTotal)
+		}
+	}
+}
+
+func matchSourceObjectives(source, target *SLOResourceModel) []*ObjectiveModel {
+	matches := make([]*ObjectiveModel, len(target.Objectives))
+	matchedSource := make([]bool, len(source.Objectives))
+
+	for targetIndex := range target.Objectives {
+		targetObjective := &target.Objectives[targetIndex]
+		if isNullOrUnknown(targetObjective.Name) {
+			continue
+		}
+		for i := range source.Objectives {
+			if !matchedSource[i] &&
+				!isNullOrUnknown(source.Objectives[i].Name) &&
+				source.Objectives[i].Name.ValueString() == targetObjective.Name.ValueString() {
+				matches[targetIndex] = &source.Objectives[i]
+				matchedSource[i] = true
+				break
+			}
+		}
+	}
+
+	if len(source.Objectives) != len(target.Objectives) {
+		return matches
+	}
+	for targetIndex := range target.Objectives {
+		if matches[targetIndex] != nil {
+			continue
+		}
+		for sourceIndex := range source.Objectives {
+			if matchedSource[sourceIndex] ||
+				(!isNullOrUnknown(source.Objectives[sourceIndex].Name) &&
+					!isNullOrUnknown(target.Objectives[targetIndex].Name)) {
+				continue
+			}
+			matches[targetIndex] = &source.Objectives[sourceIndex]
+			matchedSource[sourceIndex] = true
+			break
+		}
+	}
+	return matches
+}
+
+func sortObjectivesBasedOnSource(source, target []ObjectiveModel) []ObjectiveModel {
+	if target == nil {
+		return nil
+	}
+
+	sourceModel := &SLOResourceModel{Objectives: source}
+	targetModel := &SLOResourceModel{Objectives: target}
+	matches := matchSourceObjectives(sourceModel, targetModel)
+	matchedTargets := make([]bool, len(target))
+	sorted := make([]ObjectiveModel, 0, len(target))
+
+	for sourceIndex := range sourceModel.Objectives {
+		for targetIndex, matchedSource := range matches {
+			if matchedSource != &sourceModel.Objectives[sourceIndex] {
+				continue
+			}
+			sorted = append(sorted, target[targetIndex])
+			matchedTargets[targetIndex] = true
+			break
+		}
+	}
+	for targetIndex := range target {
+		if !matchedTargets[targetIndex] {
+			sorted = append(sorted, target[targetIndex])
+		}
+	}
+	return sorted
+}
+
+func preserveNullLogicMonitorIDsInMetricSpecs(source, target []MetricSpecModel) {
+	for i := range min(len(source), len(target)) {
+		if len(source[i].LogicMonitor) == 0 || len(target[i].LogicMonitor) == 0 {
+			continue
+		}
+		preserveNullLogicMonitorIDs(&source[i].LogicMonitor[0], &target[i].LogicMonitor[0])
+	}
+}
+
+func preserveNullLogicMonitorIDs(source, target *LogicMonitorModel) {
+	if source == nil || target == nil {
+		return
+	}
+
+	target.DeviceDataSourceInstanceID = preserveNullLogicMonitorID(
+		source.DeviceDataSourceInstanceID,
+		target.DeviceDataSourceInstanceID,
+	)
+	target.GraphID = preserveNullLogicMonitorID(source.GraphID, target.GraphID)
+}
+
+func preserveNullLogicMonitorID(source, target types.Int64) types.Int64 {
+	if source.IsNull() && !target.IsNull() && !target.IsUnknown() && target.ValueInt64() == 0 {
+		return source
+	}
+	return target
 }
 
 // updateEmptyCompositeAggregation handles the case when:
@@ -342,13 +468,7 @@ func (s *SLOResource) updateEmptyAlertPolicies(
 // sortLists sorts lists returned by the API to ensure consistent ordering.
 func (s *SLOResource) sortLists(model, updatedModel *SLOResourceModel) {
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
-	updatedModel.Objectives = sortListBasedOnReferenceList(
-		updatedModel.Objectives,
-		model.Objectives,
-		func(a, b ObjectiveModel) bool {
-			return a.Name == b.Name
-		},
-	)
+	updatedModel.Objectives = sortObjectivesBasedOnSource(model.Objectives, updatedModel.Objectives)
 	for i := range updatedModel.Objectives {
 		if !updatedModel.Objectives[i].HasCompositeObjectives() {
 			continue
