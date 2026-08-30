@@ -192,6 +192,9 @@ func (s *ProjectResource) readResource(
 		return nil, diagnostics
 	}
 	updatedModel := newProjectResourceConfigFromManifest(project)
+	updatedModel.DisplayName = preserveExplicitEmptyString(model.DisplayName, updatedModel.DisplayName)
+	updatedModel.Description = preserveExplicitEmptyString(model.Description, updatedModel.Description)
+	updatedModel.Annotations = preserveExplicitEmptyAnnotations(model.Annotations, updatedModel.Annotations)
 	// Sort Labels.
 	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
 	return updatedModel, diagnostics
