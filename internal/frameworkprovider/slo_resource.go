@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/nobl9/nobl9-go/manifest"
 	v1alphaSLO "github.com/nobl9/nobl9-go/manifest/v1alpha/slo"
-	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
+	replayV1 "github.com/nobl9/nobl9-go/sdk/endpoints/replay/v1"
 )
 
 // Ensure [SLOResource] fully satisfies framework interfaces.
@@ -380,11 +380,11 @@ func (s *SLOResource) runReplay(ctx context.Context, config tfsdk.Config, model 
 	replayFromTS, _ := time.Parse(time.RFC3339, model.RetrieveHistoricalDataFrom.ValueString())
 	const startOffsetMinutes = 5
 	windowDuration := time.Since(replayFromTS)
-	payload := sdkModels.Replay{
+	payload := replayV1.RunRequest{
 		Project: model.Project,
-		Slo:     model.Name,
-		Duration: sdkModels.ReplayDuration{
-			Unit:  sdkModels.DurationUnitMinute,
+		SLO:     model.Name,
+		Duration: replayV1.Duration{
+			Unit:  replayV1.DurationUnitMinute,
 			Value: startOffsetMinutes + int(windowDuration.Minutes()),
 		},
 	}

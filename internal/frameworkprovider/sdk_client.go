@@ -21,7 +21,7 @@ import (
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 	v2 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v2"
-	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
+	replayV1 "github.com/nobl9/nobl9-go/sdk/endpoints/replay/v1"
 
 	"github.com/nobl9/terraform-provider-nobl9/internal/version"
 )
@@ -187,9 +187,8 @@ func (s sdkClient) GetSLO(ctx context.Context, name, project string) (v1alphaSLO
 
 // Replay runs historical data retrieval for the given SLO.
 //
-// TODO: Once https://github.com/nobl9/nobl9-go/pull/756 is merged,
-// we can remove this in favor of SDK-defined methods.
-func (s sdkClient) Replay(ctx context.Context, payload sdkModels.Replay) error {
+// Read the response body directly to preserve Replay availability diagnostics.
+func (s sdkClient) Replay(ctx context.Context, payload replayV1.RunRequest) error {
 	body := new(bytes.Buffer)
 	if err := json.NewEncoder(body).Encode(payload); err != nil {
 		return err
@@ -290,17 +289,17 @@ func setClientUserAgent(client *sdk.Client) {
 
 func replayUnavailabilityReasonExplanation(reason []byte, statusCode int) string {
 	strReason := strings.TrimSpace(string(reason))
-	switch strReason {
-	case sdkModels.ReplayIntegrationDoesNotSupportReplay:
+	switch replayV1.ReplayAvailabilityReason(strReason) {
+	case replayV1.ReplayIntegrationDoesNotSupportReplay:
 		return "The Data Source does not support Replay yet"
-	case sdkModels.ReplayAgentVersionDoesNotSupportReplay:
+	case replayV1.ReplayAgentVersionDoesNotSupportReplay:
 		return "Update your Agent version to the latest to use Replay for this Data Source."
-	case sdkModels.ReplayMaxHistoricalDataRetrievalTooLow:
+	case replayV1.ReplayMaxHistoricalDataRetrievalTooLow:
 		return "Value configured for spec.historicalDataRetrieval.maxDuration.value" +
 			" for the Data Source is lower than the duration you're trying to run Replay for."
-	case sdkModels.ReplayConcurrentReplayRunsLimitExhausted:
+	case replayV1.ReplayConcurrentReplayRunsLimitExhausted:
 		return "You've exceeded the limit of concurrent Replay runs. Wait until the current Replay(s) are done."
-	case sdkModels.ReplayUnknownAgentVersion:
+	case replayV1.ReplayUnknownAgentVersion:
 		return "Your Agent isn't connected to the Data Source. Deploy the Agent and run Replay once again."
 	case "single_query_not_supported":
 		return "Historical data retrieval for single-query ratio metrics is not supported"
