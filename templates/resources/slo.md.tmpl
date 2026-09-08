@@ -19,6 +19,18 @@ Use the `depends_on` meta-argument to specify component SLOs your composite must
 
 {{ tffile (printf "examples/resources/%s/resource.tf" .Name) }}
 
+### Zscaler application metrics
+
+The following example requires an existing Zscaler Direct data source and service.
+For an Agent data source, change the indicator kind to `Agent`.
+
+{{ tffile "examples/resources/nobl9_slo/zscaler.tf" }}
+
+Supported metrics are `score` (0–100), `pft` and `dns` (milliseconds), and `availability` (percent).
+Application and location IDs are positive integers. Omit `location_id` to aggregate across all locations.
+These are raw metrics, not good/total counts. The example targets 99% of collected application-score samples above 65,
+not 99% of individual users. If ZDX returns only page fetch time for a different requested metric, the query returns no data.
+
 {{ .SchemaMarkdown | trimspace }}
 
 ## Nobl9 Official Documentation
