@@ -16,6 +16,16 @@ For more information, refer to {{ .Description | trimspace }}
 
 {{ tffile (printf "examples/resources/%s/resource.tf" .Name)}}
 
+### Zscaler
+
+For Zscaler, set the release channel to `beta` and provide your OneAPI tenant name in `zscaler_config`.
+For `example.zslogin.net`, enter `example`.
+Set `ZSCALER_CLIENT_ID` and `ZSCALER_CLIENT_SECRET` in the agent environment using a OneAPI client with access to ZDX reports.
+Legacy ZDX API keys are not supported. Zscaler credentials are separate from the agent's Nobl9 credentials.
+Historical data retrieval is limited to 14 days and also depends on your ZDX data retention and license.
+
+{{ tffile "examples/resources/nobl9_agent/zscaler.tf" }}
+
 {{ .SchemaMarkdown | trimspace }}
 
 ## Nobl9 Official Documentation

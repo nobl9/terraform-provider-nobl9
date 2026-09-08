@@ -35,6 +35,7 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 		{sumologicDirectType, testSumoLogicDirect},
 		{thousandeyesDirectType, testThousandEyesDirect},
 		{dash0DirectType, testDash0Direct},
+		{zscalerDirectType, testZscalerDirect},
 		{elasticsearchDirectType, testElasticsearchDirect},
 	}
 
