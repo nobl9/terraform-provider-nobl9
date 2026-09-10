@@ -19,6 +19,7 @@ resource "nobl9_slo" "zscaler" {
     raw_metric {
       query {
         zscaler {
+          type        = "application"
           app_id      = 12345
           location_id = 6789
           metric      = "score"
