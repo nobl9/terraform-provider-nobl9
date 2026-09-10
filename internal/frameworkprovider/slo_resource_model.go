@@ -99,6 +99,7 @@ type MetricSpecModel struct {
 	AzurePrometheus     []AzurePrometheusModel     `tfsdk:"azure_prometheus"`
 	Coralogix           []CoralogixModel           `tfsdk:"coralogix"`
 	Dash0               []Dash0Model               `tfsdk:"dash0"`
+	Zscaler             []ZscalerModel             `tfsdk:"zscaler"`
 }
 
 // CompositeObjectiveModel represents the composite block in an objective.
@@ -770,95 +771,44 @@ func metricSpecToModel(spec *v1alphaSLO.MetricSpec) MetricSpecModel {
 	if spec == nil {
 		return MetricSpecModel{}
 	}
+	return MetricSpecModel{
+		AmazonPrometheus:    metricModelList(amazonPrometheusToModel(spec.AmazonPrometheus)),
+		AppDynamics:         metricModelList(appDynamicsToModel(spec.AppDynamics)),
+		AzureMonitor:        metricModelList(azureMonitorToModel(spec.AzureMonitor)),
+		BigQuery:            metricModelList(bigQueryToModel(spec.BigQuery)),
+		CloudWatch:          metricModelList(cloudWatchToModel(spec.CloudWatch)),
+		Datadog:             metricModelList(datadogToModel(spec.Datadog)),
+		Dynatrace:           metricModelList(dynatraceToModel(spec.Dynatrace)),
+		Elasticsearch:       metricModelList(elasticsearchToModel(spec.Elasticsearch)),
+		GCM:                 metricModelList(gcmToModel(spec.GCM)),
+		GrafanaLoki:         metricModelList(grafanaLokiToModel(spec.GrafanaLoki)),
+		Graphite:            metricModelList(graphiteToModel(spec.Graphite)),
+		Honeycomb:           metricModelList(honeycombToModel(spec.Honeycomb)),
+		InfluxDB:            metricModelList(influxDBToModel(spec.InfluxDB)),
+		Instana:             metricModelList(instanaToModel(spec.Instana)),
+		Lightstep:           metricModelList(lightstepToModel(spec.Lightstep)),
+		LogicMonitor:        metricModelList(logicMonitorToModel(spec.LogicMonitor)),
+		NewRelic:            metricModelList(newRelicToModel(spec.NewRelic)),
+		OpenTSDB:            metricModelList(openTSDBToModel(spec.OpenTSDB)),
+		Pingdom:             metricModelList(pingdomToModel(spec.Pingdom)),
+		Prometheus:          metricModelList(prometheusToModel(spec.Prometheus)),
+		Redshift:            metricModelList(redshiftToModel(spec.Redshift)),
+		Splunk:              metricModelList(splunkToModel(spec.Splunk)),
+		SplunkObservability: metricModelList(splunkObservabilityToModel(spec.SplunkObservability)),
+		SumoLogic:           metricModelList(sumoLogicToModel(spec.SumoLogic)),
+		ThousandEyes:        metricModelList(thousandEyesToModel(spec.ThousandEyes)),
+		AzurePrometheus:     metricModelList(azurePrometheusToModel(spec.AzurePrometheus)),
+		Coralogix:           metricModelList(coralogixToModel(spec.Coralogix)),
+		Dash0:               metricModelList(dash0ToModel(spec.Dash0)),
+		Zscaler:             metricModelList(zscalerToModel(spec.Zscaler)),
+	}
+}
 
-	model := MetricSpecModel{}
-
-	if amazonPrometheus := amazonPrometheusToModel(spec.AmazonPrometheus); amazonPrometheus != nil {
-		model.AmazonPrometheus = []AmazonPrometheusModel{*amazonPrometheus}
+func metricModelList[T any](model *T) []T {
+	if model == nil {
+		return nil
 	}
-	if appDynamics := appDynamicsToModel(spec.AppDynamics); appDynamics != nil {
-		model.AppDynamics = []AppDynamicsModel{*appDynamics}
-	}
-	if azureMonitor := azureMonitorToModel(spec.AzureMonitor); azureMonitor != nil {
-		model.AzureMonitor = []AzureMonitorModel{*azureMonitor}
-	}
-	if bigQuery := bigQueryToModel(spec.BigQuery); bigQuery != nil {
-		model.BigQuery = []BigQueryModel{*bigQuery}
-	}
-	if cloudWatch := cloudWatchToModel(spec.CloudWatch); cloudWatch != nil {
-		model.CloudWatch = []CloudWatchModel{*cloudWatch}
-	}
-	if datadog := datadogToModel(spec.Datadog); datadog != nil {
-		model.Datadog = []DatadogModel{*datadog}
-	}
-	if dynatrace := dynatraceToModel(spec.Dynatrace); dynatrace != nil {
-		model.Dynatrace = []DynatraceModel{*dynatrace}
-	}
-	if elasticsearch := elasticsearchToModel(spec.Elasticsearch); elasticsearch != nil {
-		model.Elasticsearch = []ElasticsearchModel{*elasticsearch}
-	}
-	if gcm := gcmToModel(spec.GCM); gcm != nil {
-		model.GCM = []GCMModel{*gcm}
-	}
-	if grafanaLoki := grafanaLokiToModel(spec.GrafanaLoki); grafanaLoki != nil {
-		model.GrafanaLoki = []GrafanaLokiModel{*grafanaLoki}
-	}
-	if graphite := graphiteToModel(spec.Graphite); graphite != nil {
-		model.Graphite = []GraphiteModel{*graphite}
-	}
-	if honeycomb := honeycombToModel(spec.Honeycomb); honeycomb != nil {
-		model.Honeycomb = []HoneycombModel{*honeycomb}
-	}
-	if influxDB := influxDBToModel(spec.InfluxDB); influxDB != nil {
-		model.InfluxDB = []InfluxDBModel{*influxDB}
-	}
-	if instana := instanaToModel(spec.Instana); instana != nil {
-		model.Instana = []InstanaModel{*instana}
-	}
-	if lightstep := lightstepToModel(spec.Lightstep); lightstep != nil {
-		model.Lightstep = []LightstepModel{*lightstep}
-	}
-	if logicMonitor := logicMonitorToModel(spec.LogicMonitor); logicMonitor != nil {
-		model.LogicMonitor = []LogicMonitorModel{*logicMonitor}
-	}
-	if newRelic := newRelicToModel(spec.NewRelic); newRelic != nil {
-		model.NewRelic = []NewRelicModel{*newRelic}
-	}
-	if openTSDB := openTSDBToModel(spec.OpenTSDB); openTSDB != nil {
-		model.OpenTSDB = []OpenTSDBModel{*openTSDB}
-	}
-	if pingdom := pingdomToModel(spec.Pingdom); pingdom != nil {
-		model.Pingdom = []PingdomModel{*pingdom}
-	}
-	if prometheus := prometheusToModel(spec.Prometheus); prometheus != nil {
-		model.Prometheus = []PrometheusModel{*prometheus}
-	}
-	if redshift := redshiftToModel(spec.Redshift); redshift != nil {
-		model.Redshift = []RedshiftModel{*redshift}
-	}
-	if splunk := splunkToModel(spec.Splunk); splunk != nil {
-		model.Splunk = []SplunkModel{*splunk}
-	}
-	if splunkObservability := splunkObservabilityToModel(spec.SplunkObservability); splunkObservability != nil {
-		model.SplunkObservability = []SplunkObservabilityModel{*splunkObservability}
-	}
-	if sumoLogic := sumoLogicToModel(spec.SumoLogic); sumoLogic != nil {
-		model.SumoLogic = []SumoLogicModel{*sumoLogic}
-	}
-	if thousandEyes := thousandEyesToModel(spec.ThousandEyes); thousandEyes != nil {
-		model.ThousandEyes = []ThousandEyesModel{*thousandEyes}
-	}
-	if azurePrometheus := azurePrometheusToModel(spec.AzurePrometheus); azurePrometheus != nil {
-		model.AzurePrometheus = []AzurePrometheusModel{*azurePrometheus}
-	}
-	if coralogix := coralogixToModel(spec.Coralogix); coralogix != nil {
-		model.Coralogix = []CoralogixModel{*coralogix}
-	}
-	if dash0 := dash0ToModel(spec.Dash0); dash0 != nil {
-		model.Dash0 = []Dash0Model{*dash0}
-	}
-
-	return model
+	return []T{*model}
 }
 
 func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
@@ -947,6 +897,9 @@ func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 	}
 	if len(m.Dash0) > 0 {
 		spec.Dash0 = modelToDash0(&m.Dash0[0])
+	}
+	if len(m.Zscaler) > 0 {
+		spec.Zscaler = modelToZscaler(&m.Zscaler[0])
 	}
 
 	return spec
