@@ -967,6 +967,7 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 				},
 			},
 		},
+		"zscaler": sloMetricZscalerBlock(),
 		"thousandeyes": schema.ListNestedBlock{
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes)",
 			Validators:  []validator.List{listvalidator.SizeAtMost(1)},
