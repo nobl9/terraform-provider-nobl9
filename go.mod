@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.1
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/nobl9/nobl9-go v0.135.0-rc4.0.20260910102816-55a59635d788
+	github.com/nobl9/nobl9-go v0.135.1-0.20260922181848-234a3c03b31a
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.12.1
 	github.com/teambition/rrule-go v1.8.2
