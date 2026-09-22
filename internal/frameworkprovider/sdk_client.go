@@ -192,10 +192,10 @@ func (s sdkClient) Replay(ctx context.Context, payload replayV1.RunRequest) erro
 	if !errors.As(err, &httpErr) || len(httpErr.Errors) == 0 {
 		return err
 	}
-	return errors.New(replayUnavailabilityReasonExplanation(
+	return errors.New(string(replayUnavailabilityReasonExplanation(
 		httpErr.Errors[0].Title,
 		httpErr.StatusCode,
-	))
+	)))
 }
 
 func (s sdkClient) MoveSLOs(ctx context.Context, sloName, oldProject, newProject, newService string) diag.Diagnostics {
@@ -275,19 +275,19 @@ func setClientUserAgent(client *sdk.Client) {
 	client.SetUserAgent(fmt.Sprintf("terraform-%s", version.GetUserAgent()))
 }
 
-func replayUnavailabilityReasonExplanation(reason string, statusCode int) string {
-	strReason := strings.TrimSpace(reason)
-	switch strReason {
-	case string(replayV1.ReplayIntegrationDoesNotSupportReplay):
+func replayUnavailabilityReasonExplanation(reason string, statusCode int) replayV1.ReplayAvailabilityReason {
+	replayReason := replayV1.ReplayAvailabilityReason(strings.TrimSpace(reason))
+	switch replayReason {
+	case replayV1.ReplayIntegrationDoesNotSupportReplay:
 		return "The Data Source does not support Replay yet"
-	case string(replayV1.ReplayAgentVersionDoesNotSupportReplay):
+	case replayV1.ReplayAgentVersionDoesNotSupportReplay:
 		return "Update your Agent version to the latest to use Replay for this Data Source."
-	case string(replayV1.ReplayMaxHistoricalDataRetrievalTooLow):
+	case replayV1.ReplayMaxHistoricalDataRetrievalTooLow:
 		return "Value configured for spec.historicalDataRetrieval.maxDuration.value" +
 			" for the Data Source is lower than the duration you're trying to run Replay for."
-	case string(replayV1.ReplayConcurrentReplayRunsLimitExhausted):
+	case replayV1.ReplayConcurrentReplayRunsLimitExhausted:
 		return "You've exceeded the limit of concurrent Replay runs. Wait until the current Replay(s) are done."
-	case string(replayV1.ReplayUnknownAgentVersion):
+	case replayV1.ReplayUnknownAgentVersion:
 		return "Your Agent isn't connected to the Data Source. Deploy the Agent and run Replay once again."
 	case "single_query_not_supported":
 		return "Historical data retrieval for single-query ratio metrics is not supported"
@@ -296,6 +296,8 @@ func replayUnavailabilityReasonExplanation(reason string, statusCode int) string
 	case "promql_in_gcm_not_supported":
 		return "Historical data retrieval for PromQL metrics is not supported"
 	default:
-		return fmt.Sprintf("bad response (status: %d): %s", statusCode, strReason)
+		return replayV1.ReplayAvailabilityReason(
+			fmt.Sprintf("bad response (status: %d): %s", statusCode, replayReason),
+		)
 	}
 }

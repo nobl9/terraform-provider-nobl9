@@ -14,6 +14,7 @@ import (
 
 func TestElasticsearchDirectSpec(t *testing.T) {
 	provider := elasticsearchDirectSpec{}
+	// The release channel belongs to the shared Direct resource schema, not the integration-specific schema.
 	resourceSchema := resourceDirectFactory(provider).Schema
 
 	assert.True(t, resourceSchema["url"].Required)
