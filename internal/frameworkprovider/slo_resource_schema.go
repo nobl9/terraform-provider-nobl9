@@ -172,28 +172,28 @@ func sloResourceObjectiveBlock() schema.ListNestedBlock {
 								Description: "Configuration for good time series metrics.",
 								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
-									Blocks: sloResourceMetricSpecBlocks(),
+									Blocks: sloResourceCountMetricSpecBlocks(),
 								},
 							},
 							"bad": schema.ListNestedBlock{
 								Description: "Configuration for bad time series metrics.",
 								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
-									Blocks: sloResourceMetricSpecBlocks(),
+									Blocks: sloResourceCountMetricSpecBlocks(),
 								},
 							},
 							"total": schema.ListNestedBlock{
 								Description: "Configuration for metric source.",
 								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
-									Blocks: sloResourceMetricSpecBlocks(),
+									Blocks: sloResourceCountMetricSpecBlocks(),
 								},
 							},
 							"good_total": schema.ListNestedBlock{
 								Description: "Configuration for single query series metrics.",
 								Validators:  []validator.List{listvalidator.SizeAtMost(1)},
 								NestedObject: schema.NestedBlockObject{
-									Blocks: sloResourceMetricSpecBlocks(),
+									Blocks: sloResourceCountMetricSpecBlocks(),
 								},
 							},
 						},
@@ -211,7 +211,7 @@ func sloResourceObjectiveBlock() schema.ListNestedBlock {
 									listvalidator.SizeBetween(1, 1),
 								},
 								NestedObject: schema.NestedBlockObject{
-									Blocks: sloResourceMetricSpecBlocks(),
+									Blocks: sloResourceRawMetricSpecBlocks(),
 								},
 							},
 						},
@@ -347,7 +347,14 @@ func anomalyConfigBlock() schema.ListNestedBlock {
 	}
 }
 
-func sloResourceMetricSpecBlocks() map[string]schema.Block {
+func sloResourceCountMetricSpecBlocks() map[string]schema.Block {
+	blocks := sloResourceRawMetricSpecBlocks()
+	delete(blocks, "thousandeyes")
+	delete(blocks, "zscaler")
+	return blocks
+}
+
+func sloResourceRawMetricSpecBlocks() map[string]schema.Block {
 	return map[string]schema.Block{
 		"amazon_prometheus": schema.ListNestedBlock{
 			Description: "[Configuration documentation](https://docs.nobl9.com/Sources/Amazon_Prometheus/#creating-slos-with-ams-prometheus)",
