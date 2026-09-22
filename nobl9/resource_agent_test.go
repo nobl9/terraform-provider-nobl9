@@ -634,3 +634,29 @@ resource "nobl9_agent" "%s" {
 }
 `, name, name, testProject)
 }
+
+func testZscalerAgent(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name = "%s"
+  project = "%s"
+  agent_type = "zscaler"
+  zscaler_config { vanity_domain = "example" }
+  release_channel = "beta"
+  historical_data_retrieval {
+    default_duration {
+      value = 7
+      unit = "Day"
+    }
+    max_duration {
+      value = 14
+      unit = "Day"
+    }
+  }
+  query_delay {
+    value = 20
+    unit = "Minute"
+  }
+}
+`, name, name, testProject)
+}

@@ -380,6 +380,18 @@ type Dash0Model struct {
 	PromQL string `tfsdk:"promql"`
 }
 
+// ZscalerModel represents a ZDX report query.
+type ZscalerModel struct {
+	Type       types.String `tfsdk:"type"`
+	AppID      types.Int64  `tfsdk:"app_id"`
+	LocationID types.Int64  `tfsdk:"location_id"`
+	Metric     types.String `tfsdk:"metric"`
+	DeviceID   types.Int64  `tfsdk:"device_id"`
+	ProbeID    types.Int64  `tfsdk:"probe_id"`
+	LegSrc     types.String `tfsdk:"leg_src"`
+	LegDst     types.String `tfsdk:"leg_dst"`
+}
+
 // newSLOResourceConfigFromManifest creates a new [SLOResourceModel] from a [v1alphaSLO.SLO] manifest.
 //
 // [SLOResourceModel.RetrieveHistoricalDataFrom] - this field is not part of the manifest.
@@ -1002,6 +1014,22 @@ func dash0ToModel(src *v1alphaSLO.Dash0Metric) *Dash0Model {
 	}
 }
 
+func zscalerToModel(src *v1alphaSLO.ZscalerMetric) *ZscalerModel {
+	if src == nil {
+		return nil
+	}
+	return &ZscalerModel{
+		Type:       types.StringValue(src.Type),
+		AppID:      types.Int64Value(src.AppID),
+		LocationID: types.Int64PointerValue(src.LocationID),
+		Metric:     types.StringValue(src.Metric),
+		DeviceID:   types.Int64PointerValue(src.DeviceID),
+		ProbeID:    types.Int64PointerValue(src.ProbeID),
+		LegSrc:     types.StringPointerValue(src.LegSrc),
+		LegDst:     types.StringPointerValue(src.LegDst),
+	}
+}
+
 func datadogToModel(src *v1alphaSLO.DatadogMetric) *DatadogModel {
 	if src == nil {
 		return nil
@@ -1376,6 +1404,22 @@ func modelToDash0(model *Dash0Model) *v1alphaSLO.Dash0Metric {
 	}
 	return &v1alphaSLO.Dash0Metric{
 		PromQL: &model.PromQL,
+	}
+}
+
+func modelToZscaler(model *ZscalerModel) *v1alphaSLO.ZscalerMetric {
+	if model == nil {
+		return nil
+	}
+	return &v1alphaSLO.ZscalerMetric{
+		Type:       model.Type.ValueString(),
+		AppID:      model.AppID.ValueInt64(),
+		LocationID: model.LocationID.ValueInt64Pointer(),
+		Metric:     model.Metric.ValueString(),
+		DeviceID:   model.DeviceID.ValueInt64Pointer(),
+		ProbeID:    model.ProbeID.ValueInt64Pointer(),
+		LegSrc:     model.LegSrc.ValueStringPointer(),
+		LegDst:     model.LegDst.ValueStringPointer(),
 	}
 }
 

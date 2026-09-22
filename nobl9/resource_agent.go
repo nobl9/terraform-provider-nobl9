@@ -1464,6 +1464,40 @@ func marshalAgentDash0(d resourceInterface, diags diag.Diagnostics) *v1alphaAgen
 	}
 }
 
+/**
+ * Zscaler Agent
+ */
+const zscalerAgentType = "zscaler"
+const zscalerAgentConfigKey = "zscaler_config"
+
+func schemaAgentZscaler() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		zscalerAgentConfigKey: {
+			Type:     schema.TypeSet,
+			Optional: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Description: "ZDX application metrics through OneAPI. Set release_channel to beta. " +
+				"Provide OneAPI credentials to the Agent using ZSCALER_CLIENT_ID and ZSCALER_CLIENT_SECRET environment variables.",
+			Elem: &schema.Resource{Schema: map[string]*schema.Schema{
+				"vanity_domain": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "OneAPI tenant name before .zslogin.net, without a URL scheme or domain suffix.",
+				},
+			}},
+		},
+	}
+}
+
+func marshalAgentZscaler(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.ZscalerConfig {
+	data := getAgentResourceData(d, zscalerAgentType, zscalerAgentConfigKey, diags)
+	if data == nil {
+		return nil
+	}
+	return &v1alphaAgent.ZscalerConfig{VanityDomain: data["vanity_domain"].(string)}
+}
+
 func getAgentResourceData(
 	d resourceInterface,
 	agentType,
