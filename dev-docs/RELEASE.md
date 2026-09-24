@@ -18,6 +18,11 @@ you'll have to manually remove `security` label.
 On each commit to `main` branch, Release Drafter will update the next release
 draft.
 
+Do not update provider versions manually in the Makefile, README, or examples.
+Local builds derive the provider version from the nearest matching Git tag
+reachable from the current commit, falling back to `0.0.0` when none exists.
+GoReleaser derives published artifact versions from the release tag.
+
 In addition to Release Drafter, we're also running a script which extracts
 explicitly listed release notes and breaking changes which are optionally
 defined in `## Release Notes` and `## Breaking Changes` headers.

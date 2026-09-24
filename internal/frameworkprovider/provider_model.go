@@ -14,7 +14,7 @@ type ProviderModel struct {
 	Project        envConfigurableString `tfsdk:"project"          envconfig:"PROJECT"`
 	IngestURL      envConfigurableString `tfsdk:"ingest_url"       envconfig:"URL"`
 	Organization   envConfigurableString `tfsdk:"organization"     envconfig:"ORG"`
-	NoConfigFile   envConfigurableBool   `tfsdk:"no_config_file"   envconfig:"NO_CONFIG_FILE" default:"true"`
+	NoConfigFile   envConfigurableBool   `tfsdk:"no_config_file"   envconfig:"NO_CONFIG_FILE" default:"false"`
 }
 
 // setDefaultsFromEnv sets the default values for the [ProviderModel] from the

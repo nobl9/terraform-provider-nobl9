@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"sync"
 	"testing"
 
@@ -21,6 +22,8 @@ import (
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/nobl9/terraform-provider-nobl9/internal/frameworkprovider"
 )
@@ -87,6 +90,87 @@ func TestProvider(t *testing.T) {
 	}
 }
 
+func TestProviderResolvesCredentials(t *testing.T) {
+	configPath := filepath.Join(t.TempDir(), "config.toml")
+	require.NoError(t, os.WriteFile(configPath, []byte(`defaultContext = "default"
+
+[Contexts]
+  [Contexts.default]
+    clientId = "config-client-id"
+    clientSecret = "config-value"
+`), 0o600))
+
+	var emptyValue string
+	configValue := "config-value"
+	envValue := "env-value"
+	providerValue := "provider-value"
+	tests := map[string]struct {
+		providerConfig       map[string]any
+		envClientID          string
+		envClientSecret      string
+		expectedClientID     string
+		expectedClientSecret string
+		expectedNoConfigFile bool
+	}{
+		"config file fallback for empty credentials": {
+			providerConfig: map[string]any{
+				"client_id":     "",
+				"client_secret": emptyValue,
+			},
+			expectedClientID:     "config-client-id",
+			expectedClientSecret: configValue,
+		},
+		"environment variables before config file": {
+			envClientID:          "env-client-id",
+			envClientSecret:      envValue,
+			expectedClientID:     "env-client-id",
+			expectedClientSecret: envValue,
+		},
+		"provider configuration before environment and config file": {
+			providerConfig: map[string]any{
+				"client_id":     "provider-client-id",
+				"client_secret": providerValue,
+			},
+			envClientID:          "env-client-id",
+			envClientSecret:      envValue,
+			expectedClientID:     "provider-client-id",
+			expectedClientSecret: providerValue,
+		},
+		"config file disabled": {
+			providerConfig: map[string]any{
+				"client_id":      "provider-client-id",
+				"client_secret":  providerValue,
+				"no_config_file": true,
+			},
+			expectedClientID:     "provider-client-id",
+			expectedClientSecret: providerValue,
+			expectedNoConfigFile: true,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			resetProviderClient(t)
+			setSDKConfigFileTestEnv(t, configPath)
+			unsetProviderConfigEnv(t)
+			if tt.envClientID != "" {
+				t.Setenv("NOBL9_CLIENT_ID", tt.envClientID)
+				t.Setenv("NOBL9_CLIENT_SECRET", tt.envClientSecret)
+			}
+
+			data := schema.TestResourceDataRaw(t, Provider().Schema, tt.providerConfig)
+			client, diags := getClient(getProviderConfig(data))
+
+			require.False(t, diags.HasError(), diags)
+			require.NotNil(t, client)
+			assert.Equal(t, tt.expectedClientID, client.Config.ClientID)
+			assert.Equal(t, tt.expectedClientSecret, client.Config.ClientSecret)
+			if tt.expectedNoConfigFile {
+				assert.Nil(t, client.Config.GetFileConfig())
+			}
+		})
+	}
+}
+
 func CheckObjectCreated(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
@@ -97,6 +181,75 @@ func CheckObjectCreated(name string) resource.TestCheckFunc {
 			return fmt.Errorf("ID not set")
 		}
 		return nil
+	}
+}
+
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+
+	value, exists := os.LookupEnv(key)
+	if err := os.Unsetenv(key); err != nil {
+		t.Fatalf("unset environment variable %s: %v", key, err)
+	}
+	t.Cleanup(func() {
+		if exists {
+			if err := os.Setenv(key, value); err != nil {
+				t.Errorf("restore environment variable %s: %v", key, err)
+			}
+			return
+		}
+		if err := os.Unsetenv(key); err != nil {
+			t.Errorf("unset environment variable %s during cleanup: %v", key, err)
+		}
+	})
+}
+
+func resetProviderClient(t *testing.T) {
+	t.Helper()
+
+	sharedClient = nil
+	once = sync.Once{}
+	t.Cleanup(func() {
+		sharedClient = nil
+		once = sync.Once{}
+	})
+}
+
+func setSDKConfigFileTestEnv(t *testing.T, configPath string) {
+	t.Helper()
+
+	t.Setenv("TERRAFORM_NOBL9_CONFIG_FILE_PATH", configPath)
+	t.Setenv("TERRAFORM_NOBL9_NO_CONFIG_FILE", "false")
+	t.Setenv("TERRAFORM_NOBL9_DEFAULT_CONTEXT", "")
+	t.Setenv("TERRAFORM_NOBL9_CLIENT_ID", "")
+	t.Setenv("TERRAFORM_NOBL9_CLIENT_SECRET", "")
+	t.Setenv("TERRAFORM_NOBL9_ACCESS_TOKEN", "")
+	t.Setenv("TERRAFORM_NOBL9_DISABLE_OKTA", "false")
+	t.Setenv("TERRAFORM_NOBL9_FILES_PROMPT_ENABLED", "")
+	t.Setenv("TERRAFORM_NOBL9_FILES_PROMPT_THRESHOLD", "")
+	t.Setenv("TERRAFORM_NOBL9_PROJECT", "")
+	t.Setenv("TERRAFORM_NOBL9_URL", "")
+	t.Setenv("TERRAFORM_NOBL9_OKTA_ORG_URL", "")
+	t.Setenv("TERRAFORM_NOBL9_OKTA_AUTH_SERVER", "")
+	t.Setenv("TERRAFORM_NOBL9_ORGANIZATION", "")
+	t.Setenv("TERRAFORM_NOBL9_TIMEOUT", "")
+	t.Setenv("TERRAFORM_NOBL9_CA_CERT_FILE", "")
+}
+
+func unsetProviderConfigEnv(t *testing.T) {
+	t.Helper()
+
+	for _, key := range []string{
+		"NOBL9_CLIENT_ID",
+		"NOBL9_CLIENT_SECRET",
+		"NOBL9_OKTA_URL",
+		"NOBL9_OKTA_AUTH",
+		"NOBL9_PROJECT",
+		"NOBL9_URL",
+		"NOBL9_ORG",
+		"NOBL9_NO_CONFIG_FILE",
+	} {
+		unsetEnv(t, key)
 	}
 }
 

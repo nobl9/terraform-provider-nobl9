@@ -1,12 +1,9 @@
 package frameworkprovider
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -21,7 +18,7 @@ import (
 	"github.com/nobl9/nobl9-go/sdk"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 	v2 "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v2"
-	sdkModels "github.com/nobl9/nobl9-go/sdk/models"
+	replayV1 "github.com/nobl9/nobl9-go/sdk/endpoints/replay/v1"
 
 	"github.com/nobl9/terraform-provider-nobl9/internal/version"
 )
@@ -186,29 +183,19 @@ func (s sdkClient) GetSLO(ctx context.Context, name, project string) (v1alphaSLO
 }
 
 // Replay runs historical data retrieval for the given SLO.
-//
-// TODO: Once https://github.com/nobl9/nobl9-go/pull/756 is merged,
-// we can remove this in favor of SDK-defined methods.
-func (s sdkClient) Replay(ctx context.Context, payload sdkModels.Replay) error {
-	body := new(bytes.Buffer)
-	if err := json.NewEncoder(body).Encode(payload); err != nil {
+func (s sdkClient) Replay(ctx context.Context, payload replayV1.RunRequest) error {
+	err := s.client.Replay().V1().Run(ctx, payload)
+	if err == nil {
+		return nil
+	}
+	var httpErr *sdk.HTTPError
+	if !errors.As(err, &httpErr) || len(httpErr.Errors) == 0 {
 		return err
 	}
-	header := http.Header{sdk.HeaderProject: []string{payload.Project}}
-	req, err := s.client.CreateRequest(ctx, http.MethodPost, "timetravel", header, nil, body)
-	if err != nil {
-		return err
-	}
-	resp, err := s.client.HTTP.Do(req)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	data, err := io.ReadAll(resp.Body)
-	if resp.StatusCode >= 300 {
-		return errors.New(replayUnavailabilityReasonExplanation(data, resp.StatusCode))
-	}
-	return err
+	return errors.New(string(replayUnavailabilityReasonExplanation(
+		httpErr.Errors[0].Title,
+		httpErr.StatusCode,
+	)))
 }
 
 func (s sdkClient) MoveSLOs(ctx context.Context, sloName, oldProject, newProject, newService string) diag.Diagnostics {
@@ -288,19 +275,19 @@ func setClientUserAgent(client *sdk.Client) {
 	client.SetUserAgent(fmt.Sprintf("terraform-%s", version.GetUserAgent()))
 }
 
-func replayUnavailabilityReasonExplanation(reason []byte, statusCode int) string {
-	strReason := strings.TrimSpace(string(reason))
-	switch strReason {
-	case sdkModels.ReplayIntegrationDoesNotSupportReplay:
+func replayUnavailabilityReasonExplanation(reason string, statusCode int) replayV1.ReplayAvailabilityReason {
+	replayReason := replayV1.ReplayAvailabilityReason(strings.TrimSpace(reason))
+	switch replayReason {
+	case replayV1.ReplayIntegrationDoesNotSupportReplay:
 		return "The Data Source does not support Replay yet"
-	case sdkModels.ReplayAgentVersionDoesNotSupportReplay:
+	case replayV1.ReplayAgentVersionDoesNotSupportReplay:
 		return "Update your Agent version to the latest to use Replay for this Data Source."
-	case sdkModels.ReplayMaxHistoricalDataRetrievalTooLow:
+	case replayV1.ReplayMaxHistoricalDataRetrievalTooLow:
 		return "Value configured for spec.historicalDataRetrieval.maxDuration.value" +
 			" for the Data Source is lower than the duration you're trying to run Replay for."
-	case sdkModels.ReplayConcurrentReplayRunsLimitExhausted:
+	case replayV1.ReplayConcurrentReplayRunsLimitExhausted:
 		return "You've exceeded the limit of concurrent Replay runs. Wait until the current Replay(s) are done."
-	case sdkModels.ReplayUnknownAgentVersion:
+	case replayV1.ReplayUnknownAgentVersion:
 		return "Your Agent isn't connected to the Data Source. Deploy the Agent and run Replay once again."
 	case "single_query_not_supported":
 		return "Historical data retrieval for single-query ratio metrics is not supported"
@@ -309,6 +296,8 @@ func replayUnavailabilityReasonExplanation(reason []byte, statusCode int) string
 	case "promql_in_gcm_not_supported":
 		return "Historical data retrieval for PromQL metrics is not supported"
 	default:
-		return fmt.Sprintf("bad response (status: %d): %s", statusCode, strReason)
+		return replayV1.ReplayAvailabilityReason(
+			fmt.Sprintf("bad response (status: %d): %s", statusCode, replayReason),
+		)
 	}
 }

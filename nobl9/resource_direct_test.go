@@ -36,6 +36,7 @@ func TestAcc_Nobl9Direct(t *testing.T) {
 		{thousandeyesDirectType, testThousandEyesDirect},
 		{dash0DirectType, testDash0Direct},
 		{clickHouseDirectType, testClickHouseDirect},
+		{elasticsearchDirectType, testElasticsearchDirect},
 	}
 
 	for _, tc := range cases {
@@ -575,6 +576,33 @@ resource "nobl9_direct_%s" "%s" {
   query_delay {
     unit = "Second"
     value = 31
+  }
+}
+`, directType, name, name, testProject)
+}
+
+func testElasticsearchDirect(directType, name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_direct_%s" "%s" {
+  name = "%s"
+  project = "%s"
+  description = "desc"
+  url = "https://example.aws.found.io"
+  api_key = "encoded-api-key"
+  release_channel = "stable"
+  historical_data_retrieval {
+    default_duration {
+      unit = "Day"
+      value = 1
+    }
+    max_duration {
+      unit = "Day"
+      value = 30
+    }
+  }
+  query_delay {
+    unit = "Minute"
+    value = 1
   }
 }
 `, directType, name, name, testProject)

@@ -72,8 +72,8 @@ func Provider() *schema.Provider {
 			"no_config_file": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NOBL9_NO_CONFIG_FILE", true),
-				Description: "Disable reading configuration from file.",
+				DefaultFunc: schema.EnvDefaultFunc("NOBL9_NO_CONFIG_FILE", false),
+				Description: "Set to true to disable reading configuration from file. Defaults to false.",
 			},
 		},
 
@@ -100,6 +100,7 @@ func Provider() *schema.Provider {
 			"nobl9_direct_" + clickHouseDirectType:          resourceDirectFactory(clickHouseDirectSpec{}),
 			"nobl9_direct_" + datadogDirectType:             resourceDirectFactory(datadogDirectSpec{}),
 			"nobl9_direct_" + dynatraceDirectType:           resourceDirectFactory(dynatraceDirectSpec{}),
+			"nobl9_direct_" + elasticsearchDirectType:       resourceDirectFactory(elasticsearchDirectSpec{}),
 			"nobl9_direct_" + gcmDirectType:                 resourceDirectFactory(gcmDirectSpec{}),
 			"nobl9_direct_" + honeycombDirectType:           resourceDirectFactory(honeycombDirectSpec{}),
 			"nobl9_direct_" + influxdbDirectType:            resourceDirectFactory(influxdbDirectSpec{}),

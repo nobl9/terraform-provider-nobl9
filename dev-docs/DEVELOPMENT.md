@@ -51,7 +51,6 @@ If you already have a Nobl9 `config.toml` on your machine with valid device cred
 run this command:
 
 ```shell
-NOBL9_NO_CONFIG_FILE=false \
 make test/acc
 ```
 
@@ -196,37 +195,30 @@ and you can place them in the templates using the following functions:
 2. Before the next step, verify if the Makefile variable `OS_ARCH` matches your
     system (for example _darwin_arm64_ for Apple Silicon based Mac's).
     If not override it.
-3. Run `make install/provider`. Make sure that the plugin was installed:
-    `ls ~/.terraform.d/plugins/nobl9.com/nobl9/nobl9/`
-    It will show you the current version of the plugin, ex: _0.19.0_.
-4. Copy the path to the plugin after ~/.terraform.d/plugins/, for example:
-    `nobl9.com/nobl9/nobl9/0.19.0/linux_amd64/terraform-provider-nobl9`
-    and configure your `.tf` file with it.
-    Usually it will look like this, just change the version:
+3. Run `make install/provider`.
+    By default, the Makefile uses the nearest matching Git tag reachable from
+    the current commit. If no matching tag is reachable, it uses `0.0.0`.
+    Use `VERSION=<version> make install/provider` when you need a specific
+    local test version.
+4. Copy the printed provider declaration into your Terraform configuration.
+    It contains the installed provider's exact source address and version.
+5. Configure the provider and add resources as needed, for example:
 
     ```terraform
-    terraform {
-      required_providers {
-        nobl9 = {
-          source = "nobl9.com/nobl9/nobl9"
-          version = "0.19.0"
-        }
-      }
-    }
-
-    provider "nobl9" {
-      // Add this If you want to use `config.toml` credentials.
-      // When set to false, you won't need to provide any further env variables.
-      no_config_file = false
-    }
+    provider "nobl9" {}
 
     resource "nobl9_project" "this" {
       name         = "my-project"
     }
     ```
 
-    Now you're all set, you can use the locally built provider anywhere, as long
-    as you use the right version (see above).
+    When provider credentials and `NOBL9_` environment variables
+    are absent or empty,
+    the provider reads credentials from `config.toml`.
+    Set `no_config_file = true` to disable this fallback.
+
+    You can use the locally built provider anywhere with the declaration printed
+    by `make install/provider`.
 
 ## Releases
 

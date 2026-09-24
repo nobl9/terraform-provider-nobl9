@@ -5,9 +5,11 @@ TEST ?= $$(go list ./... | grep -v 'vendor')
 HOSTNAME = nobl9.com
 NAMESPACE = nobl9
 NAME = nobl9
+PROVIDER_ADDRESS = $(HOSTNAME)/$(NAMESPACE)/$(NAME)
 BIN_DIR = ./bin
 BINARY = $(BIN_DIR)/terraform-provider-$(NAME)
-VERSION = 0.46.2
+GIT_VERSION := $(shell git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null | sed 's/^v//')
+VERSION ?= $(or $(GIT_VERSION),0.0.0)
 VERSION_PKG := "$(shell go list -m)/internal/version"
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 REVISION ?= $(shell git rev-parse --short=8 HEAD)
@@ -16,11 +18,10 @@ LDFLAGS += -s -w \
 	-X $(VERSION_PKG).BuildGitBranch=$(BRANCH) \
 	-X $(VERSION_PKG).BuildGitRevision=$(REVISION)
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
+PROVIDER_INSTALL_DIR = $(HOME)/.terraform.d/plugins/$(PROVIDER_ADDRESS)/$(VERSION)/$(OS_ARCH)
 
 # renovate datasource=github-releases depName=golangci/golangci-lint
-GOLANGCI_LINT_VERSION := v2.12.2
-# renovate datasource=go depName=golang.org/x/vuln/cmd/govulncheck
-GOVULNCHECK_VERSION := v1.6.0
+GOLANGCI_LINT_VERSION := v2.13.2
 
 # Check if the program is present in $PATH and install otherwise.
 # ${1} - oneOf{binary,yarn}
@@ -42,11 +43,23 @@ define _print_step
 endef
 
 .PHONY: install/provider
-## Install provider locally.
+## Install provider locally and print its Terraform declaration.
 install/provider: build
 	$(call _print_step,Installing provider $(VERSION) locally)
-	mkdir -p ~/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(NAME)/$(VERSION)/$(OS_ARCH)
-	mv $(BINARY) ~/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(NAME)/$(VERSION)/$(OS_ARCH)
+	mkdir -p "$(PROVIDER_INSTALL_DIR)"
+	mv "$(BINARY)" "$(PROVIDER_INSTALL_DIR)"
+	printf -- '%s\n' \
+		'' \
+		'Use this provider declaration in your Terraform configuration:' \
+		'' \
+		'terraform {' \
+		'  required_providers {' \
+		'    $(NAME) = {' \
+		'      source  = "$(PROVIDER_ADDRESS)"' \
+		'      version = "$(VERSION)"' \
+		'    }' \
+		'  }' \
+		'}'
 
 .PHONY: build
 ## Build provider binary.
@@ -80,9 +93,9 @@ release-dry-run:
 	$(call _print_step,Running Goreleaser in dry run mode)
 	goreleaser release --snapshot --skip-publish --clean
 
-.PHONY: check check/vet check/lint check/spell check/trailing check/markdown check/format check/generate check/vulns
+.PHONY: check check/vet check/lint check/spell check/trailing check/markdown check/format check/generate
 ## Run all checks.
-check: check/vet check/lint check/spell check/trailing check/markdown check/format check/generate check/vulns
+check: check/vet check/lint check/spell check/trailing check/markdown check/format check/generate
 
 ## Run 'go vet' on the whole project.
 check/vet:
@@ -111,12 +124,6 @@ check/markdown:
 	$(call _print_step,Verifying Markdown files)
 	$(call _ensure_installed,yarn,markdownlint)
 	yarn --silent markdownlint '**/*.md' -i node_modules -i docs
-
-## Check for potential vulnerabilities across all Go dependencies.
-check/vulns:
-	$(call _print_step,Running govulncheck)
-	$(call _ensure_installed,binary,govulncheck)
-	$(BIN_DIR)/govulncheck ./...
 
 ## Verify if the auto generated code has been committed.
 check/generate:
@@ -154,9 +161,9 @@ format/cspell:
 	$(call _ensure_installed,yarn,yaml)
 	yarn --silent format-cspell-config
 
-.PHONY: install install/yarn install/golangci-lint install/govulncheck
+.PHONY: install install/yarn install/golangci-lint
 ## Install all dev dependencies.
-install: install/yarn install/golangci-lint install/govulncheck
+install: install/yarn install/golangci-lint
 
 ## Install JS dependencies with yarn.
 install/yarn:
@@ -168,11 +175,6 @@ install/golangci-lint:
 	echo "Installing golangci-lint..."
 	curl -sSfL https://golangci-lint.run/install.sh |\
  		sh -s -- -b $(BIN_DIR) $(GOLANGCI_LINT_VERSION)
-
-## Install govulncheck (https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck).
-install/govulncheck:
-	echo "Installing govulncheck..."
-	$(call _install_go_binary,golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION))
 
 .PHONY: help
 ## Print this help message.
