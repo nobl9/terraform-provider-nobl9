@@ -101,14 +101,28 @@ func TestAccSLOResource(t *testing.T) {
 				},
 				Destroy: true,
 			},
-			// 3. ImportState - invalid id.
+			// 3. ImportState - invalid ID with leading empty segment.
 			{
 				ResourceName:  "nobl9_slo.test",
-				ImportStateId: sloResource.Name,
+				ImportStateId: "/" + sloResource.Name,
 				ImportState:   true,
 				ExpectError:   regexp.MustCompile(`Invalid import ID`),
 			},
-			// 4. ImportState.
+			// 4. ImportState - invalid ID with trailing empty segment.
+			{
+				ResourceName:  "nobl9_slo.test",
+				ImportStateId: sloResource.Project + "/",
+				ImportState:   true,
+				ExpectError:   regexp.MustCompile(`Invalid import ID`),
+			},
+			// 5. ImportState - invalid ID with an extra segment.
+			{
+				ResourceName:  "nobl9_slo.test",
+				ImportStateId: sloResource.Project + "/" + sloResource.Name + "/extra",
+				ImportState:   true,
+				ExpectError:   regexp.MustCompile(`Invalid import ID`),
+			},
+			// 6. ImportState.
 			{
 				ResourceName:  "nobl9_slo.test",
 				Config:        sloConfig,
@@ -128,7 +142,7 @@ func TestAccSLOResource(t *testing.T) {
 					e2etestutils.V1Apply(t, []manifest.Object{manifestSLO})
 				},
 			},
-			// 5. Update and Read, ensure computed fields do not pollute the plan.
+			// 7. Update and Read, ensure computed fields do not pollute the plan.
 			{
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
@@ -151,7 +165,7 @@ func TestAccSLOResource(t *testing.T) {
 					},
 				},
 			},
-			// 6. Update name and revert display name - recreate.
+			// 8. Update name and revert display name - recreate.
 			{
 				Config: newSLOResource(t, func() sloResourceTemplateModel {
 					m := sloResource
@@ -175,6 +189,69 @@ func TestAccSLOResource(t *testing.T) {
 				},
 			},
 			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccSLOResource_singleNameImport(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	defaultProject := testSDKClient.client.Config.Project
+	require.NotEmpty(t, defaultProject)
+
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = defaultProject
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	sloResource := sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource.Name = e2etestutils.GenerateName()
+	sloResource.Project = defaultProject
+	sloResource.Service = manifestService.GetName()
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	manifestSLO := sloResource.ToManifest()
+	config := newSLOResource(t, sloResource)
+	cleanupContext := context.WithoutCancel(t.Context())
+	t.Cleanup(func() {
+		cleanupObjectsIfPresent(t, cleanupContext, []manifest.Object{manifestSLO, manifestService})
+	})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				ResourceName:       "nobl9_slo.test",
+				Config:             config,
+				ImportStateId:      sloResource.Name,
+				ImportState:        true,
+				ImportStatePersist: true,
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					if !assert.Len(t, states, 1) {
+						return errors.New("expected exactly one state")
+					}
+					assert.Equal(t, sloResource.Name, states[0].Attributes["name"])
+					assert.Equal(t, defaultProject, states[0].Attributes["project"])
+					return nil
+				},
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, []manifest.Object{manifestService, manifestSLO})
+				},
+			},
+			{
+				Config: config,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
 		},
 	})
 }
