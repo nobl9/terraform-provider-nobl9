@@ -105,10 +105,23 @@ func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var sourceAlertPolicies []string
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("alert_policies"), &sourceAlertPolicies)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
+	detachAlertPolicies := len(sourceAlertPolicies) > 0 && len(model.AlertPolicies) == 0
 	moveSLO := model.Project != sourceProject
 	if moveSLO {
-		resp.Diagnostics.Append(s.client.MoveSLOs(ctx, model.Name, sourceProject, model.Project, model.Service)...)
+		resp.Diagnostics.Append(s.client.MoveSLOs(
+			ctx,
+			model.Name,
+			sourceProject,
+			model.Project,
+			model.Service,
+			detachAlertPolicies,
+		)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -116,9 +129,7 @@ func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	moveSLOUpdateWarningFunc := func() {
 		if moveSLO {
 			resp.Diagnostics.AddWarning("SLO Update Warning",
-				"SLO definition update failed, but the SLO was moved to a new project."+
-					"\nResolve the issues and retry the update operation,"+
-					" bear in mind that the SLO will remain in the new project.")
+				sloMovePartialSuccessWarningDetail(detachAlertPolicies))
 		}
 	}
 
@@ -133,6 +144,16 @@ func (s *SLOResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		moveSLOUpdateWarningFunc()
 		return
 	}
+}
+
+func sloMovePartialSuccessWarningDetail(detachAlertPolicies bool) string {
+	detail := "SLO definition update failed, but the SLO was moved to a new project."
+	if detachAlertPolicies {
+		detail += " Its Alert Policies were also detached."
+	}
+	return detail +
+		"\nTerraform state may be stale. Refresh and re-plan before resolving the issues" +
+		" and retrying the update operation. Bear in mind that the SLO will remain in the new project."
 }
 
 // Delete is called when the provider must delete the resource. Config
