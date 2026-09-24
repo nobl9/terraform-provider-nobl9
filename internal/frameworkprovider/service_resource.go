@@ -124,13 +124,19 @@ func (s *ServiceResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	// Read the Service after update to fetch the computed fields.
-	updatedModel, diags := s.readResource(ctx, model)
+	service, found, diags := s.client.FindService(ctx, model.Name, model.Project)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if !found {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 
+	updatedModel := newServiceResourceConfigFromManifest(service)
+	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
+	updatedModel.ResponsibleUsers = sortResponsibleUsers(model.ResponsibleUsers, updatedModel.ResponsibleUsers)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedModel)...)
 }
 

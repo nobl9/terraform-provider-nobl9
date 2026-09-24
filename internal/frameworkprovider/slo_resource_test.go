@@ -1654,6 +1654,64 @@ func TestAccSLOResource_examples(t *testing.T) {
 	}
 }
 
+func TestAccSLOResource_externalDeletion(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+	manifestDirect := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	sloResource := sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource.Name = e2etestutils.GenerateName()
+	sloResource.Project = manifestProject.GetName()
+	sloResource.Service = manifestService.GetName()
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    manifestDirect.GetName(),
+		Project: types.StringValue(manifestDirect.GetProject()),
+		Kind:    types.StringValue(manifestDirect.GetKind().String()),
+	}}
+	manifestSLO := sloResource.ToManifest()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() {
+						e2etestutils.V1Delete(t, auxiliaryObjects)
+					})
+				},
+				Config: newSLOResource(t, sloResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, t.Context(), manifestSLO),
+				),
+			},
+			{
+				PreConfig: func() {
+					e2etestutils.V1Delete(t, []manifest.Object{manifestSLO})
+				},
+				Config: newSLOResource(t, sloResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, t.Context(), manifestSLO),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_slo.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestRenderSLOResourceTemplate(t *testing.T) {
 	t.Parallel()
 

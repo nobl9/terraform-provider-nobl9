@@ -72,13 +72,18 @@ func (s *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	// Read the Project after update to fetch the computed fields.
-	updatedModel, diags := s.readResource(ctx, model)
+	project, found, diags := s.client.FindProject(ctx, model.Name)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if !found {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 
+	updatedModel := newProjectResourceConfigFromManifest(project)
+	updatedModel.Labels = sortLabels(model.Labels, updatedModel.Labels)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedModel)...)
 }
 

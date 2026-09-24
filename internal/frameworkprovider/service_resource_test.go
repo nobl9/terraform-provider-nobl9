@@ -391,6 +391,52 @@ func TestAccServiceResource_ReviewCycle(t *testing.T) {
 	})
 }
 
+func TestAccServiceResource_externalDeletion(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	serviceResource := serviceResourceTemplateModel{
+		ResourceName:         "test",
+		ServiceResourceModel: getExampleServiceResource(t),
+	}
+	serviceResource.Project = manifestProject.GetName()
+	manifestService := serviceResource.ToManifest()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, []manifest.Object{manifestProject})
+					t.Cleanup(func() {
+						e2etestutils.V1Delete(t, []manifest.Object{manifestProject})
+					})
+				},
+				Config: newServiceResource(t, serviceResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, t.Context(), manifestService),
+				),
+			},
+			{
+				PreConfig: func() {
+					e2etestutils.V1Delete(t, []manifest.Object{manifestService})
+				},
+				Config: newServiceResource(t, serviceResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasApplied(t, t.Context(), manifestService),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionCreate),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestRenderServiceResourceTemplate(t *testing.T) {
 	t.Parallel()
 
