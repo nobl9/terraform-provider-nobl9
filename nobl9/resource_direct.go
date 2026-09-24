@@ -1285,7 +1285,8 @@ func (s dash0DirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirec
 	return
 }
 
-// ClickHouse Direct: https://docs.nobl9.com/Sources/clickhouse#clickhouse-direct
+// ClickHouse Direct
+// https://docs.nobl9.com/Sources/clickhouse#clickhouse-direct
 const clickHouseDirectType = "clickhouse"
 
 type clickHouseDirectSpec struct{}
@@ -1308,9 +1309,8 @@ func (s clickHouseDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 		"username": {
 			Type:        schema.TypeString,
-			Description: "[required] | ClickHouse username.",
-			Optional:    true,
-			Computed:    true,
+			Description: "ClickHouse username.",
+			Required:    true,
 			ValidateDiagFunc: validation.ToDiagFunc(
 				validation.StringIsNotEmpty,
 			),

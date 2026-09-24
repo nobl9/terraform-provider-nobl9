@@ -8,7 +8,7 @@ description: |-
 
 ClickHouse is a column-oriented database management system for online analytical processing. Nobl9 connects to ClickHouse for SLI measurement collection and comparison with SLO targets.
 
-ClickHouse data sources are available on the beta release channel.
+ClickHouse data sources are Beta-only: set `release_channel = "beta"`; other values are rejected.
 
 For more information, refer to [ClickHouse Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/clickhouse#clickhouse-direct).
 
@@ -50,6 +50,7 @@ resource "nobl9_direct_clickhouse" "test-clickhouse" {
 - `name` (String) Unique name of the resource, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `project` (String) Name of the Nobl9 project the resource sits in, must conform to the naming convention from [DNS RFC1123](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).
 - `url` (String) ClickHouse HTTP API URL.
+- `username` (String) ClickHouse username.
 
 ### Optional
 
@@ -62,7 +63,6 @@ resource "nobl9_direct_clickhouse" "test-clickhouse" {
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
 - `release_channel` (String) Release channel of the created data source [stable/beta]
 - `source_of` (List of String, Deprecated) This value indicated whether the field was a source of metrics and/or services. 'source_of' is deprecated and not used anywhere; however, it's kept for backward compatibility.
-- `username` (String) [required] | ClickHouse username.
 
 ### Read-Only
 

@@ -70,6 +70,26 @@ func TestSLOResourceGoodTotalManifestRoundTrip(t *testing.T) {
 	require.Equal(t, spec, roundTripped)
 }
 
+// ClickHouse parameters live in a map attribute; no SDK example sets them.
+func TestSLOResourceClickHouseParametersRoundTrip(t *testing.T) {
+	ctx := context.Background()
+	spec := &v1alphaSLO.MetricSpec{
+		ClickHouse: &v1alphaSLO.ClickHouseMetric{
+			Query:      "SELECT n9date, n9value FROM t WHERE ts >= {n9date_from:DateTime} AND ts < {n9date_to:DateTime}",
+			Parameters: map[string]string{"service": "api-server"},
+		},
+	}
+
+	model := metricSpecToModel(spec)
+	value, diags := types.ObjectValueFrom(ctx, metricSpecObjectType(t, "raw_metric.query").AttrTypes, model)
+	require.Empty(t, diags)
+
+	var decoded MetricSpecModel
+	diags = value.As(ctx, &decoded, basetypes.ObjectAsOptions{})
+	require.Empty(t, diags)
+	require.Equal(t, spec, decoded.ToManifest())
+}
+
 func metricSpecObjectType(t *testing.T, site string) basetypes.ObjectType {
 	t.Helper()
 	objective := nestedBlock(t, sloResourceSchema.Blocks, "objective")
