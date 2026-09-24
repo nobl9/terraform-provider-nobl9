@@ -1106,8 +1106,11 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 
 func sloResourceCompositeV1Block() schema.ListNestedBlock {
 	return schema.ListNestedBlock{
-		Description:        "(\"composite\" is deprecated, use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo)",
+		Description: "Optional deprecated composite configuration. At most 1 block can be configured. " +
+			"Use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead. " +
+			"[Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo)",
 		DeprecationMessage: "\"composite\" is deprecated, use \"objective.composite\" instead.",
+		Validators:         []validator.List{listvalidator.SizeAtMost(1)},
 		NestedObject: schema.NestedBlockObject{
 			Attributes: map[string]schema.Attribute{
 				"target": schema.Float64Attribute{
