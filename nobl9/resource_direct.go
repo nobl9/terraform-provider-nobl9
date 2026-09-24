@@ -1285,6 +1285,67 @@ func (s dash0DirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirec
 	return
 }
 
+// ClickHouse Direct
+// https://docs.nobl9.com/Sources/clickhouse#clickhouse-direct
+const clickHouseDirectType = "clickhouse"
+
+type clickHouseDirectSpec struct{}
+
+func (s clickHouseDirectSpec) GetDescription() string {
+	return "[ClickHouse Direct | Nobl9 Documentation](https://docs.nobl9.com/Sources/clickhouse#clickhouse-direct)."
+}
+
+func (s clickHouseDirectSpec) GetSchema() map[string]*schema.Schema {
+	clickHouseSchema := map[string]*schema.Schema{
+		"url": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "ClickHouse HTTP API URL.",
+		},
+		"database": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "ClickHouse database name.",
+		},
+		"username": {
+			Type:        schema.TypeString,
+			Description: "ClickHouse username.",
+			Required:    true,
+			ValidateDiagFunc: validation.ToDiagFunc(
+				validation.StringIsNotEmpty,
+			),
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Description: "ClickHouse password. Optional when the ClickHouse user does not require a password.",
+			Optional:    true,
+			Computed:    true,
+			Sensitive:   true,
+		},
+	}
+	setHistoricalDataRetrievalSchema(clickHouseSchema)
+	setLogCollectionSchema(clickHouseSchema)
+
+	return clickHouseSchema
+}
+
+func (s clickHouseDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
+	return v1alphaDirect.Spec{ClickHouse: &v1alphaDirect.ClickHouseConfig{
+		URL:      r.Get("url").(string),
+		Database: r.Get("database").(string),
+		Username: r.Get("username").(string),
+		Password: r.Get("password").(string),
+	}}
+}
+
+func (s clickHouseDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
+	set(d, "url", spec.ClickHouse.URL, &diags)
+	set(d, "database", spec.ClickHouse.Database, &diags)
+	set(d, "username", spec.ClickHouse.Username, &diags)
+	set(d, "description", spec.Description, &diags)
+	return
+}
+
 // Elasticsearch Direct
 // https://docs.nobl9.com/Sources/elasticsearch#elasticsearch-direct
 const elasticsearchDirectType = "elasticsearch"

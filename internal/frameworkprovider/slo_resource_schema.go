@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -523,6 +524,24 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 								},
 							},
 						},
+					},
+				},
+			},
+		},
+		"clickhouse": schema.ListNestedBlock{
+			Description: "[Configuration documentation](https://docs.nobl9.com/sources/create-slo/clickhouse)",
+			Validators:  []validator.List{listvalidator.SizeAtMost(1)},
+			NestedObject: schema.NestedBlockObject{
+				Attributes: map[string]schema.Attribute{
+					"query": schema.StringAttribute{
+						Required:    true,
+						Description: "Query for the metrics",
+					},
+					"parameters": schema.MapAttribute{
+						Optional:    true,
+						ElementType: types.StringType,
+						Description: "Optional named parameters forwarded to ClickHouse as param_<name> HTTP query parameters.",
+						Validators:  []validator.Map{mapvalidator.SizeAtLeast(1)},
 					},
 				},
 			},
