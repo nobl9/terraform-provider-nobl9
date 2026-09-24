@@ -631,7 +631,7 @@ Required:
 
 Optional:
 
-- `group_by` (Block List) Group by method (see [below for nested schema](#nestedblock--objective--count_metrics--bad--instana--application--group_by))
+- `group_by` (Block List) Group by method. Exactly one block is required. (see [below for nested schema](#nestedblock--objective--count_metrics--bad--instana--application--group_by))
 - `include_internal` (Boolean) Include internal
 - `include_synthetic` (Boolean) Include synthetic
 
@@ -1053,7 +1053,7 @@ Required:
 
 Optional:
 
-- `group_by` (Block List) Group by method (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana--application--group_by))
+- `group_by` (Block List) Group by method. Exactly one block is required. (see [below for nested schema](#nestedblock--objective--count_metrics--good--instana--application--group_by))
 - `include_internal` (Boolean) Include internal
 - `include_synthetic` (Boolean) Include synthetic
 
@@ -1475,7 +1475,7 @@ Required:
 
 Optional:
 
-- `group_by` (Block List) Group by method (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--instana--application--group_by))
+- `group_by` (Block List) Group by method. Exactly one block is required. (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--instana--application--group_by))
 - `include_internal` (Boolean) Include internal
 - `include_synthetic` (Boolean) Include synthetic
 
@@ -1897,7 +1897,7 @@ Required:
 
 Optional:
 
-- `group_by` (Block List) Group by method (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana--application--group_by))
+- `group_by` (Block List) Group by method. Exactly one block is required. (see [below for nested schema](#nestedblock--objective--count_metrics--total--instana--application--group_by))
 - `include_internal` (Boolean) Include internal
 - `include_synthetic` (Boolean) Include synthetic
 
@@ -2327,7 +2327,7 @@ Required:
 
 Optional:
 
-- `group_by` (Block List) Group by method (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--application--group_by))
+- `group_by` (Block List) Group by method. Exactly one block is required. (see [below for nested schema](#nestedblock--objective--raw_metric--query--instana--application--group_by))
 - `include_internal` (Boolean) Include internal
 - `include_synthetic` (Boolean) Include synthetic
 

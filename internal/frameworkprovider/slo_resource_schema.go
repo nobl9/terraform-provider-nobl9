@@ -721,8 +721,11 @@ func sloResourceMetricSpecBlocks() map[string]schema.Block {
 							},
 							Blocks: map[string]schema.Block{
 								"group_by": schema.ListNestedBlock{
-									Description: "Group by method",
-									Validators:  []validator.List{listvalidator.SizeAtMost(1)},
+									Description: "Group by method. Exactly one block is required.",
+									Validators: []validator.List{
+										listvalidator.IsRequired(),
+										listvalidator.SizeBetween(1, 1),
+									},
 									NestedObject: schema.NestedBlockObject{
 										Attributes: map[string]schema.Attribute{
 											"tag": schema.StringAttribute{
