@@ -179,6 +179,427 @@ func TestAccSLOResource(t *testing.T) {
 	})
 }
 
+func TestAccSLOResource_logicMonitorOptionalIDs(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestAgent := e2etestutils.ProvisionStaticAgent(t, v1alpha.LogicMonitor)
+	sloModel := getExampleSLOResource(t)
+	sloModel.Name = e2etestutils.GenerateName()
+	sloModel.Project = manifestProject.GetName()
+	sloModel.Service = manifestService.GetName()
+	sloModel.Indicator = []IndicatorModel{{
+		Name:    manifestAgent.GetName(),
+		Project: types.StringValue(manifestAgent.GetProject()),
+		Kind:    types.StringValue(manifestAgent.GetKind().String()),
+	}}
+	sloModel.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
+		LogicMonitor: []LogicMonitorModel{{
+			QueryType:                  types.StringValue(v1alphaSLO.LMQueryTypeWebsiteMetrics),
+			DeviceDataSourceInstanceID: types.Int64Null(),
+			GraphID:                    types.Int64Null(),
+			WebsiteID:                  types.StringValue("123"),
+			CheckpointID:               types.StringValue("456"),
+			GraphName:                  types.StringValue("response-time"),
+			Line:                       types.StringValue("average"),
+		}},
+	}
+
+	const (
+		deviceDataSourceInstanceIDPath = "objective.0.raw_metric.0.query.0.logic_monitor.0.device_data_source_instance_id"
+		graphIDPath                    = "objective.0.raw_metric.0.query.0.logic_monitor.0.graph_id"
+	)
+	resourceName := "nobl9_slo.test"
+
+	omittedIDsConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: sloModel,
+	})
+	omittedIDsManifest := sloModel.ToManifest()
+	explicitZeroIDsModel := *newSLOResourceConfigFromManifest(omittedIDsManifest)
+	explicitZeroLogicMonitor := &explicitZeroIDsModel.Objectives[0].RawMetric[0].Query[0].LogicMonitor[0]
+	explicitZeroLogicMonitor.DeviceDataSourceInstanceID = types.Int64Value(0)
+	explicitZeroLogicMonitor.GraphID = types.Int64Value(0)
+	explicitZeroIDsConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: explicitZeroIDsModel,
+	})
+	explicitZeroIDsManifest := explicitZeroIDsModel.ToManifest()
+	explicitNonzeroIDsModel := *newSLOResourceConfigFromManifest(explicitZeroIDsManifest)
+	explicitNonzeroLogicMonitor := &explicitNonzeroIDsModel.Objectives[0].RawMetric[0].Query[0].LogicMonitor[0]
+	explicitNonzeroLogicMonitor.QueryType = types.StringValue(v1alphaSLO.LMQueryTypeDeviceMetrics)
+	explicitNonzeroLogicMonitor.DeviceDataSourceInstanceID = types.Int64Value(123)
+	explicitNonzeroLogicMonitor.GraphID = types.Int64Value(456)
+	explicitNonzeroLogicMonitor.WebsiteID = types.StringNull()
+	explicitNonzeroLogicMonitor.CheckpointID = types.StringNull()
+	explicitNonzeroLogicMonitor.GraphName = types.StringNull()
+	explicitNonzeroIDsConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: explicitNonzeroIDsModel,
+	})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: omittedIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(resourceName, deviceDataSourceInstanceIDPath),
+					resource.TestCheckNoResourceAttr(resourceName, graphIDPath),
+					assertResourceWasApplied(t, t.Context(), omittedIDsManifest),
+				),
+			},
+			{
+				Config: explicitZeroIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, deviceDataSourceInstanceIDPath, "0"),
+					resource.TestCheckResourceAttr(resourceName, graphIDPath, "0"),
+					assertResourceWasApplied(t, t.Context(), explicitZeroIDsManifest),
+				),
+			},
+			{
+				Config: explicitZeroIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertResourceWasDeleted(t, t.Context(), explicitZeroIDsManifest),
+				),
+				Destroy: true,
+			},
+			{
+				ResourceName:  resourceName,
+				ImportStateId: sloModel.Project + "/" + sloModel.Name,
+				ImportState:   true,
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					if !assert.Len(t, states, 1) {
+						return errors.New("expected exactly one state")
+					}
+					assert.Equal(t, "0", states[0].Attributes[deviceDataSourceInstanceIDPath])
+					assert.Equal(t, "0", states[0].Attributes[graphIDPath])
+					return nil
+				},
+				ImportStatePersist: true,
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, []manifest.Object{explicitZeroIDsManifest})
+				},
+			},
+			{
+				Config: omittedIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(resourceName, deviceDataSourceInstanceIDPath),
+					resource.TestCheckNoResourceAttr(resourceName, graphIDPath),
+					assertResourceWasApplied(t, t.Context(), omittedIDsManifest),
+				),
+			},
+			{
+				Config: omittedIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(resourceName, deviceDataSourceInstanceIDPath),
+					resource.TestCheckNoResourceAttr(resourceName, graphIDPath),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+			{
+				Config: explicitNonzeroIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, deviceDataSourceInstanceIDPath, "123"),
+					resource.TestCheckResourceAttr(resourceName, graphIDPath, "456"),
+					assertResourceWasApplied(t, t.Context(), explicitNonzeroIDsModel.ToManifest()),
+				),
+			},
+			{
+				Config: explicitNonzeroIDsConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, deviceDataSourceInstanceIDPath, "123"),
+					resource.TestCheckResourceAttr(resourceName, graphIDPath, "456"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+		},
+	})
+}
+
+func TestAccSLOResource_logicMonitorOptionalIDsCountMetrics(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	manifestProject := getExampleProjectResource(t).ToManifest()
+	manifestService := getExampleServiceResource(t).ToManifest()
+	manifestService.Metadata.Project = manifestProject.GetName()
+	auxiliaryObjects := []manifest.Object{manifestProject, manifestService}
+
+	manifestAgent := e2etestutils.ProvisionStaticAgent(t, v1alpha.LogicMonitor)
+	sloModel := getExampleSLOResource(t)
+	sloModel.Name = e2etestutils.GenerateName()
+	sloModel.Project = manifestProject.GetName()
+	sloModel.Service = manifestService.GetName()
+	sloModel.Indicator = []IndicatorModel{{
+		Name:    manifestAgent.GetName(),
+		Project: types.StringValue(manifestAgent.GetProject()),
+		Kind:    types.StringValue(manifestAgent.GetKind().String()),
+	}}
+
+	newWebsiteMetric := func(id types.Int64) MetricSpecModel {
+		return MetricSpecModel{
+			LogicMonitor: []LogicMonitorModel{{
+				QueryType:                  types.StringValue(v1alphaSLO.LMQueryTypeWebsiteMetrics),
+				DeviceDataSourceInstanceID: id,
+				GraphID:                    id,
+				WebsiteID:                  types.StringValue("123"),
+				CheckpointID:               types.StringValue("456"),
+				GraphName:                  types.StringValue("response-time"),
+				Line:                       types.StringValue("average"),
+			}},
+		}
+	}
+	newDeviceMetric := func(deviceID, graphID int64) MetricSpecModel {
+		return MetricSpecModel{
+			LogicMonitor: []LogicMonitorModel{{
+				QueryType:                  types.StringValue(v1alphaSLO.LMQueryTypeDeviceMetrics),
+				DeviceDataSourceInstanceID: types.Int64Value(deviceID),
+				GraphID:                    types.Int64Value(graphID),
+				WebsiteID:                  types.StringNull(),
+				CheckpointID:               types.StringNull(),
+				GraphName:                  types.StringNull(),
+				Line:                       types.StringValue("average"),
+			}},
+		}
+	}
+	newCountObjective := func(
+		name string,
+		value float64,
+		badMetric bool,
+		numerator MetricSpecModel,
+		total MetricSpecModel,
+	) ObjectiveModel {
+		objective := sloModel.Objectives[0]
+		objective.DisplayName = types.StringValue(name)
+		objective.Name = types.StringValue(name)
+		objective.Op = types.StringNull()
+		objective.Value = types.Float64Value(value)
+		objective.RawMetric = nil
+		countMetrics := CountMetricsModel{
+			Incremental: types.BoolValue(false),
+			Total:       []MetricSpecModel{total},
+		}
+		if badMetric {
+			countMetrics.Bad = []MetricSpecModel{numerator}
+		} else {
+			countMetrics.Good = []MetricSpecModel{numerator}
+		}
+		objective.CountMetrics = []CountMetricsModel{countMetrics}
+		return objective
+	}
+
+	goodObjective := newCountObjective(
+		"good-metrics",
+		1,
+		false,
+		newWebsiteMetric(types.Int64Null()),
+		newWebsiteMetric(types.Int64Null()),
+	)
+	badObjective := newCountObjective(
+		"bad-metrics",
+		2,
+		true,
+		newWebsiteMetric(types.Int64Value(0)),
+		newWebsiteMetric(types.Int64Value(0)),
+	)
+	sloModel.Objectives = []ObjectiveModel{goodObjective, badObjective}
+
+	config := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: sloModel,
+	})
+	reorderedModel := sloModel
+	reorderedModel.Objectives = []ObjectiveModel{badObjective, goodObjective}
+	reorderedConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: reorderedModel,
+	})
+	reorderedManifest := reorderedModel.ToManifest()
+	removedObjectiveManifest := reorderedModel.ToManifest()
+	removedObjectiveManifest.Spec.Objectives = removedObjectiveManifest.Spec.Objectives[1:]
+	computedObjective := newCountObjective(
+		"computed-metrics",
+		3,
+		false,
+		newWebsiteMetric(types.Int64Null()),
+		newWebsiteMetric(types.Int64Null()),
+	)
+	computedObjective.Name = types.StringNull()
+	explicitObjective := newCountObjective(
+		"explicit-metrics",
+		4,
+		true,
+		newWebsiteMetric(types.Int64Value(0)),
+		newWebsiteMetric(types.Int64Value(0)),
+	)
+	computedNameModel := sloModel
+	computedNameModel.Objectives = []ObjectiveModel{computedObjective, explicitObjective}
+	computedNameConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: computedNameModel,
+	})
+	reorderedComputedNameModel := computedNameModel
+	reorderedComputedNameModel.Objectives = []ObjectiveModel{explicitObjective, computedObjective}
+	reorderedComputedNameConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: reorderedComputedNameModel,
+	})
+	deviceMetricsModel := sloModel
+	deviceMetricsModel.Objectives = []ObjectiveModel{newCountObjective(
+		"device-metrics",
+		5,
+		false,
+		newDeviceMetric(123, 456),
+		newDeviceMetric(789, 1011),
+	)}
+	deviceMetricsConfig := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: deviceMetricsModel,
+	})
+
+	const (
+		resourceName = "nobl9_slo.test"
+		deviceID     = "device_data_source_instance_id"
+		graphID      = "graph_id"
+	)
+	countMetricIDPath := func(objective int, metric, id string) string {
+		return fmt.Sprintf("objective.%d.count_metrics.0.%s.0.logic_monitor.0.%s", objective, metric, id)
+	}
+	noIDChecks := func(objective int, metrics ...string) []resource.TestCheckFunc {
+		checks := make([]resource.TestCheckFunc, 0, len(metrics)*2)
+		for _, metric := range metrics {
+			checks = append(checks,
+				resource.TestCheckNoResourceAttr(resourceName, countMetricIDPath(objective, metric, deviceID)),
+				resource.TestCheckNoResourceAttr(resourceName, countMetricIDPath(objective, metric, graphID)),
+			)
+		}
+		return checks
+	}
+	zeroIDChecks := func(objective int, metrics ...string) []resource.TestCheckFunc {
+		checks := make([]resource.TestCheckFunc, 0, len(metrics)*2)
+		for _, metric := range metrics {
+			checks = append(checks,
+				resource.TestCheckResourceAttr(resourceName, countMetricIDPath(objective, metric, deviceID), "0"),
+				resource.TestCheckResourceAttr(resourceName, countMetricIDPath(objective, metric, graphID), "0"),
+			)
+		}
+		return checks
+	}
+	originalOrderChecks := append(noIDChecks(0, "good", "total"), zeroIDChecks(1, "bad", "total")...)
+	reorderedChecks := append(zeroIDChecks(0, "bad", "total"), noIDChecks(1, "good", "total")...)
+	removedObjectiveChecks := noIDChecks(0, "good", "total")
+	computedNameChecks := append(noIDChecks(0, "good", "total"), zeroIDChecks(1, "bad", "total")...)
+	computedNameChecks = append(computedNameChecks,
+		resource.TestCheckResourceAttr(resourceName, "objective.0.display_name", "computed-metrics"),
+		resource.TestCheckResourceAttrSet(resourceName, "objective.0.name"),
+		resource.TestCheckResourceAttr(resourceName, "objective.1.display_name", "explicit-metrics"),
+		resource.TestCheckResourceAttr(resourceName, "objective.1.name", "explicit-metrics"),
+	)
+	reorderedComputedNameChecks := append(
+		zeroIDChecks(0, "bad", "total"),
+		noIDChecks(1, "good", "total")...,
+	)
+	reorderedComputedNameChecks = append(reorderedComputedNameChecks,
+		resource.TestCheckResourceAttr(resourceName, "objective.0.display_name", "explicit-metrics"),
+		resource.TestCheckResourceAttr(resourceName, "objective.0.name", "explicit-metrics"),
+		resource.TestCheckResourceAttr(resourceName, "objective.1.display_name", "computed-metrics"),
+		resource.TestCheckResourceAttrSet(resourceName, "objective.1.name"),
+	)
+	deviceMetricsChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(resourceName, countMetricIDPath(0, "good", deviceID), "123"),
+		resource.TestCheckResourceAttr(resourceName, countMetricIDPath(0, "good", graphID), "456"),
+		resource.TestCheckResourceAttr(resourceName, countMetricIDPath(0, "total", deviceID), "789"),
+		resource.TestCheckResourceAttr(resourceName, countMetricIDPath(0, "total", graphID), "1011"),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: config,
+				Check:  resource.ComposeAggregateTestCheckFunc(originalOrderChecks...),
+			},
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, []manifest.Object{reorderedManifest})
+				},
+				ResourceName: resourceName,
+				RefreshState: true,
+				Check:        resource.ComposeAggregateTestCheckFunc(originalOrderChecks...),
+			},
+			{
+				Config: reorderedConfig,
+				Check:  resource.ComposeAggregateTestCheckFunc(reorderedChecks...),
+			},
+			{
+				Config: reorderedConfig,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, []manifest.Object{removedObjectiveManifest})
+				},
+				ResourceName:       resourceName,
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+				Check:              resource.ComposeAggregateTestCheckFunc(removedObjectiveChecks...),
+			},
+			{
+				Config:  reorderedConfig,
+				Destroy: true,
+			},
+			{
+				Config: computedNameConfig,
+				Check:  resource.ComposeAggregateTestCheckFunc(computedNameChecks...),
+			},
+			{
+				Config: reorderedComputedNameConfig,
+				Check:  resource.ComposeAggregateTestCheckFunc(reorderedComputedNameChecks...),
+			},
+			{
+				Config: reorderedComputedNameConfig,
+				Check:  resource.ComposeAggregateTestCheckFunc(reorderedComputedNameChecks...),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+			{
+				Config: deviceMetricsConfig,
+				Check:  resource.ComposeAggregateTestCheckFunc(deviceMetricsChecks...),
+			},
+			{
+				Config: deviceMetricsConfig,
+				Check:  resource.ComposeAggregateTestCheckFunc(deviceMetricsChecks...),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+		},
+	})
+}
+
 func TestAccSLOResource_planValidation(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
