@@ -1,6 +1,7 @@
 package frameworkprovider
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 )
@@ -15,6 +16,7 @@ type ServiceResourceModel struct {
 	Labels           Labels                 `tfsdk:"label"`
 	ResponsibleUsers []ResponsibleUserModel `tfsdk:"responsible_users"`
 	ReviewCycle      *ReviewCycleModel      `tfsdk:"review_cycle"`
+	Status           types.Object           `tfsdk:"status"`
 }
 
 // ResponsibleUserModel represents [v1alphaService.ResponsibleUser].
@@ -52,6 +54,13 @@ func (r ReviewCycleModel) ToManifest() *v1alphaService.ReviewCycle {
 }
 
 func newServiceResourceConfigFromManifest(svc v1alphaService.Service) *ServiceResourceModel {
+	status := types.ObjectNull(serviceStatusAttributeTypes)
+	if svc.Status != nil {
+		status = types.ObjectValueMust(serviceStatusAttributeTypes, map[string]attr.Value{
+			"slo_count": types.Int64Value(int64(svc.Status.SloCount)),
+		})
+	}
+
 	return &ServiceResourceModel{
 		Name:             svc.Metadata.Name,
 		DisplayName:      stringValue(svc.Metadata.DisplayName),
@@ -61,6 +70,7 @@ func newServiceResourceConfigFromManifest(svc v1alphaService.Service) *ServiceRe
 		Labels:           newLabelsFromManifest(svc.Metadata.Labels),
 		ResponsibleUsers: newResponsibleUsersFromManifest(svc.Spec.ResponsibleUsers),
 		ReviewCycle:      newReviewCycleFromManifest(svc.Spec.ReviewCycle),
+		Status:           status,
 	}
 }
 
