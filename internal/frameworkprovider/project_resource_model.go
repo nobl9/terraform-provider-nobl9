@@ -7,6 +7,7 @@ import (
 
 // ProjectResourceModel describes the [ProjectResource] data model.
 type ProjectResourceModel struct {
+	ID          types.String      `tfsdk:"id"`
 	Name        string            `tfsdk:"name"`
 	DisplayName types.String      `tfsdk:"display_name"`
 	Description types.String      `tfsdk:"description"`
@@ -16,6 +17,7 @@ type ProjectResourceModel struct {
 
 func newProjectResourceConfigFromManifest(project v1alphaProject.Project) *ProjectResourceModel {
 	return &ProjectResourceModel{
+		ID:          types.StringValue(project.Metadata.Name),
 		Name:        project.Metadata.Name,
 		DisplayName: stringValue(project.Metadata.DisplayName),
 		Description: stringValue(project.Spec.Description),

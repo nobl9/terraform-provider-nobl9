@@ -7,6 +7,7 @@ import (
 
 // ServiceResourceModel describes the [ServiceResource] data model.
 type ServiceResourceModel struct {
+	ID               types.String           `tfsdk:"id"`
 	Name             string                 `tfsdk:"name"`
 	DisplayName      types.String           `tfsdk:"display_name"`
 	Project          string                 `tfsdk:"project"`
@@ -53,6 +54,7 @@ func (r ReviewCycleModel) ToManifest() *v1alphaService.ReviewCycle {
 
 func newServiceResourceConfigFromManifest(svc v1alphaService.Service) *ServiceResourceModel {
 	return &ServiceResourceModel{
+		ID:               types.StringValue(svc.Metadata.Name),
 		Name:             svc.Metadata.Name,
 		DisplayName:      stringValue(svc.Metadata.DisplayName),
 		Project:          svc.Metadata.Project,

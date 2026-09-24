@@ -48,6 +48,7 @@ var serviceResourceSchema = func() schema.Schema {
 		MarkdownDescription: description,
 		Description:         description,
 		Attributes: map[string]schema.Attribute{
+			"id": resourceIDAttr(),
 			"name": func() schema.StringAttribute {
 				attr := metadataNameAttr()
 				return addServiceResourceNameChangeWarning(attr)

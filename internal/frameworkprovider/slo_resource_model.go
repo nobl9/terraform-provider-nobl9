@@ -8,6 +8,7 @@ import (
 
 // SLOResourceModel describes the [SLOResource] data model.
 type SLOResourceModel struct {
+	ID                         types.String         `tfsdk:"id"`
 	Name                       string               `tfsdk:"name"`
 	DisplayName                types.String         `tfsdk:"display_name"`
 	Project                    string               `tfsdk:"project"`
@@ -385,6 +386,7 @@ type Dash0Model struct {
 // It's handled separately in the Create operation.
 func newSLOResourceConfigFromManifest(slo v1alphaSLO.SLO) *SLOResourceModel {
 	model := &SLOResourceModel{
+		ID:              types.StringValue(slo.Metadata.Name),
 		Name:            slo.Metadata.Name,
 		DisplayName:     stringValue(slo.Metadata.DisplayName),
 		Project:         slo.Metadata.Project,
