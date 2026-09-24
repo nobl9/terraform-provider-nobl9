@@ -1044,6 +1044,12 @@ func sloResourceCompositeV2ObjectiveBlock() schema.ListNestedBlock {
 						"Aggregation method for composite SLO. Valid values: %s.",
 						strings.Join(v1alphaSLO.ComponentAggregationMethodNames(), ","),
 					),
+					Validators: []validator.String{
+						stringvalidator.OneOf(append(
+							[]string{""},
+							v1alphaSLO.ComponentAggregationMethodNames()...,
+						)...),
+					},
 				},
 			},
 			Blocks: map[string]schema.Block{
