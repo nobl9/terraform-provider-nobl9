@@ -235,6 +235,33 @@ func TestAccSLOResource_planValidation(t *testing.T) {
 	})
 }
 
+func TestAccSLOResource_anomalyAlertMethodRequired(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	model := getExampleSLOResource(t)
+	model.Name = e2etestutils.GenerateName()
+	model.AnomalyConfig = []AnomalyConfigModel{{
+		NoData: []AnomalyConfigNoDataModel{{
+			AlertAfter: types.StringValue("15m"),
+		}},
+	}}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: newSLOResource(t, sloResourceTemplateModel{
+					ResourceName:     "test",
+					SLOResourceModel: model,
+				}),
+				ExpectError: regexp.MustCompile(`(?s)Error: Invalid Block.*marked it as required`),
+				PlanOnly:    true,
+			},
+		},
+	})
+}
+
 func TestAccSLOResource_labelValidationErrors(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
