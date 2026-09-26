@@ -194,8 +194,8 @@ github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f h1:KUppIJq7/+
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/nobl9/govy v0.26.0 h1:pjHXreO+3Rl+Uz6/rFX7L54zH4LW/SaTjb6YX3GQGs4=
 github.com/nobl9/govy v0.26.0/go.mod h1:fExiIzXORe0ktwg2bWasOAmCZtEFMQkR4PpgzhHcZSA=
-github.com/nobl9/nobl9-go v0.135.0 h1:dlPR+XAt3/kFd0tsFEl0WY30VgbNQOTV0oPJcv/W7+4=
-github.com/nobl9/nobl9-go v0.135.0/go.mod h1:N9UxRbNPOShi3qnylVNjY39C2ZeGQRbBcdQnhaLKMow=
+github.com/nobl9/nobl9-go v0.135.1-0.20260922181848-234a3c03b31a h1:LxwzQ/cdDmXcDheJhZECHmfbWLGTwbRT7SJG8o+Ixx4=
+github.com/nobl9/nobl9-go v0.135.1-0.20260922181848-234a3c03b31a/go.mod h1:N9UxRbNPOShi3qnylVNjY39C2ZeGQRbBcdQnhaLKMow=
 github.com/oklog/run v1.2.0 h1:O8x3yXwah4A73hJdlrwo/2X6J62gE5qTMusH0dvz60E=
 github.com/oklog/run v1.2.0/go.mod h1:mgDbKRSwPhJfesJ4PntqFUbKQRZ50NgmZTSPlFA0YFk=
 github.com/pjbgf/sha1cd v0.3.2 h1:a9wb0bp1oC2TGwStyn0Umc/IGKQnEgF0vVaZ8QF8eo4=

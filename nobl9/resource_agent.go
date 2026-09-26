@@ -106,6 +106,7 @@ func agentSchema() map[string]*schema.Schema {
 		schemaAgentSumoLogic(),
 		schemaAgentThousandEyes(),
 		schemaAgentDash0(),
+		schemaAgentZscaler(),
 	}
 
 	for _, agentSchemaDef := range agentSchemaDefinitions {
@@ -256,6 +257,7 @@ func marshalAgent(d resourceInterface) (*v1alphaAgent.Agent, diag.Diagnostics) {
 			SumoLogic:               marshalAgentSumoLogic(d, diags),
 			ThousandEyes:            marshalAgentThousandEyes(d),
 			Dash0:                   marshalAgentDash0(d, diags),
+			Zscaler:                 marshalAgentZscaler(d, diags),
 			QueryDelay:              marshalQueryDelay(d),
 			ReleaseChannel:          marshalReleaseChannel(d, diags),
 			HistoricalDataRetrieval: marshalHistoricalDataRetrieval(d),
@@ -311,15 +313,23 @@ func unmarshalAgentConfig(
 	var m map[string]interface{}
 	err = json.Unmarshal(spec, &m)
 	diags = appendError(diags, err)
+	if diags.HasError() || m[jsonName] == nil {
+		return false, diags
+	}
 
 	switch jsonName {
 	case agentSpecJSONName(v1alphaAgent.Spec{}.NewRelic, diags):
 		unmarshalDiags := unmarshalNewRelicAgentSpec(d, agent)
 		diags = append(diags, unmarshalDiags...)
+	case agentSpecJSONName(v1alphaAgent.Spec{}.Zscaler, diags):
+		set(d, hclName, []interface{}{map[string]interface{}{
+			"vanity_domain": agent.Spec.Zscaler.VanityDomain,
+		}}, &diags)
 	default:
 		err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{m[jsonName]}))
 		diags = appendError(diags, err)
 	}
+	set(d, "agent_type", strings.TrimSuffix(hclName, "_config"), &diags)
 
 	return true, diags
 }
@@ -393,6 +403,7 @@ func getSupportedAgentConfigs() []supportedAgentConfig {
 		{sumologicAgentConfigKey, (*v1alphaAgent.SumoLogicConfig)(nil)},
 		{thousandeyesAgentConfigKey, (*v1alphaAgent.ThousandEyesConfig)(nil)},
 		{dash0AgentConfigKey, (*v1alphaAgent.Dash0Config)(nil)},
+		{zscalerAgentConfigKey, (*v1alphaAgent.ZscalerConfig)(nil)},
 	}
 }
 
@@ -1451,6 +1462,40 @@ func marshalAgentDash0(d resourceInterface, diags diag.Diagnostics) *v1alphaAgen
 		URL:  data["url"].(string),
 		Step: data["step"].(int),
 	}
+}
+
+/**
+ * Zscaler Agent
+ */
+const zscalerAgentType = "zscaler"
+const zscalerAgentConfigKey = "zscaler_config"
+
+func schemaAgentZscaler() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		zscalerAgentConfigKey: {
+			Type:     schema.TypeSet,
+			Optional: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Description: "ZDX application metrics through OneAPI. Set release_channel to beta. " +
+				"Provide OneAPI credentials to the Agent using ZSCALER_CLIENT_ID and ZSCALER_CLIENT_SECRET environment variables.",
+			Elem: &schema.Resource{Schema: map[string]*schema.Schema{
+				"vanity_domain": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "OneAPI tenant name before .zslogin.net, without a URL scheme or domain suffix.",
+				},
+			}},
+		},
+	}
+}
+
+func marshalAgentZscaler(d resourceInterface, diags diag.Diagnostics) *v1alphaAgent.ZscalerConfig {
+	data := getAgentResourceData(d, zscalerAgentType, zscalerAgentConfigKey, diags)
+	if data == nil {
+		return nil
+	}
+	return &v1alphaAgent.ZscalerConfig{VanityDomain: data["vanity_domain"].(string)}
 }
 
 func getAgentResourceData(

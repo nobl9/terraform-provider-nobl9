@@ -1,0 +1,34 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+Collect aggregate Zscaler Digital Experience (ZDX) application metrics with OneAPI.
+This integration is available in the beta release channel.
+
+Use a OneAPI client with permission to read ZDX reports. Legacy ZDX API keys are not supported.
+For a tenant at `example.zslogin.net`, set `vanity_domain` to `example`.
+These credentials are separate from the Nobl9 credentials used to configure this provider.
+
+Both `client_id` and `client_secret` are required when creating a data source.
+They are marked sensitive, but Terraform still stores them in state. Protect access to state and plan files.
+The Nobl9 API does not return these credentials, so refreshing a resource preserves the values already in state.
+
+## Example Usage
+
+{{ tffile (printf "examples/resources/%s/resource.tf" .Name) }}
+
+Historical data retrieval supports up to 14 days, subject to your ZDX data retention and license.
+Set the maximum and default periods to values available for your account. Queries are split into windows of at most 2 hours.
+
+Use a `zscaler` query in a raw-metric SLO to select `score`, `pft`, `dns`, or `availability`.
+Filter by `app_id` and, optionally, `location_id`. Count metrics are not supported.
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Nobl9 Official Documentation
+
+https://docs.nobl9.com/

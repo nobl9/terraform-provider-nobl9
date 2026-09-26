@@ -408,7 +408,6 @@ Optional:
 - `splunk` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--splunk))
 - `splunk_observability` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--splunk_observability))
 - `sumologic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--sumologic))
-- `thousandeyes` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--thousandeyes))
 
 <a id="nestedblock--objective--count_metrics--bad--amazon_prometheus"></a>
 ### Nested Schema for `objective.count_metrics.bad.amazon_prometheus`
@@ -784,19 +783,6 @@ Required:
 
 
 
-<a id="nestedblock--objective--count_metrics--bad--thousandeyes"></a>
-### Nested Schema for `objective.count_metrics.bad.thousandeyes`
-
-Required:
-
-- `test_id` (Number) ID of the test
-
-Optional:
-
-- `account_group_id` (Number) ID of the account group
-- `test_type` (String) Type of the test
-
-
 
 <a id="nestedblock--objective--count_metrics--good"></a>
 ### Nested Schema for `objective.count_metrics.good`
@@ -830,7 +816,6 @@ Optional:
 - `splunk` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--good--splunk))
 - `splunk_observability` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--good--splunk_observability))
 - `sumologic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--good--sumologic))
-- `thousandeyes` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--good--thousandeyes))
 
 <a id="nestedblock--objective--count_metrics--good--amazon_prometheus"></a>
 ### Nested Schema for `objective.count_metrics.good.amazon_prometheus`
@@ -1206,19 +1191,6 @@ Required:
 
 
 
-<a id="nestedblock--objective--count_metrics--good--thousandeyes"></a>
-### Nested Schema for `objective.count_metrics.good.thousandeyes`
-
-Required:
-
-- `test_id` (Number) ID of the test
-
-Optional:
-
-- `account_group_id` (Number) ID of the account group
-- `test_type` (String) Type of the test
-
-
 
 <a id="nestedblock--objective--count_metrics--good_total"></a>
 ### Nested Schema for `objective.count_metrics.good_total`
@@ -1252,7 +1224,6 @@ Optional:
 - `splunk` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--splunk))
 - `splunk_observability` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--splunk_observability))
 - `sumologic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--sumologic))
-- `thousandeyes` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--thousandeyes))
 
 <a id="nestedblock--objective--count_metrics--good_total--amazon_prometheus"></a>
 ### Nested Schema for `objective.count_metrics.good_total.amazon_prometheus`
@@ -1628,19 +1599,6 @@ Required:
 
 
 
-<a id="nestedblock--objective--count_metrics--good_total--thousandeyes"></a>
-### Nested Schema for `objective.count_metrics.good_total.thousandeyes`
-
-Required:
-
-- `test_id` (Number) ID of the test
-
-Optional:
-
-- `account_group_id` (Number) ID of the account group
-- `test_type` (String) Type of the test
-
-
 
 <a id="nestedblock--objective--count_metrics--total"></a>
 ### Nested Schema for `objective.count_metrics.total`
@@ -1674,7 +1632,6 @@ Optional:
 - `splunk` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk) (see [below for nested schema](#nestedblock--objective--count_metrics--total--splunk))
 - `splunk_observability` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--count_metrics--total--splunk_observability))
 - `sumologic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--count_metrics--total--sumologic))
-- `thousandeyes` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--count_metrics--total--thousandeyes))
 
 <a id="nestedblock--objective--count_metrics--total--amazon_prometheus"></a>
 ### Nested Schema for `objective.count_metrics.total.amazon_prometheus`
@@ -2050,19 +2007,6 @@ Required:
 
 
 
-<a id="nestedblock--objective--count_metrics--total--thousandeyes"></a>
-### Nested Schema for `objective.count_metrics.total.thousandeyes`
-
-Required:
-
-- `test_id` (Number) ID of the test
-
-Optional:
-
-- `account_group_id` (Number) ID of the account group
-- `test_type` (String) Type of the test
-
-
 
 
 <a id="nestedblock--objective--raw_metric"></a>
@@ -2105,6 +2049,7 @@ Optional:
 - `splunk_observability` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/splunk#creating-slos-with-splunk-observability) (see [below for nested schema](#nestedblock--objective--raw_metric--query--splunk_observability))
 - `sumologic` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#creating-slos-with-sumo-logic) (see [below for nested schema](#nestedblock--objective--raw_metric--query--sumologic))
 - `thousandeyes` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#creating-slos-with-thousandeyes) (see [below for nested schema](#nestedblock--objective--raw_metric--query--thousandeyes))
+- `zscaler` (Block List) Optional ZDX report query. At most one block is allowed. Supports raw metrics only. Selects one returned time series without aggregating across devices or probes. (see [below for nested schema](#nestedblock--objective--raw_metric--query--zscaler))
 
 <a id="nestedblock--objective--raw_metric--query--amazon_prometheus"></a>
 ### Nested Schema for `objective.raw_metric.query.amazon_prometheus`
@@ -2491,6 +2436,24 @@ Optional:
 
 - `account_group_id` (Number) ID of the account group
 - `test_type` (String) Type of the test
+
+
+<a id="nestedblock--objective--raw_metric--query--zscaler"></a>
+### Nested Schema for `objective.raw_metric.query.zscaler`
+
+Required:
+
+- `app_id` (Number) Positive integer application ID from ZDX.
+- `metric` (String) Metric for the selected type: application supports score and pft; web-probe supports pft, ttfb, dns, and availability; cloudpath supports latency and loss. Times are milliseconds; availability and loss are percentages; score is 0-100.
+- `type` (String) Report type: application, web-probe, or cloudpath. Application queries require app_id and allow location_id. Probe queries require app_id, device_id, and probe_id and do not allow location_id.
+
+Optional:
+
+- `device_id` (Number) Positive integer device ID. Required for web-probe and cloudpath; not allowed for application.
+- `leg_dst` (String) CloudPath destination segment label, matched exactly against leg_dst in the response. Supply together with leg_src or omit both to select end/end. Not allowed for other report types.
+- `leg_src` (String) CloudPath source segment label, matched exactly against leg_src in the response. Supply together with leg_dst or omit both to select end/end. Not allowed for other report types.
+- `location_id` (Number) Positive integer ZDX location ID for application queries only. Omit to include all locations.
+- `probe_id` (Number) Positive integer configured probe ID. Required for web-probe and cloudpath; not allowed for application.
 
 
 
