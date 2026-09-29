@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaDirect "github.com/nobl9/nobl9-go/manifest/v1alpha/direct"
 	v1Objects "github.com/nobl9/nobl9-go/sdk/endpoints/objects/v1"
 )
@@ -1329,4 +1330,69 @@ func (s elasticsearchDirectSpec) UnmarshalSpec(
 	set(d, "url", spec.Elasticsearch.URL, &diags)
 	set(d, "description", spec.Description, &diags)
 	return
+}
+
+// Zscaler Direct
+const zscalerDirectType = "zscaler"
+
+type zscalerDirectSpec struct{}
+
+func (zscalerDirectSpec) GetDescription() string {
+	return "Collects aggregate Zscaler Digital Experience (ZDX) application metrics through OneAPI."
+}
+
+func (zscalerDirectSpec) GetSchema() map[string]*schema.Schema {
+	result := map[string]*schema.Schema{
+		"vanity_domain": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "OneAPI tenant name before .zslogin.net, without a URL scheme or domain suffix.",
+		},
+		"client_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			Sensitive:        true,
+			Description:      "OneAPI client ID. Required when creating the data source. The client must have access to ZDX.",
+			ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotEmpty),
+		},
+		"client_secret": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			Sensitive:        true,
+			Description:      "OneAPI client secret. Required when creating the data source. Legacy ZDX API keys are not supported.",
+			ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotEmpty),
+		},
+		releaseChannel: {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     v1alpha.ReleaseChannelBeta.String(),
+			Description: "Release channel of the data source. Only beta is supported.",
+			ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice(
+				[]string{v1alpha.ReleaseChannelBeta.String()}, false,
+			)),
+		},
+	}
+	setHistoricalDataRetrievalSchema(result)
+	setLogCollectionSchema(result)
+	return result
+}
+
+func (zscalerDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
+	return v1alphaDirect.Spec{Zscaler: &v1alphaDirect.ZscalerConfig{
+		VanityDomain: r.Get("vanity_domain").(string),
+		ClientID:     r.Get("client_id").(string),
+		ClientSecret: r.Get("client_secret").(string),
+	}}
+}
+
+func (zscalerDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) diag.Diagnostics {
+	if spec.Zscaler == nil {
+		return diag.Errorf("Zscaler configuration is missing from the API response")
+	}
+	var diags diag.Diagnostics
+	set(d, "vanity_domain", spec.Zscaler.VanityDomain, &diags)
+	set(d, "description", spec.Description, &diags)
+	return diags
 }

@@ -75,6 +75,7 @@ resource "nobl9_agent" "this" {
 - `splunk_observability_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/splunk-observability/#splunk-observability-agent) (see [below for nested schema](#nestedblock--splunk_observability_config))
 - `sumologic_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/sumo-logic#sumo-logic-agent) (see [below for nested schema](#nestedblock--sumologic_config))
 - `thousandeyes_config` (Block Set, Max: 1) [Configuration documentation](https://docs.nobl9.com/Sources/thousandeyes#thousandeyes-agent) (see [below for nested schema](#nestedblock--thousandeyes_config))
+- `zscaler_config` (Block Set, Max: 1) ZDX application metrics through OneAPI. Set release_channel to beta. Provide OneAPI credentials to the Agent using ZSCALER_CLIENT_ID and ZSCALER_CLIENT_SECRET environment variables. (see [below for nested schema](#nestedblock--zscaler_config))
 
 ### Read-Only
 
@@ -326,6 +327,14 @@ Required:
 
 <a id="nestedblock--thousandeyes_config"></a>
 ### Nested Schema for `thousandeyes_config`
+
+
+<a id="nestedblock--zscaler_config"></a>
+### Nested Schema for `zscaler_config`
+
+Required:
+
+- `vanity_domain` (String) OneAPI tenant name before .zslogin.net, without a URL scheme or domain suffix.
 
 ## Nobl9 Official Documentation
 

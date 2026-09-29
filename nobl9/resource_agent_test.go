@@ -4,10 +4,58 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/nobl9/nobl9-go/manifest"
+	v1alphaAgent "github.com/nobl9/nobl9-go/manifest/v1alpha/agent"
 )
+
+func TestUnmarshalAgentSelectsReturnedConfiguration(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		name   string
+		key    string
+		spec   v1alphaAgent.Spec
+		fields map[string]interface{}
+	}{
+		{
+			name: amazonPrometheusAgentType, key: amazonPrometheusAgentConfigKey,
+			spec: v1alphaAgent.Spec{AmazonPrometheus: &v1alphaAgent.AmazonPrometheusConfig{
+				URL: "https://example.com", Region: "us-east-1",
+			}},
+			fields: map[string]interface{}{"url": "https://example.com", "region": "us-east-1"},
+		},
+		{
+			name: prometheusAgentType, key: prometheusAgentConfigKey,
+			spec:   v1alphaAgent.Spec{Prometheus: &v1alphaAgent.PrometheusConfig{URL: "https://example.com"}},
+			fields: map[string]interface{}{"url": "https://example.com"},
+		},
+		{
+			name: zscalerAgentType, key: zscalerAgentConfigKey,
+			spec:   v1alphaAgent.Spec{Zscaler: &v1alphaAgent.ZscalerConfig{VanityDomain: "example"}},
+			fields: map[string]interface{}{"vanity_domain": "example"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			data := schema.TestResourceDataRaw(t, agentSchema(), nil)
+			agent := v1alphaAgent.Agent{Spec: tc.spec, Status: &v1alphaAgent.Status{AgentType: tc.name}}
+			require.Empty(t, unmarshalAgent(data, agent))
+			assert.Equal(t, tc.name, data.Get("agent_type"))
+			config := data.Get(tc.key).(*schema.Set).List()
+			require.Len(t, config, 1)
+			for key, value := range tc.fields {
+				assert.Equal(t, value, config[0].(map[string]interface{})[key])
+			}
+			if tc.key != amazonPrometheusAgentConfigKey {
+				assert.Zero(t, data.Get(amazonPrometheusAgentConfigKey).(*schema.Set).Len())
+			}
+		})
+	}
+}
 
 func TestAcc_Nobl9Agent(t *testing.T) {
 	cases := []struct {
@@ -42,6 +90,7 @@ func TestAcc_Nobl9Agent(t *testing.T) {
 		{"test-sumologic", testSumoLogicAgent},
 		{"test-thousandeyes", testThousandEyesAgent},
 		{"test-dash0", testDash0Agent},
+		{"test-zscaler", testZscalerAgent},
 	}
 
 	for _, tc := range cases {
@@ -581,6 +630,32 @@ resource "nobl9_agent" "%s" {
   query_delay {
     unit = "Minute"
     value = 6
+  }
+}
+`, name, name, testProject)
+}
+
+func testZscalerAgent(name string) string {
+	return fmt.Sprintf(`
+resource "nobl9_agent" "%s" {
+  name = "%s"
+  project = "%s"
+  agent_type = "zscaler"
+  zscaler_config { vanity_domain = "example" }
+  release_channel = "beta"
+  historical_data_retrieval {
+    default_duration {
+      value = 7
+      unit = "Day"
+    }
+    max_duration {
+      value = 14
+      unit = "Day"
+    }
+  }
+  query_delay {
+    value = 20
+    unit = "Minute"
   }
 }
 `, name, name, testProject)
