@@ -665,7 +665,7 @@ resource "nobl9_agent" "%s" {
       unit = "Day"
     }
     max_duration {
-      value = 14
+      value = 10
       unit = "Day"
     }
   }
