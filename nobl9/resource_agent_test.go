@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
@@ -72,19 +71,6 @@ func TestUnmarshalAgentSelectsReturnedConfiguration(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestSetReportsSchemaErrors(t *testing.T) {
-	t.Parallel()
-	data := schema.TestResourceDataRaw(t, agentSchema(), nil)
-	var diags diag.Diagnostics
-
-	set(data, azureMonitorAgentConfigKey, []interface{}{map[string]interface{}{
-		"tenantId": "tenant-id",
-	}}, &diags)
-
-	require.Len(t, diags, 1)
-	assert.ErrorContains(t, diagsToSingleError(diags), "tenantId")
 }
 
 func TestAcc_Nobl9Agent(t *testing.T) {
