@@ -648,7 +648,7 @@ resource "nobl9_direct_%s" "%s" {
       unit = "Day"
     }
     max_duration {
-      value = 14
+      value = 10
       unit = "Day"
     }
   }
