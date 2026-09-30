@@ -318,6 +318,17 @@ func unmarshalAgentConfig(
 	}
 
 	switch jsonName {
+	case agentSpecJSONName(v1alphaAgent.Spec{}.AzureMonitor, diags):
+		err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{map[string]interface{}{
+			"tenant_id": agent.Spec.AzureMonitor.TenantID,
+		}}))
+		diags = appendError(diags, err)
+	case agentSpecJSONName(v1alphaAgent.Spec{}.Dynatrace, diags):
+		err = d.Set(hclName, schema.NewSet(oneElementSet, []interface{}{map[string]interface{}{
+			"url":          agent.Spec.Dynatrace.URL,
+			"platform_url": agent.Spec.Dynatrace.PlatformURL,
+		}}))
+		diags = appendError(diags, err)
 	case agentSpecJSONName(v1alphaAgent.Spec{}.NewRelic, diags):
 		unmarshalDiags := unmarshalNewRelicAgentSpec(d, agent)
 		diags = append(diags, unmarshalDiags...)
