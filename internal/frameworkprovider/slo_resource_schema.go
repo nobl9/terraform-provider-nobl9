@@ -348,7 +348,10 @@ func anomalyConfigBlock() schema.ListNestedBlock {
 }
 
 func sloResourceCountMetricSpecBlocks() map[string]schema.Block {
-	return sloResourceRawMetricSpecBlocks()
+	blocks := sloResourceRawMetricSpecBlocks()
+	delete(blocks, "thousandeyes")
+	delete(blocks, "zscaler")
+	return blocks
 }
 
 func sloResourceRawMetricSpecBlocks() map[string]schema.Block {
