@@ -56,11 +56,11 @@ func (o ObjectiveModel) HasCompositeObjectives() bool {
 
 // CountMetricsModel represents [v1alphaSLO.CountMetricsSpec].
 type CountMetricsModel struct {
-	Incremental types.Bool        `tfsdk:"incremental"`
-	Good        []MetricSpecModel `tfsdk:"good"`
-	Bad         []MetricSpecModel `tfsdk:"bad"`
-	Total       []MetricSpecModel `tfsdk:"total"`
-	GoodTotal   []MetricSpecModel `tfsdk:"good_total"`
+	Incremental types.Bool             `tfsdk:"incremental"`
+	Good        []CountMetricSpecModel `tfsdk:"good"`
+	Bad         []CountMetricSpecModel `tfsdk:"bad"`
+	Total       []CountMetricSpecModel `tfsdk:"total"`
+	GoodTotal   []CountMetricSpecModel `tfsdk:"good_total"`
 }
 
 // RawMetricModel represents the raw_metric block in an objective.
@@ -68,9 +68,8 @@ type RawMetricModel struct {
 	Query []MetricSpecModel `tfsdk:"query"`
 }
 
-// MetricSpecModel is a generic model for all metric types.
-// The actual metric type is determined by which field is populated.
-type MetricSpecModel struct {
+// CountMetricSpecModel contains metric types available in count_metrics.
+type CountMetricSpecModel struct {
 	AmazonPrometheus    []AmazonPrometheusModel    `tfsdk:"amazon_prometheus"`
 	AppDynamics         []AppDynamicsModel         `tfsdk:"appdynamics"`
 	AzureMonitor        []AzureMonitorModel        `tfsdk:"azure_monitor"`
@@ -95,11 +94,16 @@ type MetricSpecModel struct {
 	Splunk              []SplunkModel              `tfsdk:"splunk"`
 	SplunkObservability []SplunkObservabilityModel `tfsdk:"splunk_observability"`
 	SumoLogic           []SumoLogicModel           `tfsdk:"sumologic"`
-	ThousandEyes        []ThousandEyesModel        `tfsdk:"thousandeyes"`
 	AzurePrometheus     []AzurePrometheusModel     `tfsdk:"azure_prometheus"`
 	Coralogix           []CoralogixModel           `tfsdk:"coralogix"`
 	Dash0               []Dash0Model               `tfsdk:"dash0"`
-	Zscaler             []ZscalerModel             `tfsdk:"zscaler"`
+}
+
+// MetricSpecModel includes the metric types available only in raw_metric.
+type MetricSpecModel struct {
+	CountMetricSpecModel
+	ThousandEyes []ThousandEyesModel `tfsdk:"thousandeyes"`
+	Zscaler      []ZscalerModel      `tfsdk:"zscaler"`
 }
 
 // CompositeObjectiveModel represents the composite block in an objective.
@@ -616,16 +620,16 @@ func countMetricsToModel(src *v1alphaSLO.CountMetricsSpec) *CountMetricsModel {
 		model.Incremental = types.BoolValue(*src.Incremental)
 	}
 	if src.GoodMetric != nil {
-		model.Good = []MetricSpecModel{metricSpecToModel(src.GoodMetric)}
+		model.Good = []CountMetricSpecModel{countMetricSpecToModel(src.GoodMetric)}
 	}
 	if src.BadMetric != nil {
-		model.Bad = []MetricSpecModel{metricSpecToModel(src.BadMetric)}
+		model.Bad = []CountMetricSpecModel{countMetricSpecToModel(src.BadMetric)}
 	}
 	if src.TotalMetric != nil {
-		model.Total = []MetricSpecModel{metricSpecToModel(src.TotalMetric)}
+		model.Total = []CountMetricSpecModel{countMetricSpecToModel(src.TotalMetric)}
 	}
 	if src.GoodTotalMetric != nil {
-		model.GoodTotal = []MetricSpecModel{metricSpecToModel(src.GoodTotalMetric)}
+		model.GoodTotal = []CountMetricSpecModel{countMetricSpecToModel(src.GoodTotalMetric)}
 	}
 	return model
 }
@@ -784,6 +788,17 @@ func metricSpecToModel(spec *v1alphaSLO.MetricSpec) MetricSpecModel {
 		return MetricSpecModel{}
 	}
 	return MetricSpecModel{
+		CountMetricSpecModel: countMetricSpecToModel(spec),
+		ThousandEyes:         metricModelList(thousandEyesToModel(spec.ThousandEyes)),
+		Zscaler:              metricModelList(zscalerToModel(spec.Zscaler)),
+	}
+}
+
+func countMetricSpecToModel(spec *v1alphaSLO.MetricSpec) CountMetricSpecModel {
+	if spec == nil {
+		return CountMetricSpecModel{}
+	}
+	return CountMetricSpecModel{
 		AmazonPrometheus:    metricModelList(amazonPrometheusToModel(spec.AmazonPrometheus)),
 		AppDynamics:         metricModelList(appDynamicsToModel(spec.AppDynamics)),
 		AzureMonitor:        metricModelList(azureMonitorToModel(spec.AzureMonitor)),
@@ -808,11 +823,9 @@ func metricSpecToModel(spec *v1alphaSLO.MetricSpec) MetricSpecModel {
 		Splunk:              metricModelList(splunkToModel(spec.Splunk)),
 		SplunkObservability: metricModelList(splunkObservabilityToModel(spec.SplunkObservability)),
 		SumoLogic:           metricModelList(sumoLogicToModel(spec.SumoLogic)),
-		ThousandEyes:        metricModelList(thousandEyesToModel(spec.ThousandEyes)),
 		AzurePrometheus:     metricModelList(azurePrometheusToModel(spec.AzurePrometheus)),
 		Coralogix:           metricModelList(coralogixToModel(spec.Coralogix)),
 		Dash0:               metricModelList(dash0ToModel(spec.Dash0)),
-		Zscaler:             metricModelList(zscalerToModel(spec.Zscaler)),
 	}
 }
 
@@ -823,7 +836,7 @@ func metricModelList[T any](model *T) []T {
 	return []T{*model}
 }
 
-func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
+func (m CountMetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 	spec := &v1alphaSLO.MetricSpec{}
 
 	if len(m.AmazonPrometheus) > 0 {
@@ -898,9 +911,6 @@ func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 	if len(m.SumoLogic) > 0 {
 		spec.SumoLogic = modelToSumoLogic(&m.SumoLogic[0])
 	}
-	if len(m.ThousandEyes) > 0 {
-		spec.ThousandEyes = modelToThousandEyes(&m.ThousandEyes[0])
-	}
 	if len(m.AzurePrometheus) > 0 {
 		spec.AzurePrometheus = modelToAzurePrometheus(&m.AzurePrometheus[0])
 	}
@@ -910,10 +920,18 @@ func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 	if len(m.Dash0) > 0 {
 		spec.Dash0 = modelToDash0(&m.Dash0[0])
 	}
+
+	return spec
+}
+
+func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
+	spec := m.CountMetricSpecModel.ToManifest()
+	if len(m.ThousandEyes) > 0 {
+		spec.ThousandEyes = modelToThousandEyes(&m.ThousandEyes[0])
+	}
 	if len(m.Zscaler) > 0 {
 		spec.Zscaler = modelToZscaler(&m.Zscaler[0])
 	}
-
 	return spec
 }
 
