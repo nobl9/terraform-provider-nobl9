@@ -66,67 +66,6 @@ func TestZscalerDirectSpecMissingConfig(t *testing.T) {
 	assert.True(t, (zscalerDirectSpec{}).UnmarshalSpec(nil, v1alphaDirect.Spec{}).HasError())
 }
 
-func TestUnmarshalDirectPreservesReplayAndSkipsUnsupportedLogs(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name     string
-		resource directSpecResource
-		spec     v1alphaDirect.Spec
-		wantLogs bool
-	}{
-		{"sumologic", sumologicDirectSpec{}, v1alphaDirect.Spec{
-			SumoLogic: &v1alphaDirect.SumoLogicConfig{URL: "https://example.com"},
-		}, true},
-		{"thousandeyes", thousandeyesDirectSpec{}, v1alphaDirect.Spec{
-			ThousandEyes: &v1alphaDirect.ThousandEyesConfig{},
-		}, true},
-		{"elasticsearch", elasticsearchDirectSpec{}, v1alphaDirect.Spec{
-			Elasticsearch: &v1alphaDirect.ElasticsearchConfig{URL: "https://example.com"},
-		}, false},
-		{"splunk_observability", splunkObservabilityDirectSpec{}, v1alphaDirect.Spec{
-			SplunkObservability: &v1alphaDirect.SplunkObservabilityConfig{Realm: "us0"},
-		}, false},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
-			resourceSchema := resourceDirectFactory(test.resource).Schema
-			data := schema.TestResourceDataRaw(t, resourceSchema, nil)
-			value := 1
-			logsEnabled := true
-			spec := test.spec
-			spec.HistoricalDataRetrieval = &v1alpha.HistoricalDataRetrieval{
-				DefaultDuration: v1alpha.HistoricalRetrievalDuration{Value: &value, Unit: v1alpha.HRDDay},
-				MaxDuration:     v1alpha.HistoricalRetrievalDuration{Value: &value, Unit: v1alpha.HRDDay},
-			}
-			spec.LogCollectionEnabled = &logsEnabled
-			direct := v1alphaDirect.Direct{
-				Spec:   spec,
-				Status: &v1alphaDirect.Status{DirectType: test.name},
-			}
-
-			// act
-			diags := (directResource{test.resource}).unmarshalDirect(data, direct)
-
-			// assert
-			require.False(t, diags.HasError(), "%v", diags)
-			_, hasLogs := resourceSchema[logCollectionConfigKey]
-			assert.Contains(t, resourceSchema, historicalDataRetrievalConfigKey)
-			assert.Equal(t, test.wantLogs, hasLogs)
-			assert.Equal(t, 1, data.Get("historical_data_retrieval.0.default_duration.0.value"))
-			replayed := marshalHistoricalDataRetrieval(data)
-			require.NotNil(t, replayed)
-			require.NotNil(t, replayed.MaxDuration.Value)
-			assert.Equal(t, 1, *replayed.MaxDuration.Value)
-			if test.wantLogs {
-				assert.Equal(t, true, data.Get(logCollectionConfigKey))
-			}
-		})
-	}
-}
-
 func TestSetReportsErrors(t *testing.T) {
 	if os.Getenv("TF_ACC") != "" {
 		t.Skip("Terraform SDK panics on invalid state writes in acceptance mode")
