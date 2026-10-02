@@ -220,9 +220,7 @@ func (dr directResource) unmarshalDirect(d *schema.ResourceData, direct v1alphaD
 	diags = append(diags, dr.UnmarshalSpec(d, direct.Spec)...)
 	diags = append(diags, unmarshalHistoricalDataRetrieval(d, direct.Spec.HistoricalDataRetrieval)...)
 	diags = append(diags, unmarshalQueryDelay(d, direct.Spec.QueryDelay)...)
-	if _, ok := dr.GetSchema()[logCollectionConfigKey]; ok {
-		diags = append(diags, unmarshalLogCollectionEnabled(d, direct.Spec.LogCollectionEnabled)...)
-	}
+	diags = append(diags, unmarshalLogCollectionEnabled(d, direct.Spec.LogCollectionEnabled)...)
 	diags = append(diags, unmarshalReleaseChannel(d, direct.Spec.ReleaseChannel)...)
 
 	return diags
@@ -1114,6 +1112,7 @@ func (s splunkObservabilityDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setHistoricalDataRetrievalSchema(splunkObservabilitySchema)
+	setLogCollectionSchema(splunkObservabilitySchema)
 
 	return splunkObservabilitySchema
 }
@@ -1317,6 +1316,7 @@ func (s elasticsearchDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setHistoricalDataRetrievalSchema(elasticsearchSchema)
+	setLogCollectionSchema(elasticsearchSchema)
 	return elasticsearchSchema
 }
 
