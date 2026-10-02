@@ -4,7 +4,7 @@ resource "nobl9_direct_splunk_observability" "test-splunk-observability" {
   description     = "desc"
   realm           = "eu"
   access_token    = "secret"
-  release_channel = "beta"
+  release_channel = "stable"
   historical_data_retrieval {
     default_duration {
       unit  = "Day"
