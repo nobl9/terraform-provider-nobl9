@@ -564,7 +564,7 @@ resource "nobl9_agent" "%s" {
   splunk_observability_config {
     realm = "eu"
   }
-  release_channel = "beta"
+  release_channel = "stable"
   historical_data_retrieval {
     default_duration {
       unit = "Day"
