@@ -220,7 +220,9 @@ func (dr directResource) unmarshalDirect(d *schema.ResourceData, direct v1alphaD
 	diags = append(diags, dr.UnmarshalSpec(d, direct.Spec)...)
 	diags = append(diags, unmarshalHistoricalDataRetrieval(d, direct.Spec.HistoricalDataRetrieval)...)
 	diags = append(diags, unmarshalQueryDelay(d, direct.Spec.QueryDelay)...)
-	diags = append(diags, unmarshalLogCollectionEnabled(d, direct.Spec.LogCollectionEnabled)...)
+	if _, ok := dr.GetSchema()[logCollectionConfigKey]; ok {
+		diags = append(diags, unmarshalLogCollectionEnabled(d, direct.Spec.LogCollectionEnabled)...)
+	}
 	diags = append(diags, unmarshalReleaseChannel(d, direct.Spec.ReleaseChannel)...)
 
 	return diags
@@ -1172,6 +1174,7 @@ func (s sumologicDirectSpec) GetSchema() map[string]*schema.Schema {
 	}
 
 	setLogCollectionSchema(sumologicSchema)
+	setHistoricalDataRetrievalSchema(sumologicSchema)
 
 	return sumologicSchema
 }
@@ -1210,6 +1213,7 @@ func (s thousandeyesDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setLogCollectionSchema(thousandeyesSchema)
+	setHistoricalDataRetrievalSchema(thousandeyesSchema)
 
 	return thousandeyesSchema
 }
