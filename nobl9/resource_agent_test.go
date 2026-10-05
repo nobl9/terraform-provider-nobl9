@@ -34,6 +34,22 @@ func TestUnmarshalAgentSelectsReturnedConfiguration(t *testing.T) {
 			fields: map[string]interface{}{"url": "https://example.com"},
 		},
 		{
+			name: azureMonitorAgentType, key: azureMonitorAgentConfigKey,
+			spec: v1alphaAgent.Spec{AzureMonitor: &v1alphaAgent.AzureMonitorConfig{
+				TenantID: "tenant-id",
+			}},
+			fields: map[string]interface{}{"tenant_id": "tenant-id"},
+		},
+		{
+			name: dynatraceAgentType, key: dynatraceAgentConfigKey,
+			spec: v1alphaAgent.Spec{Dynatrace: &v1alphaAgent.DynatraceConfig{
+				URL: "https://example.com", PlatformURL: "https://platform.example.com",
+			}},
+			fields: map[string]interface{}{
+				"url": "https://example.com", "platform_url": "https://platform.example.com",
+			},
+		},
+		{
 			name: zscalerAgentType, key: zscalerAgentConfigKey,
 			spec:   v1alphaAgent.Spec{Zscaler: &v1alphaAgent.ZscalerConfig{VanityDomain: "example"}},
 			fields: map[string]interface{}{"vanity_domain": "example"},
@@ -649,7 +665,7 @@ resource "nobl9_agent" "%s" {
       unit = "Day"
     }
     max_duration {
-      value = 14
+      value = 10
       unit = "Day"
     }
   }

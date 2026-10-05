@@ -78,10 +78,8 @@ func renderMetricSpecTplFunc(metricSpec interface{}) string {
 	if rv.Kind() != reflect.Struct {
 		return ""
 	}
-	rt := rv.Type()
-	for i := 0; i < rv.NumField(); i++ {
-		field := rv.Field(i)
-		structField := rt.Field(i)
+	for _, structField := range reflect.VisibleFields(rv.Type()) {
+		field := rv.FieldByIndex(structField.Index)
 		// Check if field is a slice with at least one element
 		if field.Kind() == reflect.Slice && field.Len() > 0 {
 			// Get the first element of the slice
