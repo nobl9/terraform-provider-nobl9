@@ -1112,6 +1112,7 @@ func (s splunkObservabilityDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setHistoricalDataRetrievalSchema(splunkObservabilitySchema)
+	setLogCollectionSchema(splunkObservabilitySchema)
 
 	return splunkObservabilitySchema
 }
@@ -1172,6 +1173,7 @@ func (s sumologicDirectSpec) GetSchema() map[string]*schema.Schema {
 	}
 
 	setLogCollectionSchema(sumologicSchema)
+	setHistoricalDataRetrievalSchema(sumologicSchema)
 
 	return sumologicSchema
 }
@@ -1210,6 +1212,7 @@ func (s thousandeyesDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setLogCollectionSchema(thousandeyesSchema)
+	setHistoricalDataRetrievalSchema(thousandeyesSchema)
 
 	return thousandeyesSchema
 }
@@ -1313,6 +1316,7 @@ func (s elasticsearchDirectSpec) GetSchema() map[string]*schema.Schema {
 		},
 	}
 	setHistoricalDataRetrievalSchema(elasticsearchSchema)
+	setLogCollectionSchema(elasticsearchSchema)
 	return elasticsearchSchema
 }
 

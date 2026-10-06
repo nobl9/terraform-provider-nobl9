@@ -2,9 +2,11 @@ package nobl9
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
@@ -62,6 +64,22 @@ func TestZscalerDirectSpecPreservesCredentialsOnRead(t *testing.T) {
 func TestZscalerDirectSpecMissingConfig(t *testing.T) {
 	t.Parallel()
 	assert.True(t, (zscalerDirectSpec{}).UnmarshalSpec(nil, v1alphaDirect.Spec{}).HasError())
+}
+
+func TestSetReportsErrors(t *testing.T) {
+	if os.Getenv("TF_ACC") != "" {
+		t.Skip("Terraform SDK panics on invalid state writes in acceptance mode")
+	}
+	t.Parallel()
+	data := schema.TestResourceDataRaw(t, map[string]*schema.Schema{}, nil)
+	var diags diag.Diagnostics
+
+	// act
+	set(data, "missing", true, &diags)
+
+	// assert
+	require.True(t, diags.HasError())
+	assert.Contains(t, diags[0].Summary, "Invalid address to set")
 }
 
 func TestAcc_Nobl9Direct(t *testing.T) {
@@ -648,7 +666,7 @@ resource "nobl9_direct_%s" "%s" {
       unit = "Day"
     }
     max_duration {
-      value = 14
+      value = 10
       unit = "Day"
     }
   }
