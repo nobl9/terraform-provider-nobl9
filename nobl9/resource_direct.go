@@ -474,12 +474,15 @@ func (s datadogDirectSpec) GetSchema() map[string]*schema.Schema {
 				"(see " +
 				"[Datadog docs](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site)" +
 				"for an up to date list):\n" +
-				"  - `datadoghq.com` (formerly referred to as `com`)\n" +
+				"  - `datadoghq.com`\n" +
 				"  - `us3.datadoghq.com`\n" +
 				"  - `us5.datadoghq.com`\n" +
-				"  - `datadoghq.eu` (formerly referred to as `eu`)\n" +
+				"  - `datadoghq.eu`\n" +
 				"  - `ddog-gov.com`\n" +
-				"  - `ap1.datadoghq.com`\n",
+				"  - `us2.ddog-gov.com`\n" +
+				"  - `ap1.datadoghq.com`\n" +
+				"  - `ap2.datadoghq.com`\n" +
+				"  - `uk1.datadoghq.com`\n",
 			Required: true,
 		},
 		"api_key": {
