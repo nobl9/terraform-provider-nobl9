@@ -210,7 +210,7 @@ resource "nobl9_slo" "composite_slo" {
 - `annotations` (Map of String) [Metadata annotations](https://docs.nobl9.com/features/labels/#metadata-annotations) attached to the resource.
 - `anomaly_config` (Block List) Configuration for anomaly detection. (see [below for nested schema](#nestedblock--anomaly_config))
 - `attachment` (Block List) URL attachments for the SLO. (see [below for nested schema](#nestedblock--attachment))
-- `composite` (Block List, Deprecated) ("composite" is deprecated, use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead) [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
+- `composite` (Block List, Deprecated) Optional deprecated composite configuration. At most 1 block can be configured. Use [composites 2.0 schema](https://registry.terraform.io/providers/nobl9/nobl9/latest/docs/resources/slo#nested-schema-for-objectivecomposite) instead. [Composite SLO documentation](https://docs.nobl9.com/yaml-guide/#slo) (see [below for nested schema](#nestedblock--composite))
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
 - `indicator` (Block List) Configuration for the metric source (Agent/Direct). (see [below for nested schema](#nestedblock--indicator))
