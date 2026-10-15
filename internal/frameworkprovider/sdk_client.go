@@ -198,12 +198,17 @@ func (s sdkClient) Replay(ctx context.Context, payload replayV1.RunRequest) erro
 	)))
 }
 
-func (s sdkClient) MoveSLOs(ctx context.Context, sloName, oldProject, newProject, newService string) diag.Diagnostics {
+func (s sdkClient) MoveSLOs(
+	ctx context.Context,
+	sloName, oldProject, newProject, newService string,
+	detachAlertPolicies bool,
+) diag.Diagnostics {
 	err := s.client.Objects().V1().MoveSLOs(ctx, v1Objects.MoveSLOsRequest{
-		SLONames:   []string{sloName},
-		OldProject: oldProject,
-		NewProject: newProject,
-		Service:    newService,
+		SLONames:            []string{sloName},
+		OldProject:          oldProject,
+		NewProject:          newProject,
+		Service:             newService,
+		DetachAlertPolicies: detachAlertPolicies,
 	})
 	if err != nil {
 		return diag.Diagnostics{
