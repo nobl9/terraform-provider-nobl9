@@ -46,6 +46,7 @@ func TestAccServiceResource(t *testing.T) {
 				},
 				Config: newServiceResource(t, serviceResource),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "id", serviceResource.Name),
 					assertResourceWasApplied(t, ctx, serviceResource.ToManifest()),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -85,6 +86,7 @@ func TestAccServiceResource(t *testing.T) {
 					if !assert.Len(t, states, 1) {
 						return errors.New("expected exactly one state")
 					}
+					assert.Equal(t, serviceResource.Name, states[0].Attributes["id"])
 					assert.Equal(t, serviceResource.Name, states[0].Attributes["name"])
 					assert.Equal(t, serviceResource.Project, states[0].Attributes["project"])
 					return nil
@@ -125,6 +127,7 @@ func TestAccServiceResource(t *testing.T) {
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "id", serviceNameRecreatedByNameChange),
 					resource.TestCheckResourceAttr("nobl9_service.test", "name", serviceNameRecreatedByNameChange),
 					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
 						svc := serviceResource.ToManifest()
@@ -152,6 +155,7 @@ func TestAccServiceResource(t *testing.T) {
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_service.test", "id", serviceNameRecreatedByNameChange),
 					resource.TestCheckResourceAttr("nobl9_service.test", "project", recreatedProjectName),
 					assertResourceWasApplied(t, ctx, func() v1alphaService.Service {
 						svc := serviceResource.ToManifest()
@@ -164,6 +168,7 @@ func TestAccServiceResource(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						expectChangesInResourcePlan(planDiff{
 							Modified: []string{"project"},
+							Removed:  []string{"id"},
 						}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_service.test", plancheck.ResourceActionReplace),
