@@ -2,11 +2,14 @@ package frameworkprovider
 
 import (
 	"cmp"
+	"context"
 	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
@@ -60,6 +63,9 @@ func metadataLabelsBlock() *schema.ListNestedBlock {
 		Validators: []validator.List{
 			labelKeysUniqueValidator{},
 		},
+		PlanModifiers: []planmodifier.List{
+			labelsIgnoreOrderPlanModifier{},
+		},
 		NestedObject: schema.NestedBlockObject{
 			Attributes: map[string]schema.Attribute{
 				"key": schema.StringAttribute{
@@ -80,6 +86,46 @@ func metadataLabelsBlock() *schema.ListNestedBlock {
 			},
 		},
 	}
+}
+
+type labelsIgnoreOrderPlanModifier struct{}
+
+func (m labelsIgnoreOrderPlanModifier) Description(ctx context.Context) string {
+	return m.MarkdownDescription(ctx)
+}
+
+func (m labelsIgnoreOrderPlanModifier) MarkdownDescription(context.Context) string {
+	return "Treats label blocks with the same elements in a different order as equal."
+}
+
+func (m labelsIgnoreOrderPlanModifier) PlanModifyList(
+	_ context.Context,
+	req planmodifier.ListRequest,
+	resp *planmodifier.ListResponse,
+) {
+	if req.PlanValue.IsNull() || req.PlanValue.IsUnknown() ||
+		req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+		return
+	}
+	if unorderedValuesEqual(req.PlanValue.Elements(), req.StateValue.Elements()) {
+		resp.PlanValue = req.StateValue
+	}
+}
+
+func unorderedValuesEqual(a, b []attr.Value) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	unmatched := slices.Clone(b)
+	for _, value := range a {
+		index := slices.IndexFunc(unmatched, value.Equal)
+		if index == -1 {
+			return false
+		}
+		unmatched = slices.Delete(unmatched, index, index+1)
+	}
+	return true
 }
 
 // sortLabels sorts the API returned list based on the user-defined list as a reference for sorting order.
