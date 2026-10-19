@@ -56,11 +56,11 @@ func (o ObjectiveModel) HasCompositeObjectives() bool {
 
 // CountMetricsModel represents [v1alphaSLO.CountMetricsSpec].
 type CountMetricsModel struct {
-	Incremental types.Bool        `tfsdk:"incremental"`
-	Good        []MetricSpecModel `tfsdk:"good"`
-	Bad         []MetricSpecModel `tfsdk:"bad"`
-	Total       []MetricSpecModel `tfsdk:"total"`
-	GoodTotal   []MetricSpecModel `tfsdk:"good_total"`
+	Incremental types.Bool             `tfsdk:"incremental"`
+	Good        []CountMetricSpecModel `tfsdk:"good"`
+	Bad         []CountMetricSpecModel `tfsdk:"bad"`
+	Total       []CountMetricSpecModel `tfsdk:"total"`
+	GoodTotal   []CountMetricSpecModel `tfsdk:"good_total"`
 }
 
 // RawMetricModel represents the raw_metric block in an objective.
@@ -68,9 +68,8 @@ type RawMetricModel struct {
 	Query []MetricSpecModel `tfsdk:"query"`
 }
 
-// MetricSpecModel is a generic model for all metric types.
-// The actual metric type is determined by which field is populated.
-type MetricSpecModel struct {
+// CountMetricSpecModel contains metric types available in count_metrics.
+type CountMetricSpecModel struct {
 	AmazonPrometheus    []AmazonPrometheusModel    `tfsdk:"amazon_prometheus"`
 	AppDynamics         []AppDynamicsModel         `tfsdk:"appdynamics"`
 	AzureMonitor        []AzureMonitorModel        `tfsdk:"azure_monitor"`
@@ -96,10 +95,16 @@ type MetricSpecModel struct {
 	Splunk              []SplunkModel              `tfsdk:"splunk"`
 	SplunkObservability []SplunkObservabilityModel `tfsdk:"splunk_observability"`
 	SumoLogic           []SumoLogicModel           `tfsdk:"sumologic"`
-	ThousandEyes        []ThousandEyesModel        `tfsdk:"thousandeyes"`
 	AzurePrometheus     []AzurePrometheusModel     `tfsdk:"azure_prometheus"`
 	Coralogix           []CoralogixModel           `tfsdk:"coralogix"`
 	Dash0               []Dash0Model               `tfsdk:"dash0"`
+}
+
+// MetricSpecModel includes the metric types available only in raw_metric.
+type MetricSpecModel struct {
+	CountMetricSpecModel
+	ThousandEyes []ThousandEyesModel `tfsdk:"thousandeyes"`
+	Zscaler      []ZscalerModel      `tfsdk:"zscaler"`
 }
 
 // CompositeObjectiveModel represents the composite block in an objective.
@@ -385,6 +390,18 @@ type Dash0Model struct {
 	PromQL string `tfsdk:"promql"`
 }
 
+// ZscalerModel represents a ZDX report query.
+type ZscalerModel struct {
+	Type       types.String `tfsdk:"type"`
+	AppID      types.Int64  `tfsdk:"app_id"`
+	LocationID types.Int64  `tfsdk:"location_id"`
+	Metric     types.String `tfsdk:"metric"`
+	DeviceID   types.Int64  `tfsdk:"device_id"`
+	ProbeID    types.Int64  `tfsdk:"probe_id"`
+	LegSrc     types.String `tfsdk:"leg_src"`
+	LegDst     types.String `tfsdk:"leg_dst"`
+}
+
 // newSLOResourceConfigFromManifest creates a new [SLOResourceModel] from a [v1alphaSLO.SLO] manifest.
 //
 // [SLOResourceModel.RetrieveHistoricalDataFrom] - this field is not part of the manifest.
@@ -609,16 +626,16 @@ func countMetricsToModel(src *v1alphaSLO.CountMetricsSpec) *CountMetricsModel {
 		model.Incremental = types.BoolValue(*src.Incremental)
 	}
 	if src.GoodMetric != nil {
-		model.Good = []MetricSpecModel{metricSpecToModel(src.GoodMetric)}
+		model.Good = []CountMetricSpecModel{countMetricSpecToModel(src.GoodMetric)}
 	}
 	if src.BadMetric != nil {
-		model.Bad = []MetricSpecModel{metricSpecToModel(src.BadMetric)}
+		model.Bad = []CountMetricSpecModel{countMetricSpecToModel(src.BadMetric)}
 	}
 	if src.TotalMetric != nil {
-		model.Total = []MetricSpecModel{metricSpecToModel(src.TotalMetric)}
+		model.Total = []CountMetricSpecModel{countMetricSpecToModel(src.TotalMetric)}
 	}
 	if src.GoodTotalMetric != nil {
-		model.GoodTotal = []MetricSpecModel{metricSpecToModel(src.GoodTotalMetric)}
+		model.GoodTotal = []CountMetricSpecModel{countMetricSpecToModel(src.GoodTotalMetric)}
 	}
 	return model
 }
@@ -776,99 +793,57 @@ func metricSpecToModel(spec *v1alphaSLO.MetricSpec) MetricSpecModel {
 	if spec == nil {
 		return MetricSpecModel{}
 	}
-
-	model := MetricSpecModel{}
-
-	if amazonPrometheus := amazonPrometheusToModel(spec.AmazonPrometheus); amazonPrometheus != nil {
-		model.AmazonPrometheus = []AmazonPrometheusModel{*amazonPrometheus}
+	return MetricSpecModel{
+		CountMetricSpecModel: countMetricSpecToModel(spec),
+		ThousandEyes:         metricModelList(thousandEyesToModel(spec.ThousandEyes)),
+		Zscaler:              metricModelList(zscalerToModel(spec.Zscaler)),
 	}
-	if appDynamics := appDynamicsToModel(spec.AppDynamics); appDynamics != nil {
-		model.AppDynamics = []AppDynamicsModel{*appDynamics}
-	}
-	if azureMonitor := azureMonitorToModel(spec.AzureMonitor); azureMonitor != nil {
-		model.AzureMonitor = []AzureMonitorModel{*azureMonitor}
-	}
-	if bigQuery := bigQueryToModel(spec.BigQuery); bigQuery != nil {
-		model.BigQuery = []BigQueryModel{*bigQuery}
-	}
-	if cloudWatch := cloudWatchToModel(spec.CloudWatch); cloudWatch != nil {
-		model.CloudWatch = []CloudWatchModel{*cloudWatch}
-	}
-	setClickHouseModel(&model, spec.ClickHouse)
-	if datadog := datadogToModel(spec.Datadog); datadog != nil {
-		model.Datadog = []DatadogModel{*datadog}
-	}
-	if dynatrace := dynatraceToModel(spec.Dynatrace); dynatrace != nil {
-		model.Dynatrace = []DynatraceModel{*dynatrace}
-	}
-	if elasticsearch := elasticsearchToModel(spec.Elasticsearch); elasticsearch != nil {
-		model.Elasticsearch = []ElasticsearchModel{*elasticsearch}
-	}
-	if gcm := gcmToModel(spec.GCM); gcm != nil {
-		model.GCM = []GCMModel{*gcm}
-	}
-	if grafanaLoki := grafanaLokiToModel(spec.GrafanaLoki); grafanaLoki != nil {
-		model.GrafanaLoki = []GrafanaLokiModel{*grafanaLoki}
-	}
-	if graphite := graphiteToModel(spec.Graphite); graphite != nil {
-		model.Graphite = []GraphiteModel{*graphite}
-	}
-	if honeycomb := honeycombToModel(spec.Honeycomb); honeycomb != nil {
-		model.Honeycomb = []HoneycombModel{*honeycomb}
-	}
-	if influxDB := influxDBToModel(spec.InfluxDB); influxDB != nil {
-		model.InfluxDB = []InfluxDBModel{*influxDB}
-	}
-	if instana := instanaToModel(spec.Instana); instana != nil {
-		model.Instana = []InstanaModel{*instana}
-	}
-	if lightstep := lightstepToModel(spec.Lightstep); lightstep != nil {
-		model.Lightstep = []LightstepModel{*lightstep}
-	}
-	if logicMonitor := logicMonitorToModel(spec.LogicMonitor); logicMonitor != nil {
-		model.LogicMonitor = []LogicMonitorModel{*logicMonitor}
-	}
-	if newRelic := newRelicToModel(spec.NewRelic); newRelic != nil {
-		model.NewRelic = []NewRelicModel{*newRelic}
-	}
-	if openTSDB := openTSDBToModel(spec.OpenTSDB); openTSDB != nil {
-		model.OpenTSDB = []OpenTSDBModel{*openTSDB}
-	}
-	if pingdom := pingdomToModel(spec.Pingdom); pingdom != nil {
-		model.Pingdom = []PingdomModel{*pingdom}
-	}
-	if prometheus := prometheusToModel(spec.Prometheus); prometheus != nil {
-		model.Prometheus = []PrometheusModel{*prometheus}
-	}
-	if redshift := redshiftToModel(spec.Redshift); redshift != nil {
-		model.Redshift = []RedshiftModel{*redshift}
-	}
-	if splunk := splunkToModel(spec.Splunk); splunk != nil {
-		model.Splunk = []SplunkModel{*splunk}
-	}
-	if splunkObservability := splunkObservabilityToModel(spec.SplunkObservability); splunkObservability != nil {
-		model.SplunkObservability = []SplunkObservabilityModel{*splunkObservability}
-	}
-	if sumoLogic := sumoLogicToModel(spec.SumoLogic); sumoLogic != nil {
-		model.SumoLogic = []SumoLogicModel{*sumoLogic}
-	}
-	if thousandEyes := thousandEyesToModel(spec.ThousandEyes); thousandEyes != nil {
-		model.ThousandEyes = []ThousandEyesModel{*thousandEyes}
-	}
-	if azurePrometheus := azurePrometheusToModel(spec.AzurePrometheus); azurePrometheus != nil {
-		model.AzurePrometheus = []AzurePrometheusModel{*azurePrometheus}
-	}
-	if coralogix := coralogixToModel(spec.Coralogix); coralogix != nil {
-		model.Coralogix = []CoralogixModel{*coralogix}
-	}
-	if dash0 := dash0ToModel(spec.Dash0); dash0 != nil {
-		model.Dash0 = []Dash0Model{*dash0}
-	}
-
-	return model
 }
 
-func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
+func countMetricSpecToModel(spec *v1alphaSLO.MetricSpec) CountMetricSpecModel {
+	if spec == nil {
+		return CountMetricSpecModel{}
+	}
+	return CountMetricSpecModel{
+		AmazonPrometheus:    metricModelList(amazonPrometheusToModel(spec.AmazonPrometheus)),
+		AppDynamics:         metricModelList(appDynamicsToModel(spec.AppDynamics)),
+		AzureMonitor:        metricModelList(azureMonitorToModel(spec.AzureMonitor)),
+		BigQuery:            metricModelList(bigQueryToModel(spec.BigQuery)),
+		CloudWatch:          metricModelList(cloudWatchToModel(spec.CloudWatch)),
+		ClickHouse:          metricModelList(clickHouseToModel(spec.ClickHouse)),
+		Datadog:             metricModelList(datadogToModel(spec.Datadog)),
+		Dynatrace:           metricModelList(dynatraceToModel(spec.Dynatrace)),
+		Elasticsearch:       metricModelList(elasticsearchToModel(spec.Elasticsearch)),
+		GCM:                 metricModelList(gcmToModel(spec.GCM)),
+		GrafanaLoki:         metricModelList(grafanaLokiToModel(spec.GrafanaLoki)),
+		Graphite:            metricModelList(graphiteToModel(spec.Graphite)),
+		Honeycomb:           metricModelList(honeycombToModel(spec.Honeycomb)),
+		InfluxDB:            metricModelList(influxDBToModel(spec.InfluxDB)),
+		Instana:             metricModelList(instanaToModel(spec.Instana)),
+		Lightstep:           metricModelList(lightstepToModel(spec.Lightstep)),
+		LogicMonitor:        metricModelList(logicMonitorToModel(spec.LogicMonitor)),
+		NewRelic:            metricModelList(newRelicToModel(spec.NewRelic)),
+		OpenTSDB:            metricModelList(openTSDBToModel(spec.OpenTSDB)),
+		Pingdom:             metricModelList(pingdomToModel(spec.Pingdom)),
+		Prometheus:          metricModelList(prometheusToModel(spec.Prometheus)),
+		Redshift:            metricModelList(redshiftToModel(spec.Redshift)),
+		Splunk:              metricModelList(splunkToModel(spec.Splunk)),
+		SplunkObservability: metricModelList(splunkObservabilityToModel(spec.SplunkObservability)),
+		SumoLogic:           metricModelList(sumoLogicToModel(spec.SumoLogic)),
+		AzurePrometheus:     metricModelList(azurePrometheusToModel(spec.AzurePrometheus)),
+		Coralogix:           metricModelList(coralogixToModel(spec.Coralogix)),
+		Dash0:               metricModelList(dash0ToModel(spec.Dash0)),
+	}
+}
+
+func metricModelList[T any](model *T) []T {
+	if model == nil {
+		return nil
+	}
+	return []T{*model}
+}
+
+func (m CountMetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 	spec := &v1alphaSLO.MetricSpec{}
 
 	if len(m.AmazonPrometheus) > 0 {
@@ -946,9 +921,6 @@ func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 	if len(m.SumoLogic) > 0 {
 		spec.SumoLogic = modelToSumoLogic(&m.SumoLogic[0])
 	}
-	if len(m.ThousandEyes) > 0 {
-		spec.ThousandEyes = modelToThousandEyes(&m.ThousandEyes[0])
-	}
 	if len(m.AzurePrometheus) > 0 {
 		spec.AzurePrometheus = modelToAzurePrometheus(&m.AzurePrometheus[0])
 	}
@@ -959,6 +931,17 @@ func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 		spec.Dash0 = modelToDash0(&m.Dash0[0])
 	}
 
+	return spec
+}
+
+func (m MetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
+	spec := m.CountMetricSpecModel.ToManifest()
+	if len(m.ThousandEyes) > 0 {
+		spec.ThousandEyes = modelToThousandEyes(&m.ThousandEyes[0])
+	}
+	if len(m.Zscaler) > 0 {
+		spec.Zscaler = modelToZscaler(&m.Zscaler[0])
+	}
 	return spec
 }
 
@@ -1056,6 +1039,22 @@ func dash0ToModel(src *v1alphaSLO.Dash0Metric) *Dash0Model {
 	}
 	return &Dash0Model{
 		PromQL: *src.PromQL,
+	}
+}
+
+func zscalerToModel(src *v1alphaSLO.ZscalerMetric) *ZscalerModel {
+	if src == nil {
+		return nil
+	}
+	return &ZscalerModel{
+		Type:       types.StringValue(src.Type),
+		AppID:      types.Int64Value(src.AppID),
+		LocationID: types.Int64PointerValue(src.LocationID),
+		Metric:     types.StringValue(src.Metric),
+		DeviceID:   types.Int64PointerValue(src.DeviceID),
+		ProbeID:    types.Int64PointerValue(src.ProbeID),
+		LegSrc:     types.StringPointerValue(src.LegSrc),
+		LegDst:     types.StringPointerValue(src.LegDst),
 	}
 }
 
@@ -1437,14 +1436,6 @@ func clickHouseToModel(src *v1alphaSLO.ClickHouseMetric) *ClickHouseModel {
 	}
 }
 
-// setClickHouseModel keeps metricSpecToModel under the cyclomatic-complexity limit;
-// inlining the nil-check like the sibling sources pushes it over.
-func setClickHouseModel(model *MetricSpecModel, src *v1alphaSLO.ClickHouseMetric) {
-	if clickHouse := clickHouseToModel(src); clickHouse != nil {
-		model.ClickHouse = []ClickHouseModel{*clickHouse}
-	}
-}
-
 func modelToClickHouse(model *ClickHouseModel) *v1alphaSLO.ClickHouseMetric {
 	if model == nil {
 		return nil
@@ -1461,6 +1452,22 @@ func modelToDash0(model *Dash0Model) *v1alphaSLO.Dash0Metric {
 	}
 	return &v1alphaSLO.Dash0Metric{
 		PromQL: &model.PromQL,
+	}
+}
+
+func modelToZscaler(model *ZscalerModel) *v1alphaSLO.ZscalerMetric {
+	if model == nil {
+		return nil
+	}
+	return &v1alphaSLO.ZscalerMetric{
+		Type:       model.Type.ValueString(),
+		AppID:      model.AppID.ValueInt64(),
+		LocationID: model.LocationID.ValueInt64Pointer(),
+		Metric:     model.Metric.ValueString(),
+		DeviceID:   model.DeviceID.ValueInt64Pointer(),
+		ProbeID:    model.ProbeID.ValueInt64Pointer(),
+		LegSrc:     model.LegSrc.ValueStringPointer(),
+		LegDst:     model.LegDst.ValueStringPointer(),
 	}
 }
 

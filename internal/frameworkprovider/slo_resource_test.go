@@ -1090,12 +1090,12 @@ func TestAccSLOResource_custom(t *testing.T) {
 				model.Objectives[0].Op = types.String{}
 				model.Objectives[0].CountMetrics = []CountMetricsModel{{
 					Incremental: types.BoolValue(false),
-					Good: []MetricSpecModel{{
+					Good: []CountMetricSpecModel{{
 						Prometheus: []PrometheusModel{{
 							PromQL: "sum(rate(http_request_duration_seconds_count{job=\"api\"}[5m]))",
 						}},
 					}},
-					Total: []MetricSpecModel{{
+					Total: []CountMetricSpecModel{{
 						Prometheus: []PrometheusModel{{
 							PromQL: "sum(rate(http_request_duration_seconds_count{job=\"api\"}[5m]))",
 						}},
@@ -1116,9 +1116,11 @@ func TestAccSLOResource_custom(t *testing.T) {
 				compositeModel.Objectives = compositeModel.Objectives[:1]
 				compositeModel.Objectives[0].RawMetric = []RawMetricModel{{
 					Query: []MetricSpecModel{{
-						Datadog: []DatadogModel{{
-							Query: "abc",
-						}},
+						CountMetricSpecModel: CountMetricSpecModel{
+							Datadog: []DatadogModel{{
+								Query: "abc",
+							}},
+						},
 					}},
 				}}
 				model.Objectives = compositeModel.Objectives
@@ -1134,12 +1136,12 @@ func TestAccSLOResource_custom(t *testing.T) {
 				model.Objectives[0].Op = types.StringValue("lte")
 				model.Objectives[0].CountMetrics = []CountMetricsModel{{
 					Incremental: types.BoolValue(false),
-					Good: []MetricSpecModel{{
+					Good: []CountMetricSpecModel{{
 						Prometheus: []PrometheusModel{{
 							PromQL: "sum(rate(http_request_duration_seconds_count{job=\"api\"}[5m]))",
 						}},
 					}},
-					Total: []MetricSpecModel{{
+					Total: []CountMetricSpecModel{{
 						Prometheus: []PrometheusModel{{
 							PromQL: "sum(rate(http_request_duration_seconds_count{job=\"api\"}[5m]))",
 						}},
@@ -1397,12 +1399,12 @@ func TestAccSLOResource_sumologicValidationErrors(t *testing.T) {
 			configFunc: func() string {
 				model := getExampleSLOResource(t)
 				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
-					SumoLogic: []SumoLogicModel{{
+					CountMetricSpecModel: CountMetricSpecModel{SumoLogic: []SumoLogicModel{{
 						Type: "logs",
 						Queries: []SumoLogicQueryModel{
 							{RowID: "A", Query: "some_query"},
 						},
-					}},
+					}}},
 				}
 				return newSLOResource(t, sloResourceTemplateModel{
 					ResourceName:     "this",
@@ -1415,9 +1417,9 @@ func TestAccSLOResource_sumologicValidationErrors(t *testing.T) {
 			configFunc: func() string {
 				model := getExampleSLOResource(t)
 				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
-					SumoLogic: []SumoLogicModel{{
+					CountMetricSpecModel: CountMetricSpecModel{SumoLogic: []SumoLogicModel{{
 						Type: "metrics",
-					}},
+					}}},
 				}
 				return newSLOResource(t, sloResourceTemplateModel{
 					ResourceName:     "this",
@@ -1430,13 +1432,13 @@ func TestAccSLOResource_sumologicValidationErrors(t *testing.T) {
 			configFunc: func() string {
 				model := getExampleSLOResource(t)
 				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
-					SumoLogic: []SumoLogicModel{{
+					CountMetricSpecModel: CountMetricSpecModel{SumoLogic: []SumoLogicModel{{
 						Type:  "metrics",
 						Query: types.StringValue("old_query"),
 						Queries: []SumoLogicQueryModel{
 							{RowID: "A", Query: "metric=cpu_idle"},
 						},
-					}},
+					}}},
 				}
 				return newSLOResource(t, sloResourceTemplateModel{
 					ResourceName:     "this",
@@ -1449,13 +1451,13 @@ func TestAccSLOResource_sumologicValidationErrors(t *testing.T) {
 			configFunc: func() string {
 				model := getExampleSLOResource(t)
 				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
-					SumoLogic: []SumoLogicModel{{
+					CountMetricSpecModel: CountMetricSpecModel{SumoLogic: []SumoLogicModel{{
 						Type: "metrics",
 						Queries: []SumoLogicQueryModel{
 							{RowID: "A", Query: "metric=cpu_idle"},
 							{RowID: "A", Query: "#A + 1"},
 						},
-					}},
+					}}},
 				}
 				return newSLOResource(t, sloResourceTemplateModel{
 					ResourceName:     "this",
@@ -1680,7 +1682,7 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 				model.Labels = nil
 				model.Annotations = nil
 				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
-					Instana: []InstanaModel{{
+					CountMetricSpecModel: CountMetricSpecModel{Instana: []InstanaModel{{
 						MetricType: "application",
 						Application: []InstanaApplicationModel{{
 							MetricID:        "some_id",
@@ -1690,7 +1692,7 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 								Tag: "some-tag",
 							}},
 						}},
-					}},
+					}}},
 				}
 				return model
 			},
@@ -1702,7 +1704,7 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 				model.Labels = nil
 				model.Annotations = nil
 				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
-					SumoLogic: []SumoLogicModel{{
+					CountMetricSpecModel: CountMetricSpecModel{SumoLogic: []SumoLogicModel{{
 						Type:         "metrics",
 						Quantization: types.StringValue("15s"),
 						Rollup:       types.StringValue("Avg"),
@@ -1710,7 +1712,7 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 							{RowID: "A", Query: "metric=cpu_idle"},
 							{RowID: "B", Query: "#A + 1"},
 						},
-					}},
+					}}},
 				}
 				return model
 			},
@@ -1722,12 +1724,12 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 				model.Labels = nil
 				model.Annotations = nil
 				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
-					Dynatrace: []DynatraceModel{{
+					CountMetricSpecModel: CountMetricSpecModel{Dynatrace: []DynatraceModel{{
 						DQL: []DynatraceDQLModel{{
 							Query:    "timeseries value = avg(dt.host.cpu.usage)",
 							Interval: types.StringValue("1m"),
 						}},
-					}},
+					}}},
 				}
 				return model
 			},
@@ -1739,11 +1741,11 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 				model.Labels = nil
 				model.Annotations = nil
 				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
-					Prometheus: []PrometheusModel{{
+					CountMetricSpecModel: CountMetricSpecModel{Prometheus: []PrometheusModel{{
 						PromQL: `sum by (job) (
   rate(http_request_duration_seconds_count{job="api"}[5m]
 )`,
-					}},
+					}}},
 				}
 				return model
 			},
@@ -1914,10 +1916,10 @@ func getExampleSLOResource(t *testing.T) SLOResourceModel {
 			RawMetric: []RawMetricModel{{
 				Query: []MetricSpecModel{
 					{
-						AppDynamics: []AppDynamicsModel{{
+						CountMetricSpecModel: CountMetricSpecModel{AppDynamics: []AppDynamicsModel{{
 							ApplicationName: "my_app",
 							MetricPath:      "End User Experience|App|End User Response Time 95th percentile (ms)",
-						}},
+						}}},
 					},
 				},
 			}},

@@ -71,6 +71,8 @@
     "tmpl",
     "tpng",
     "tsdbslo",
-    "upgrader"
+    "ttfb",
+    "upgrader",
+    "zslogin"
   ]
 }
