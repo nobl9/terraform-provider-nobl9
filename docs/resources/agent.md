@@ -138,7 +138,7 @@ Optional:
 
 Required:
 
-- `site` (String) Datadog SaaS instance that corresponds to one of Datadog's available locations (see [Datadog docs](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site)for an up to date list):
+- `site` (String) A lower-case hostname without a scheme, path or port. The legacy values `com` and `eu` are still accepted. Datadog SaaS instance that corresponds to one of Datadog's available locations (see [Datadog docs](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site)for an up to date list):
   - `datadoghq.com`
   - `us3.datadoghq.com`
   - `us5.datadoghq.com`
