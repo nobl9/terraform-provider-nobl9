@@ -470,7 +470,7 @@ func (s datadogDirectSpec) GetSchema() map[string]*schema.Schema {
 	datadogSchema := map[string]*schema.Schema{
 		"site": {
 			Type: schema.TypeString,
-			Description: "A lower-case hostname without a scheme, path or port. " +
+			Description: "A lower-case hostname without the `api.` prefix, scheme, path or port. " +
 				"The legacy values `com` and `eu` are still accepted. " +
 				"Datadog SaaS instance that corresponds to one of Datadog's available locations " +
 				"(see " +
