@@ -201,7 +201,7 @@ resource "nobl9_agent" "%s" {
   azure_monitor_config {
     tenant_id = "40ad1f5f-7025-4056-9b90-9f49617423ac"
   }
-  release_channel = "beta"
+  release_channel = "stable"
   query_delay {
     unit = "Minute"
     value = 6

@@ -21,7 +21,7 @@ resource "nobl9_direct_azure_monitor" "test-azure-monitor" {
   client_id              = "secret"
   client_secret          = "secret"
   log_collection_enabled = true
-  release_channel        = "beta"
+  release_channel        = "stable"
   historical_data_retrieval {
     default_duration {
       unit  = "Day"

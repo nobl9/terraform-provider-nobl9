@@ -169,7 +169,7 @@ resource "nobl9_direct_%s" "%s" {
   client_id = "secret"
   client_secret = "secret"
   log_collection_enabled = true
-  release_channel = "beta"
+  release_channel = "stable"
   historical_data_retrieval {
     default_duration  {
       unit = "Day"
