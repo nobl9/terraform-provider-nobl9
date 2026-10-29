@@ -77,13 +77,20 @@ func (s *SLOResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	// Read the SLO after update to fetch the computed fields.
-	updatedModel, diags := s.readResource(ctx, req.State, nil, &model)
+	slo, found, diags := s.client.FindSLO(ctx, model.Name, model.Project)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if !found {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 
+	updatedModel := newSLOResourceConfigFromManifest(slo)
+	s.updateEmptyAlertPolicies(ctx, resp.Diagnostics, req.State, nil, updatedModel, slo)
+	s.updateEmptyCompositeAggregation(ctx, req.State, nil, updatedModel)
+	s.sortLists(&model, updatedModel)
 	diags = resp.State.Set(ctx, &updatedModel)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
