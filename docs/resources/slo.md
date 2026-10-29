@@ -220,6 +220,10 @@ resource "nobl9_slo" "composite_slo" {
 - `tier` (String) Internal field, do not use.
 - `time_window` (Block List) Time window configuration for the SLO. (see [below for nested schema](#nestedblock--time_window))
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedblock--anomaly_config"></a>
 ### Nested Schema for `anomaly_config`
 

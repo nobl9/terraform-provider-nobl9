@@ -23,6 +23,16 @@ func metadataNameAttr() schema.StringAttribute {
 	}
 }
 
+func resourceIDAttr() schema.StringAttribute {
+	return schema.StringAttribute{
+		Computed:    true,
+		Description: "The ID of this resource.",
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.UseStateForUnknown(),
+		},
+	}
+}
+
 func metadataDisplayNameAttr() schema.StringAttribute {
 	return schema.StringAttribute{
 		Optional:    true,

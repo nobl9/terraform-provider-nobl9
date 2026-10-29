@@ -37,6 +37,7 @@ func TestAccProjectResource(t *testing.T) {
 			{
 				Config: newProjectResource(t, projectResource),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_project.test", "id", projectResource.Name),
 					assertResourceWasApplied(t, ctx, manifestProject),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -69,6 +70,7 @@ func TestAccProjectResource(t *testing.T) {
 					if !assert.Len(t, states, 1) {
 						return errors.New("expected exactly one state")
 					}
+					assert.Equal(t, projectResource.Name, states[0].Attributes["id"])
 					assert.Equal(t, projectResource.Name, states[0].Attributes["name"])
 					return nil
 				},
@@ -107,6 +109,7 @@ func TestAccProjectResource(t *testing.T) {
 					return m
 				}()),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_project.test", "id", projectNameRecreatedByNameChange),
 					resource.TestCheckResourceAttr("nobl9_project.test", "name", projectNameRecreatedByNameChange),
 					assertResourceWasApplied(t, ctx, func() v1alphaProject.Project {
 						project := manifestProject
@@ -116,7 +119,10 @@ func TestAccProjectResource(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						expectChangesInResourcePlan(planDiff{Modified: []string{"name", "display_name"}}),
+						expectChangesInResourcePlan(planDiff{
+							Modified: []string{"name", "display_name"},
+							Removed:  []string{"id"},
+						}),
 						plancheck.ExpectNonEmptyPlan(),
 						plancheck.ExpectResourceAction("nobl9_project.test", plancheck.ResourceActionReplace),
 					},
