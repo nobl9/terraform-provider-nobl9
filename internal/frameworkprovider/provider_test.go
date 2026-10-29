@@ -206,6 +206,32 @@ func assertResourceWasDeleted(t *testing.T, ctx context.Context, expected manife
 	}
 }
 
+func cleanupObjectsIfPresent(t *testing.T, ctx context.Context, objects []manifest.Object) {
+	t.Helper()
+
+	for _, object := range objects {
+		headers := http.Header{}
+		project := ""
+		if projectScoped, ok := object.(manifest.ProjectScopedObject); ok {
+			project = projectScoped.GetProject()
+			headers.Set(sdk.HeaderProject, project)
+		}
+		params := url.Values{v1Objects.QueryKeyName: []string{object.GetName()}}
+		found, err := testSDKClient.client.Objects().V1().Get(ctx, object.GetKind(), headers, params)
+		require.NoError(t, err)
+		if len(found) == 0 {
+			continue
+		}
+		require.Len(t, found, 1)
+		require.NoError(t, testSDKClient.client.Objects().V1().DeleteByName(
+			ctx,
+			object.GetKind(),
+			project,
+			object.GetName(),
+		))
+	}
+}
+
 func getObjectsFromTheNobl9API(t *testing.T, ctx context.Context, object manifest.Object) ([]manifest.Object, error) {
 	t.Helper()
 

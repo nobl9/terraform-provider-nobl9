@@ -14,6 +14,7 @@ import (
 	v1alphaService "github.com/nobl9/nobl9-go/manifest/v1alpha/service"
 	"github.com/nobl9/nobl9-go/tests/e2etestutils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccServiceResource(t *testing.T) {
@@ -69,14 +70,28 @@ func TestAccServiceResource(t *testing.T) {
 				},
 				Destroy: true,
 			},
-			// 3. ImportState - invalid id.
+			// 3. ImportState - invalid ID with leading empty segment.
 			{
 				ResourceName:  "nobl9_service.test",
-				ImportStateId: serviceResource.Name,
+				ImportStateId: "/" + serviceResource.Name,
 				ImportState:   true,
 				ExpectError:   regexp.MustCompile(`Invalid import ID`),
 			},
-			// 4. ImportState.
+			// 4. ImportState - invalid ID with trailing empty segment.
+			{
+				ResourceName:  "nobl9_service.test",
+				ImportStateId: serviceResource.Project + "/",
+				ImportState:   true,
+				ExpectError:   regexp.MustCompile(`Invalid import ID`),
+			},
+			// 5. ImportState - invalid ID with an extra segment.
+			{
+				ResourceName:  "nobl9_service.test",
+				ImportStateId: serviceResource.Project + "/" + serviceResource.Name + "/extra",
+				ImportState:   true,
+				ExpectError:   regexp.MustCompile(`Invalid import ID`),
+			},
+			// 6. ImportState.
 			{
 				ResourceName:  "nobl9_service.test",
 				ImportStateId: serviceResource.Project + "/" + serviceResource.Name,
@@ -93,7 +108,7 @@ func TestAccServiceResource(t *testing.T) {
 				ImportStatePersist: true,
 				PreConfig:          func() { e2etestutils.V1Apply(t, []manifest.Object{serviceResource.ToManifest()}) },
 			},
-			// 5. Update and Read, ensure computed field does not pollute the plan.
+			// 7. Update and Read, ensure computed field does not pollute the plan.
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
@@ -117,7 +132,7 @@ func TestAccServiceResource(t *testing.T) {
 					},
 				},
 			},
-			// 6. Update name and revert display name - recreate.
+			// 8. Update name and revert display name - recreate.
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
@@ -143,7 +158,7 @@ func TestAccServiceResource(t *testing.T) {
 					},
 				},
 			},
-			// 7. Update project - recreate.
+			// 9. Update project - recreate.
 			{
 				Config: newServiceResource(t, func() serviceResourceTemplateModel {
 					m := serviceResource
@@ -171,6 +186,58 @@ func TestAccServiceResource(t *testing.T) {
 				},
 			},
 			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccServiceResource_singleNameImport(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	defaultProject := testSDKClient.client.Config.Project
+	require.NotEmpty(t, defaultProject)
+
+	serviceResource := serviceResourceTemplateModel{
+		ResourceName:         "test",
+		ServiceResourceModel: getExampleServiceResource(t),
+	}
+	serviceResource.Project = defaultProject
+	manifestService := serviceResource.ToManifest()
+	config := newServiceResource(t, serviceResource)
+	cleanupContext := context.WithoutCancel(t.Context())
+	t.Cleanup(func() {
+		cleanupObjectsIfPresent(t, cleanupContext, []manifest.Object{manifestService})
+	})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				ResourceName:       "nobl9_service.test",
+				Config:             config,
+				ImportStateId:      serviceResource.Name,
+				ImportState:        true,
+				ImportStatePersist: true,
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					if !assert.Len(t, states, 1) {
+						return errors.New("expected exactly one state")
+					}
+					assert.Equal(t, serviceResource.Name, states[0].Attributes["name"])
+					assert.Equal(t, defaultProject, states[0].Attributes["project"])
+					return nil
+				},
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, []manifest.Object{manifestService})
+				},
+			},
+			{
+				Config: config,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
 		},
 	})
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -77,6 +78,19 @@ func addInvalidSDKClientTypeDiag(diags *diag.Diagnostics, data any) {
 			data,
 		),
 	)
+}
+
+func parseProjectScopedImportID(id, defaultProject string) (project, name string, ok bool) {
+	parts := strings.Split(id, "/")
+	switch len(parts) {
+	case 1:
+		project, name = defaultProject, parts[0]
+	case 2:
+		project, name = parts[0], parts[1]
+	default:
+		return "", "", false
+	}
+	return project, name, project != "" && name != ""
 }
 
 func deepCopy[T any](t *testing.T, v T) (cp T) {
