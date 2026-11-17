@@ -629,16 +629,21 @@ func schemaAgentDatadog() map[string]*schema.Schema {
 				"site": {
 					Type:     schema.TypeString,
 					Required: true,
-					Description: "Datadog SaaS instance that corresponds to one of Datadog's available locations " +
+					Description: "A lower-case hostname without the `api.` prefix, scheme, path or port. " +
+						"The legacy values `com` and `eu` are still accepted. " +
+						"Datadog SaaS instance that corresponds to one of Datadog's available locations " +
 						"(see " +
 						"[Datadog docs](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site)" +
 						"for an up to date list):\n" +
-						"  - `datadoghq.com` (formerly referred to as `com`)\n" +
+						"  - `datadoghq.com`\n" +
 						"  - `us3.datadoghq.com`\n" +
 						"  - `us5.datadoghq.com`\n" +
-						"  - `datadoghq.eu` (formerly referred to as `eu`)\n" +
+						"  - `datadoghq.eu`\n" +
 						"  - `ddog-gov.com`\n" +
-						"  - `ap1.datadoghq.com`\n",
+						"  - `us2.ddog-gov.com`\n" +
+						"  - `ap1.datadoghq.com`\n" +
+						"  - `ap2.datadoghq.com`\n" +
+						"  - `uk1.datadoghq.com`\n",
 				},
 			},
 		},
