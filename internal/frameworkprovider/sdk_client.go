@@ -285,8 +285,6 @@ func replayUnavailabilityReasonExplanation(reason string, statusCode int) replay
 	case replayV1.ReplayMaxHistoricalDataRetrievalTooLow:
 		return "Value configured for spec.historicalDataRetrieval.maxDuration.value" +
 			" for the Data Source is lower than the duration you're trying to run Replay for."
-	case replayV1.ReplayConcurrentReplayRunsLimitExhausted:
-		return "You've exceeded the limit of concurrent Replay runs. Wait until the current Replay(s) are done."
 	case replayV1.ReplayUnknownAgentVersion:
 		return "Your Agent isn't connected to the Data Source. Deploy the Agent and run Replay once again."
 	case "single_query_not_supported":
