@@ -235,6 +235,8 @@ type CloudWatchFailoverModel struct {
 	Namespace  types.String               `tfsdk:"namespace"`
 	MetricName types.String               `tfsdk:"metric_name"`
 	Stat       types.String               `tfsdk:"stat"`
+	SQL        types.String               `tfsdk:"sql"`
+	JSON       types.String               `tfsdk:"json"`
 	Dimensions []CloudWatchDimensionModel `tfsdk:"dimensions"`
 }
 
@@ -1027,6 +1029,8 @@ func cloudWatchToModel(src *v1alphaSLO.CloudWatchMetric) *CloudWatchModel {
 			Namespace:  types.StringPointerValue(src.Failover.Namespace),
 			MetricName: types.StringPointerValue(src.Failover.MetricName),
 			Stat:       types.StringPointerValue(src.Failover.Stat),
+			SQL:        types.StringPointerValue(src.Failover.SQL),
+			JSON:       types.StringPointerValue(src.Failover.JSON),
 			AccountID:  types.StringPointerValue(src.Failover.AccountID),
 			Dimensions: cloudWatchDimensionsToModel(src.Failover.Dimensions),
 		}}
@@ -1436,6 +1440,8 @@ func modelToCloudWatch(model *CloudWatchModel) *v1alphaSLO.CloudWatchMetric {
 			Namespace:  failover.Namespace.ValueStringPointer(),
 			MetricName: failover.MetricName.ValueStringPointer(),
 			Stat:       failover.Stat.ValueStringPointer(),
+			SQL:        failover.SQL.ValueStringPointer(),
+			JSON:       failover.JSON.ValueStringPointer(),
 			Dimensions: modelToCloudWatchDimensions(failover.Dimensions),
 		}
 		if !isNullOrUnknown(failover.AccountID) {

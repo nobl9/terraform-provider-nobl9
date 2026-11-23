@@ -518,9 +518,8 @@ func sloResourceRawMetricSpecBlocks() map[string]schema.Block {
 				Blocks: map[string]schema.Block{
 					"dimensions": cloudWatchDimensionsBlock(),
 					"failover": schema.ListNestedBlock{
-						Description: "Complete standard query that Nobl9 reads instead of this query " +
+						Description: "Complete query (standard, `sql` or `json`) that Nobl9 reads instead of this query " +
 							"while the data source is in region failover. No field is taken from the primary query. " +
-							"Allowed only with a standard query (not `sql` or `json`). " +
 							"Set it on both the good (or bad) and the total query, or on neither.",
 						Validators: []validator.List{listvalidator.SizeAtMost(1)},
 						NestedObject: schema.NestedBlockObject{
@@ -548,6 +547,14 @@ func sloResourceRawMetricSpecBlocks() map[string]schema.Block {
 								"stat": schema.StringAttribute{
 									Optional:    true,
 									Description: "Metric data aggregations",
+								},
+								"sql": schema.StringAttribute{
+									Optional:    true,
+									Description: "SQL query",
+								},
+								"json": schema.StringAttribute{
+									Optional:    true,
+									Description: "JSON query",
 								},
 							},
 							Blocks: map[string]schema.Block{
