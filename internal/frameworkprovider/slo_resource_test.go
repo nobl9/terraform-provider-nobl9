@@ -1734,6 +1734,31 @@ func TestRenderSLOResourceTemplate(t *testing.T) {
 				return model
 			},
 		},
+		"cloudwatch failover": {
+			expectedFile: "slo-cloudwatch-failover.tf",
+			resourceModifier: func(model SLOResourceModel) SLOResourceModel {
+				model.AlertPolicies = nil
+				model.Labels = nil
+				model.Annotations = nil
+				model.Objectives[0].RawMetric[0].Query[0] = MetricSpecModel{
+					CountMetricSpecModel: CountMetricSpecModel{CloudWatch: []CloudWatchModel{{
+						Region:     "us-west-2",
+						Namespace:  types.StringValue("AWS/ApplicationELB"),
+						MetricName: types.StringValue("TargetResponseTime"),
+						Stat:       types.StringValue("Average"),
+						Dimensions: []CloudWatchDimensionModel{{Name: "LoadBalancer", Value: "app/west"}},
+						Failover: []CloudWatchFailoverModel{{
+							Region:     "us-east-2",
+							Namespace:  types.StringValue("AWS/ApplicationELB"),
+							MetricName: types.StringValue("TargetResponseTime"),
+							Stat:       types.StringValue("Average"),
+							Dimensions: []CloudWatchDimensionModel{{Name: "LoadBalancer", Value: "app/east"}},
+						}},
+					}}},
+				}
+				return model
+			},
+		},
 		"multiline query": {
 			expectedFile: "slo-multiline-query.tf",
 			resourceModifier: func(model SLOResourceModel) SLOResourceModel {

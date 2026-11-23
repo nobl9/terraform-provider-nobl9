@@ -61,6 +61,24 @@ func TestZscalerDirectSpecPreservesCredentialsOnRead(t *testing.T) {
 	}
 }
 
+func TestCloudWatchDirectSpecFailover(t *testing.T) {
+	t.Parallel()
+	spec := cloudWatchDirectSpec{}
+	failover := &v1alpha.CloudWatchFailoverConfig{PrimaryRegion: "us-west-2", FailoverRegion: "us-east-2"}
+	data := schema.TestResourceDataRaw(t, resourceDirectFactory(spec).Schema, map[string]interface{}{
+		"name": "cloudwatch", "project": "default", "role_arn": "secret",
+		cloudWatchFailoverConfigKey: []interface{}{map[string]interface{}{
+			"primary_region": "us-west-2", "failover_region": "us-east-2",
+		}},
+	})
+	assert.Equal(t, failover, spec.MarshalSpec(data).CloudWatch.Failover)
+
+	read := schema.TestResourceDataRaw(t, resourceDirectFactory(spec).Schema, nil)
+	diags := spec.UnmarshalSpec(read, v1alphaDirect.Spec{CloudWatch: &v1alphaDirect.CloudWatchConfig{Failover: failover}})
+	require.False(t, diags.HasError(), "%v", diags)
+	assert.Equal(t, failover, spec.MarshalSpec(read).CloudWatch.Failover)
+}
+
 func TestZscalerDirectSpecMissingConfig(t *testing.T) {
 	t.Parallel()
 	assert.True(t, (zscalerDirectSpec{}).UnmarshalSpec(nil, v1alphaDirect.Spec{}).HasError())

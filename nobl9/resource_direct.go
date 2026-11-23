@@ -416,6 +416,7 @@ func (s cloudWatchDirectSpec) GetSchema() map[string]*schema.Schema {
 			),
 		},
 	}
+	cloudWatchSchema[cloudWatchFailoverConfigKey] = getCloudWatchFailoverSchema()
 	setHistoricalDataRetrievalSchema(cloudWatchSchema)
 	setLogCollectionSchema(cloudWatchSchema)
 
@@ -430,13 +431,15 @@ func (s cloudWatchDirectSpec) GetDescription() string {
 func (s cloudWatchDirectSpec) MarshalSpec(r resourceInterface) v1alphaDirect.Spec {
 	return v1alphaDirect.Spec{
 		CloudWatch: &v1alphaDirect.CloudWatchConfig{
-			RoleARN: r.Get("role_arn").(string),
+			RoleARN:  r.Get("role_arn").(string),
+			Failover: marshalCloudWatchFailover(r.Get(cloudWatchFailoverConfigKey)),
 		},
 	}
 }
 
 func (s cloudWatchDirectSpec) UnmarshalSpec(d *schema.ResourceData, spec v1alphaDirect.Spec) (diags diag.Diagnostics) {
 	set(d, "description", spec.Description, &diags)
+	set(d, cloudWatchFailoverConfigKey, unmarshalCloudWatchFailover(spec.CloudWatch.Failover), &diags)
 	return
 }
 

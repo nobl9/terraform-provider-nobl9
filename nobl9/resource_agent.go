@@ -322,6 +322,10 @@ func unmarshalAgentConfig(
 		set(d, hclName, []interface{}{map[string]interface{}{
 			"tenant_id": agent.Spec.AzureMonitor.TenantID,
 		}}, &diags)
+	case agentSpecJSONName(v1alphaAgent.Spec{}.CloudWatch, diags):
+		set(d, hclName, []interface{}{map[string]interface{}{
+			cloudWatchFailoverConfigKey: unmarshalCloudWatchFailover(agent.Spec.CloudWatch.Failover),
+		}}, &diags)
 	case agentSpecJSONName(v1alphaAgent.Spec{}.Dynatrace, diags):
 		set(d, hclName, []interface{}{map[string]interface{}{
 			"url":          agent.Spec.Dynatrace.URL,
@@ -597,6 +601,9 @@ func schemaAgentCloudWatch() map[string]*schema.Schema {
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Description: "Agent configuration is not required.",
+				Schema: map[string]*schema.Schema{
+					cloudWatchFailoverConfigKey: getCloudWatchFailoverSchema(),
+				},
 			},
 		},
 	}
@@ -607,7 +614,11 @@ func marshalAgentCloudWatch(d resourceInterface) *v1alphaAgent.CloudWatchConfig 
 		return nil
 	}
 
-	return &v1alphaAgent.CloudWatchConfig{}
+	config := &v1alphaAgent.CloudWatchConfig{}
+	if p := d.Get(cloudWatchAgentConfigKey).(*schema.Set).List(); len(p) > 0 && p[0] != nil {
+		config.Failover = marshalCloudWatchFailover(p[0].(map[string]interface{})[cloudWatchFailoverConfigKey])
+	}
+	return config
 }
 
 /**

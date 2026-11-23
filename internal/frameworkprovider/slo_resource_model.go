@@ -226,6 +226,16 @@ type CloudWatchModel struct {
 	SQL        types.String               `tfsdk:"sql"`
 	JSON       types.String               `tfsdk:"json"`
 	Dimensions []CloudWatchDimensionModel `tfsdk:"dimensions"`
+	Failover   []CloudWatchFailoverModel  `tfsdk:"failover"`
+}
+
+type CloudWatchFailoverModel struct {
+	AccountID  types.String               `tfsdk:"account_id"`
+	Region     string                     `tfsdk:"region"`
+	Namespace  types.String               `tfsdk:"namespace"`
+	MetricName types.String               `tfsdk:"metric_name"`
+	Stat       types.String               `tfsdk:"stat"`
+	Dimensions []CloudWatchDimensionModel `tfsdk:"dimensions"`
 }
 
 type CloudWatchDimensionModel struct {
@@ -1010,17 +1020,32 @@ func cloudWatchToModel(src *v1alphaSLO.CloudWatchMetric) *CloudWatchModel {
 		JSON:       types.StringPointerValue(src.JSON),
 		AccountID:  types.StringPointerValue(src.AccountID),
 	}
-	if len(src.Dimensions) > 0 {
-		dimensions := make([]CloudWatchDimensionModel, len(src.Dimensions))
-		for i, d := range src.Dimensions {
-			dimensions[i] = CloudWatchDimensionModel{
-				Name:  *d.Name,
-				Value: *d.Value,
-			}
-		}
-		model.Dimensions = dimensions
+	model.Dimensions = cloudWatchDimensionsToModel(src.Dimensions)
+	if src.Failover != nil {
+		model.Failover = []CloudWatchFailoverModel{{
+			Region:     *src.Failover.Region,
+			Namespace:  types.StringPointerValue(src.Failover.Namespace),
+			MetricName: types.StringPointerValue(src.Failover.MetricName),
+			Stat:       types.StringPointerValue(src.Failover.Stat),
+			AccountID:  types.StringPointerValue(src.Failover.AccountID),
+			Dimensions: cloudWatchDimensionsToModel(src.Failover.Dimensions),
+		}}
 	}
 	return model
+}
+
+func cloudWatchDimensionsToModel(src []v1alphaSLO.CloudWatchMetricDimension) []CloudWatchDimensionModel {
+	if len(src) == 0 {
+		return nil
+	}
+	dimensions := make([]CloudWatchDimensionModel, len(src))
+	for i, d := range src {
+		dimensions[i] = CloudWatchDimensionModel{
+			Name:  *d.Name,
+			Value: *d.Value,
+		}
+	}
+	return dimensions
 }
 
 func dash0ToModel(src *v1alphaSLO.Dash0Metric) *Dash0Model {
@@ -1403,17 +1428,36 @@ func modelToCloudWatch(model *CloudWatchModel) *v1alphaSLO.CloudWatchMetric {
 		accountID := model.AccountID.ValueString()
 		spec.AccountID = &accountID
 	}
-	if len(model.Dimensions) > 0 {
-		dimensions := make([]v1alphaSLO.CloudWatchMetricDimension, len(model.Dimensions))
-		for i, d := range model.Dimensions {
-			dimensions[i] = v1alphaSLO.CloudWatchMetricDimension{
-				Name:  &d.Name,
-				Value: &d.Value,
-			}
+	spec.Dimensions = modelToCloudWatchDimensions(model.Dimensions)
+	if len(model.Failover) > 0 {
+		failover := model.Failover[0]
+		spec.Failover = &v1alphaSLO.CloudWatchMetricFailover{
+			Region:     &failover.Region,
+			Namespace:  failover.Namespace.ValueStringPointer(),
+			MetricName: failover.MetricName.ValueStringPointer(),
+			Stat:       failover.Stat.ValueStringPointer(),
+			Dimensions: modelToCloudWatchDimensions(failover.Dimensions),
 		}
-		spec.Dimensions = dimensions
+		if !isNullOrUnknown(failover.AccountID) {
+			accountID := failover.AccountID.ValueString()
+			spec.Failover.AccountID = &accountID
+		}
 	}
 	return spec
+}
+
+func modelToCloudWatchDimensions(models []CloudWatchDimensionModel) []v1alphaSLO.CloudWatchMetricDimension {
+	if len(models) == 0 {
+		return nil
+	}
+	dimensions := make([]v1alphaSLO.CloudWatchMetricDimension, len(models))
+	for i, d := range models {
+		dimensions[i] = v1alphaSLO.CloudWatchMetricDimension{
+			Name:  &d.Name,
+			Value: &d.Value,
+		}
+	}
+	return dimensions
 }
 
 func modelToDash0(model *Dash0Model) *v1alphaSLO.Dash0Metric {

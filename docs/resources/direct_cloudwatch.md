@@ -19,6 +19,10 @@ resource "nobl9_direct_cloudwatch" "test-cloudwatch" {
   description            = "desc"
   role_arn               = "secret"
   log_collection_enabled = true
+  failover {
+    primary_region  = "us-west-2"
+    failover_region = "us-east-2"
+  }
   historical_data_retrieval {
     default_duration {
       unit  = "Day"
@@ -44,6 +48,7 @@ resource "nobl9_direct_cloudwatch" "test-cloudwatch" {
 
 - `description` (String) Optional description of the resource. Here, you can add details about who is responsible for the integration (team/owner) or the purpose of creating it.
 - `display_name` (String) User-friendly display name of the resource.
+- `failover` (Block List, Max: 1) Region failover of the data source. Nobl9 reads the queries from the failover region only after a failover event is sent to Nobl9, and goes back to the primary region after a recovery event. (see [below for nested schema](#nestedblock--failover))
 - `historical_data_retrieval` (Block List, Max: 1) [Replay configuration documentation](https://docs.nobl9.com/replay) (see [below for nested schema](#nestedblock--historical_data_retrieval))
 - `log_collection_enabled` (Boolean) [Logs documentation](https://docs.nobl9.com/features/slo-troubleshooting/event-logs)
 - `query_delay` (Block Set, Max: 1) [Query delay configuration documentation](https://docs.nobl9.com/features/query-delay). Computed if not provided. (see [below for nested schema](#nestedblock--query_delay))
@@ -55,6 +60,15 @@ resource "nobl9_direct_cloudwatch" "test-cloudwatch" {
 
 - `id` (String) The ID of this resource.
 - `status` (String) The status of the created direct.
+
+<a id="nestedblock--failover"></a>
+### Nested Schema for `failover`
+
+Required:
+
+- `failover_region` (String) AWS region that Nobl9 reads from during a failover. It must differ from `primary_region`.
+- `primary_region` (String) AWS region that Nobl9 reads from outside a failover.
+
 
 <a id="nestedblock--historical_data_retrieval"></a>
 ### Nested Schema for `historical_data_retrieval`

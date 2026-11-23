@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/nobl9/nobl9-go/manifest"
+	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaAgent "github.com/nobl9/nobl9-go/manifest/v1alpha/agent"
 )
 
@@ -39,6 +40,15 @@ func TestUnmarshalAgentSelectsReturnedConfiguration(t *testing.T) {
 				TenantID: "tenant-id",
 			}},
 			fields: map[string]interface{}{"tenant_id": "tenant-id"},
+		},
+		{
+			name: cloudWatchAgentType, key: cloudWatchAgentConfigKey,
+			spec: v1alphaAgent.Spec{CloudWatch: &v1alphaAgent.CloudWatchConfig{
+				Failover: &v1alpha.CloudWatchFailoverConfig{PrimaryRegion: "us-west-2", FailoverRegion: "us-east-2"},
+			}},
+			fields: map[string]interface{}{cloudWatchFailoverConfigKey: []interface{}{map[string]interface{}{
+				"primary_region": "us-west-2", "failover_region": "us-east-2",
+			}}},
 		},
 		{
 			name: dynatraceAgentType, key: dynatraceAgentConfigKey,

@@ -516,19 +516,42 @@ func sloResourceRawMetricSpecBlocks() map[string]schema.Block {
 					},
 				},
 				Blocks: map[string]schema.Block{
-					"dimensions": schema.SetNestedBlock{
-						Description: "Set of name/value pairs that is part of the identity of a metric",
-						Validators:  []validator.Set{setvalidator.SizeBetween(1, 10)},
+					"dimensions": cloudWatchDimensionsBlock(),
+					"failover": schema.ListNestedBlock{
+						Description: "Complete standard query that Nobl9 reads instead of this query " +
+							"while the data source is in region failover. No field is taken from the primary query. " +
+							"Allowed only with a standard query (not `sql` or `json`). " +
+							"Set it on both the good (or bad) and the total query, or on neither.",
+						Validators: []validator.List{listvalidator.SizeAtMost(1)},
 						NestedObject: schema.NestedBlockObject{
 							Attributes: map[string]schema.Attribute{
-								"name": schema.StringAttribute{
-									Required:    true,
-									Description: "Name",
+								"account_id": schema.StringAttribute{
+									Optional:    true,
+									Description: "AccountID used with cross-account observability feature",
+									Validators: []validator.String{stringvalidator.RegexMatches(
+										regexp.MustCompile(`^\d{12}$`),
+										"account_id must be 12-digit identifier",
+									)},
 								},
-								"value": schema.StringAttribute{
+								"region": schema.StringAttribute{
 									Required:    true,
-									Description: "Value",
+									Description: "Region of the CloudWatch instance",
 								},
+								"namespace": schema.StringAttribute{
+									Optional:    true,
+									Description: "Namespace of the metric",
+								},
+								"metric_name": schema.StringAttribute{
+									Optional:    true,
+									Description: "Metric name",
+								},
+								"stat": schema.StringAttribute{
+									Optional:    true,
+									Description: "Metric data aggregations",
+								},
+							},
+							Blocks: map[string]schema.Block{
+								"dimensions": cloudWatchDimensionsBlock(),
 							},
 						},
 					},
@@ -1194,6 +1217,25 @@ func sloResourceCompositeV1Block() schema.ListNestedBlock {
 							},
 						},
 					},
+				},
+			},
+		},
+	}
+}
+
+func cloudWatchDimensionsBlock() schema.SetNestedBlock {
+	return schema.SetNestedBlock{
+		Description: "Set of name/value pairs that is part of the identity of a metric",
+		Validators:  []validator.Set{setvalidator.SizeBetween(1, 10)},
+		NestedObject: schema.NestedBlockObject{
+			Attributes: map[string]schema.Attribute{
+				"name": schema.StringAttribute{
+					Required:    true,
+					Description: "Name",
+				},
+				"value": schema.StringAttribute{
+					Required:    true,
+					Description: "Value",
 				},
 			},
 		},

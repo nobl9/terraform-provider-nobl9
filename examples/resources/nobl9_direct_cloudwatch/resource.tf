@@ -4,6 +4,10 @@ resource "nobl9_direct_cloudwatch" "test-cloudwatch" {
   description            = "desc"
   role_arn               = "secret"
   log_collection_enabled = true
+  failover {
+    primary_region  = "us-west-2"
+    failover_region = "us-east-2"
+  }
   historical_data_retrieval {
     default_duration {
       unit  = "Day"
