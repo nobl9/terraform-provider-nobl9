@@ -11,8 +11,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/nobl9/nobl9-go/manifest"
 	"github.com/nobl9/nobl9-go/manifest/v1alpha"
 	v1alphaAlertMethod "github.com/nobl9/nobl9-go/manifest/v1alpha/alertmethod"
@@ -175,6 +178,57 @@ func TestAccSLOResource(t *testing.T) {
 				},
 			},
 			// Delete automatically occurs in TestCase, no need to clean up.
+		},
+	})
+}
+
+func TestAccSLOResource_explicitEmptyMetadata(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	project := getExampleProjectResource(t).ToManifest()
+	service := getExampleServiceResource(t).ToManifest()
+	service.Metadata.Project = project.GetName()
+	direct := e2etestutils.ProvisionStaticDirect(t, v1alpha.AppDynamics)
+
+	sloResource := sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: getExampleSLOResource(t),
+	}
+	sloResource.Name = e2etestutils.GenerateName()
+	sloResource.DisplayName = types.StringValue("")
+	sloResource.Project = project.GetName()
+	sloResource.Description = types.StringValue("")
+	sloResource.Annotations = map[string]string{}
+	sloResource.Service = service.GetName()
+	sloResource.Indicator = []IndicatorModel{{
+		Name:    direct.GetName(),
+		Project: types.StringValue(direct.GetProject()),
+		Kind:    types.StringValue(direct.GetKind().String()),
+	}}
+
+	auxiliaryObjects := []manifest.Object{project, service}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					e2etestutils.V1Apply(t, auxiliaryObjects)
+					t.Cleanup(func() { e2etestutils.V1Delete(t, auxiliaryObjects) })
+				},
+				Config: newSLOResource(t, sloResource),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("nobl9_slo.test", "display_name", ""),
+					resource.TestCheckResourceAttr("nobl9_slo.test", "description", ""),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"nobl9_slo.test",
+						tfjsonpath.New("annotations"),
+						knownvalue.MapExact(map[string]knownvalue.Check{}),
+					),
+				},
+			},
 		},
 	})
 }

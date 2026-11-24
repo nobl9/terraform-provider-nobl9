@@ -24,6 +24,20 @@ func stringValue(v string) types.String {
 	return types.StringValue(v)
 }
 
+func preserveExplicitEmptyString(source, target types.String) types.String {
+	if !source.IsNull() && !source.IsUnknown() && source.ValueString() == "" && target.IsNull() {
+		return source
+	}
+	return target
+}
+
+func preserveExplicitEmptyAnnotations(source, target map[string]string) map[string]string {
+	if source != nil && len(source) == 0 && target == nil {
+		return source
+	}
+	return target
+}
+
 // valueFromPointer returns the value pointed to by the pointer v.
 // If v is nil, it returns the zero value of type T.
 func valueFromPointer[T any](v *T) (dereference T) {
