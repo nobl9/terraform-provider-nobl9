@@ -205,6 +205,9 @@ func (s *ServiceResource) ModifyPlan(
 	req resource.ModifyPlanRequest,
 	resp *resource.ModifyPlanResponse,
 ) {
+	if !req.Plan.Raw.IsFullyKnown() {
+		return
+	}
 	var plan *ServiceResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
