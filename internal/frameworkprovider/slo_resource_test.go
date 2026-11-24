@@ -235,6 +235,51 @@ func TestAccSLOResource_planValidation(t *testing.T) {
 	})
 }
 
+func TestAccSLOResource_deprecatedCompositeCardinality(t *testing.T) {
+	t.Parallel()
+	testAccSetup(t)
+
+	model := getExampleSLOResource(t)
+	model.Name = e2etestutils.GenerateName()
+	config := newSLOResource(t, sloResourceTemplateModel{
+		ResourceName:     "test",
+		SLOResourceModel: model,
+	})
+	config, ok := strings.CutSuffix(config, "}\n")
+	require.True(t, ok)
+	config += `
+  composite {
+    target = 0.95
+
+    burn_rate_condition {
+      op    = "gt"
+      value = 2
+    }
+  }
+
+  composite {
+    target = 0.90
+
+    burn_rate_condition {
+      op    = "gt"
+      value = 2
+    }
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{{
+			Config: config,
+			ExpectError: regexp.MustCompile(
+				`(?s)Error: Invalid Attribute Value.*Attribute composite list must contain at most 1 elements, got: 2`,
+			),
+			PlanOnly: true,
+		}},
+	})
+}
+
 func TestAccSLOResource_labelValidationErrors(t *testing.T) {
 	t.Parallel()
 	testAccSetup(t)
