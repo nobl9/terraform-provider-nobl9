@@ -2,7 +2,6 @@ package frameworkprovider
 
 import (
 	"context"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -167,15 +166,16 @@ func (s *ServiceResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.Split(req.ID, "/")
-	if len(parts) != 2 {
+	project, name, ok := parseProjectScopedImportID(req.ID, s.client.client.Config.Project)
+	if !ok {
 		resp.Diagnostics.AddError(
 			"Invalid import ID",
-			"Expected ID to be in the format '<project-name>/<service-name>'.",
+			"Expected ID to be in the format '<service-name>' or '<project-name>/<service-name>'. "+
+				"Importing by Service name requires a default Project in the provider configuration.",
 		)
 		return
 	}
-	model, diags := s.readResource(ctx, ServiceResourceModel{Name: parts[1], Project: parts[0]})
+	model, diags := s.readResource(ctx, ServiceResourceModel{Name: name, Project: project})
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

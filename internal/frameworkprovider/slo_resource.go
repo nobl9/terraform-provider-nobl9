@@ -3,7 +3,6 @@ package frameworkprovider
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -161,15 +160,16 @@ func (s *SLOResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.Split(req.ID, "/")
-	if len(parts) != 2 {
+	project, name, ok := parseProjectScopedImportID(req.ID, s.client.client.Config.Project)
+	if !ok {
 		resp.Diagnostics.AddError(
 			"Invalid import ID",
-			"Expected ID to be in the format '<project-name>/<slo-name>'.",
+			"Expected ID to be in the format '<slo-name>' or '<project-name>/<slo-name>'. "+
+				"Importing by SLO name requires a default Project in the provider configuration.",
 		)
 		return
 	}
-	model, diags := s.readResource(ctx, resp.State, nil, &SLOResourceModel{Name: parts[1], Project: parts[0]})
+	model, diags := s.readResource(ctx, resp.State, nil, &SLOResourceModel{Name: name, Project: project})
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
