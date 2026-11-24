@@ -57,6 +57,10 @@ resource "nobl9_service" "this" {
 - `responsible_users` (Attributes List) List of users responsible for the service. (see [below for nested schema](#nestedatt--responsible_users))
 - `review_cycle` (Attributes) Configuration for service review cycle. (see [below for nested schema](#nestedatt--review_cycle))
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedblock--label"></a>
 ### Nested Schema for `label`
 
