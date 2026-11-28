@@ -75,6 +75,7 @@ type CountMetricSpecModel struct {
 	AzureMonitor        []AzureMonitorModel        `tfsdk:"azure_monitor"`
 	BigQuery            []BigQueryModel            `tfsdk:"bigquery"`
 	CloudWatch          []CloudWatchModel          `tfsdk:"cloudwatch"`
+	ClickHouse          []ClickHouseModel          `tfsdk:"clickhouse"`
 	Datadog             []DatadogModel             `tfsdk:"datadog"`
 	Dynatrace           []DynatraceModel           `tfsdk:"dynatrace"`
 	Elasticsearch       []ElasticsearchModel       `tfsdk:"elasticsearch"`
@@ -231,6 +232,11 @@ type CloudWatchModel struct {
 type CloudWatchDimensionModel struct {
 	Name  string `tfsdk:"name"`
 	Value string `tfsdk:"value"`
+}
+
+type ClickHouseModel struct {
+	Query      string            `tfsdk:"query"`
+	Parameters map[string]string `tfsdk:"parameters"`
 }
 
 type DatadogModel struct {
@@ -804,6 +810,7 @@ func countMetricSpecToModel(spec *v1alphaSLO.MetricSpec) CountMetricSpecModel {
 		AzureMonitor:        metricModelList(azureMonitorToModel(spec.AzureMonitor)),
 		BigQuery:            metricModelList(bigQueryToModel(spec.BigQuery)),
 		CloudWatch:          metricModelList(cloudWatchToModel(spec.CloudWatch)),
+		ClickHouse:          metricModelList(clickHouseToModel(spec.ClickHouse)),
 		Datadog:             metricModelList(datadogToModel(spec.Datadog)),
 		Dynatrace:           metricModelList(dynatraceToModel(spec.Dynatrace)),
 		Elasticsearch:       metricModelList(elasticsearchToModel(spec.Elasticsearch)),
@@ -853,6 +860,9 @@ func (m CountMetricSpecModel) ToManifest() *v1alphaSLO.MetricSpec {
 	}
 	if len(m.CloudWatch) > 0 {
 		spec.CloudWatch = modelToCloudWatch(&m.CloudWatch[0])
+	}
+	if len(m.ClickHouse) > 0 {
+		spec.ClickHouse = modelToClickHouse(&m.ClickHouse[0])
 	}
 	if len(m.Datadog) > 0 {
 		spec.Datadog = modelToDatadog(&m.Datadog[0])
@@ -1414,6 +1424,26 @@ func modelToCloudWatch(model *CloudWatchModel) *v1alphaSLO.CloudWatchMetric {
 		spec.Dimensions = dimensions
 	}
 	return spec
+}
+
+func clickHouseToModel(src *v1alphaSLO.ClickHouseMetric) *ClickHouseModel {
+	if src == nil {
+		return nil
+	}
+	return &ClickHouseModel{
+		Query:      src.Query,
+		Parameters: src.Parameters,
+	}
+}
+
+func modelToClickHouse(model *ClickHouseModel) *v1alphaSLO.ClickHouseMetric {
+	if model == nil {
+		return nil
+	}
+	return &v1alphaSLO.ClickHouseMetric{
+		Query:      model.Query,
+		Parameters: model.Parameters,
+	}
 }
 
 func modelToDash0(model *Dash0Model) *v1alphaSLO.Dash0Metric {

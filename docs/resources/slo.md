@@ -386,6 +386,7 @@ Optional:
 - `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_monitor))
 - `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--azure_prometheus))
 - `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--bigquery))
+- `clickhouse` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/clickhouse) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--clickhouse))
 - `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--cloudwatch))
 - `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--coralogix))
 - `dash0` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/dash0) (see [below for nested schema](#nestedblock--objective--count_metrics--bad--dash0))
@@ -479,6 +480,18 @@ Required:
 - `location` (String) Location of you BigQuery
 - `project_id` (String) Project ID
 - `query` (String) Query for the metrics
+
+
+<a id="nestedblock--objective--count_metrics--bad--clickhouse"></a>
+### Nested Schema for `objective.count_metrics.bad.clickhouse`
+
+Required:
+
+- `query` (String) Query for the metrics
+
+Optional:
+
+- `parameters` (Map of String) Optional named parameters forwarded to ClickHouse as param_<name> HTTP query parameters.
 
 
 <a id="nestedblock--objective--count_metrics--bad--cloudwatch"></a>
@@ -794,6 +807,7 @@ Optional:
 - `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_monitor))
 - `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good--azure_prometheus))
 - `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good--bigquery))
+- `clickhouse` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/clickhouse) (see [below for nested schema](#nestedblock--objective--count_metrics--good--clickhouse))
 - `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch))
 - `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--count_metrics--good--coralogix))
 - `dash0` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/dash0) (see [below for nested schema](#nestedblock--objective--count_metrics--good--dash0))
@@ -887,6 +901,18 @@ Required:
 - `location` (String) Location of you BigQuery
 - `project_id` (String) Project ID
 - `query` (String) Query for the metrics
+
+
+<a id="nestedblock--objective--count_metrics--good--clickhouse"></a>
+### Nested Schema for `objective.count_metrics.good.clickhouse`
+
+Required:
+
+- `query` (String) Query for the metrics
+
+Optional:
+
+- `parameters` (Map of String) Optional named parameters forwarded to ClickHouse as param_<name> HTTP query parameters.
 
 
 <a id="nestedblock--objective--count_metrics--good--cloudwatch"></a>
@@ -1202,6 +1228,7 @@ Optional:
 - `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--azure_monitor))
 - `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--azure_prometheus))
 - `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--bigquery))
+- `clickhouse` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/clickhouse) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--clickhouse))
 - `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--cloudwatch))
 - `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--coralogix))
 - `dash0` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/dash0) (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--dash0))
@@ -1295,6 +1322,18 @@ Required:
 - `location` (String) Location of you BigQuery
 - `project_id` (String) Project ID
 - `query` (String) Query for the metrics
+
+
+<a id="nestedblock--objective--count_metrics--good_total--clickhouse"></a>
+### Nested Schema for `objective.count_metrics.good_total.clickhouse`
+
+Required:
+
+- `query` (String) Query for the metrics
+
+Optional:
+
+- `parameters` (Map of String) Optional named parameters forwarded to ClickHouse as param_<name> HTTP query parameters.
 
 
 <a id="nestedblock--objective--count_metrics--good_total--cloudwatch"></a>
@@ -1610,6 +1649,7 @@ Optional:
 - `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_monitor))
 - `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--count_metrics--total--azure_prometheus))
 - `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--count_metrics--total--bigquery))
+- `clickhouse` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/clickhouse) (see [below for nested schema](#nestedblock--objective--count_metrics--total--clickhouse))
 - `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch))
 - `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--count_metrics--total--coralogix))
 - `dash0` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/dash0) (see [below for nested schema](#nestedblock--objective--count_metrics--total--dash0))
@@ -1703,6 +1743,18 @@ Required:
 - `location` (String) Location of you BigQuery
 - `project_id` (String) Project ID
 - `query` (String) Query for the metrics
+
+
+<a id="nestedblock--objective--count_metrics--total--clickhouse"></a>
+### Nested Schema for `objective.count_metrics.total.clickhouse`
+
+Required:
+
+- `query` (String) Query for the metrics
+
+Optional:
+
+- `parameters` (Map of String) Optional named parameters forwarded to ClickHouse as param_<name> HTTP query parameters.
 
 
 <a id="nestedblock--objective--count_metrics--total--cloudwatch"></a>
@@ -2026,6 +2078,7 @@ Optional:
 - `azure_monitor` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/azure-monitor#creating-slos-with-azure-monitor) (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_monitor))
 - `azure_prometheus` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/azure-prometheus) (see [below for nested schema](#nestedblock--objective--raw_metric--query--azure_prometheus))
 - `bigquery` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/bigquery#creating-slos-with-bigquery) (see [below for nested schema](#nestedblock--objective--raw_metric--query--bigquery))
+- `clickhouse` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/clickhouse) (see [below for nested schema](#nestedblock--objective--raw_metric--query--clickhouse))
 - `cloudwatch` (Block List) [Configuration documentation](https://docs.nobl9.com/Sources/Amazon_CloudWatch/#creating-slos-with-cloudwatch) (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch))
 - `coralogix` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/coralogix) (see [below for nested schema](#nestedblock--objective--raw_metric--query--coralogix))
 - `dash0` (Block List) [Configuration documentation](https://docs.nobl9.com/sources/create-slo/dash0) (see [below for nested schema](#nestedblock--objective--raw_metric--query--dash0))
@@ -2121,6 +2174,18 @@ Required:
 - `location` (String) Location of you BigQuery
 - `project_id` (String) Project ID
 - `query` (String) Query for the metrics
+
+
+<a id="nestedblock--objective--raw_metric--query--clickhouse"></a>
+### Nested Schema for `objective.raw_metric.query.clickhouse`
+
+Required:
+
+- `query` (String) Query for the metrics
+
+Optional:
+
+- `parameters` (Map of String) Optional named parameters forwarded to ClickHouse as param_<name> HTTP query parameters.
 
 
 <a id="nestedblock--objective--raw_metric--query--cloudwatch"></a>
