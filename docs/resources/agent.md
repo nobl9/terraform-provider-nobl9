@@ -120,6 +120,19 @@ Required:
 <a id="nestedblock--cloudwatch_config"></a>
 ### Nested Schema for `cloudwatch_config`
 
+Optional:
+
+- `failover` (Block List, Max: 1) Region failover of the data source. Nobl9 reads the queries from the failover region only after a failover event is sent to Nobl9, and goes back to the primary region after a recovery event. (see [below for nested schema](#nestedblock--cloudwatch_config--failover))
+
+<a id="nestedblock--cloudwatch_config--failover"></a>
+### Nested Schema for `cloudwatch_config.failover`
+
+Required:
+
+- `failover_region` (String) AWS region that Nobl9 reads from during a failover. It must differ from `primary_region`.
+- `primary_region` (String) AWS region that Nobl9 reads from outside a failover.
+
+
 
 <a id="nestedblock--dash0_config"></a>
 ### Nested Schema for `dash0_config`

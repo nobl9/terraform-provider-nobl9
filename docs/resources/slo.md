@@ -492,6 +492,7 @@ Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
 - `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--bad--cloudwatch--dimensions))
+- `failover` (Block List) Complete query (standard, `sql` or `json`) that Nobl9 reads instead of this query while the data source is in region failover. No field is taken from the primary query. Set it on both the good (or bad) and the total query, or on neither. (see [below for nested schema](#nestedblock--objective--count_metrics--bad--cloudwatch--failover))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -505,6 +506,33 @@ Required:
 
 - `name` (String) Name
 - `value` (String) Value
+
+
+<a id="nestedblock--objective--count_metrics--bad--cloudwatch--failover"></a>
+### Nested Schema for `objective.count_metrics.bad.cloudwatch.failover`
+
+Required:
+
+- `region` (String) Region of the CloudWatch instance
+
+Optional:
+
+- `account_id` (String) AccountID used with cross-account observability feature
+- `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--bad--cloudwatch--failover--dimensions))
+- `json` (String) JSON query
+- `metric_name` (String) Metric name
+- `namespace` (String) Namespace of the metric
+- `sql` (String) SQL query
+- `stat` (String) Metric data aggregations
+
+<a id="nestedblock--objective--count_metrics--bad--cloudwatch--failover--dimensions"></a>
+### Nested Schema for `objective.count_metrics.bad.cloudwatch.failover.dimensions`
+
+Required:
+
+- `name` (String) Name
+- `value` (String) Value
+
 
 
 
@@ -900,6 +928,7 @@ Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
 - `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch--dimensions))
+- `failover` (Block List) Complete query (standard, `sql` or `json`) that Nobl9 reads instead of this query while the data source is in region failover. No field is taken from the primary query. Set it on both the good (or bad) and the total query, or on neither. (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch--failover))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -913,6 +942,33 @@ Required:
 
 - `name` (String) Name
 - `value` (String) Value
+
+
+<a id="nestedblock--objective--count_metrics--good--cloudwatch--failover"></a>
+### Nested Schema for `objective.count_metrics.good.cloudwatch.failover`
+
+Required:
+
+- `region` (String) Region of the CloudWatch instance
+
+Optional:
+
+- `account_id` (String) AccountID used with cross-account observability feature
+- `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--good--cloudwatch--failover--dimensions))
+- `json` (String) JSON query
+- `metric_name` (String) Metric name
+- `namespace` (String) Namespace of the metric
+- `sql` (String) SQL query
+- `stat` (String) Metric data aggregations
+
+<a id="nestedblock--objective--count_metrics--good--cloudwatch--failover--dimensions"></a>
+### Nested Schema for `objective.count_metrics.good.cloudwatch.failover.dimensions`
+
+Required:
+
+- `name` (String) Name
+- `value` (String) Value
+
 
 
 
@@ -1308,6 +1364,7 @@ Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
 - `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--cloudwatch--dimensions))
+- `failover` (Block List) Complete query (standard, `sql` or `json`) that Nobl9 reads instead of this query while the data source is in region failover. No field is taken from the primary query. Set it on both the good (or bad) and the total query, or on neither. (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--cloudwatch--failover))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -1321,6 +1378,33 @@ Required:
 
 - `name` (String) Name
 - `value` (String) Value
+
+
+<a id="nestedblock--objective--count_metrics--good_total--cloudwatch--failover"></a>
+### Nested Schema for `objective.count_metrics.good_total.cloudwatch.failover`
+
+Required:
+
+- `region` (String) Region of the CloudWatch instance
+
+Optional:
+
+- `account_id` (String) AccountID used with cross-account observability feature
+- `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--good_total--cloudwatch--failover--dimensions))
+- `json` (String) JSON query
+- `metric_name` (String) Metric name
+- `namespace` (String) Namespace of the metric
+- `sql` (String) SQL query
+- `stat` (String) Metric data aggregations
+
+<a id="nestedblock--objective--count_metrics--good_total--cloudwatch--failover--dimensions"></a>
+### Nested Schema for `objective.count_metrics.good_total.cloudwatch.failover.dimensions`
+
+Required:
+
+- `name` (String) Name
+- `value` (String) Value
+
 
 
 
@@ -1716,6 +1800,7 @@ Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
 - `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch--dimensions))
+- `failover` (Block List) Complete query (standard, `sql` or `json`) that Nobl9 reads instead of this query while the data source is in region failover. No field is taken from the primary query. Set it on both the good (or bad) and the total query, or on neither. (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch--failover))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -1729,6 +1814,33 @@ Required:
 
 - `name` (String) Name
 - `value` (String) Value
+
+
+<a id="nestedblock--objective--count_metrics--total--cloudwatch--failover"></a>
+### Nested Schema for `objective.count_metrics.total.cloudwatch.failover`
+
+Required:
+
+- `region` (String) Region of the CloudWatch instance
+
+Optional:
+
+- `account_id` (String) AccountID used with cross-account observability feature
+- `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--count_metrics--total--cloudwatch--failover--dimensions))
+- `json` (String) JSON query
+- `metric_name` (String) Metric name
+- `namespace` (String) Namespace of the metric
+- `sql` (String) SQL query
+- `stat` (String) Metric data aggregations
+
+<a id="nestedblock--objective--count_metrics--total--cloudwatch--failover--dimensions"></a>
+### Nested Schema for `objective.count_metrics.total.cloudwatch.failover.dimensions`
+
+Required:
+
+- `name` (String) Name
+- `value` (String) Value
+
 
 
 
@@ -2134,6 +2246,7 @@ Optional:
 
 - `account_id` (String) AccountID used with cross-account observability feature
 - `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch--dimensions))
+- `failover` (Block List) Complete query (standard, `sql` or `json`) that Nobl9 reads instead of this query while the data source is in region failover. No field is taken from the primary query. Set it on both the good (or bad) and the total query, or on neither. (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch--failover))
 - `json` (String) JSON query
 - `metric_name` (String) Metric name
 - `namespace` (String) Namespace of the metric
@@ -2147,6 +2260,33 @@ Required:
 
 - `name` (String) Name
 - `value` (String) Value
+
+
+<a id="nestedblock--objective--raw_metric--query--cloudwatch--failover"></a>
+### Nested Schema for `objective.raw_metric.query.cloudwatch.failover`
+
+Required:
+
+- `region` (String) Region of the CloudWatch instance
+
+Optional:
+
+- `account_id` (String) AccountID used with cross-account observability feature
+- `dimensions` (Block Set) Set of name/value pairs that is part of the identity of a metric (see [below for nested schema](#nestedblock--objective--raw_metric--query--cloudwatch--failover--dimensions))
+- `json` (String) JSON query
+- `metric_name` (String) Metric name
+- `namespace` (String) Namespace of the metric
+- `sql` (String) SQL query
+- `stat` (String) Metric data aggregations
+
+<a id="nestedblock--objective--raw_metric--query--cloudwatch--failover--dimensions"></a>
+### Nested Schema for `objective.raw_metric.query.cloudwatch.failover.dimensions`
+
+Required:
+
+- `name` (String) Name
+- `value` (String) Value
+
 
 
 
